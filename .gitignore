@@ -1,0 +1,14 @@
+# dependencias
+node_modules/
+
+# entorno / secretos
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# sistema
+.DS_Store
+*.log

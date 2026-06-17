@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY-PICKS — Mis modelos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #08172e;
+    --ink-2: #0d2444;
+    --blue: #1d4ed8;
+    --blue-bright: #2f7bff;
+    --white: #ffffff;
+    --paper: #f5f8fd;
+    --line: #dce6f5;
+    --muted: #5e6f86;
+    --win: #15a34a;
+    --loss: #d83a3a;
+    --shadow-cta: 0 8px 22px -8px rgba(47,123,255,0.6);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 50; background: rgba(245,248,253,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; color: var(--ink); display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo span { color: var(--blue); }
+  .logo svg { width: 26px; height: 26px; display: block; }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .nav-plan-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 12px; border-radius: 20px; background: rgba(47,123,255,0.1); color: var(--blue); border: 1px solid rgba(47,123,255,0.25); }
+  .nav-btn { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--muted); background: transparent; border: 1.5px solid var(--line); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: border-color .15s, color .15s; }
+  .nav-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* PAGE STATES */
+  .page-state { display: none; padding: 80px 24px; text-align: center; }
+  .page-state.active { display: block; }
+  .state-icon { font-size: 3rem; margin-bottom: 20px; }
+  .state-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.6rem; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .state-body { color: var(--muted); max-width: 40ch; margin: 0 auto 28px; font-size: 1rem; line-height: 1.6; }
+  .btn-cta { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.95rem; padding: 13px 26px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; display: inline-block; background: var(--blue-bright); color: var(--white); box-shadow: var(--shadow-cta); transition: transform .15s ease, background .15s ease; }
+  .btn-cta:hover { transform: translateY(-2px); background: var(--blue); }
+
+  /* HERO */
+  .page-hero { padding: 48px 0 36px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .page-hero .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; display: inline-flex; align-items: center; gap: 8px; }
+  .page-hero .eyebrow::before { content: ''; width: 18px; height: 1.5px; background: var(--blue-bright); display: inline-block; }
+  .page-hero h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 10px; }
+  .page-hero p { color: var(--muted); font-size: 1rem; max-width: 52ch; }
+
+  /* SUCCESS BANNER */
+  .success-banner { background: rgba(21,163,74,0.1); border: 1px solid rgba(21,163,74,0.3); color: var(--win); border-radius: 12px; padding: 16px 20px; margin-bottom: 28px; font-size: 0.92rem; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+  .pending-banner { background: rgba(47,123,255,0.08); border: 1px solid rgba(47,123,255,0.25); color: var(--blue); border-radius: 12px; padding: 16px 20px; margin-bottom: 28px; font-size: 0.92rem; display: flex; align-items: center; gap: 12px; }
+
+  /* TOOL SECTION */
+  .tool-section { display: none; }
+  .tool-section.active { display: block; }
+  .tool-header { margin-bottom: 28px; }
+  .tool-header h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .tool-header p { color: var(--muted); font-size: 0.9rem; }
+
+  /* TOOL BLOCKS */
+  .tool-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+  .tool-inputs { position: sticky; top: 80px; }
+  .tool-block { background: var(--white); border: 1.5px solid var(--line); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
+  .tool-label { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+  .tlab { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+  .tlab2 { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+  .tool-block select, .tool-block input[type="text"], .tool-block input[type="number"] {
+    width: 100%; background: var(--paper); border: 1px solid var(--line); color: var(--ink);
+    font-family: 'Inter', sans-serif; font-size: 0.9rem; padding: 9px 11px; border-radius: 8px; outline: none;
+  }
+  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue-bright); }
+  .tool-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .tool-toggle { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 14px; cursor: pointer; }
+  .tool-toggle input { width: auto; accent-color: var(--blue-bright); }
+  .odds-mode { display: flex; gap: 6px; margin-bottom: 14px; }
+  .om { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 5px 11px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; transition: border-color .12s, color .12s; }
+  .om.active { border-color: var(--blue-bright); color: var(--blue); }
+  .odds3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tool-run { margin-top: 16px; width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 12px; border-radius: 10px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); transition: background .15s ease; }
+  .tool-run:hover:not(:disabled) { background: var(--blue); }
+  .tool-run:disabled { opacity: 0.65; cursor: default; }
+
+  /* RESULTS */
+  .result-area { min-height: 200px; }
+  .tool-loading { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); padding: 24px 0; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .result-placeholder { background: var(--white); border: 1.5px dashed var(--line); border-radius: 14px; padding: 40px; text-align: center; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* ANALYSIS OUTPUT */
+  .analysis { background: var(--white); border: 1.5px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .an-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .an-match { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; }
+  .an-xg { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--muted); margin-bottom: 14px; }
+  .an-conf { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 20px; white-space: nowrap; border: 1px solid; }
+  .an-conf.alta { color: var(--win); border-color: rgba(21,163,74,.4); background: rgba(21,163,74,.08); }
+  .an-conf.media { color: var(--blue); border-color: rgba(29,78,216,.4); background: rgba(29,78,216,.08); }
+  .an-conf.baja { color: var(--loss); border-color: rgba(216,58,58,.4); background: rgba(216,58,58,.08); }
+  .an-note { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .an-subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 6px; }
+  table.antab { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  table.antab th { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); font-weight: 500; }
+  table.antab th:first-child { text-align: left; width: 40%; }
+  table.antab td { padding: 9px 6px; border-bottom: 1px solid var(--paper); font-family: 'JetBrains Mono', monospace; text-align: right; }
+  table.antab td:first-child { text-align: left; font-family: 'Inter', sans-serif; line-height: 1.3; }
+  table.antab tr:last-child td { border-bottom: none; }
+  .edge-pos { color: var(--win); font-weight: 700; }
+  .edge-neg { color: var(--muted); }
+  td.mut { color: var(--muted); }
+  .mk { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mk.bet { background: rgba(21,163,74,.14); color: var(--win); }
+  .mk.skip { background: rgba(94,111,134,.12); color: var(--muted); }
+  .mk.fade { background: rgba(216,58,58,.12); color: var(--loss); }
+
+  @media (max-width: 760px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .tool-inputs { position: static; }
+    .odds3 { grid-template-columns: 1fr; }
+    .tool-row { grid-template-columns: 1fr; }
+    nav .nav-plan-badge { display: none; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 18px; }
+    nav .wrap { height: 56px; }
+    .page-hero { padding: 36px 0 28px; }
+  }
+  :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="#08172e"/>
+        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="38" cy="13" r="4" fill="#ffffff"/>
+      </svg>
+      RICKY<span>·</span>PICKS
+    </a>
+    <div class="nav-right">
+      <span class="nav-plan-badge" id="navPlanBadge" style="display:none"></span>
+      <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ESTADO: cargando -->
+<div class="page-state active" id="stateLoading">
+  <div class="state-icon">⏳</div>
+  <div class="state-title">Cargando…</div>
+</div>
+
+<!-- ESTADO: no hay sesión -->
+<div class="page-state" id="stateNoAuth">
+  <div class="state-icon">🔒</div>
+  <div class="state-title">Inicia sesión para ver tus modelos</div>
+  <div class="state-body">Crea tu cuenta o inicia sesión para acceder a los picks.</div>
+  <a href="/checkout.html?plan=individual" class="btn-cta">Ir a la tienda</a>
+</div>
+
+<!-- ESTADO: sin plan activo -->
+<div class="page-state" id="stateNoPlan">
+  <div class="state-icon">📊</div>
+  <div class="state-title">No tienes un plan activo</div>
+  <div class="state-body">Compra un plan para acceder a la herramienta completa con todos los partidos.</div>
+  <a href="/#precios" class="btn-cta">Ver planes</a>
+</div>
+
+<!-- ESTADO: verificando pago -->
+<div class="page-state" id="stateVerifying">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto 24px"></div>
+  <div class="state-title">Verificando tu pago…</div>
+  <div class="state-body">Estamos activando tu acceso. Esto suele tardar unos segundos.</div>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div id="mainContent" style="display:none">
+  <div class="wrap">
+    <div class="page-hero">
+      <div class="eyebrow">Mundial 2026</div>
+      <h1>Mis modelos</h1>
+      <p id="heroSub">Herramienta completa. Elige el partido, ingresa tus momios y calcula el valor.</p>
+    </div>
+
+    <div id="successBanner" class="success-banner" style="display:none">
+      ✓ &nbsp;¡Pago confirmado! Tu acceso está activo. Bienvenido.
+    </div>
+    <div id="pendingBanner" class="pending-banner" style="display:none">
+      ⏳ &nbsp;Tu pago está en proceso. Cuando se confirme, tu acceso se activará automáticamente.
+    </div>
+
+    <!-- TOOL: individual (4 partidos de hoy) -->
+    <div class="tool-section" id="toolIndividual">
+      <div class="tool-header">
+        <h2>Partidos de hoy</h2>
+        <p id="todayDateLabel">Elige el partido del día y calcula los picks con tu herramienta.</p>
+      </div>
+      <div class="tool-grid">
+        <div class="tool-inputs">
+          <div class="tool-block">
+            <div class="tool-label">1 · Partido</div>
+            <label class="tlab">Selecciona el partido</label>
+            <select id="fixtureSel"></select>
+            <input type="hidden" id="iHome">
+            <input type="hidden" id="iAway">
+            <label class="tool-toggle"><input type="checkbox" id="iNeutral" checked> Sede neutral</label>
+          </div>
+          <div class="tool-block">
+            <div class="tool-label">2 · Cuotas de tu casa <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>
+            <div class="odds-mode" id="iOddsMode">
+              <div class="om active" data-mode="american">Americano (-110)</div>
+              <div class="om" data-mode="decimal">Decimal (1.91)</div>
+            </div>
+            <label class="tlab">Resultado 1X2</label>
+            <div class="odds3">
+              <div><label class="tlab2">Local (1)</label><input id="i_h" placeholder="-150"></div>
+              <div><label class="tlab2">Empate (X)</label><input id="i_d" placeholder="+260"></div>
+              <div><label class="tlab2">Visitante (2)</label><input id="i_a" placeholder="+420"></div>
+            </div>
+            <label class="tlab" style="margin-top:10px">Goles y BTTS</label>
+            <div class="odds3">
+              <div><label class="tlab2">Over 2.5</label><input id="i_ov" placeholder="-105"></div>
+              <div><label class="tlab2">Under 2.5</label><input id="i_un" placeholder="-115"></div>
+              <div><label class="tlab2">BTTS Sí</label><input id="i_bt" placeholder="+100"></div>
+            </div>
+            <button class="tool-run" id="iRun">Calcular picks</button>
+          </div>
+        </div>
+        <div class="result-area" id="iResult">
+          <div class="result-placeholder">Selecciona el partido y presiona <strong>Calcular picks</strong> para ver el análisis completo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOL: torneo (todos los partidos) -->
+    <div class="tool-section" id="toolTorneo">
+      <div class="tool-header">
+        <h2>Todos los partidos del Mundial</h2>
+        <p>Elige cualquier fixture del torneo o arma el cruce que quieras con cualquier selección.</p>
+      </div>
+      <div class="tool-grid">
+        <div class="tool-inputs">
+          <div class="tool-block">
+            <div class="tool-label">1 · Partido</div>
+            <label class="tlab">Fixture del calendario</label>
+            <select id="tFixture"></select>
+            <div class="tool-row" style="margin-top:12px">
+              <div><label class="tlab">Local</label><select id="tHome"></select></div>
+              <div><label class="tlab">Visitante</label><select id="tAway"></select></div>
+            </div>
+            <label class="tool-toggle"><input type="checkbox" id="tNeutral" checked> Sede neutral</label>
+          </div>
+          <div class="tool-block">
+            <div class="tool-label">2 · Cuotas de tu casa <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>
+            <div class="odds-mode" id="tOddsMode">
+              <div class="om active" data-mode="american">Americano (-110)</div>
+              <div class="om" data-mode="decimal">Decimal (1.91)</div>
+            </div>
+            <label class="tlab">Resultado 1X2</label>
+            <div class="odds3">
+              <div><label class="tlab2">Local (1)</label><input id="t_h" placeholder="-150"></div>
+              <div><label class="tlab2">Empate (X)</label><input id="t_d" placeholder="+260"></div>
+              <div><label class="tlab2">Visitante (2)</label><input id="t_a" placeholder="+420"></div>
+            </div>
+            <label class="tlab" style="margin-top:10px">Goles y BTTS</label>
+            <div class="odds3">
+              <div><label class="tlab2">Over 2.5</label><input id="t_ov" placeholder="-105"></div>
+              <div><label class="tlab2">Under 2.5</label><input id="t_un" placeholder="-115"></div>
+              <div><label class="tlab2">BTTS Sí</label><input id="t_bt" placeholder="+100"></div>
+            </div>
+            <button class="tool-run" id="tRun">Calcular picks</button>
+          </div>
+        </div>
+        <div class="result-area" id="tResult">
+          <div class="result-placeholder">Selecciona un partido del calendario o elige las selecciones y presiona <strong>Calcular picks</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:60px"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+
+let sb = null;
+function initSb(){
+  if(sb) return true;
+  if(window.supabase && window.supabase.createClient){
+    try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return true; }catch(e){ return false; }
+  }
+  return false;
+}
+
+let CONFIG = null;
+async function loadConfig(){
+  if(CONFIG) return CONFIG;
+  const res = await fetch('/api/config');
+  if(!res.ok) throw new Error('config');
+  CONFIG = await res.json();
+  return CONFIG;
+}
+
+function teamLabel(name){
+  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
+  return t ? (t[0] + ' ' + t[1]) : name;
+}
+function teamShort(name){
+  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
+  return t ? t[1] : name;
+}
+
+/* ---- model math helpers ---- */
+function implied(dec){ return dec ? 1/dec : null; }
+function devig(probs){ const s = probs.reduce((x,y)=>x+(y||0),0); return s>0?probs.map(p=>p?p/s:null):probs; }
+function pct(p){ return (p*100).toFixed(1)+'%'; }
+let oddsModeI = 'american', oddsModeT = 'american';
+
+function parseOdds(raw, mode){
+  if(!raw) return null; raw=(''+raw).trim().replace(',','.'); if(!raw) return null;
+  let dec;
+  if(mode==='american'){ let n=parseFloat(raw); if(isNaN(n))return null; dec=n>0?1+n/100:1+100/Math.abs(n); }
+  else{ dec=parseFloat(raw); if(isNaN(dec)||dec<=1) return null; }
+  return dec;
+}
+function mkPick(edge){
+  if(edge===null) return '<span class="mk skip">—</span>';
+  if(edge>=0.04) return '<span class="mk bet">bet</span>';
+  if(edge<=-0.06) return '<span class="mk fade">fade</span>';
+  return '<span class="mk skip">skip</span>';
+}
+function rowHTML(name, mp, dec){
+  const imp = dec ? implied(dec) : null;
+  let edge = imp!==null ? mp-imp : null;
+  let edgeTxt = edge!==null ? (edge>=0?'+':'')+(edge*100).toFixed(1)+'%' : '—';
+  let edgeCls = edge!==null ? (edge>=0.04?'edge-pos':'edge-neg') : 'edge-neg';
+  return `<tr><td>${name}</td><td class="num">${pct(mp)}</td><td class="${edgeCls}">${edgeTxt}</td><td>${mkPick(edge)}</td></tr>`;
+}
+
+async function fetchMarkets(home, away, neutral){
+  const headers = { 'Content-Type': 'application/json' };
+  if(sb){
+    try{
+      const {data} = await sb.auth.getSession();
+      const tok = data && data.session && data.session.access_token;
+      if(tok) headers['Authorization'] = 'Bearer ' + tok;
+    }catch(e){}
+  }
+  const res = await fetch('/api/picks', { method:'POST', headers, body: JSON.stringify({home,away,neutral}) });
+  let data = {};
+  try{ data = await res.json(); }catch(e){}
+  if(!res.ok) throw new Error(data.error || 'No se pudo calcular.');
+  return data.markets;
+}
+
+function buildAnalysis(m, home, away, neutral, mode){
+  const dH=parseOdds(document.getElementById(mode==='i'?'i_h':'t_h').value, mode==='i'?oddsModeI:oddsModeT);
+  const dD=parseOdds(document.getElementById(mode==='i'?'i_d':'t_d').value, mode==='i'?oddsModeI:oddsModeT);
+  const dA=parseOdds(document.getElementById(mode==='i'?'i_a':'t_a').value, mode==='i'?oddsModeI:oddsModeT);
+  let impH=implied(dH),impD=implied(dD),impA=implied(dA);
+  if(impH!==null&&impD!==null&&impA!==null){ [impH,impD,impA]=devig([impH,impD,impA]); }
+  const favProb=Math.max(m.home_win,m.away_win);
+  let conf='alta',confTxt='Confianza alta',cmsg='Partido parejo: el modelo es comparativamente fiable aquí.';
+  if(favProb>0.78){ conf='baja';confTxt='Confianza baja';cmsg='Partido disparejo: el modelo subestima la brecha. Confía en el mercado, no en el edge del underdog.'; }
+  else if(favProb>0.65){ conf='media';confTxt='Confianza media';cmsg='Favorito claro: trata cualquier edge sobre el underdog con escepticismo.'; }
+  const lowConf=(conf==='baja');
+  function rowV(name,mp,imp2){
+    if(imp2!==null){ let html=rowHTML(name,mp,1/imp2); if(lowConf) html=html.replace('mk bet">bet','mk skip">ver línea'); return html; }
+    return rowHTML(name,mp,null);
+  }
+  const odv=parseOdds(document.getElementById(mode==='i'?'i_ov':'t_ov').value, mode==='i'?oddsModeI:oddsModeT);
+  const oun=parseOdds(document.getElementById(mode==='i'?'i_un':'t_un').value, mode==='i'?oddsModeI:oddsModeT);
+  const obt=parseOdds(document.getElementById(mode==='i'?'i_bt':'t_bt').value, mode==='i'?oddsModeI:oddsModeT);
+  let rows='';
+  rows+=rowV(`Gana ${teamLabel(home)} (1)`, m.home_win, impH);
+  rows+=rowV('Empate (X)', m.draw, impD);
+  rows+=rowV(`Gana ${teamLabel(away)} (2)`, m.away_win, impA);
+  rows+=rowHTML('Over 2.5 goles', m.over25, odv);
+  rows+=rowHTML('Under 2.5 goles', m.under25, oun);
+  rows+=rowHTML('Ambos anotan (Sí)', m.btts_yes, obt);
+  const totXg=m.xg_home+m.xg_away;
+  const corners=(8.6+totXg*0.95), cornH=corners*(m.xg_home/totXg), cornA=corners-cornH;
+  const tight=1-Math.abs(m.home_win-m.away_win), cards=3.6+tight*1.6;
+  const sotH=m.xg_home*3.1, sotA=m.xg_away*3.1;
+  const nh=teamShort(home), na=teamShort(away);
+  const sec=[
+    ['Córners totales',corners.toFixed(1),'~9.5',corners>9.5?'Over':'Under'],
+    [`Córners ${nh}/${na}`,`${cornH.toFixed(1)} / ${cornA.toFixed(1)}`,'—',cornH>cornA?nh:na],
+    ['Tarjetas amarillas',cards.toFixed(1),'~4.5',cards>4.5?'Over':'Under'],
+    ['Tiros a puerta '+nh,sotH.toFixed(1),'—','—'],
+    ['Tiros a puerta '+na,sotA.toFixed(1),'—','—'],
+  ];
+  const secRows=sec.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="mut">${r[2]}</td><td class="mut">${r[3]}</td></tr>`).join('');
+  return `<div class="analysis">
+    <div class="an-head">
+      <div class="an-match">${teamLabel(home)} vs ${teamLabel(away)}</div>
+      <span class="an-conf ${conf}">${confTxt}</span>
+    </div>
+    <div class="an-xg">xG modelo ${m.xg_home.toFixed(2)} – ${m.xg_away.toFixed(2)} · ${neutral?'sede neutral':'con ventaja local'}</div>
+    <div class="an-note" style="margin:0 0 14px">${cmsg}</div>
+    <table class="antab"><thead><tr><th>Mercado</th><th>Modelo %</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="an-subhead">Mercados secundarios · heurístico</div>
+    <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
+    <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%. Los secundarios son orientativos.</div>
+  </div>`;
+}
+
+/* ---- wiring para plan individual ---- */
+function wireIndividual(){
+  const cfg = CONFIG;
+  const fixtures = (cfg && cfg.today_fixtures) || [];
+  const sel = document.getElementById('fixtureSel');
+  sel.innerHTML = fixtures.map((f,i) => `<option value="${i}">${teamLabel(f.home)} vs ${teamLabel(f.away)}</option>`).join('');
+  function updateFixed(){
+    const f = fixtures[sel.value];
+    if(!f) return;
+    document.getElementById('iHome').value = f.home;
+    document.getElementById('iAway').value = f.away;
+    const isHost = (cfg.hosts||[]).includes(f.home);
+    document.getElementById('iNeutral').checked = !isHost;
+  }
+  sel.addEventListener('change', () => { updateFixed(); });
+  updateFixed();
+  document.querySelectorAll('#iOddsMode .om').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#iOddsMode .om').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); oddsModeI = b.dataset.mode;
+  });
+  document.getElementById('todayDateLabel').textContent = `${cfg.today_date} · Elige el partido y calcula los picks.`;
+  document.getElementById('iRun').onclick = async () => {
+    const home = document.getElementById('iHome').value;
+    const away = document.getElementById('iAway').value;
+    const neutral = document.getElementById('iNeutral').checked;
+    const out = document.getElementById('iResult');
+    const btn = document.getElementById('iRun');
+    btn.disabled=true; btn.textContent='Calculando…';
+    out.innerHTML='<div class="tool-loading"><span class="spinner"></span> Corriendo el modelo…</div>';
+    try{
+      const m = await fetchMarkets(home, away, neutral);
+      out.innerHTML = buildAnalysis(m, home, away, neutral, 'i');
+    }catch(e){
+      out.innerHTML=`<div class="result-placeholder">${e.message}</div>`;
+    }
+    btn.disabled=false; btn.textContent='Calcular picks';
+  };
+  document.getElementById('iRun').click();
+}
+
+/* ---- wiring para plan torneo ---- */
+function wireTorneo(){
+  const cfg = CONFIG;
+  const fixtures = (cfg && cfg.fixtures) || [];
+  const teams = (cfg && cfg.wc_teams) || [];
+  const fxSel = document.getElementById('tFixture');
+  fxSel.innerHTML = ['<option value="">— Elegir fixture —</option>']
+    .concat(fixtures.map((x,i)=>`<option value="${i}">${(x.date||'').slice(5)} · ${teamLabel(x.home_team)} vs ${teamLabel(x.away_team)}</option>`))
+    .join('');
+  const teamOpts = teams.map(t=>`<option value="${t}">${teamLabel(t)}</option>`).join('');
+  document.getElementById('tHome').innerHTML = teamOpts;
+  document.getElementById('tAway').innerHTML = teamOpts;
+  fxSel.addEventListener('change', () => {
+    const i = fxSel.value;
+    if(i==='') return;
+    const x = fixtures[i];
+    document.getElementById('tHome').value = x.home_team;
+    document.getElementById('tAway').value = x.away_team;
+    const isHost = (cfg.hosts||[]).includes(x.home_team);
+    document.getElementById('tNeutral').checked = !isHost;
+    document.getElementById('tRun').click();
+  });
+  document.querySelectorAll('#tOddsMode .om').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#tOddsMode .om').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); oddsModeT = b.dataset.mode;
+  });
+  document.getElementById('tRun').onclick = async () => {
+    const home = document.getElementById('tHome').value;
+    const away = document.getElementById('tAway').value;
+    const neutral = document.getElementById('tNeutral').checked;
+    const out = document.getElementById('tResult');
+    const btn = document.getElementById('tRun');
+    if(home === away){ out.innerHTML='<div class="result-placeholder">Elige dos selecciones distintas.</div>'; return; }
+    btn.disabled=true; btn.textContent='Calculando…';
+    out.innerHTML='<div class="tool-loading"><span class="spinner"></span> Corriendo el modelo…</div>';
+    try{
+      const m = await fetchMarkets(home, away, neutral);
+      out.innerHTML = buildAnalysis(m, home, away, neutral, 't');
+    }catch(e){
+      out.innerHTML=`<div class="result-placeholder">${e.message}</div>`;
+    }
+    btn.disabled=false; btn.textContent='Calcular picks';
+  };
+  /* auto-seleccionar primer fixture de hoy */
+  const todayIso = cfg.today_iso;
+  const todayIdx = fixtures.findIndex(f => f.date === todayIso);
+  if(todayIdx >= 0){ fxSel.value = String(todayIdx); fxSel.dispatchEvent(new Event('change')); }
+}
+
+/* ---- estados ---- */
+function showState(id){
+  ['stateLoading','stateNoAuth','stateNoPlan','stateVerifying'].forEach(s => {
+    document.getElementById(s).classList.toggle('active', s===id);
+  });
+  document.getElementById('mainContent').style.display = 'none';
+}
+function showMain(plan){
+  ['stateLoading','stateNoAuth','stateNoPlan','stateVerifying'].forEach(s => {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('toolIndividual').classList.toggle('active', plan==='individual');
+  document.getElementById('toolTorneo').classList.toggle('active', plan==='torneo');
+  document.getElementById('navPlanBadge').textContent = plan==='torneo' ? 'Torneo completo' : 'Partidos del día';
+  document.getElementById('navPlanBadge').style.display = 'inline-flex';
+}
+
+/* ---- arranque ---- */
+async function boot(){
+  if(!initSb()){ setTimeout(boot, 200); return; }
+  showState('stateLoading');
+  const {data} = await sb.auth.getSession();
+  const session = data && data.session;
+  if(!session){ showState('stateNoAuth'); return; }
+
+  const params = new URLSearchParams(window.location.search);
+  const pago = params.get('pago');
+
+  /* cargar config */
+  try{ await loadConfig(); }catch(e){ console.error('config error',e); }
+
+  /* verificar acceso (con reintentos si venimos de pago) */
+  let ent = null;
+  if(pago === 'ok'){
+    showState('stateVerifying');
+    for(let i=0; i<6; i++){
+      const {data:d} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+      if(d && d.length && d[0].active){ ent = d[0]; break; }
+      await new Promise(r=>setTimeout(r,1500));
+    }
+  } else {
+    const {data:d} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+    if(d && d.length && d[0].active) ent = d[0];
+  }
+
+  if(!ent){
+    if(pago==='pendiente'){
+      showMain('individual'); /* mostrar página pero con banner pendiente */
+      document.getElementById('pendingBanner').style.display='flex';
+      document.getElementById('toolIndividual').classList.add('active');
+      /* sin acceso real al modelo; dejar que /api/picks retorne 401 */
+    } else {
+      showState('stateNoPlan');
+    }
+    return;
+  }
+
+  /* tiene acceso */
+  showMain(ent.plan);
+  if(pago==='ok') document.getElementById('successBanner').style.display='flex';
+  if(ent.plan==='individual' && CONFIG) wireIndividual();
+  if(ent.plan==='torneo' && CONFIG) wireTorneo();
+
+  /* limpiar pago de la URL sin recargar */
+  if(pago) history.replaceState(null,'','/mis-modelos.html');
+}
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  if(sb) await sb.auth.signOut();
+  window.location.href = '/';
+});
+
+window.addEventListener('pageshow', (e) => { if(e.persisted) window.location.reload(); });
+boot();
+</script>
+</body>
+</html>

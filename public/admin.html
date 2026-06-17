@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY-PICKS — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #08172e;
+    --ink-2: #0d2444;
+    --blue: #1d4ed8;
+    --blue-bright: #2f7bff;
+    --white: #ffffff;
+    --paper: #f5f8fd;
+    --line: #dce6f5;
+    --muted: #5e6f86;
+    --win: #15a34a;
+    --loss: #d83a3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--ink); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; color: var(--white); display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo span { color: var(--blue-bright); }
+  .logo svg { width: 24px; height: 24px; }
+  .admin-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 10px; border-radius: 20px; background: rgba(47,123,255,0.25); color: #90b4ff; border: 1px solid rgba(47,123,255,0.35); }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .user-email { font-size: 0.82rem; color: #9db4d6; }
+  .btn-sm { font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 7px 14px; border-radius: 7px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: #9db4d6; cursor: pointer; transition: border-color .15s, color .15s; }
+  .btn-sm:hover { border-color: rgba(255,255,255,0.35); color: var(--white); }
+
+  /* PAGE STATES */
+  .page-state { display: none; padding: 80px 24px; text-align: center; }
+  .page-state.active { display: block; }
+  .state-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: 10px; }
+  .state-body { color: var(--muted); margin-bottom: 24px; }
+  .auth-card { max-width: 380px; margin: 0 auto; background: var(--white); border-radius: 18px; padding: 36px; border: 1px solid var(--line); box-shadow: 0 20px 60px -24px rgba(8,23,46,0.15); }
+  .auth-card h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 6px; }
+  .auth-card .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 22px; }
+  .form-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 5px; }
+  .form-input { width: 100%; background: var(--paper); border: 1.5px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.92rem; padding: 11px 13px; border-radius: 9px; outline: none; margin-bottom: 14px; }
+  .form-input:focus { border-color: var(--blue-bright); }
+  .btn-login { width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.95rem; padding: 13px; border-radius: 10px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); transition: background .15s; }
+  .btn-login:hover { background: var(--blue); }
+  .err-msg { margin-top: 12px; padding: 11px 13px; border-radius: 9px; font-size: 0.85rem; display: none; background: rgba(216,58,58,0.08); color: var(--loss); border: 1px solid rgba(216,58,58,0.25); }
+  .err-msg.show { display: block; }
+
+  /* MAIN CONTENT */
+  #mainContent { display: none; padding: 36px 0 80px; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+  .stat-card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .stat-card .num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2rem; letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; }
+  .stat-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+  .stat-card .num.blue { color: var(--blue-bright); }
+  .stat-card .num.green { color: var(--win); }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; flex: 1; }
+  .filter-tabs { display: flex; gap: 6px; }
+  .filter-tab { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); color: var(--muted); cursor: pointer; background: var(--white); transition: border-color .12s, color .12s, background .12s; }
+  .filter-tab.active { border-color: var(--blue-bright); color: var(--blue); background: rgba(47,123,255,0.06); }
+  .search-input { font-family: 'Inter', sans-serif; font-size: 0.88rem; padding: 8px 13px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: var(--white); color: var(--ink); width: 220px; }
+  .search-input:focus { border-color: var(--blue-bright); }
+  .refresh-btn { font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--white); color: var(--ink); cursor: pointer; transition: border-color .12s; }
+  .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* TABLE */
+  .table-wrap { background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table thead th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--paper); font-weight: 500; white-space: nowrap; }
+  .data-table thead th:first-child { border-radius: 16px 0 0 0; }
+  .data-table thead th:last-child { border-radius: 0 16px 0 0; }
+  .data-table tbody td { padding: 14px 20px; font-size: 0.88rem; border-bottom: 1px solid var(--paper); vertical-align: middle; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background .1s; }
+  .data-table tbody tr:hover { background: var(--paper); }
+  .email-cell { font-weight: 500; }
+  .plan-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+  .plan-badge.torneo { background: rgba(21,163,74,0.12); color: var(--win); }
+  .plan-badge.individual { background: rgba(47,123,255,0.1); color: var(--blue); }
+  .plan-badge.none { background: rgba(94,111,134,0.1); color: var(--muted); }
+  .date-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+  .active-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .active-dot.yes { background: var(--win); }
+  .active-dot.no { background: var(--line); }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 0.9rem; }
+
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .7s linear infinite; margin: 48px auto; display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 760px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .search-input { width: 100%; }
+    .toolbar { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .data-table thead th:nth-child(3), .data-table tbody td:nth-child(3) { display: none; }
+    .data-table thead th:nth-child(5), .data-table tbody td:nth-child(5) { display: none; }
+  }
+  :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="#08172e"/>
+        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="38" cy="13" r="4" fill="#ffffff"/>
+      </svg>
+      RICKY<span>·</span>PICKS
+    </a>
+    <div class="nav-right">
+      <span class="admin-badge">Admin</span>
+      <span class="user-email" id="navEmail"></span>
+      <button class="btn-sm" id="signOutBtn">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ESTADO: login -->
+<div class="page-state active" id="stateLogin">
+  <div class="auth-card">
+    <h2>Panel de administrador</h2>
+    <p class="sub">Solo accesible para la cuenta de administrador.</p>
+    <label class="form-label" for="loginEmail">Correo</label>
+    <input class="form-input" type="email" id="loginEmail" placeholder="tu@correo.com" autocomplete="email">
+    <label class="form-label" for="loginPass">Contraseña</label>
+    <input class="form-input" type="password" id="loginPass" placeholder="••••••••">
+    <button class="btn-login" id="loginBtn">Entrar</button>
+    <div class="err-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ESTADO: sin permisos -->
+<div class="page-state" id="stateUnauth">
+  <div class="state-title">Acceso no autorizado</div>
+  <div class="state-body">Esta página solo es accesible para el administrador del sitio.</div>
+</div>
+
+<!-- ESTADO: cargando -->
+<div class="page-state" id="stateLoading">
+  <div class="spinner"></div>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div id="mainContent">
+  <div class="wrap">
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lbl">Usuarios registrados</div></div>
+      <div class="stat-card"><div class="num blue" id="statWithPlan">—</div><div class="lbl">Con plan activo</div></div>
+      <div class="stat-card"><div class="num green" id="statTorneo">—</div><div class="lbl">Plan torneo</div></div>
+      <div class="stat-card"><div class="num" id="statIndividual">—</div><div class="lbl">Plan partidos del día</div></div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="toolbar">
+      <h2>Clientes</h2>
+      <input class="search-input" type="text" id="searchInput" placeholder="Buscar por correo…">
+      <div class="filter-tabs">
+        <div class="filter-tab active" data-filter="all">Todos</div>
+        <div class="filter-tab" data-filter="torneo">Torneo</div>
+        <div class="filter-tab" data-filter="individual">Partidos del día</div>
+        <div class="filter-tab" data-filter="none">Sin plan</div>
+      </div>
+      <button class="refresh-btn" id="refreshBtn">↻ Actualizar</button>
+    </div>
+
+    <div class="table-wrap">
+      <div id="tableLoader" class="spinner" style="display:none"></div>
+      <table class="data-table" id="dataTable">
+        <thead>
+          <tr>
+            <th>Correo electrónico</th>
+            <th>Plan</th>
+            <th>Estado</th>
+            <th>Fecha de compra</th>
+            <th>Registro</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="5" class="empty-state">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;font-size:0.8rem;color:var(--muted)" id="tableFooter"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+const ADMIN_EMAIL  = 'rickybh17@gmail.com';
+
+let sb = null;
+function initSb(){
+  if(sb) return true;
+  if(window.supabase && window.supabase.createClient){
+    try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return true; }catch(e){ return false; }
+  }
+  return false;
+}
+
+let allUsers = [];
+let activeFilter = 'all';
+
+function setState(id){
+  ['stateLogin','stateUnauth','stateLoading'].forEach(s => {
+    const el = document.getElementById(s);
+    el.classList.toggle('active', s===id);
+  });
+  document.getElementById('mainContent').style.display = id ? 'none' : 'block';
+}
+function showMain(){ ['stateLogin','stateUnauth','stateLoading'].forEach(s=>document.getElementById(s).classList.remove('active')); document.getElementById('mainContent').style.display='block'; }
+
+/* ---- formato de fecha ---- */
+function fmtDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+/* ---- renderizar tabla ---- */
+function renderTable(users){
+  const body = document.getElementById('tableBody');
+  if(!users.length){
+    body.innerHTML = '<tr><td colspan="5" class="empty-state">No se encontraron clientes con ese filtro.</td></tr>';
+    document.getElementById('tableFooter').textContent = '';
+    return;
+  }
+  body.innerHTML = users.map(u => {
+    const planClass = u.plan || 'none';
+    const planLabel = u.plan === 'torneo' ? 'Torneo' : u.plan === 'individual' ? 'Partidos del día' : 'Sin plan';
+    const activeColor = u.active ? 'yes' : 'no';
+    const activeLabel = u.active ? 'Activo' : u.plan ? 'Inactivo' : '—';
+    return `<tr>
+      <td class="email-cell">${u.email || '—'}</td>
+      <td><span class="plan-badge ${planClass}">${planLabel}</span></td>
+      <td><span class="active-dot ${activeColor}"></span>${activeLabel}</td>
+      <td class="date-cell">${fmtDate(u.plan_updated)}</td>
+      <td class="date-cell">${fmtDate(u.created_at)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableFooter').textContent = `${users.length} cliente${users.length!==1?'s':''} mostrado${users.length!==1?'s':''} de ${allUsers.length} total.`;
+}
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = allUsers;
+  if(activeFilter !== 'all'){
+    if(activeFilter === 'none') list = list.filter(u => !u.plan);
+    else list = list.filter(u => u.plan === activeFilter);
+  }
+  if(q) list = list.filter(u => u.email && u.email.toLowerCase().includes(q));
+  renderTable(list);
+}
+
+function updateStats(users){
+  document.getElementById('statTotal').textContent = users.length;
+  document.getElementById('statWithPlan').textContent = users.filter(u=>u.active&&u.plan).length;
+  document.getElementById('statTorneo').textContent = users.filter(u=>u.plan==='torneo'&&u.active).length;
+  document.getElementById('statIndividual').textContent = users.filter(u=>u.plan==='individual'&&u.active).length;
+}
+
+async function loadUsers(tok){
+  document.getElementById('tableLoader').style.display='block';
+  try{
+    const res = await fetch('/api/admin-users', {
+      headers: { 'Authorization': 'Bearer ' + tok }
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error al cargar.');
+    allUsers = data.users || [];
+    allUsers.sort((a,b) => (b.created_at||'').localeCompare(a.created_at||''));
+    updateStats(allUsers);
+    applyFilters();
+  }catch(e){
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="empty-state">${e.message}</td></tr>`;
+  }
+  document.getElementById('tableLoader').style.display='none';
+}
+
+/* ---- login ---- */
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  if(!sb && !initSb()) return;
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email || !pass){ showErr('Escribe correo y contraseña.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  const err = document.getElementById('loginErr');
+  err.className = 'err-msg'; err.textContent = '';
+  try{
+    const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
+    if(error) throw error;
+    await boot();
+  }catch(e){
+    err.textContent = e.message || 'No se pudo iniciar sesión.'; err.className = 'err-msg show';
+  }
+  btn.disabled=false; btn.textContent='Entrar';
+});
+function showErr(msg){ const e=document.getElementById('loginErr'); e.textContent=msg; e.className='err-msg show'; }
+document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('loginBtn').click(); });
+
+/* ---- filtros y búsqueda ---- */
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    activeFilter = tab.dataset.filter;
+    applyFilters();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+/* ---- refresh ---- */
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+  if(!sb) return;
+  const {data} = await sb.auth.getSession();
+  if(data && data.session) await loadUsers(data.session.access_token);
+});
+
+/* ---- logout ---- */
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  if(sb) await sb.auth.signOut();
+  window.location.reload();
+});
+
+/* ---- boot ---- */
+async function boot(){
+  if(!initSb()){ setTimeout(boot,200); return; }
+  setState('stateLoading');
+  const {data} = await sb.auth.getSession();
+  const session = data && data.session;
+  if(!session){ setState('stateLogin'); return; }
+  if(session.user.email !== ADMIN_EMAIL){ setState('stateUnauth'); return; }
+  document.getElementById('navEmail').textContent = session.user.email;
+  showMain();
+  await loadUsers(session.access_token);
+}
+boot();
+</script>
+</body>
+</html>

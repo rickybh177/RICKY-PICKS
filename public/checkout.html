@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY-PICKS — Completa tu compra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #08172e;
+    --ink-2: #0d2444;
+    --blue: #1d4ed8;
+    --blue-bright: #2f7bff;
+    --white: #ffffff;
+    --paper: #f5f8fd;
+    --line: #dce6f5;
+    --muted: #5e6f86;
+    --win: #15a34a;
+    --loss: #d83a3a;
+    --shadow-cta: 0 8px 22px -8px rgba(47,123,255,0.6);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: rgba(245,248,253,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; color: var(--ink); display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo span { color: var(--blue); }
+  .logo svg { width: 26px; height: 26px; display: block; }
+  .back-link { font-size: 0.88rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .15s; }
+  .back-link:hover { color: var(--ink); }
+
+  /* MAIN LAYOUT */
+  .checkout-main { padding: 56px 24px 80px; }
+  .checkout-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+  /* PLAN SUMMARY */
+  .plan-card { background: var(--ink); color: var(--white); border-radius: 20px; padding: 36px; position: relative; overflow: hidden; }
+  .plan-card::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 100% 32px; pointer-events: none; }
+  .plan-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9db4d6; margin-bottom: 16px; position: relative; }
+  .plan-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.6rem; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 6px; position: relative; }
+  .plan-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2.4rem; letter-spacing: -0.02em; margin: 18px 0 4px; position: relative; }
+  .plan-price .cur { font-size: 1rem; font-weight: 400; color: #9db4d6; margin-left: 4px; }
+  .plan-period { font-size: 0.82rem; color: #9db4d6; margin-bottom: 28px; position: relative; }
+  .plan-features { list-style: none; position: relative; }
+  .plan-features li { font-size: 0.88rem; color: #c8d9f0; padding: 9px 0 9px 22px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features li::before { content: '✓'; position: absolute; left: 0; color: var(--blue-bright); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .trust-note { margin-top: 24px; padding: 14px 16px; background: rgba(255,255,255,0.06); border-radius: 10px; font-size: 0.78rem; color: #9db4d6; line-height: 1.5; position: relative; }
+  .trust-note strong { color: var(--white); }
+
+  /* AUTH / PAYMENT CARD */
+  .auth-card { background: var(--white); border-radius: 20px; padding: 36px; box-shadow: 0 20px 60px -24px rgba(8,23,46,0.2); border: 1px solid var(--line); }
+  .auth-card h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .auth-card .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+  .form-input { width: 100%; background: var(--paper); border: 1.5px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.95rem; padding: 12px 14px; border-radius: 10px; outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: var(--blue-bright); }
+  .btn-pay { width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem; padding: 15px 20px; border-radius: 11px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); box-shadow: var(--shadow-cta); transition: transform .15s ease, background .15s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn-pay:hover:not(:disabled) { transform: translateY(-2px); background: var(--blue); }
+  .btn-pay:disabled { opacity: 0.65; cursor: default; transform: none; }
+  .auth-divider { text-align: center; font-size: 0.82rem; color: var(--muted); margin: 16px 0; position: relative; }
+  .auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--line); }
+  .auth-divider::before { left: 0; }
+  .auth-divider::after { right: 0; }
+  .auth-toggle { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--blue); cursor: pointer; }
+  .auth-toggle:hover { text-decoration: underline; }
+  .msg { margin-top: 14px; padding: 12px 14px; border-radius: 9px; font-size: 0.88rem; line-height: 1.5; display: none; }
+  .msg.ok { display: block; background: rgba(21,163,74,0.1); color: var(--win); border: 1px solid rgba(21,163,74,0.3); }
+  .msg.bad { display: block; background: rgba(216,58,58,0.08); color: var(--loss); border: 1px solid rgba(216,58,58,0.3); }
+  .msg.info { display: block; background: rgba(47,123,255,0.08); color: var(--blue); border: 1px solid rgba(47,123,255,0.25); }
+
+  /* USER INFO (when already logged in) */
+  .user-bar { display: flex; align-items: center; justify-content: space-between; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; }
+  .user-bar .email { font-size: 0.88rem; color: var(--ink); font-weight: 500; }
+  .user-bar .switch { font-size: 0.82rem; color: var(--blue); cursor: pointer; }
+  .user-bar .switch:hover { text-decoration: underline; }
+
+  /* ERROR BANNER */
+  .error-banner { background: rgba(216,58,58,0.1); border: 1px solid rgba(216,58,58,0.3); color: var(--loss); border-radius: 10px; padding: 14px 18px; font-size: 0.9rem; margin-bottom: 24px; display: none; }
+  .error-banner.show { display: block; }
+
+  .spinner-inline { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 680px) {
+    .checkout-grid { grid-template-columns: 1fr; }
+    .plan-card { order: 2; }
+    .auth-card { order: 1; }
+    .checkout-main { padding: 32px 16px 60px; }
+    .plan-card, .auth-card { padding: 26px 22px; }
+  }
+  :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="#08172e"/>
+        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="38" cy="13" r="4" fill="#ffffff"/>
+      </svg>
+      RICKY<span>·</span>PICKS
+    </a>
+    <a href="/" class="back-link">← Volver al inicio</a>
+  </div>
+</nav>
+
+<main class="checkout-main">
+  <div id="errorBanner" class="error-banner wrap" style="max-width:900px"><!-- filled by JS --></div>
+  <div class="checkout-grid">
+
+    <!-- PLAN SUMMARY -->
+    <div class="plan-card" id="planCard">
+      <div class="plan-eyebrow">Tu selección</div>
+      <div class="plan-name" id="planName">Cargando…</div>
+      <div class="plan-price" id="planPrice"><span class="cur">MXN</span></div>
+      <div class="plan-period" id="planPeriod"></div>
+      <ul class="plan-features" id="planFeatures"></ul>
+      <div class="trust-note"><strong>Pago seguro.</strong> Procesado por Mercado Pago. Tus datos bancarios nunca pasan por nuestros servidores.</div>
+    </div>
+
+    <!-- AUTH + PAYMENT -->
+    <div class="auth-card">
+      <!-- Paso 1: autenticación (se oculta cuando hay sesión) -->
+      <div id="authStep">
+        <h2 id="stepTitle">Crea tu cuenta</h2>
+        <p class="sub">Tu compra queda vinculada a tu cuenta para que puedas acceder desde cualquier dispositivo.</p>
+        <div id="userBar" class="user-bar" style="display:none">
+          <span class="email" id="userEmail"></span>
+          <span class="switch" id="switchUser">Cambiar cuenta</span>
+        </div>
+        <div id="authForm">
+          <div class="form-group">
+            <label class="form-label" for="email">Correo electrónico</label>
+            <input class="form-input" type="email" id="email" placeholder="tu@correo.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pass">Contraseña</label>
+            <input class="form-input" type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button class="btn-pay" id="authSubmit" style="background:var(--ink);box-shadow:none">
+            <span id="authBtnText">Crear cuenta</span>
+          </button>
+          <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
+          <div class="msg" id="authMsg"></div>
+        </div>
+      </div>
+
+      <!-- Paso 2: pago (aparece cuando hay sesión y no hay entitlement) -->
+      <div id="payStep" style="display:none">
+        <h2>Confirmar compra</h2>
+        <p class="sub">Sesión iniciada como <strong id="payEmail"></strong></p>
+        <div style="margin:24px 0 20px;padding:18px;background:var(--paper);border-radius:12px;border:1px solid var(--line)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Resumen</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span id="summaryName" style="font-weight:600;font-family:'Space Grotesk',sans-serif"></span>
+            <span id="summaryPrice" style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem"></span>
+          </div>
+        </div>
+        <button class="btn-pay" id="payBtn">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#009EE3"/><path d="M22.5 10H9.5C8.67 10 8 10.67 8 11.5v9c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5z" fill="#fff"/><rect x="8" y="14" width="16" height="2.5" fill="#009EE3"/></svg>
+          <span id="payBtnText">Pagar con Mercado Pago</span>
+        </button>
+        <div class="msg" id="payMsg"></div>
+        <div style="margin-top:14px;font-size:0.8rem;color:var(--muted);text-align:center">¿No eres tú? <span class="auth-toggle" id="signOutLink" style="display:inline">Cambiar cuenta</span></div>
+      </div>
+
+      <!-- Ya tiene acceso -->
+      <div id="entitledStep" style="display:none">
+        <h2>Ya tienes acceso</h2>
+        <p class="sub">Tu cuenta ya tiene el plan activo. Entra a tus modelos para ver los picks.</p>
+        <a href="/mis-modelos.html" class="btn-pay" style="margin-top:20px;text-decoration:none">Ir a Mis modelos →</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+
+const PLANS = {
+  individual: {
+    name: 'Partidos del día',
+    price: '$99',
+    currency: 'MXN',
+    period: 'Acceso a todos los partidos de hoy',
+    features: [
+      'Los 4 partidos del día',
+      'Herramienta completa con tus momios',
+      'Probabilidades, xG, córners, tarjetas y tiros',
+      'Detección de valor (edge) en tiempo real',
+      'Acceso inmediato con tu cuenta',
+    ],
+  },
+  torneo: {
+    name: 'Torneo completo',
+    price: '$499',
+    currency: 'MXN',
+    period: 'Acceso a todos los partidos del Mundial 2026',
+    features: [
+      'Todos los partidos del Mundial',
+      'Todos los mercados sin límite',
+      'Herramienta completa con tus momios',
+      'Detección de valor (edge) en tiempo real',
+      'Acceso desde cualquier dispositivo con tu cuenta',
+    ],
+  },
+};
+
+/* leer plan de la URL */
+const params = new URLSearchParams(window.location.search);
+const planId = params.get('plan');
+const payoErr = params.get('pago');
+
+const plan = PLANS[planId];
+
+/* mostrar error de pago si vino rebotado */
+if(payoErr === 'error'){
+  const b = document.getElementById('errorBanner');
+  b.textContent = 'Hubo un problema al procesar tu pago. Intenta de nuevo.';
+  b.classList.add('show');
+}
+
+/* plan inválido */
+if(!plan){
+  document.getElementById('planCard').innerHTML = '<div style="padding:20px;color:#fff">Plan no válido. <a href="/" style="color:#2f7bff">Volver al inicio</a></div>';
+}
+
+/* llenar resumen del plan */
+if(plan){
+  document.getElementById('planName').textContent = plan.name;
+  document.getElementById('planPrice').innerHTML = `${plan.price} <span class="cur">${plan.currency}</span>`;
+  document.getElementById('planPeriod').textContent = plan.period;
+  document.getElementById('planFeatures').innerHTML = plan.features.map(f => `<li>${f}</li>`).join('');
+  document.getElementById('summaryName').textContent = plan.name;
+  document.getElementById('summaryPrice').textContent = `${plan.price} ${plan.currency}`;
+  document.title = `RICKY-PICKS — ${plan.name}`;
+}
+
+/* supabase */
+let sb = null;
+function initSb(){
+  if(sb) return true;
+  if(window.supabase && window.supabase.createClient){
+    try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return true; }catch(e){ return false; }
+  }
+  return false;
+}
+initSb();
+
+let authMode = 'signup';
+const authStep     = document.getElementById('authStep');
+const payStep      = document.getElementById('payStep');
+const entitledStep = document.getElementById('entitledStep');
+const authForm     = document.getElementById('authForm');
+const userBar      = document.getElementById('userBar');
+const authMsg      = document.getElementById('authMsg');
+const payMsg       = document.getElementById('payMsg');
+
+function showMsg(el, type, text){ el.className = 'msg ' + type; el.textContent = text; }
+function clearMsg(el){ el.className = 'msg'; el.textContent = ''; }
+
+function setAuthMode(mode){
+  authMode = mode;
+  const isSignup = mode === 'signup';
+  document.getElementById('stepTitle').textContent = isSignup ? 'Crea tu cuenta' : 'Inicia sesión';
+  document.getElementById('authBtnText').textContent = isSignup ? 'Crear cuenta' : 'Entrar';
+  document.getElementById('authToggle').textContent = isSignup ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Crea una';
+  clearMsg(authMsg);
+}
+
+document.getElementById('authToggle').addEventListener('click', () => { setAuthMode(authMode==='signup'?'login':'signup'); });
+
+document.getElementById('authSubmit').addEventListener('click', async () => {
+  if(!sb && !initSb()){ showMsg(authMsg,'bad','Cargando, intenta de nuevo en un momento.'); return; }
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('pass').value;
+  if(!email || !pass){ showMsg(authMsg,'bad','Escribe tu correo y contraseña.'); return; }
+  const btn = document.getElementById('authSubmit');
+  btn.disabled = true; document.getElementById('authBtnText').textContent = 'Un momento…';
+  clearMsg(authMsg);
+  try{
+    if(authMode === 'signup'){
+      const {data,error} = await sb.auth.signUp({email,password:pass});
+      if(error) throw error;
+      await checkSession();
+    } else {
+      const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
+      if(error) throw error;
+      await checkSession();
+    }
+  }catch(e){
+    showMsg(authMsg,'bad', e.message || 'No se pudo completar. Intenta de nuevo.');
+  }
+  btn.disabled = false; document.getElementById('authBtnText').textContent = authMode==='signup'?'Crear cuenta':'Entrar';
+});
+
+document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
+
+async function checkEntitlement(userId){
+  if(!sb) return null;
+  const {data} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+  if(data && data.length && data[0].active) return data[0];
+  return null;
+}
+
+async function checkSession(){
+  if(!sb && !initSb()) return;
+  let session = null;
+  try {
+    const result = await Promise.race([
+      sb.auth.getSession(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))
+    ]);
+    session = result && result.data && result.data.session;
+  } catch(e) {
+    /* sesión corrupta o expirada — limpiar y mostrar form */
+    try { await sb.auth.signOut(); } catch {}
+    authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
+    userBar.style.display='none'; authForm.style.display='block';
+    return;
+  }
+  if(!session){
+    /* no hay sesión: mostrar form */
+    authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
+    userBar.style.display='none'; authForm.style.display='block';
+    return;
+  }
+  const user = session.user;
+  /* hay sesión: ver si ya tiene acceso */
+  const ent = await checkEntitlement(user.id);
+  if(ent && (ent.plan === planId || ent.plan === 'torneo')){
+    authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
+    return;
+  }
+  /* tiene sesión pero sin acceso: mostrar botón de pago */
+  authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
+  document.getElementById('payEmail').textContent = user.email;
+}
+
+document.getElementById('switchUser').addEventListener('click', async () => {
+  if(sb) await sb.auth.signOut();
+  await checkSession();
+});
+document.getElementById('signOutLink').addEventListener('click', async () => {
+  if(sb) await sb.auth.signOut();
+  await checkSession();
+});
+
+/* botón de pago */
+document.getElementById('payBtn').addEventListener('click', async () => {
+  if(!sb) return;
+  const payBtn = document.getElementById('payBtn');
+  const payBtnText = document.getElementById('payBtnText');
+  payBtn.disabled = true;
+  payBtnText.textContent = 'Abriendo pago…';
+  payBtn.innerHTML = `<span class="spinner-inline"></span> <span>Abriendo pago…</span>`;
+  clearMsg(payMsg);
+  try{
+    const {data} = await sb.auth.getSession();
+    const tok = data && data.session && data.session.access_token;
+    const res = await fetch('/api/create-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(tok ? {'Authorization':'Bearer '+tok} : {}) },
+      body: JSON.stringify({ plan: planId }),
+    });
+    const out = await res.json();
+    if(!res.ok || !out.checkout_url){
+      showMsg(payMsg,'bad', out.error || 'No se pudo abrir el pago. Intenta de nuevo.');
+      payBtn.disabled=false;
+      payBtn.innerHTML=`<svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#009EE3"/><path d="M22.5 10H9.5C8.67 10 8 10.67 8 11.5v9c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5z" fill="#fff"/><rect x="8" y="14" width="16" height="2.5" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
+      return;
+    }
+    window.location.href = out.checkout_url;
+  }catch(e){
+    showMsg(payMsg,'bad','Error de red. Intenta de nuevo.');
+    payBtn.disabled=false;
+    payBtn.innerHTML=`<svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#009EE3"/><path d="M22.5 10H9.5C8.67 10 8 10.67 8 11.5v9c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5z" fill="#fff"/><rect x="8" y="14" width="16" height="2.5" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
+  }
+});
+
+/* inicio */
+function boot(){
+  if(!sb && !initSb()){ setTimeout(boot, 200); return; }
+  sb.auth.onAuthStateChange(() => checkSession());
+  checkSession();
+}
+boot();
+
+window.addEventListener('pageshow', (e) => { if(e.persisted) window.location.reload(); });
+</script>
+</body>
+</html>
