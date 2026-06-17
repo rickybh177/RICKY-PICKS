@@ -768,7 +768,11 @@ async function openFree(){
   overlay.classList.add('open');
 }
 
-document.getElementById('freeBtn').addEventListener('click', e => { e.preventDefault(); openFree(); });
+document.getElementById('freeBtn').addEventListener('click', e => {
+  e.preventDefault();
+  if (!_session) { openAuth('signup'); return; }
+  openFree();
+});
 document.querySelectorAll('[data-scroll]').forEach(b => {
   b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
