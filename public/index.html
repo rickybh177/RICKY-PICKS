@@ -805,11 +805,18 @@ async function refreshUI(){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
     const ent = await getEntitlement();
-    if(ent){
+    if(ent && ent.plan === 'torneo'){
+      // Tiene torneo: ambos botones van a mis modelos
       document.getElementById('buyIndividual').textContent = 'Ir a Mis modelos';
       document.getElementById('buyIndividual').href = '/mis-modelos.html';
       document.getElementById('buyTorneo').textContent = 'Ir a Mis modelos';
       document.getElementById('buyTorneo').href = '/mis-modelos.html';
+    } else if(ent && ent.plan === 'individual'){
+      // Tiene individual: su botón va a mis modelos, torneo sigue al checkout
+      document.getElementById('buyIndividual').textContent = 'Ir a Mis modelos';
+      document.getElementById('buyIndividual').href = '/mis-modelos.html';
+      document.getElementById('buyTorneo').textContent = 'Mejorar a Torneo completo';
+      document.getElementById('buyTorneo').href = '/checkout.html?plan=torneo';
     }
   } else {
     authBtn.textContent = 'Iniciar sesión';
