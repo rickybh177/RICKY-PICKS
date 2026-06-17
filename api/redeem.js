@@ -4,7 +4,10 @@ const { getUserFromToken, grantEntitlement } = require('../lib/supabaseAdmin');
 
 // Códigos válidos: código -> plan que otorga
 const CODES = {
-  'TEST1': 'torneo',
+  'TEST1':   'torneo',
+  'RAFAVIP': 'torneo',
+  'NOTVIP':  'torneo',
+  'EDUVIP':  'torneo',
 };
 
 function bearer(req) {
