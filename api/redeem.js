@@ -8,6 +8,7 @@ const CODES = {
   'RAFAVIP': 'torneo',
   'NOTVIP':  'torneo',
   'EDUVIP':  'torneo',
+  'JERSONVIP': 'torneo',
 };
 
 function bearer(req) {
