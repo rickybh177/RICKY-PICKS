@@ -262,6 +262,8 @@ function initSb(){
 initSb();
 
 let authMode = 'signup';
+let _currentSession = null;
+
 const authStep     = document.getElementById('authStep');
 const payStep      = document.getElementById('payStep');
 const entitledStep = document.getElementById('entitledStep');
@@ -296,85 +298,62 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
     if(authMode === 'signup'){
       const {data,error} = await sb.auth.signUp({email,password:pass});
       if(error) throw error;
-      await checkSession();
     } else {
       const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
       if(error) throw error;
-      await checkSession();
     }
+    /* onAuthStateChange actualiza _currentSession y llama renderSession */
   }catch(e){
     showMsg(authMsg,'bad', e.message || 'No se pudo completar. Intenta de nuevo.');
+    btn.disabled = false; document.getElementById('authBtnText').textContent = authMode==='signup'?'Crear cuenta':'Entrar';
   }
-  btn.disabled = false; document.getElementById('authBtnText').textContent = authMode==='signup'?'Crear cuenta':'Entrar';
 });
 
 document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
 
-async function checkEntitlement(userId){
+async function checkEntitlement(){
   if(!sb) return null;
-  const {data} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
-  if(data && data.length && data[0].active) return data[0];
+  try{
+    const {data} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+    if(data && data.length && data[0].active) return data[0];
+  }catch(e){}
   return null;
 }
 
-async function checkSession(){
-  if(!sb && !initSb()) return;
-  let session = null;
-  try {
-    const result = await Promise.race([
-      sb.auth.getSession(),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))
-    ]);
-    session = result && result.data && result.data.session;
-  } catch(e) {
-    /* sesión corrupta o expirada — limpiar y mostrar form */
-    try { await sb.auth.signOut(); } catch {}
-    authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
-    userBar.style.display='none'; authForm.style.display='block';
-    return;
-  }
+async function renderSession(session){
   if(!session){
-    /* no hay sesión: mostrar form */
     authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
     userBar.style.display='none'; authForm.style.display='block';
     return;
   }
-  const user = session.user;
-  /* hay sesión: ver si ya tiene acceso */
-  const ent = await checkEntitlement(user.id);
+  const ent = await checkEntitlement();
   if(ent && (ent.plan === planId || ent.plan === 'torneo')){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }
-  /* tiene sesión pero sin acceso: mostrar botón de pago */
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
-  document.getElementById('payEmail').textContent = user.email;
+  document.getElementById('payEmail').textContent = session.user.email;
 }
 
 document.getElementById('switchUser').addEventListener('click', async () => {
   if(sb) await sb.auth.signOut();
-  await checkSession();
 });
 document.getElementById('signOutLink').addEventListener('click', async () => {
   if(sb) await sb.auth.signOut();
-  await checkSession();
 });
 
 /* botón de pago */
 document.getElementById('payBtn').addEventListener('click', async () => {
-  if(!sb) return;
+  if(!sb || !_currentSession) return;
   const payBtn = document.getElementById('payBtn');
-  const payBtnText = document.getElementById('payBtnText');
   payBtn.disabled = true;
-  payBtnText.textContent = 'Abriendo pago…';
   payBtn.innerHTML = `<span class="spinner-inline"></span> <span>Abriendo pago…</span>`;
   clearMsg(payMsg);
   try{
-    const {data} = await sb.auth.getSession();
-    const tok = data && data.session && data.session.access_token;
+    const tok = _currentSession.access_token;
     const res = await fetch('/api/create-payment', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(tok ? {'Authorization':'Bearer '+tok} : {}) },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
       body: JSON.stringify({ plan: planId }),
     });
     const out = await res.json();
@@ -392,11 +371,13 @@ document.getElementById('payBtn').addEventListener('click', async () => {
   }
 });
 
-/* inicio */
+/* inicio — onAuthStateChange nos da la sesión directamente, sin llamar getSession() */
 function boot(){
   if(!sb && !initSb()){ setTimeout(boot, 200); return; }
-  sb.auth.onAuthStateChange(() => checkSession());
-  checkSession();
+  sb.auth.onAuthStateChange((_event, session) => {
+    _currentSession = session;
+    renderSession(session);
+  });
 }
 boot();
 

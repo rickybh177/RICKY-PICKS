@@ -787,7 +787,8 @@ authSubmit.addEventListener('click', async () => {
   authSubmit.disabled=false; renderAuthMode();
 });
 
-async function currentUser(){ if(!sb && !initSupabase()) return null; const {data}=await sb.auth.getUser(); return data.user; }
+let _session = null;
+
 async function getEntitlement(){
   if(!sb && !initSupabase()) return null;
   try{
@@ -798,7 +799,7 @@ async function getEntitlement(){
 }
 
 async function refreshUI(){
-  const u = await currentUser();
+  const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
   if(u){
     authBtn.textContent = 'Salir';
@@ -822,16 +823,14 @@ async function refreshUI(){
 
 function startAuth(){
   if(!sb && !initSupabase()){ setTimeout(startAuth, 150); return; }
-  sb.auth.onAuthStateChange(() => refreshUI());
-  refreshUI();
+  sb.auth.onAuthStateChange((_event, session) => { _session = session; refreshUI(); });
 }
 startAuth();
 
 document.addEventListener('click', async (ev) => {
   const authClick = ev.target.closest('#authBtn');
   if(authClick){
-    const u = await currentUser();
-    if(u){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
+    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
     return;
   }
 });
