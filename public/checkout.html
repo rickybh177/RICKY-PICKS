@@ -432,7 +432,7 @@ document.getElementById('paypalBtn').addEventListener('click', async () => {
     const res = await fetch('/api/paypal-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${_currentSession.access_token}` },
-      body: JSON.stringify({ plan: _currentPlan }),
+      body: JSON.stringify({ plan: planId }),
     });
     const out = await res.json();
     if (!res.ok || !out.approvalUrl) {

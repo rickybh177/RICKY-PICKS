@@ -5,8 +5,15 @@ const { getUserFromToken } = require('../lib/supabaseAdmin');
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET    = process.env.PAYPAL_SECRET;
-const SITE_URL         = process.env.SITE_URL || 'https://ricky-picks.vercel.app';
 const BASE            = 'https://api-m.paypal.com';
+
+// Deriva la URL base del request (evita depender de SITE_URL, que puede apuntar a localhost).
+function siteUrl(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const proto = req.headers['x-forwarded-proto'] || 'https';
+  if (host && !host.includes('localhost')) return `${proto}://${host}`;
+  return process.env.SITE_URL || 'https://ricky-picks.vercel.app';
+}
 
 const PLANS = {
   individual: { name: 'RICKY-PICKS — Partidos del día', price: '99.00', currency: 'MXN' },
@@ -46,6 +53,7 @@ module.exports = async function handler(req, res) {
 
     const token = await getAccessToken();
     const p = PLANS[plan];
+    const SITE_URL = siteUrl(req);
 
     const order = await fetch(`${BASE}/v2/checkout/orders`, {
       method: 'POST',
@@ -61,7 +69,7 @@ module.exports = async function handler(req, res) {
           brand_name: 'RICKY PICKS',
           landing_page: 'BILLING',
           user_action: 'PAY_NOW',
-          return_url: `${SITE_URL}/mis-modelos.html?pago=${plan}&via=paypal`,
+          return_url: `${SITE_URL}/checkout.html?plan=${plan}&via=paypal`,
           cancel_url: `${SITE_URL}/checkout.html?plan=${plan}`,
         },
       }),
