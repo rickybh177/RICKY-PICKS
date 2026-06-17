@@ -1,5 +1,6 @@
 /* POST /api/paypal-create  { plan }
    Crea una orden de PayPal y devuelve el approvalUrl para redirigir al cliente. */
+const fetch = require('node-fetch');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;

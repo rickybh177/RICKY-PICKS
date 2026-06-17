@@ -5,6 +5,7 @@
   "description": "RICKY·PICKS — e-commerce de picks del Mundial con modelo Dixon-Coles, Mercado Pago y Supabase.",
   "license": "UNLICENSED",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "node-fetch": "^2.7.0"
   }
 }

@@ -1,5 +1,6 @@
 /* POST /api/paypal-capture  { orderId }
    Captura el pago de PayPal y otorga el entitlement al usuario. */
+const fetch = require('node-fetch');
 const { getUserFromToken, grantEntitlement } = require('../lib/supabaseAdmin');
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
