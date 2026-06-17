@@ -90,7 +90,8 @@
   .tool-run:disabled { opacity: 0.65; cursor: default; }
 
   /* RESULTS */
-  .result-area { min-height: 200px; }
+  .result-area { min-height: 200px; overflow-x: auto; }
+  .analysis { overflow-x: auto; }
   .tool-loading { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); padding: 24px 0; }
   .spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -350,15 +351,11 @@ function rowHTML(name, mp, dec){
   return `<tr><td>${name}</td><td class="num">${pct(mp)}</td><td class="${edgeCls}">${edgeTxt}</td><td>${mkPick(edge)}</td></tr>`;
 }
 
+let _accessToken = null;
+
 async function fetchMarkets(home, away, neutral){
   const headers = { 'Content-Type': 'application/json' };
-  if(sb){
-    try{
-      const {data} = await sb.auth.getSession();
-      const tok = data && data.session && data.session.access_token;
-      if(tok) headers['Authorization'] = 'Bearer ' + tok;
-    }catch(e){}
-  }
+  if(_accessToken) headers['Authorization'] = 'Bearer ' + _accessToken;
   const res = await fetch('/api/picks', { method:'POST', headers, body: JSON.stringify({home,away,neutral}) });
   let data = {};
   try{ data = await res.json(); }catch(e){}
@@ -533,6 +530,7 @@ async function boot(){
   showState('stateLoading');
 
   sb.auth.onAuthStateChange(async (_event, session) => {
+    _accessToken = session ? session.access_token : null;
     if(!session){ showState('stateNoAuth'); return; }
     await loadAndShow(session);
   });
@@ -550,6 +548,7 @@ async function loadAndShow(session){
   if(ADMIN_EMAILS.includes(userEmail)){
     if(pago) history.replaceState(null,'','/mis-modelos.html');
     showMain('torneo');
+    if(CONFIG) wireTorneo();
     return;
   }
 
@@ -581,8 +580,10 @@ async function loadAndShow(session){
   /* tiene acceso */
   showMain(ent.plan);
   if(pago==='ok') document.getElementById('successBanner').style.display='flex';
-  if(ent.plan==='individual' && CONFIG) wireIndividual();
-  if(ent.plan==='torneo' && CONFIG) wireTorneo();
+  if(CONFIG){
+    if(ent.plan==='individual') wireIndividual();
+    else wireTorneo();
+  }
 
   /* limpiar pago de la URL sin recargar */
   if(pago) history.replaceState(null,'','/mis-modelos.html');
