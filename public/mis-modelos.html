@@ -314,7 +314,7 @@ function initSb(){
 let CONFIG = null;
 async function loadConfig(){
   if(CONFIG) return CONFIG;
-  const res = await fetch('/api/config');
+  const res = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
   if(!res.ok) throw new Error('config');
   CONFIG = await res.json();
   return CONFIG;
@@ -534,14 +534,12 @@ async function boot(){
   if(!initSb()){ setTimeout(boot, 200); return; }
   showState('stateLoading');
 
-  // Si en 8 segundos no se resuelve, mostrar estado sin plan
-  const loadingTimeout = setTimeout(() => showState('stateNoPlan'), 8000);
-
   sb.auth.onAuthStateChange(async (_event, session) => {
-    clearTimeout(loadingTimeout);
     _accessToken = session ? session.access_token : null;
     if(!session){ showState('stateNoAuth'); return; }
-    await loadAndShow(session);
+    const fallback = setTimeout(() => showState('stateNoPlan'), 7000);
+    try { await loadAndShow(session); } catch(e) { showState('stateNoPlan'); }
+    finally { clearTimeout(fallback); }
   });
 }
 
