@@ -463,7 +463,10 @@ function wireIndividual(){
 /* ---- wiring para plan torneo ---- */
 function wireTorneo(){
   const cfg = CONFIG;
-  const fixtures = (cfg && cfg.fixtures) || [];
+  const allFixtures = (cfg && cfg.fixtures) || [];
+  const todayIso = (cfg && cfg.today_iso) || '2026-06-17';
+  // Solo mostrar partidos desde hoy en adelante
+  const fixtures = allFixtures.filter(f => f.date >= todayIso);
   const teams = (cfg && cfg.wc_teams) || [];
   const fxSel = document.getElementById('tFixture');
   fxSel.innerHTML = ['<option value="">— Elegir fixture —</option>']
@@ -475,7 +478,7 @@ function wireTorneo(){
   fxSel.addEventListener('change', () => {
     const i = fxSel.value;
     if(i==='') return;
-    const x = fixtures[i];
+    const x = fixtures[i]; // fixtures ya está filtrado, índice correcto
     document.getElementById('tHome').value = x.home_team;
     document.getElementById('tAway').value = x.away_team;
     const isHost = (cfg.hosts||[]).includes(x.home_team);
