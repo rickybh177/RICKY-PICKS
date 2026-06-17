@@ -885,7 +885,7 @@ startAuth();
 document.addEventListener('click', async (ev) => {
   const authClick = ev.target.closest('#authBtn');
   if(authClick){
-    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
+    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('signup'); }
     return;
   }
 });
