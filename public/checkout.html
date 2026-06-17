@@ -180,7 +180,7 @@
           <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">¿Tienes un código de acceso?</div>
           <div style="display:flex;gap:8px">
             <input id="codeInput" type="text" placeholder="Ej: TEST100" style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:0.85rem;outline:none;text-transform:uppercase">
-            <button id="redeemBtn" style="padding:10px 16px;border:none;border-radius:8px;background:var(--ink);color:var(--bg);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer">Canjear</button>
+            <button id="redeemBtn" style="padding:10px 18px;border:none;border-radius:8px;background:#1a1a2e;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;white-space:nowrap">Validar</button>
           </div>
           <div class="msg" id="redeemMsg" style="margin-top:8px"></div>
         </div>
@@ -377,7 +377,7 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
     if (!res.ok) throw new Error(data.error || 'Error al canjear.');
     msg.textContent = '¡Código canjeado! Redirigiendo…';
     msg.className = 'msg ok';
-    setTimeout(() => { window.location.href = '/mis-modelos.html'; }, 1200);
+    setTimeout(() => { window.location.href = '/mis-modelos.html?pago=' + (data.plan || 'torneo'); }, 1200);
   } catch(e) {
     msg.textContent = e.message;
     msg.className = 'msg bad';
