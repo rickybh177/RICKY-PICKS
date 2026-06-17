@@ -84,10 +84,9 @@
   .odds-mode { display: flex; gap: 6px; margin-bottom: 14px; }
   .om { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 5px 11px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; transition: border-color .12s, color .12s; }
   .om.active { border-color: var(--blue-bright); color: var(--blue); }
-  .odds3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .odds3 > div { min-width: 0; }
-  .odds3 input { padding: 8px 7px !important; font-size: 0.82rem !important; }
-  .tlab2 { font-size: 0.55rem !important; }
+  .odds3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .odds3 input { padding: 8px 6px !important; font-size: 0.8rem !important; text-align: center; }
+  .tlab2 { font-size: 0.55rem !important; text-align: center; }
   .tool-run { margin-top: 16px; width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 12px; border-radius: 10px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); transition: background .15s ease; }
   .tool-run:hover:not(:disabled) { background: var(--blue); }
   .tool-run:disabled { opacity: 0.65; cursor: default; }
