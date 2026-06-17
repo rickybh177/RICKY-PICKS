@@ -230,6 +230,11 @@
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { flex-direction: column; }
     .nav-link { display: none !important; }
+    /* guía del modelo: 3 columnas → 1 columna en móvil */
+    #guia .guide-cards { grid-template-columns: 1fr !important; }
+    /* tabla de ejemplo: scroll horizontal */
+    #guia .example-table { overflow-x: auto; }
+    #guia .example-table table { min-width: 420px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
@@ -239,10 +244,6 @@
 </style>
 </head>
 <body>
-
-<div style="width:100%;line-height:0">
-  <img src="/banner.png" alt="RICKY PICKS" style="width:100%;display:block;max-height:340px;object-fit:cover;object-position:center">
-</div>
 
 <nav>
   <div class="wrap">
@@ -376,7 +377,7 @@
     </div>
 
     <!-- Columnas explicativas -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px">
+    <div class="guide-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px">
       <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
         <div style="font-size:1.6rem;margin-bottom:10px">📊</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Modelo %</div>
@@ -398,7 +399,7 @@
     </div>
 
     <!-- Ejemplo visual -->
-    <div style="background:var(--white);border:1.5px solid var(--line);border-radius:16px;padding:28px 28px 20px;max-width:680px;margin:0 auto 16px">
+    <div class="example-table" style="background:var(--white);border:1.5px solid var(--line);border-radius:16px;padding:28px 28px 20px;max-width:680px;margin:0 auto 16px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Ejemplo real</div>
       <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:4px">🇦🇷 Argentina vs. 🇩🇿 Argelia</div>
       <div style="font-size:0.78rem;color:var(--muted);margin-bottom:20px">xG modelo 2.41 – 0.62 · sede neutral</div>
