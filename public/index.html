@@ -230,6 +230,7 @@
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { flex-direction: column; }
     .nav-link { display: none !important; }
+    .nav-link.nav-models-active { display: inline-flex !important; }
     /* guía del modelo: 3 columnas → 1 columna en móvil */
     #guia .guide-cards { grid-template-columns: 1fr !important; }
     /* tabla de ejemplo: scroll horizontal */
@@ -863,6 +864,7 @@ async function refreshUI(){
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
+    misModelosLink.classList.add('nav-models-active');
     const ent = await getEntitlement();
     if(ent && ent.plan === 'torneo'){
       // Tiene torneo: ambos botones van a mis modelos
@@ -880,6 +882,7 @@ async function refreshUI(){
   } else {
     authBtn.textContent = 'Iniciar sesión';
     misModelosLink.style.display = 'none';
+    misModelosLink.classList.remove('nav-models-active');
     document.getElementById('buyIndividual').textContent = 'Comprar acceso del día';
     document.getElementById('buyIndividual').href = '/checkout.html?plan=individual';
     document.getElementById('buyTorneo').textContent = 'Acceso total';
