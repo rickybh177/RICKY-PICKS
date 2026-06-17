@@ -588,36 +588,6 @@ async function callRpc(fn, body) {
   return res.json();
 }
 
-const codeInput = document.getElementById('codeInput');
-const redeemBtn = document.getElementById('redeemBtn');
-const redeemMsg = document.getElementById('redeemMsg');
-
-function showRedeemMsg(type, text) {
-  redeemMsg.className = 'redeem-msg ' + type;
-  redeemMsg.textContent = text;
-}
-
-redeemBtn.addEventListener('click', async () => {
-  const code = codeInput.value.trim().toUpperCase();
-  if (!code) { showRedeemMsg('bad', 'Escribe tu código primero.'); return; }
-  redeemBtn.disabled = true; redeemBtn.textContent = 'Validando…';
-  try {
-    const result = await callRpc('redeem_code', { p_code: code });
-    if (result.status === 'ok') {
-      codeInput.disabled = true;
-      showRedeemMsg('ok', '✓ Código válido. Abriendo tus modelos…');
-      setTimeout(() => { window.location.href = '/mis-modelos.html'; }, 800);
-    } else if (result.status === 'used') {
-      showRedeemMsg('bad', 'Este código ya fue canjeado. Cada código funciona una sola vez.');
-    } else {
-      showRedeemMsg('bad', 'Código no válido. Revisa que lo hayas copiado completo.');
-    }
-  } catch (e) {
-    showRedeemMsg('bad', 'No se pudo validar el código. Intenta de nuevo en un momento.');
-  }
-  redeemBtn.disabled = false; redeemBtn.textContent = 'Canjear';
-});
-codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') redeemBtn.click(); });
 
 /* ============================================================
    MODELO — solo para el pick gratis (modal)
