@@ -9,6 +9,7 @@ const CODES = {
   'NOTVIP':  'torneo',
   'EDUVIP':  'torneo',
   'JERSONVIP': 'torneo',
+  'OVIEDO':    'torneo',
 };
 
 function bearer(req) {
