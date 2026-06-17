@@ -174,10 +174,13 @@
 
 <!-- ESTADO: sin plan activo -->
 <div class="page-state" id="stateNoPlan">
-  <div class="state-icon">📊</div>
-  <div class="state-title">No tienes un plan activo</div>
-  <div class="state-body">Compra un plan para acceder a la herramienta completa con todos los partidos.</div>
-  <a href="/#precios" class="btn-cta">Ver planes</a>
+  <div class="state-icon">🔐</div>
+  <div class="state-title">Aún no tienes ningún modelo activo</div>
+  <div class="state-body">Adquiere un plan para acceder a las predicciones del Mundial 2026 con el modelo Dixon-Coles.</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
+    <a href="/checkout.html?plan=torneo" class="btn-cta" style="min-width:220px;text-align:center">Ver planes y comprar →</a>
+    <span style="font-size:0.78rem;color:var(--muted)">¿Ya tienes un código? <a href="/checkout.html?plan=torneo" style="color:var(--blue);text-decoration:none">Canjéalo aquí</a></span>
+  </div>
 </div>
 
 <!-- ESTADO: verificando pago -->
@@ -531,7 +534,11 @@ async function boot(){
   if(!initSb()){ setTimeout(boot, 200); return; }
   showState('stateLoading');
 
+  // Si en 8 segundos no se resuelve, mostrar estado sin plan
+  const loadingTimeout = setTimeout(() => showState('stateNoPlan'), 8000);
+
   sb.auth.onAuthStateChange(async (_event, session) => {
+    clearTimeout(loadingTimeout);
     _accessToken = session ? session.access_token : null;
     if(!session){ showState('stateNoAuth'); return; }
     await loadAndShow(session);
