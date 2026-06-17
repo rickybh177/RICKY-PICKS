@@ -37,6 +37,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, plan });
   } catch (e) {
     console.error('redeem error:', e);
-    return res.status(500).json({ error: 'Error interno. Intenta de nuevo.' });
+    return res.status(500).json({ error: 'Error interno: ' + (e.message || JSON.stringify(e)) });
   }
 };
