@@ -550,54 +550,37 @@ async function loadAndShow(session){
   const params = new URLSearchParams(window.location.search);
   const pago = params.get('pago');
 
-  /* cargar config */
-  try{ await loadConfig(); }catch(e){ console.error('config error',e); }
-
-  /* admin: acceso torneo automático */
+  /* admin: acceso torneo automático — sin esperar nada */
   if(ADMIN_EMAILS.includes(userEmail)){
     if(pago) history.replaceState(null,'','/mis-modelos.html');
     showMain('torneo');
-    if(CONFIG) wireTorneo();
+    loadConfig().then(() => { if(CONFIG) wireTorneo(); }).catch(()=>{});
     return;
   }
 
-  /* verificar acceso (con reintentos si venimos de pago) */
+  /* verificar acceso con timeout de 5s */
   let ent = null;
-  if(pago === 'ok'){
-    showState('stateVerifying');
-    for(let i=0; i<6; i++){
-      const {data:d} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
-      if(d && d.length && d[0].active){ ent = d[0]; break; }
-      await new Promise(r=>setTimeout(r,1500));
-    }
-  } else {
-    const timeout = new Promise(r => setTimeout(() => r({data:null}), 5000));
+  try {
+    const timeout = new Promise(r => setTimeout(() => r({data:null,error:'timeout'}), 5000));
     const query = sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
-    const {data:d} = await Promise.race([query, timeout]);
+    const result = await Promise.race([query, timeout]);
+    const d = result.data;
     if(d && d.length && d[0].active) ent = d[0];
-  }
+  } catch(e) { /* si falla el query, ent queda null */ }
 
   if(!ent){
-    if(pago==='pendiente'){
-      showMain('individual');
-      document.getElementById('pendingBanner').style.display='flex';
-      document.getElementById('toolIndividual').classList.add('active');
-    } else {
-      showState('stateNoPlan');
-    }
+    showState('stateNoPlan');
     return;
   }
 
-  /* tiene acceso */
+  /* tiene acceso: mostrar modelo PRIMERO, luego cargar config en background */
+  if(pago) history.replaceState(null,'','/mis-modelos.html');
   showMain(ent.plan);
-  if(pago==='ok') document.getElementById('successBanner').style.display='flex';
-  if(CONFIG){
+  loadConfig().then(() => {
+    if(!CONFIG) return;
     if(ent.plan==='individual') wireIndividual();
     else wireTorneo();
-  }
-
-  /* limpiar pago de la URL sin recargar */
-  if(pago) history.replaceState(null,'','/mis-modelos.html');
+  }).catch(()=>{});
 }
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {
