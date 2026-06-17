@@ -363,6 +363,81 @@
   </div>
 </section>
 
+<!-- GUÍA DEL MODELO -->
+<section id="guia" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Cómo leer el modelo</h2>
+      <p class="sec-sub">El modelo te da tres datos por cada mercado. Así los interpretas.</p>
+    </div>
+
+    <!-- Columnas explicativas -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px">
+      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:10px">📊</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Modelo %</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px">58.3%</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">La probabilidad real que le asigna el modelo Dixon-Coles a que ocurra ese resultado, basada en datos históricos.</p>
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:10px">⚡</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Edge</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:#15a34a;margin-bottom:8px">+11.3%</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">La ventaja vs. la cuota de tu casa. Si el modelo dice 58% y la casa implica 47%, tienes +11% de edge. Positivo = valor.</p>
+      </div>
+      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:10px">🎯</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Pick</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px" class="badge win" style="display:inline-block">BET</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0"><strong>BET</strong> = el modelo recomienda jugarlo. <strong>—</strong> = sin ventaja suficiente. La decisión final siempre es tuya.</p>
+      </div>
+    </div>
+
+    <!-- Ejemplo visual -->
+    <div style="background:var(--white);border:1.5px solid var(--line);border-radius:16px;padding:28px 28px 20px;max-width:680px;margin:0 auto 16px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Ejemplo real</div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:4px">🇦🇷 Argentina vs. 🇩🇿 Argelia</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:20px">xG modelo 2.41 – 0.62 · sede neutral</div>
+
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Mercado</th>
+            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Modelo %</th>
+            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Edge</th>
+            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Pick</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:12px 0;font-size:0.88rem">Gana 🇦🇷 Argentina (1)</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">76.4%</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:var(--muted)">—</td>
+            <td style="padding:12px 0;text-align:right"><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted)">—</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:12px 0;font-size:0.88rem">Over 2.5 goles</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">61.2%</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#15a34a">+14.2%</td>
+            <td style="padding:12px 0;text-align:right"><span style="background:rgba(21,163,74,0.12);color:#15a34a;font-family:'JetBrains Mono',monospace;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:5px">BET</span></td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;font-size:0.88rem">Argentina −1.5 hándicap</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">52.8%</td>
+            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#15a34a">+8.8%</td>
+            <td style="padding:12px 0;text-align:right"><span style="background:rgba(21,163,74,0.12);color:#15a34a;font-family:'JetBrains Mono',monospace;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:5px">BET</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;font-size:0.78rem;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:14px">
+        💡 <strong>Cómo leerlo:</strong> Argentina favorito claro pero sin edge vs. la cuota (-130 implícito ~56%). Over 2.5 sí tiene valor: el modelo lo ve en 61% y la casa lo paga como si fuera 47%. El hándicap de −1.5 también tiene edge — el modelo espera 2.41 xG locales.
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:0.82rem;color:var(--muted);max-width:52ch;margin:0 auto 0">El edge no garantiza ganar cada apuesta, pero sí que estás del lado correcto de las probabilidades a largo plazo.</p>
+  </div>
+</section>
+
 <!-- PRECIOS -->
 <section id="precios" style="padding-top:0;">
   <div class="wrap">
