@@ -532,14 +532,16 @@ const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 /* ---- arranque ---- */
 async function boot(){
   if(!initSb()){ setTimeout(boot, 200); return; }
-  showState('stateLoading');
 
+  // Mostrar "sin plan" por defecto — se sobreescribe si hay sesión+acceso
+  showState('stateNoPlan');
+
+  // Supabase dispara el callback inmediatamente con la sesión cacheada
   sb.auth.onAuthStateChange(async (_event, session) => {
     _accessToken = session ? session.access_token : null;
     if(!session){ showState('stateNoAuth'); return; }
-    const fallback = setTimeout(() => showState('stateNoPlan'), 7000);
-    try { await loadAndShow(session); } catch(e) { showState('stateNoPlan'); }
-    finally { clearTimeout(fallback); }
+    showState('stateLoading');
+    try { await loadAndShow(session); } catch(e) { console.error(e); showState('stateNoPlan'); }
   });
 }
 
@@ -569,7 +571,9 @@ async function loadAndShow(session){
       await new Promise(r=>setTimeout(r,1500));
     }
   } else {
-    const {data:d} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+    const timeout = new Promise(r => setTimeout(() => r({data:null}), 5000));
+    const query = sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+    const {data:d} = await Promise.race([query, timeout]);
     if(d && d.length && d[0].active) ent = d[0];
   }
 
