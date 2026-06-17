@@ -190,6 +190,7 @@
 <script>
 const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 
 const PLANS = {
   individual: {
@@ -324,6 +325,11 @@ async function renderSession(session){
   if(!session){
     authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
     userBar.style.display='none'; authForm.style.display='block';
+    return;
+  }
+  /* admin: acceso gratuito automático */
+  if(ADMIN_EMAILS.includes(session.user.email)){
+    authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }
   const ent = await checkEntitlement();

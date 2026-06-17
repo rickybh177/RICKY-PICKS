@@ -68,7 +68,7 @@ module.exports = async function handler(req, res) {
   if (!plan) {
     const user = await getUserFromToken(bearer(req));
     if (user) {
-      const ent = await getEntitlement(user.id);
+      const ent = await getEntitlement(user.id, user.email);
       if (ent && ent.active) plan = ent.plan;
     }
   }

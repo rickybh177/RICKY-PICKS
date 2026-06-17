@@ -525,19 +525,33 @@ function showMain(plan){
   document.getElementById('navPlanBadge').style.display = 'inline-flex';
 }
 
+const ADMIN_EMAILS = ['rickybh17@gmail.com'];
+
 /* ---- arranque ---- */
 async function boot(){
   if(!initSb()){ setTimeout(boot, 200); return; }
   showState('stateLoading');
-  const {data} = await sb.auth.getSession();
-  const session = data && data.session;
-  if(!session){ showState('stateNoAuth'); return; }
 
+  sb.auth.onAuthStateChange(async (_event, session) => {
+    if(!session){ showState('stateNoAuth'); return; }
+    await loadAndShow(session);
+  });
+}
+
+async function loadAndShow(session){
+  const userEmail = session.user.email;
   const params = new URLSearchParams(window.location.search);
   const pago = params.get('pago');
 
   /* cargar config */
   try{ await loadConfig(); }catch(e){ console.error('config error',e); }
+
+  /* admin: acceso torneo automático */
+  if(ADMIN_EMAILS.includes(userEmail)){
+    if(pago) history.replaceState(null,'','/mis-modelos.html');
+    showMain('torneo');
+    return;
+  }
 
   /* verificar acceso (con reintentos si venimos de pago) */
   let ent = null;
@@ -555,10 +569,9 @@ async function boot(){
 
   if(!ent){
     if(pago==='pendiente'){
-      showMain('individual'); /* mostrar página pero con banner pendiente */
+      showMain('individual');
       document.getElementById('pendingBanner').style.display='flex';
       document.getElementById('toolIndividual').classList.add('active');
-      /* sin acceso real al modelo; dejar que /api/picks retorne 401 */
     } else {
       showState('stateNoPlan');
     }
