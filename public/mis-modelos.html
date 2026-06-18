@@ -443,7 +443,9 @@ function wireIndividual(){
     document.getElementById('iHome').value = f.home;
     document.getElementById('iAway').value = f.away;
     const isHost = (cfg.hosts||[]).includes(f.home);
-    document.getElementById('iNeutral').checked = !isHost;
+    const neutralEl = document.getElementById('iNeutral');
+    neutralEl.checked = !isHost;
+    neutralEl.closest('.tool-toggle').style.display = isHost ? 'none' : '';
   }
   sel.addEventListener('change', () => { updateFixed(); });
   updateFixed();
