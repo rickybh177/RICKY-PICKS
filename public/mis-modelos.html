@@ -453,6 +453,11 @@ function wireIndividual(){
   }
   sel.addEventListener('change', () => { updateFixed(); });
   updateFixed();
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState !== 'visible') return;
+    const cur = localStorage.getItem(LS_KEY);
+    if(cur !== null && fixtures[cur] && sel.value !== cur) { sel.value = cur; updateFixed(); }
+  });
   document.querySelectorAll('#iOddsMode .om').forEach(b => b.onclick = () => {
     document.querySelectorAll('#iOddsMode .om').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); oddsModeI = b.dataset.mode;
