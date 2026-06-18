@@ -183,6 +183,17 @@
   </div>
 </div>
 
+<!-- ESTADO: plan individual expirado -->
+<div class="page-state" id="stateExpired">
+  <div class="state-icon">📅</div>
+  <div class="state-title">Tu pick del día ya venció</div>
+  <div class="state-body">El plan del día solo da acceso a los picks de la jornada en que compraste. Para ver los picks de hoy, adquiere un nuevo acceso.</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
+    <a href="/checkout.html?plan=individual" class="btn-cta" style="min-width:220px;text-align:center">Comprar picks de hoy →</a>
+    <a href="/checkout.html?plan=torneo" style="font-size:0.82rem;color:var(--blue);text-decoration:none">O llévate el torneo completo</a>
+  </div>
+</div>
+
 <!-- ESTADO: verificando pago -->
 <div class="page-state" id="stateVerifying">
   <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto 24px"></div>
@@ -513,13 +524,13 @@ function wireTorneo(){
 
 /* ---- estados ---- */
 function showState(id){
-  ['stateLoading','stateNoAuth','stateNoPlan','stateVerifying'].forEach(s => {
+  ['stateLoading','stateNoAuth','stateNoPlan','stateExpired','stateVerifying'].forEach(s => {
     document.getElementById(s).classList.toggle('active', s===id);
   });
   document.getElementById('mainContent').style.display = 'none';
 }
 function showMain(plan){
-  ['stateLoading','stateNoAuth','stateNoPlan','stateVerifying'].forEach(s => {
+  ['stateLoading','stateNoAuth','stateNoPlan','stateExpired','stateVerifying'].forEach(s => {
     document.getElementById(s).classList.remove('active');
   });
   document.getElementById('mainContent').style.display = 'block';
@@ -564,7 +575,7 @@ async function loadAndShow(session){
   let ent = null;
   try {
     const timeout = new Promise(r => setTimeout(() => r({data:null,error:'timeout'}), 3000));
-    const query = sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
+    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true).limit(1);
     const result = await Promise.race([query, timeout]);
     const d = result.data;
     if(d && d.length && d[0].active) ent = d[0];
@@ -573,6 +584,16 @@ async function loadAndShow(session){
   if(!ent){
     showState('stateNoPlan');
     return;
+  }
+
+  /* plan individual: verificar que se compró hoy */
+  if(ent.plan === 'individual' && ent.updated_at) {
+    const purchasedDate = ent.updated_at.slice(0, 10); // "2026-06-17"
+    const todayIso = new Date().toISOString().slice(0, 10);
+    if(purchasedDate !== todayIso) {
+      showState('stateExpired');
+      return;
+    }
   }
 
   /* tiene acceso: mostrar modelo PRIMERO, luego cargar config en background */
