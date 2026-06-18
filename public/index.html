@@ -658,7 +658,7 @@ function toolHTML(opts){
     <div class="tool-block">
       <div class="tool-label">Partido</div>
       ${matchBlock}
-      <label class="tool-toggle"><input type="checkbox" id="tNeutral" checked> Sede neutral</label>
+      <label class="tool-toggle" id="tNeutralWrap"><input type="checkbox" id="tNeutral" checked> Sede neutral</label>
     </div>
     <div class="tool-block">
       <div class="tool-label">Cuotas de tu casa <span style="color:var(--muted);font-weight:400">(opcional)</span></div>
@@ -772,6 +772,10 @@ async function openFree(){
   modalNote.textContent = 'Análisis completo del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
   modalFoot.innerHTML = '¿Quieres los 4 partidos del día o todo el torneo? <a href="/checkout.html?plan=individual">Ver planes →</a>';
+  const hosts = (CONFIG && CONFIG.hosts) || [];
+  const isHost = hosts.includes(f.home);
+  const neutralWrap = document.getElementById('tNeutralWrap');
+  if(neutralWrap) { neutralWrap.style.display = isHost ? 'none' : ''; document.getElementById('tNeutral').checked = !isHost; }
   wireTool();
   const rb = document.getElementById('tRun'); if(rb) rb.click();
   overlay.classList.add('open');
