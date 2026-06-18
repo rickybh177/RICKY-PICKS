@@ -335,8 +335,17 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
 async function checkEntitlement(){
   if(!sb) return null;
   try{
-    const {data} = await sb.from('entitlements').select('plan,active').eq('active',true).limit(1);
-    if(data && data.length && data[0].active) return data[0];
+    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true).limit(1);
+    if(data && data.length && data[0].active) {
+      const ent = data[0];
+      // Plan individual expira al día siguiente — permitir re-compra
+      if(ent.plan === 'individual' && ent.updated_at) {
+        const purchasedDate = ent.updated_at.slice(0, 10);
+        const todayIso = new Date().toISOString().slice(0, 10);
+        if(purchasedDate !== todayIso) return null;
+      }
+      return ent;
+    }
   }catch(e){}
   return null;
 }
