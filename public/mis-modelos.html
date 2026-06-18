@@ -437,9 +437,13 @@ function wireIndividual(){
   const fixtures = (cfg && cfg.today_fixtures) || [];
   const sel = document.getElementById('fixtureSel');
   sel.innerHTML = fixtures.map((f,i) => `<option value="${i}">${teamLabel(f.home)} vs ${teamLabel(f.away)}</option>`).join('');
+  const LS_KEY = 'rp_individual_fixture';
+  const saved = localStorage.getItem(LS_KEY);
+  if(saved !== null && fixtures[saved]) sel.value = saved;
   function updateFixed(){
     const f = fixtures[sel.value];
     if(!f) return;
+    localStorage.setItem(LS_KEY, sel.value);
     document.getElementById('iHome').value = f.home;
     document.getElementById('iAway').value = f.away;
     const isHost = (cfg.hosts||[]).includes(f.home);
