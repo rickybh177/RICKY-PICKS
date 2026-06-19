@@ -128,7 +128,7 @@
       <div class="plan-price" id="planPrice"><span class="cur">MXN</span></div>
       <div class="plan-period" id="planPeriod"></div>
       <ul class="plan-features" id="planFeatures"></ul>
-      <div class="trust-note"><strong>Pago seguro.</strong> Procesado por Mercado Pago. Tus datos bancarios nunca pasan por nuestros servidores.</div>
+      <div class="trust-note"><strong>Pago seguro.</strong> Procesado por PayPal. Tus datos bancarios nunca pasan por nuestros servidores.</div>
     </div>
 
     <!-- AUTH + PAYMENT -->
@@ -169,15 +169,7 @@
             <span id="summaryPrice" style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem"></span>
           </div>
         </div>
-        <button class="btn-pay" id="payBtn">
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#009EE3"/><path d="M22.5 10H9.5C8.67 10 8 10.67 8 11.5v9c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5z" fill="#fff"/><rect x="8" y="14" width="16" height="2.5" fill="#009EE3"/></svg>
-          <span id="payBtnText">Pagar con Mercado Pago</span>
-        </button>
-        <div style="display:flex;align-items:center;gap:10px;margin:14px 0">
-          <div style="flex:1;height:1px;background:var(--line)"></div>
-          <span style="font-size:0.75rem;color:var(--muted)">o</span>
-          <div style="flex:1;height:1px;background:var(--line)"></div>
-        </div>
+        <button style="display:none" id="payBtn"><span id="payBtnText"></span></button>
         <button class="btn-pay" id="paypalBtn" style="background:#FFC439;color:#003087">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c1.379 4.153-.878 6.544-5.48 6.544h-2.19a1.95 1.95 0 0 0-1.926 1.648l-1.26 7.978a.656.656 0 0 0 .647.754h3.882c.524 0 .968-.382 1.05-.9l.999-6.327a1.05 1.05 0 0 1 1.037-.9h.656c3.773 0 6.73-1.533 7.594-5.966.37-1.91.077-3.495-.902-4.29z" fill="#003087"/></svg>
           <span id="paypalBtnText">Pagar con PayPal</span>
