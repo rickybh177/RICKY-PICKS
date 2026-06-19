@@ -109,6 +109,16 @@
   .an-conf.media { color: var(--blue); border-color: rgba(29,78,216,.4); background: rgba(29,78,216,.08); }
   .an-conf.baja { color: var(--loss); border-color: rgba(216,58,58,.4); background: rgba(216,58,58,.08); }
   .an-note { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .scores-wrap { display: flex; gap: 10px; margin: 14px 0 4px; }
+  .score-card { flex: 1; background: var(--ink); border-radius: 12px; padding: 14px 10px 12px; text-align: center; position: relative; overflow: hidden; }
+  .score-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(47,123,255,0.18) 0%, transparent 70%); pointer-events: none; }
+  .score-card.top1::before { background: linear-gradient(135deg, rgba(47,123,255,0.32) 0%, transparent 70%); }
+  .score-card .sc-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .score-card.top1 .sc-rank { color: var(--blue-bright); }
+  .score-card .sc-score { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.6rem; color: #fff; letter-spacing: -0.02em; line-height: 1; }
+  .score-card.top1 .sc-score { font-size: 1.9rem; }
+  .score-card .sc-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 6px; }
+  .score-card.top1 .sc-pct { color: var(--blue-bright); font-weight: 700; font-size: 0.78rem; }
   .an-subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 6px; }
   table.antab { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
   table.antab th { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); font-weight: 500; }
@@ -428,6 +438,19 @@ function buildAnalysis(m, home, away, neutral, mode){
     <div class="an-subhead">Mercados secundarios · heurístico</div>
     <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
     <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%. Los secundarios son orientativos.</div>
+    ${(()=>{
+      if(!m.top_scores||!m.top_scores.length) return '';
+      const top3=m.top_scores.slice(0,3);
+      const cards=top3.map((s,i)=>`
+        <div class="score-card${i===0?' top1':''}">
+          <div class="sc-rank">${i===0?'Más probable':`#${i+1}`}</div>
+          <div class="sc-score">${s.h} – ${s.a}</div>
+          <div class="sc-pct">${(s.p*100).toFixed(1)}%</div>
+        </div>`).join('');
+      return `<div class="an-subhead" style="margin-top:20px">Marcadores exactos más probables</div>
+        <div class="scores-wrap">${cards}</div>
+        <div class="an-note" style="margin-bottom:4px">Probabilidades del modelo Dixon-Coles. El marcador más probable sigue siendo correcto &lt;25% de las veces — usar como contexto, no como apuesta directa.</div>`;
+    })()}
   </div>`;
 }
 
