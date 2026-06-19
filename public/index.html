@@ -772,7 +772,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeModal(
 async function openFree(){
   try { await loadConfig(); } catch(e){}
   const today = (CONFIG && CONFIG.today_fixtures) || [];
-  const f = today[(CONFIG && CONFIG.free_index) || 0];
+  const f = (CONFIG && CONFIG.free_fixture) || today[(CONFIG && CONFIG.free_index) || 0];
   if(!f) return;
   modalDay.textContent = (CONFIG && CONFIG.today_date) || '';
   modalNote.textContent = 'Análisis completo del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';

@@ -8,7 +8,7 @@
    - Plan "individual" / "torneo"     -> sesión (cuenta) con acceso,
                                          o un código canjeado válido.
    ============================================================ */
-const { marketsFor, matchAllowed, todayFixtures, FREE_INDEX } = require('../lib/model');
+const { marketsFor, matchAllowed, todayFixtures, FREE_INDEX, FREE_FIXTURE } = require('../lib/model');
 const { getAdmin, getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 
 function bearer(req) {
@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
 
   // 1) Partido gratis del día: abierto, sin sesión.
   const today = todayFixtures();
-  const free = today[FREE_INDEX];
+  const free = FREE_FIXTURE || today[FREE_INDEX];
   const isFree = free && (
     (free.home === home && free.away === away) ||
     (free.home === away && free.away === home)
