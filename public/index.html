@@ -296,9 +296,9 @@
     <div class="record">
       <div>
         <div class="record-stats">
-          <div class="stat"><div class="num data">69%</div><div class="lbl">Aciertos</div></div>
-          <div class="stat"><div class="num data">54</div><div class="lbl">Picks publicados</div></div>
-          <div class="stat"><div class="num data">37-17</div><div class="lbl">Ganados · Perdidos</div></div>
+          <div class="stat"><div class="num data">68%</div><div class="lbl">Aciertos</div></div>
+          <div class="stat"><div class="num data">59</div><div class="lbl">Picks publicados</div></div>
+          <div class="stat"><div class="num data">40-19</div><div class="lbl">Ganados · Perdidos</div></div>
         </div>
       </div>
       <div class="streak" aria-hidden="true">
@@ -314,7 +314,7 @@
                 fill="none" stroke="#2f7bff" stroke-width="2.5" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="record-note">Picks del modelo sobre todos los partidos jugados, del 11 al 18 de junio · todos publicados, ganados y perdidos · 37-17.</div>
+      <div class="record-note">Picks del modelo sobre todos los partidos jugados, del 11 al 19 de junio · todos publicados, ganados y perdidos · 40-19.</div>
     </div>
   </div>
 </header>
@@ -333,6 +333,11 @@
           <tr><th>Fecha</th><th>Partido</th><th>Pick</th><th>Resultado</th></tr>
         </thead>
         <tbody>
+          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">EE.UU. gana</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 3.5 tarjetas amarillas</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 9.5 córners</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
+          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
           <tr><td class="date">18 JUN</td><td>🇲🇽 México vs. Corea del Sur 🇰🇷</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
           <tr><td class="date">18 JUN</td><td>🇲🇽 México vs. Corea del Sur 🇰🇷</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
           <tr><td class="date">18 JUN</td><td>🇶🇦 Qatar vs. Canadá 🇨🇦</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
@@ -389,7 +394,7 @@
         </tbody>
       </table>
     </div>
-    <p class="history-foot">Picks del modelo sobre los partidos ya jugados, con su resultado real. 37 ganados · 17 perdidos al 18 de junio.</p>
+    <p class="history-foot">Picks del modelo sobre los partidos ya jugados, con su resultado real. 40 ganados · 19 perdidos al 19 de junio.</p>
   </div>
 </section>
 
@@ -798,6 +803,30 @@ async function openFree(){
   const f = (CONFIG && CONFIG.free_fixture) || today[(CONFIG && CONFIG.free_index) || 0];
   if(!f) return;
   modalDay.textContent = (CONFIG && CONFIG.today_date) || '';
+
+  if(CONFIG && CONFIG.free_done){
+    const hl = teamLabel(f.home), al = teamLabel(f.away);
+    modalNote.textContent = '';
+    picksList.innerHTML = `
+      <div style="text-align:center;padding:28px 16px 20px">
+        <div style="font-size:2rem;margin-bottom:10px">⏱️</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.25rem;color:var(--ink);margin-bottom:6px">Partido terminado</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--muted);margin-bottom:18px">${hl} vs ${al}</div>
+        <div style="display:inline-flex;align-items:center;gap:10px;background:var(--ink);border-radius:14px;padding:14px 28px;margin-bottom:22px">
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;color:#fff;letter-spacing:-0.02em">3</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:rgba(255,255,255,0.35)">/</span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;color:rgba(255,255,255,0.4)">5</span>
+          <span style="font-family:'Inter',sans-serif;font-size:0.78rem;color:rgba(255,255,255,0.5);margin-left:4px;line-height:1.3">picks<br>acertados</span>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:0.92rem;color:var(--ink);line-height:1.6;margin-bottom:6px">
+          Todavía hay <strong>3 partidos más hoy</strong> con análisis completo.<br>El modelo sigue corriendo.
+        </div>
+      </div>`;
+    modalFoot.innerHTML = '<a href="/checkout.html?plan=individual" style="display:block;background:var(--blue-bright);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Ver los otros 3 partidos de hoy →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=torneo" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O llévate el torneo completo por $29.99 USD</a></div>';
+    overlay.classList.add('open');
+    return;
+  }
+
   modalNote.textContent = 'Análisis completo del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
   modalFoot.innerHTML = '¿Quieres los 4 partidos del día o todo el torneo? <a href="/checkout.html?plan=individual">Ver planes →</a>';
