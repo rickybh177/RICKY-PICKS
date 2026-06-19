@@ -10,6 +10,7 @@ const CODES = {
   'EDUVIP':  'torneo',
   'JERSONVIP': 'torneo',
   'OVIEDO':    'torneo',
+  'SAUVIP':    'individual',
 };
 
 function bearer(req) {
