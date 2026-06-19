@@ -433,11 +433,6 @@ function buildAnalysis(m, home, away, neutral, mode){
       <span class="an-conf ${conf}">${confTxt}</span>
     </div>
     <div class="an-xg">xG modelo ${m.xg_home.toFixed(2)} – ${m.xg_away.toFixed(2)} · ${neutral?'sede neutral':'con ventaja local'}</div>
-    <div class="an-note" style="margin:0 0 14px">${cmsg}</div>
-    <table class="antab"><thead><tr><th>Mercado</th><th>Modelo %</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="an-subhead">Mercados secundarios · heurístico</div>
-    <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
-    <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%. Los secundarios son orientativos.</div>
     ${(()=>{
       if(!m.top_scores||!m.top_scores.length) return '';
       const top3=m.top_scores.slice(0,3);
@@ -447,10 +442,15 @@ function buildAnalysis(m, home, away, neutral, mode){
           <div class="sc-score">${s.h} – ${s.a}</div>
           <div class="sc-pct">${(s.p*100).toFixed(1)}%</div>
         </div>`).join('');
-      return `<div class="an-subhead" style="margin-top:20px">Marcadores exactos más probables</div>
+      return `<div class="an-subhead" style="margin-top:14px">Marcadores exactos más probables</div>
         <div class="scores-wrap">${cards}</div>
-        <div class="an-note" style="margin-bottom:4px">Probabilidades del modelo Dixon-Coles. El marcador más probable sigue siendo correcto &lt;25% de las veces — usar como contexto, no como apuesta directa.</div>`;
+        <div class="an-note" style="margin-bottom:14px">Probabilidades del modelo Dixon-Coles. El marcador más probable sigue siendo correcto &lt;25% de las veces — usar como contexto, no como apuesta directa.</div>`;
     })()}
+    <div class="an-note" style="margin:0 0 14px">${cmsg}</div>
+    <table class="antab"><thead><tr><th>Mercado</th><th>Modelo %</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="an-subhead">Mercados secundarios · heurístico</div>
+    <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
+    <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%. Los secundarios son orientativos.</div>
   </div>`;
 }
 
