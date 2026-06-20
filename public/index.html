@@ -556,6 +556,7 @@
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
       <button class="tool-run" id="authSubmit" style="margin-top:16px">Crear cuenta</button>
       <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
+      <div style="text-align:center;margin-top:8px"><a href="#" id="forgotLink" style="font-size:13px;color:#888;text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
       <div class="redeem-msg" id="authMsg"></div>
     </div>
   </div>
@@ -895,6 +896,16 @@ function renderAuthMode(){
   }
 }
 authToggle.addEventListener('click', () => { authMode = authMode==='signup'?'login':'signup'; renderAuthMode(); authMsg.className='redeem-msg'; authMsg.textContent=''; });
+
+document.getElementById('forgotLink').addEventListener('click', async (e) => {
+  e.preventDefault();
+  if(!sb && !initSupabase()) return;
+  const email = authEmail.value.trim();
+  if(!email){ authMsg.className='redeem-msg bad'; authMsg.textContent='Escribe tu correo primero.'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/reset.html' });
+  if(error){ authMsg.className='redeem-msg bad'; authMsg.textContent=error.message; return; }
+  authMsg.className='redeem-msg ok'; authMsg.textContent='Te enviamos un correo para restablecer tu contraseña.';
+});
 
 authSubmit.addEventListener('click', async () => {
   if(!sb && !initSupabase()){ authMsg.className='redeem-msg bad'; authMsg.textContent='Un momento, estamos cargando. Intenta de nuevo.'; return; }
