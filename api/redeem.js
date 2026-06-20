@@ -11,6 +11,7 @@ const CODES = {
   'JERSONVIP': 'torneo',
   'OVIEDO':    'torneo',
   'SAUVIP':    'individual',
+  'SAUVIP1':   'torneo',
 };
 
 function bearer(req) {
