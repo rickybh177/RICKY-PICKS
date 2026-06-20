@@ -476,11 +476,15 @@ function wireIndividual(){
   }
   sel.addEventListener('change', () => { updateFixed(); });
   updateFixed();
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState !== 'visible') return;
-    const cur = localStorage.getItem(LS_KEY);
-    if(cur !== null && fixtures[cur] && sel.value !== cur) { sel.value = cur; updateFixed(); }
-  });
+  if(!wireIndividual._vis){
+    wireIndividual._vis = true;
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState !== 'visible') return;
+      const cur = localStorage.getItem(LS_KEY);
+      const s = document.getElementById('fixtureSel');
+      if(cur !== null && s && s.value !== cur){ s.value = cur; updateFixed(); }
+    });
+  }
   document.querySelectorAll('#iOddsMode .om').forEach(b => b.onclick = () => {
     document.querySelectorAll('#iOddsMode .om').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); oddsModeI = b.dataset.mode;
@@ -645,7 +649,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
   window.location.href = '/';
 });
 
-window.addEventListener('pageshow', (e) => { if(e.persisted) window.location.reload(); });
+window.addEventListener('pageshow', (e) => { if(e.persisted) boot(); });
 boot();
 </script>
 </body>
