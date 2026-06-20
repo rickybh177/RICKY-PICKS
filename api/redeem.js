@@ -12,6 +12,7 @@ const CODES = {
   'OVIEDO':    'torneo',
   'SAUVIP':    'individual',
   'SAUVIP1':   'torneo',
+  'LAMERAPOLVORAVIP': 'torneo',
 };
 
 function bearer(req) {
