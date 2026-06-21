@@ -14,6 +14,7 @@ const CODES = {
   'SAUVIP1':   'torneo',
   'LAMERAPOLVORAVIP': 'torneo',
   'REYES6': 'individual',
+  'CESAR1': 'individual',
 };
 
 function bearer(req) {
