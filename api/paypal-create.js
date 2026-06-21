@@ -16,7 +16,7 @@ function siteUrl(req) {
 }
 
 const PLANS = {
-  individual: { name: 'RICKY-PICKS — Partidos del día', price: '6.00',  currency: 'USD' },
+  individual: { name: 'RICKY-PICKS — Partidos del día', price: '9.99',  currency: 'USD' },
   torneo:     { name: 'RICKY-PICKS — Torneo completo',  price: '29.99', currency: 'USD' },
 };
 
