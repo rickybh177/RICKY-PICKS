@@ -437,7 +437,7 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
     const res = await fetch('/api/stripe-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan: currentPlan }),
+      body: JSON.stringify({ plan: planId }),
     });
     const out = await res.json();
     if (!res.ok || !out.url) {
