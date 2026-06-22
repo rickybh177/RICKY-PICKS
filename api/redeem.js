@@ -15,6 +15,7 @@ const CODES = {
   'LAMERAPOLVORAVIP': 'torneo',
   'REYES6': 'individual',
   'CESAR1': 'individual',
+  'DAVID1': 'individual',
 };
 
 function bearer(req) {
