@@ -252,13 +252,6 @@ if(payoErr === 'error'){
   b.classList.add('show');
 }
 
-/* nota PayPal en USD */
-const paypalUSD = { individual: '$10.99 USD', torneo: '$32.99 USD' };
-const paypalNoteEl = document.getElementById('paypalNote');
-if(paypalNoteEl && paypalUSD[planId]){
-  paypalNoteEl.textContent = `El cargo de PayPal se realiza en USD (${plan ? plan.price : ''} MXN ≈ ${paypalUSD[planId]})`;
-}
-
 /* plan inválido */
 if(!plan){
   document.getElementById('planCard').innerHTML = '<div style="padding:20px;color:#fff">Plan no válido. <a href="/" style="color:#2f7bff">Volver al inicio</a></div>';
