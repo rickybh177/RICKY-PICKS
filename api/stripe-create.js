@@ -6,7 +6,7 @@ const { getUserFromToken } = require('../lib/supabaseAdmin');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PLANS = {
-  individual: { name: 'RICKY-PICKS — Partidos del día', price: 30000, currency: 'mxn' },
+  individual: { name: 'RICKY-PICKS — Partidos del día', price: 29900, currency: 'mxn' },
   torneo:     { name: 'RICKY-PICKS — Torneo completo',  price: 59900, currency: 'mxn' },
 };
 
