@@ -174,6 +174,10 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="#635BFF"/><path d="M11.5 9.5c0-.8.7-1.1 1.8-1.1 1.6 0 3.7.5 5.2 1.4V6.2C17 5.4 15.3 5 13.3 5 9.9 5 7.6 6.7 7.6 9.7c0 4.6 6.3 3.9 6.3 5.9 0 .9-.8 1.2-2 1.2-1.7 0-3.9-.7-5.6-1.7v3.7c1.9.8 3.8 1.2 5.6 1.2 3.5 0 5.9-1.7 5.9-4.8-.1-5-6.3-4.1-6.3-5.7z" fill="#fff"/></svg>
           <span id="stripeBtnText">Pagar con tarjeta</span>
         </button>
+        <button class="btn-pay" id="mpBtn" style="background:#009EE3;color:#fff">
+          <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="24" fill="#009EE3"/><path d="M10 24c0-7.732 6.268-14 14-14s14 6.268 14 14-6.268 14-14 14S10 31.732 10 24z" fill="#fff"/><path d="M24 16c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8z" fill="#009EE3"/></svg>
+          <span id="mpBtnText">Pagar con Mercado Pago</span>
+        </button>
         <button class="btn-pay" id="paypalBtn" style="background:#FFC439;color:#003087">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c1.379 4.153-.878 6.544-5.48 6.544h-2.19a1.95 1.95 0 0 0-1.926 1.648l-1.26 7.978a.656.656 0 0 0 .647.754h3.882c.524 0 .968-.382 1.05-.9l.999-6.327a1.05 1.05 0 0 1 1.037-.9h.656c3.773 0 6.73-1.533 7.594-5.966.37-1.91.077-3.495-.902-4.29z" fill="#003087"/></svg>
           <span id="paypalBtnText">Pagar con PayPal</span>
@@ -426,6 +430,32 @@ document.getElementById('payBtn').addEventListener('click', async () => {
     showMsg(payMsg,'bad','Error de red. Intenta de nuevo.');
     payBtn.disabled=false;
     payBtn.innerHTML=`<svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#009EE3"/><path d="M22.5 10H9.5C8.67 10 8 10.67 8 11.5v9c0 .83.67 1.5 1.5 1.5h13c.83 0 1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5z" fill="#fff"/><rect x="8" y="14" width="16" height="2.5" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
+  }
+});
+
+document.getElementById('mpBtn').addEventListener('click', async () => {
+  const mpBtn = document.getElementById('mpBtn');
+  mpBtn.disabled = true;
+  mpBtn.innerHTML = `<span class="spinner-inline" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> <span>Abriendo Mercado Pago…</span>`;
+  try {
+    const tok = _session && _session.access_token;
+    const res = await fetch('/api/create-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: `Bearer ${tok}` } : {}) },
+      body: JSON.stringify({ plan: planId }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.checkout_url) {
+      showMsg(payMsg, 'bad', data.error || 'No se pudo abrir Mercado Pago. Intenta de nuevo.');
+      mpBtn.disabled = false;
+      mpBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#009EE3"/><path d="M10 24c0-7.732 6.268-14 14-14s14 6.268 14 14-6.268 14-14 14S10 31.732 10 24z" fill="#fff"/><path d="M24 16c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8z" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
+      return;
+    }
+    window.location.href = data.checkout_url;
+  } catch(e) {
+    showMsg(payMsg, 'bad', 'Error de red. Intenta de nuevo.');
+    mpBtn.disabled = false;
+    mpBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#009EE3"/><path d="M10 24c0-7.732 6.268-14 14-14s14 6.268 14 14-6.268 14-14 14S10 31.732 10 24z" fill="#fff"/><path d="M24 16c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8z" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
   }
 });
 
