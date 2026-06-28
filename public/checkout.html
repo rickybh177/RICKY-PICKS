@@ -453,7 +453,7 @@ document.getElementById('mpBtn').addEventListener('click', async () => {
     }
     window.location.href = data.checkout_url;
   } catch(e) {
-    showMsg(payMsg, 'bad', 'Error de red. Intenta de nuevo.');
+    showMsg(payMsg, 'bad', 'Error: ' + (e && e.message ? e.message : String(e)));
     mpBtn.disabled = false;
     mpBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#009EE3"/><path d="M10 24c0-7.732 6.268-14 14-14s14 6.268 14 14-6.268 14-14 14S10 31.732 10 24z" fill="#fff"/><path d="M24 16c-4.418 0-8 3.582-8 8s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8z" fill="#009EE3"/></svg><span>Pagar con Mercado Pago</span>`;
   }
