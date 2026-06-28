@@ -706,6 +706,7 @@ function implied(dec){ return dec ? 1/dec : null; }
 function devig(probs){ const s = probs.reduce((x,y) => x+(y||0), 0); return s>0 ? probs.map(p => p?p/s:null) : probs; }
 function pct(p){ return (p*100).toFixed(1)+'%'; }
 let oddsMode = 'american';
+let _freeMode = false;
 
 function parseOdds(raw){
   if(!raw) return null; raw=(''+raw).trim().replace(',','.'); if(!raw) return null;
@@ -823,21 +824,35 @@ function wireTool(){
         ${(()=>{
           if(!m.top_scores||!m.top_scores.length) return '';
           const top3=m.top_scores.slice(0,3);
-          const cards=top3.map((s,i)=>`
+          const visible=_freeMode?top3.slice(0,1):top3;
+          const lockedCards=_freeMode?`
+            <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#f4f6fa;border:1.5px dashed #c5cfe0;border-radius:12px;padding:18px 14px;flex:1;min-width:110px;cursor:pointer">
+              <div style="font-size:1.3rem">🔒</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#8a9ab5;text-align:center;line-height:1.4">#2 y #3 disponibles<br>con plan completo</div>
+            </a>`:'';
+          const visibleCards=visible.map((s,i)=>`
             <div class="score-card${i===0?' top1':''}">
               <div class="sc-rank">${i===0?'Más probable':`#${i+1}`}</div>
               <div class="sc-score">${s.h} – ${s.a}</div>
               <div class="sc-pct">${(s.p*100).toFixed(1)}%</div>
             </div>`).join('');
           return `<div class="an-subhead" style="margin-top:14px">Marcadores exactos más probables</div>
-            <div class="scores-wrap">${cards}</div>
+            <div class="scores-wrap">${visibleCards}${lockedCards}</div>
             <div class="an-note" style="margin-bottom:14px">Probabilidades Dixon-Coles. Usar como contexto, no como apuesta directa.</div>`;
         })()}
         <div class="an-note" style="margin:0 0 12px">${cmsg}</div>
         <table class="antab"><thead><tr><th>Mercado</th><th>Modelo</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
+        ${_freeMode?`
+        <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1.5px solid #c5d0f5;border-radius:14px;padding:16px 18px;margin-top:16px">
+          <span style="font-size:1.5rem">🔒</span>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.9rem;color:#1a2a4a;margin-bottom:2px">Mercados secundarios bloqueados</div>
+            <div style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#5a6a8a;line-height:1.4">Córners, tarjetas y tiros a puerta disponibles con el plan completo →</div>
+          </div>
+        </a>`:`
         <div class="an-subhead">Mercados secundarios · heurístico</div>
         <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
-        <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%.</div>
+        <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%.</div>`}
       </div>`;
   };
 }
@@ -851,7 +866,7 @@ const modalNote  = document.getElementById('modalNote');
 const picksList  = document.getElementById('picksList');
 const modalFoot  = document.getElementById('modalFoot');
 
-function closeModal(){ overlay.classList.remove('open'); }
+function closeModal(){ overlay.classList.remove('open'); _freeMode = false; }
 document.getElementById('modalClose').addEventListener('click', closeModal);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeModal(); closeAuth(); } });
@@ -886,13 +901,14 @@ async function openFree(){
     return;
   }
 
-  modalNote.textContent = 'Análisis completo del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
+  modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '¿Quieres los 4 partidos del día o todo el torneo? <a href="/checkout.html?plan=individual">Ver planes →</a>';
+  modalFoot.innerHTML = '¿Quieres los 3 partidos del día o todo el torneo? <a href="/checkout.html?plan=individual">Ver planes →</a>';
   const hosts = (CONFIG && CONFIG.hosts) || [];
   const isHost = hosts.includes(f.home);
   const neutralWrap = document.getElementById('tNeutralWrap');
   if(neutralWrap) { neutralWrap.style.display = isHost ? 'none' : ''; document.getElementById('tNeutral').checked = !isHost; }
+  _freeMode = true;
   wireTool();
   const rb = document.getElementById('tRun'); if(rb) rb.click();
   overlay.classList.add('open');
