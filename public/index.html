@@ -241,11 +241,9 @@
     .tool-row { flex-direction: column; }
     .nav-link { display: none !important; }
     .nav-link.nav-models-active { display: inline-flex !important; }
-    /* guía del modelo: 3 columnas → 1 columna en móvil */
-    #guia .guide-cards { grid-template-columns: 1fr !important; }
-    /* tabla de ejemplo: scroll horizontal */
-    #guia .example-table { overflow-x: auto; }
-    #guia .example-table table { min-width: 420px; }
+    /* carrusel guía */
+    #guia .carousel-wrap { max-width: 420px; }
+    #guia .carousel-img { max-height: 560px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
@@ -454,79 +452,78 @@
   </div>
 </section>
 
-<!-- GUÍA DEL MODELO -->
-<section id="guia" style="padding-top:0;">
+<!-- GUÍA DEL MODELO — CARRUSEL -->
+<section id="guia" style="padding-top:0;padding-bottom:48px;">
   <div class="wrap">
-    <div class="sec-head">
-      <h2>Cómo leer el modelo</h2>
-      <p class="sec-sub">El modelo te da tres datos por cada mercado. Así los interpretas.</p>
+    <div class="sec-head" style="margin-bottom:28px">
+      <h2>Cómo usar el modelo</h2>
+      <p class="sec-sub">Sigue los pasos del carrusel para sacarle el máximo provecho.</p>
     </div>
 
-    <!-- Columnas explicativas -->
-    <div class="guide-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px">
-      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
-        <div style="font-size:1.6rem;margin-bottom:10px">📊</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Modelo %</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px">58.3%</div>
-        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">La probabilidad real que le asigna el modelo Dixon-Coles a que ocurra ese resultado, basada en datos históricos.</p>
+    <div class="carousel-wrap" style="max-width:420px;margin:0 auto;position:relative;user-select:none;">
+      <!-- Track de imágenes -->
+      <div id="carouselTrack" style="overflow:hidden;border-radius:20px;background:#f0f0f0;aspect-ratio:4/5;position:relative;">
+        <div id="carouselInner" style="display:flex;transition:transform 0.35s cubic-bezier(.4,0,.2,1);height:100%;">
+          <img class="carousel-img" src="/img/carousel/slide-0.jpg" alt="Portada — Cómo usar el modelo" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+          <img class="carousel-img" src="/img/carousel/slide-1.jpg" alt="Paso 1 — Elige el partido" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+          <img class="carousel-img" src="/img/carousel/slide-2.jpg" alt="Paso 2 — Introduce tus momios" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+          <img class="carousel-img" src="/img/carousel/slide-3.jpg" alt="Paso 3 — Marcadores exactos" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+          <img class="carousel-img" src="/img/carousel/slide-4.jpg" alt="Paso 4 — Mercados principales" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+          <img class="carousel-img" src="/img/carousel/slide-5.jpg" alt="Paso 5" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+        </div>
+        <!-- Flechas -->
+        <button id="carouselPrev" aria-label="Anterior" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08172e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button id="carouselNext" aria-label="Siguiente" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08172e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
-      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
-        <div style="font-size:1.6rem;margin-bottom:10px">⚡</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Edge</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:#15a34a;margin-bottom:8px">+11.3%</div>
-        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">La ventaja vs. la cuota de tu casa. Si el modelo dice 58% y la casa implica 47%, tienes +11% de edge. Positivo = valor.</p>
-      </div>
-      <div style="background:var(--white);border:1.5px solid var(--line);border-radius:14px;padding:22px 20px;text-align:center">
-        <div style="font-size:1.6rem;margin-bottom:10px">🎯</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Pick</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px" class="badge win" style="display:inline-block">BET</div>
-        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0"><strong>BET</strong> = el modelo recomienda jugarlo. La decisión final siempre es tuya.</p>
-      </div>
+      <!-- Dots -->
+      <div id="carouselDots" style="display:flex;justify-content:center;gap:6px;margin-top:14px;"></div>
     </div>
-
-    <!-- Ejemplo visual -->
-    <div class="example-table" style="background:var(--white);border:1.5px solid var(--line);border-radius:16px;padding:28px 28px 20px;max-width:680px;margin:0 auto 16px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Ejemplo real</div>
-      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:4px">🇫🇷 Francia vs. 🇧🇪 Bélgica</div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:20px">xG modelo 1.87 – 0.94 · sede neutral</div>
-
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Mercado</th>
-            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Modelo %</th>
-            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Edge</th>
-            <th style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);padding:0 0 10px;border-bottom:1px solid var(--line)">Pick</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="border-bottom:1px solid var(--line)">
-            <td style="padding:12px 0;font-size:0.88rem">Gana 🇫🇷 Francia (1)</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">54.1%</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#15a34a">+9.1%</td>
-            <td style="padding:12px 0;text-align:right"><span style="background:rgba(21,163,74,0.12);color:#15a34a;font-family:'JetBrains Mono',monospace;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:5px">BET</span></td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--line)">
-            <td style="padding:12px 0;font-size:0.88rem">Over 2.5 goles</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">48.3%</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:var(--muted)">—</td>
-            <td style="padding:12px 0;text-align:right"><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted)">—</span></td>
-          </tr>
-          <tr>
-            <td style="padding:12px 0;font-size:0.88rem">Ambos equipos marcan</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem">51.7%</td>
-            <td style="padding:12px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:0.88rem;color:#15a34a">+11.7%</td>
-            <td style="padding:12px 0;text-align:right"><span style="background:rgba(21,163,74,0.12);color:#15a34a;font-family:'JetBrains Mono',monospace;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:5px">BET</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div style="margin-top:16px;font-size:0.78rem;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:14px">
-        💡 <strong>Cómo leerlo:</strong> Francia ligero favorito (54%), pero la casa lo paga como si fuera 45% — ahí está el edge. Over 2.5 no tiene valor: el modelo ve menos del 50% de probabilidad. Ambos marcan sí tiene edge: el modelo lo ve en 52% y la casa lo implica en 40%.
-      </div>
-    </div>
-
-    <p style="text-align:center;font-size:0.82rem;color:var(--muted);max-width:52ch;margin:0 auto 0">El edge no garantiza ganar cada apuesta, pero sí que estás del lado correcto de las probabilidades a largo plazo.</p>
   </div>
+
+  <script>
+  (function(){
+    const inner = document.getElementById('carouselInner');
+    const dotsEl = document.getElementById('carouselDots');
+    const total = inner.children.length;
+    let cur = 0;
+
+    // Crear dots
+    for(let i=0;i<total;i++){
+      const d = document.createElement('button');
+      d.style.cssText='width:8px;height:8px;border-radius:50%;border:none;cursor:pointer;padding:0;transition:background 0.2s,width 0.2s;background:#d1d5db;';
+      d.setAttribute('aria-label','Slide '+(i+1));
+      d.addEventListener('click',()=>go(i));
+      dotsEl.appendChild(d);
+    }
+
+    function go(n){
+      cur = (n + total) % total;
+      inner.style.transform = `translateX(-${cur * 100}%)`;
+      Array.from(dotsEl.children).forEach((d,i)=>{
+        d.style.background = i===cur ? '#2f7bff' : '#d1d5db';
+        d.style.width = i===cur ? '22px' : '8px';
+        d.style.borderRadius = i===cur ? '4px' : '50%';
+      });
+    }
+
+    document.getElementById('carouselPrev').addEventListener('click',()=>go(cur-1));
+    document.getElementById('carouselNext').addEventListener('click',()=>go(cur+1));
+
+    // Swipe táctil
+    let startX=0;
+    inner.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+    inner.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-startX;
+      if(Math.abs(dx)>40) go(dx<0?cur+1:cur-1);
+    });
+
+    go(0);
+  })();
+  </script>
 </section>
 
 <!-- PRECIOS -->
