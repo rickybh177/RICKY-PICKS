@@ -2,6 +2,7 @@
    Crea una orden de PayPal y devuelve el approvalUrl para redirigir al cliente. */
 const fetch = require('node-fetch');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { DISCOUNTS } = require('../lib/discounts');
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_SECRET    = process.env.PAYPAL_SECRET;
@@ -47,12 +48,16 @@ module.exports = async function handler(req, res) {
 
     const plan = (body && body.plan) || 'torneo';
     if (!PLANS[plan]) return res.status(400).json({ error: 'Plan inválido.' });
+    const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
+    const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
 
     const token = await getAccessToken();
     const p = PLANS[plan];
+    const finalPrice = discount ? (parseFloat(p.price) * (1 - discount.pct / 100)).toFixed(2) : p.price;
+    const productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
     const SITE_URL = siteUrl(req);
 
     const order = await fetch(`${BASE}/v2/checkout/orders`, {
@@ -61,8 +66,8 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         intent: 'CAPTURE',
         purchase_units: [{
-          amount: { currency_code: p.currency, value: p.price },
-          description: p.name,
+          amount: { currency_code: p.currency, value: finalPrice },
+          description: productName,
           custom_id: `${user.id}:${plan}`,
         }],
         application_context: {

@@ -1,6 +1,7 @@
 /* POST /api/redeem  { code }
-   Canjea un código de acceso y otorga el plan correspondiente al usuario autenticado. */
+   Canjea un código de acceso (gratis) o valida un código de descuento. */
 const { getUserFromToken, grantEntitlement } = require('../lib/supabaseAdmin');
+const { DISCOUNTS } = require('../lib/discounts');
 
 // Códigos válidos: código -> plan que otorga
 const CODES = {
@@ -39,6 +40,12 @@ module.exports = async function handler(req, res) {
 
     if (!code) return res.status(400).json({ error: 'Código requerido.' });
 
+    // ¿Es código de descuento?
+    const discount = DISCOUNTS[code];
+    if (discount) {
+      return res.status(200).json({ ok: true, type: 'discount', plan: discount.plan, pct: discount.pct });
+    }
+
     const plan = CODES[code];
     if (!plan) return res.status(400).json({ error: 'Código inválido o expirado.' });
 
@@ -46,7 +53,7 @@ module.exports = async function handler(req, res) {
     if (!user) return res.status(401).json({ error: 'Inicia sesión para canjear un código.' });
 
     await grantEntitlement(user.id, plan);
-    return res.status(200).json({ ok: true, plan });
+    return res.status(200).json({ ok: true, type: 'access', plan });
   } catch (e) {
     console.error('redeem error:', e);
     return res.status(500).json({ error: 'Error interno: ' + (e.message || JSON.stringify(e)) });

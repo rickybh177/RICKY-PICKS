@@ -2,6 +2,7 @@
    Crea una sesión de Stripe Checkout y devuelve la URL de pago. */
 const Stripe = require('stripe');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { DISCOUNTS } = require('../lib/discounts');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -32,11 +33,15 @@ module.exports = async function handler(req, res) {
 
     const plan = (body && body.plan) || 'torneo';
     if (!PLANS[plan]) return res.status(400).json({ error: 'Plan inválido.' });
+    const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
+    const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
 
     const p = PLANS[plan];
+    const finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
+    const productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
     const SITE_URL = siteUrl(req);
 
     const session = await stripe.checkout.sessions.create({
@@ -44,8 +49,8 @@ module.exports = async function handler(req, res) {
       line_items: [{
         price_data: {
           currency: p.currency,
-          product_data: { name: p.name },
-          unit_amount: p.price,
+          product_data: { name: productName },
+          unit_amount: finalPrice,
         },
         quantity: 1,
       }],

@@ -6,6 +6,7 @@
    ============================================================ */
 const { PLANS } = require('../lib/plans');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { DISCOUNTS } = require('../lib/discounts');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -44,14 +45,18 @@ module.exports = async function handler(req, res) {
   if (!plan) {
     return res.status(400).json({ error: 'Plan no válido.' });
   }
+  const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
+  const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
+  const finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
+  const finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
 
   const base = siteUrl(req);
   const preference = {
     items: [{
       id: plan.id,
-      title: `RICKY·PICKS — ${plan.title}`,
+      title: finalTitle,
       quantity: 1,
-      unit_price: plan.price,
+      unit_price: finalPrice,
       currency_id: plan.currency,
     }],
     payer: { email: user.email },

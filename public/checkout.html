@@ -378,6 +378,8 @@ document.getElementById('signOutLink').addEventListener('click', async () => {
   if(sb) await sb.auth.signOut();
 });
 
+let _activeDiscount = null; // { code, pct, plan }
+
 document.getElementById('redeemBtn').addEventListener('click', async () => {
   const input = document.getElementById('codeInput');
   const msg   = document.getElementById('redeemMsg');
@@ -385,7 +387,7 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
   const code  = input.value.trim().toUpperCase();
   if (!code) { msg.textContent = 'Escribe un código.'; msg.className = 'msg bad'; return; }
   if (!_currentSession) { msg.textContent = 'Inicia sesión primero.'; msg.className = 'msg bad'; return; }
-  btn.disabled = true; btn.textContent = 'Canjeando…';
+  btn.disabled = true; btn.textContent = 'Validando…';
   try {
     const res = await fetch('/api/redeem', {
       method: 'POST',
@@ -393,14 +395,31 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
       body: JSON.stringify({ code })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al canjear.');
-    msg.textContent = '¡Código canjeado! Redirigiendo…';
-    msg.className = 'msg ok';
-    setTimeout(() => { window.location.href = '/mis-modelos.html?pago=' + (data.plan || 'torneo'); }, 1200);
+    if (!res.ok) throw new Error(data.error || 'Error al validar.');
+
+    if (data.type === 'discount') {
+      if (data.plan !== planId) {
+        throw new Error('Este código aplica solo al plan ' + (data.plan === 'torneo' ? 'Torneo completo' : 'Partidos del día') + '.');
+      }
+      _activeDiscount = { code, pct: data.pct, plan: data.plan };
+      const original = PLANS[planId].price;
+      const numPrice = parseInt(original.replace('$',''));
+      const discounted = Math.round(numPrice * (1 - data.pct / 100));
+      document.getElementById('summaryPrice').innerHTML =
+        `<span style="text-decoration:line-through;color:var(--muted);font-size:0.85rem">${original} MXN</span> <span style="color:#16a34a">$${discounted} MXN</span>`;
+      msg.textContent = `✓ ${data.pct}% de descuento aplicado.`;
+      msg.className = 'msg ok';
+      btn.textContent = 'Aplicado';
+    } else {
+      // Código de acceso gratis
+      msg.textContent = '¡Código canjeado! Redirigiendo…';
+      msg.className = 'msg ok';
+      setTimeout(() => { window.location.href = '/mis-modelos.html?pago=' + (data.plan || 'torneo'); }, 1200);
+    }
   } catch(e) {
     msg.textContent = e.message;
     msg.className = 'msg bad';
-    btn.disabled = false; btn.textContent = 'Canjear';
+    btn.disabled = false; btn.textContent = 'Validar';
   }
 });
 
@@ -442,7 +461,7 @@ document.getElementById('mpBtn').addEventListener('click', async () => {
     const res = await fetch('/api/create-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: `Bearer ${tok}` } : {}) },
-      body: JSON.stringify({ plan: planId }),
+      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.checkout_url) {
@@ -468,7 +487,7 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
     const res = await fetch('/api/stripe-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan: planId }),
+      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined }),
     });
     const out = await res.json();
     if (!res.ok || !out.url) {
@@ -494,7 +513,7 @@ document.getElementById('paypalBtn').addEventListener('click', async () => {
     const res = await fetch('/api/paypal-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${_currentSession.access_token}` },
-      body: JSON.stringify({ plan: planId }),
+      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined }),
     });
     const out = await res.json();
     if (!res.ok || !out.approvalUrl) {
