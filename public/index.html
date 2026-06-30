@@ -567,9 +567,16 @@
       </div>
       <div class="tier featured">
         <h3>Torneo completo</h3>
-        <div class="price"><span class="amt">$49.99</span><span class="cur">USD</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);margin:-8px 0 10px">MXN 899</div>
-        <div class="limited">Precio por tiempo limitado de Ronda de 32.</div>
+        <!-- Precio tachado -->
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px">
+          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;color:var(--muted);text-decoration:line-through">$90.00</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);text-decoration:line-through">USD</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);text-decoration:line-through;margin-bottom:6px">MXN 1,599</div>
+        <!-- Precio real en rojo -->
+        <div class="price" style="margin-top:0"><span class="amt" style="color:#dc2626">$49.99</span><span class="cur" style="color:#dc2626">USD</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:#dc2626;font-weight:700;margin:-8px 0 10px">MXN 899</div>
+        <div class="limited" style="background:rgba(220,38,38,0.08);color:#dc2626;border-color:rgba(220,38,38,0.2)">🇲🇽 Promoción exclusiva — por el partido de México hoy.</div>
         <div class="desc">Acceso a todos los picks de todos los partidos del Mundial.</div>
         <ul>
           <li>Todos los partidos del torneo</li>
