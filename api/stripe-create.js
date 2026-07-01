@@ -7,7 +7,7 @@ const { DISCOUNTS } = require('../lib/discounts');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PLANS = {
-  individual: { name: 'RICKY-PICKS — Partidos del día', price: 19900, currency: 'mxn' },
+  individual: { name: 'RICKY-PICKS — Partidos del día', price: 39900, currency: 'mxn' },
   torneo:     { name: 'RICKY-PICKS — Torneo completo',  price: 89900, currency: 'mxn' },
 };
 
