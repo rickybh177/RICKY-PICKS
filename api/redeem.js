@@ -18,6 +18,7 @@ const CODES = {
   'CESAR1': 'individual',
   'DAVID1': 'individual',
   'IGNACIO1': 'torneo',
+  'MUGUELVIP': 'torneo',
 };
 
 function bearer(req) {
