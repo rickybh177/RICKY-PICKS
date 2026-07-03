@@ -42,22 +42,19 @@ const msg = document.getElementById('msg');
 
 function showMsg(text, type){ msg.textContent=text; msg.className='msg '+type; }
 
-// Supabase envía el token en el hash o como query param (PKCE)
-(async () => {
-  const hash = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
-  const query = Object.fromEntries(new URLSearchParams(location.search));
-  const code = query.code;
-  if (code) {
-    // PKCE flow
-    const { error } = await sb.auth.exchangeCodeForSession(code);
-    if (error) { showMsg('Enlace inválido o expirado. Solicita uno nuevo.', 'bad'); btn.disabled = true; }
-  } else if (hash.access_token) {
-    const { error } = await sb.auth.setSession({ access_token: hash.access_token, refresh_token: hash.refresh_token });
-    if (error) { showMsg('Enlace inválido o expirado. Solicita uno nuevo.', 'bad'); btn.disabled = true; }
-  } else {
-    showMsg('Enlace inválido o expirado. Solicita uno nuevo.', 'bad'); btn.disabled = true;
+// Deshabilitar botón hasta que la sesión de recovery esté lista
+btn.disabled = true;
+btn.textContent = 'Verificando enlace…';
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    btn.disabled = false;
+    btn.textContent = 'Guardar contraseña';
+  } else if (!session) {
+    showMsg('Enlace inválido o expirado. Solicita uno nuevo.', 'bad');
+    btn.disabled = true;
   }
-})();
+});
 
 btn.addEventListener('click', async () => {
   const p1 = document.getElementById('pass1').value;
