@@ -80,7 +80,7 @@
   .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.02rem; }
 
   /* PRICING */
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+  .tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 380px)); gap: 18px; align-items: stretch; justify-content: center; }
   .tier { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 30px 26px; display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   .tier:hover { transform: translateY(-3px); box-shadow: 0 20px 44px -28px rgba(8,23,46,0.4); }
   .tier.featured { border: 2px solid var(--blue-bright); position: relative; box-shadow: 0 24px 50px -30px rgba(47,123,255,0.45); }
