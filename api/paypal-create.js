@@ -17,8 +17,9 @@ function siteUrl(req) {
 }
 
 const PLANS = {
-  individual: { name: 'RICKY-PICKS — Partidos del día', price: '14.99', currency: 'USD' },
-  torneo:     { name: 'RICKY-PICKS — Torneo completo',  price: '28.99', currency: 'USD' },
+  mexico:     { name: 'RICKY-PICKS — Partido de México', price: '9.99',  currency: 'USD' },
+  individual: { name: 'RICKY-PICKS — Partidos del día',  price: '14.99', currency: 'USD' },
+  torneo:     { name: 'RICKY-PICKS — Torneo completo',   price: '28.99', currency: 'USD' },
 };
 
 async function getAccessToken() {

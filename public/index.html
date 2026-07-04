@@ -80,7 +80,7 @@
   .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.02rem; }
 
   /* PRICING */
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
   .tier { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 30px 26px; display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   .tier:hover { transform: translateY(-3px); box-shadow: 0 20px 44px -28px rgba(8,23,46,0.4); }
   .tier.featured { border: 2px solid var(--blue-bright); position: relative; box-shadow: 0 24px 50px -30px rgba(47,123,255,0.45); }
@@ -572,6 +572,19 @@
           <li>Sin tarjeta</li>
         </ul>
         <button class="btn btn-ghost" id="freeBtn">Ver pick gratis</button>
+      </div>
+      <div class="tier">
+        <h3>🇲🇽 Partido de México</h3>
+        <div class="price" style="margin-bottom:2px"><span class="amt">$199</span><span class="cur">MXN</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin:-6px 0 12px">$9.99 USD</div>
+        <div class="desc">Solo el análisis del partido de México:</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink);margin:10px 0 14px">🇲🇽 México <span style="font-weight:400;color:var(--muted)">vs</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</div>
+        <ul>
+          <li>Herramienta completa con tus momios</li>
+          <li>Probabilidades, xG, córners, tarjetas</li>
+          <li>Acceso inmediato con tu cuenta</li>
+        </ul>
+        <a href="/checkout.html?plan=mexico" class="btn btn-primary">Comprar partido MX</a>
       </div>
       <div class="tier">
         <h3>Partidos del día</h3>
