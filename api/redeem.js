@@ -21,6 +21,7 @@ const CODES = {
   'MUGUELVIP': 'torneo',
   'MIGUELVIP': 'torneo',
   'JOSHVIP':   'torneo',
+  'PLATA100':  'torneo',
 };
 
 function bearer(req) {
