@@ -829,16 +829,16 @@ function wireTool(){
     rows+=rowWithVig(`Gana ${teamLabel(home)} (1)`, m.home_win, impH);
     rows+=rowWithVig('Empate (X)', m.draw, impD);
     rows+=rowWithVig(`Gana ${teamLabel(away)} (2)`, m.away_win, impA);
+    const lockedRow = name => `<tr style="opacity:0.6">
+      <td>${name}</td>
+      <td class="num" style="filter:blur(4px);user-select:none">??%</td>
+      <td style="filter:blur(4px);user-select:none">??%</td>
+      <td><a href="/checkout.html?plan=torneo" style="font-size:0.72rem;color:var(--blue);font-weight:600;white-space:nowrap;text-decoration:none">Ver →</a></td>
+    </tr>`;
     if(_freeMode){
-      rows+=`<tr><td colspan="4" style="padding:0;border:none">
-        <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1.5px solid #c5d0f5;border-radius:10px;padding:12px 14px;margin:6px 0">
-          <span style="font-size:1.2rem">🔒</span>
-          <div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;color:#1a2a4a">Over/Under · BTTS bloqueados</div>
-            <div style="font-size:0.75rem;color:#5a6a8a">Disponibles con el modelo completo →</div>
-          </div>
-        </a>
-      </td></tr>`;
+      rows+=lockedRow('Over 2.5 goles');
+      rows+=lockedRow('Under 2.5 goles');
+      rows+=lockedRow('Ambos anotan (Sí)');
     } else {
       rows+=rowHTML('Over 2.5 goles', m.over25, parseOdds($('o_ov').value));
       rows+=rowHTML('Under 2.5 goles', m.under25, parseOdds($('o_un').value));
@@ -869,10 +869,13 @@ function wireTool(){
           const top3=m.top_scores.slice(0,3);
           const visible=_freeMode?top3.slice(0,1):top3;
           const lockedCards=_freeMode?`
-            <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#f4f6fa;border:1.5px dashed #c5cfe0;border-radius:12px;padding:18px 14px;flex:1;min-width:110px;cursor:pointer">
-              <div style="font-size:1.3rem">🔒</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#8a9ab5;text-align:center;line-height:1.4">#2 y #3 disponibles<br>con plan completo</div>
-            </a>`:'';
+            ${[2,3].map(n=>`
+            <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#f4f6fa;border:1.5px dashed #c5cfe0;border-radius:12px;padding:18px 14px;flex:1;min-width:110px;cursor:pointer;opacity:0.7">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:#8a9ab5;letter-spacing:0.05em">#${n}</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.6rem;color:#c5cfe0;filter:blur(3px);user-select:none">?–?</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#c5cfe0;filter:blur(3px);user-select:none">??%</div>
+              <div style="font-size:0.68rem;color:var(--blue);font-weight:600;margin-top:2px">Ver →</div>
+            </a>`).join('')}`:'';
           const visibleCards=visible.map((s,i)=>`
             <div class="score-card${i===0?' top1':''}">
               <div class="sc-rank">${i===0?'Más probable':`#${i+1}`}</div>
@@ -885,15 +888,17 @@ function wireTool(){
         })()}
         <div class="an-note" style="margin:0 0 12px">${cmsg}</div>
         <table class="antab"><thead><tr><th>Mercado</th><th>Modelo</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="an-subhead" style="margin-top:16px">Mercados secundarios · heurístico</div>
         ${_freeMode?`
-        <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1.5px solid #c5d0f5;border-radius:14px;padding:16px 18px;margin-top:16px">
-          <span style="font-size:1.5rem">🔒</span>
-          <div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.9rem;color:#1a2a4a;margin-bottom:2px">Mercados secundarios bloqueados</div>
-            <div style="font-family:'Inter',sans-serif;font-size:0.78rem;color:#5a6a8a;line-height:1.4">Córners, tarjetas y tiros a puerta disponibles con el plan completo →</div>
-          </div>
-        </a>`:`
-        <div class="an-subhead">Mercados secundarios · heurístico</div>
+        <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>
+          ${['Córners totales','Córners local/visit.','Tarjetas amarillas','Tiros a puerta local','Tiros a puerta visit.'].map(name=>`
+          <tr style="opacity:0.6">
+            <td>${name}</td>
+            <td style="filter:blur(4px);user-select:none">??.?</td>
+            <td style="filter:blur(4px);user-select:none">~?.?</td>
+            <td><a href="/checkout.html?plan=torneo" style="font-size:0.72rem;color:var(--blue);font-weight:600;white-space:nowrap;text-decoration:none">Ver →</a></td>
+          </tr>`).join('')}
+        </tbody></table>`:`
         <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
         <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%.</div>`}
       </div>`;
