@@ -520,6 +520,7 @@ function wireTorneo(){
   const fxSel = document.getElementById('tFixture');
   fxSel.innerHTML = ['<option value="">— Elegir fixture —</option>']
     .concat(fixtures.map((x,i)=>`<option value="${i}">${(x.date||'').slice(5)} · ${teamLabel(x.home_team)} vs ${teamLabel(x.away_team)}</option>`))
+    .concat(['<option value="" disabled>— Siguientes partidos a confirmar —</option>'])
     .join('');
   const teamOpts = teams.map(t=>`<option value="${t}">${teamLabel(t)}</option>`).join('');
   document.getElementById('tHome').innerHTML = teamOpts;
