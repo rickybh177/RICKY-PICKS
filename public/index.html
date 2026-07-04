@@ -80,7 +80,7 @@
   .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.02rem; }
 
   /* PRICING */
-  .tiers { display: grid; grid-template-columns: repeat(2, minmax(0, 380px)); gap: 18px; align-items: stretch; justify-content: center; }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
   .tier { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 30px 26px; display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   .tier:hover { transform: translateY(-3px); box-shadow: 0 20px 44px -28px rgba(8,23,46,0.4); }
   .tier.featured { border: 2px solid var(--blue-bright); position: relative; box-shadow: 0 24px 50px -30px rgba(47,123,255,0.45); }
@@ -559,10 +559,10 @@
     <div class="sec-head">
       <div class="eyebrow">Precios</div>
       <h2>Elige cuánto del Mundial quieres cubrir.</h2>
-      <p>Elige el plan que más te convenga y accede al análisis completo del modelo.</p>
+      <p>Un pick gratis cada día para que veas cómo funciona. Si quieres más, lo desbloqueas.</p>
     </div>
     <div class="tiers">
-      <div class="tier" style="display:none">
+      <div class="tier">
         <h3>Pick del día</h3>
         <div class="price"><span class="amt">$0</span><span class="cur">USD</span></div>
         <div class="desc">Un partido completo, gratis, todos los días. El mismo análisis que el de pago.</div>
@@ -829,9 +829,21 @@ function wireTool(){
     rows+=rowWithVig(`Gana ${teamLabel(home)} (1)`, m.home_win, impH);
     rows+=rowWithVig('Empate (X)', m.draw, impD);
     rows+=rowWithVig(`Gana ${teamLabel(away)} (2)`, m.away_win, impA);
-    rows+=rowHTML('Over 2.5 goles', m.over25, parseOdds($('o_ov').value));
-    rows+=rowHTML('Under 2.5 goles', m.under25, parseOdds($('o_un').value));
-    rows+=rowHTML('Ambos anotan (Sí)', m.btts_yes, parseOdds($('o_bt').value));
+    if(_freeMode){
+      rows+=`<tr><td colspan="4" style="padding:0;border:none">
+        <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1.5px solid #c5d0f5;border-radius:10px;padding:12px 14px;margin:6px 0">
+          <span style="font-size:1.2rem">🔒</span>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:0.85rem;color:#1a2a4a">Over/Under · BTTS bloqueados</div>
+            <div style="font-size:0.75rem;color:#5a6a8a">Disponibles con el modelo completo →</div>
+          </div>
+        </a>
+      </td></tr>`;
+    } else {
+      rows+=rowHTML('Over 2.5 goles', m.over25, parseOdds($('o_ov').value));
+      rows+=rowHTML('Under 2.5 goles', m.under25, parseOdds($('o_un').value));
+      rows+=rowHTML('Ambos anotan (Sí)', m.btts_yes, parseOdds($('o_bt').value));
+    }
     const totXg=m.xg_home+m.xg_away;
     const corners=(8.6+totXg*0.95), cornH=corners*(m.xg_home/totXg), cornA=corners-cornH;
     const tight=1-Math.abs(m.home_win-m.away_win), cards=3.6+tight*1.6;
@@ -934,7 +946,7 @@ async function openFree(){
 
   modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '¿Quieres los 3 partidos del día o todo el torneo? <a href="/checkout.html?plan=individual">Ver planes →</a>';
+  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-bright);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=individual" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O solo los partidos de hoy por $300 MXN</a></div>';
   const hosts = (CONFIG && CONFIG.hosts) || [];
   const isHost = hosts.includes(f.home);
   const neutralWrap = document.getElementById('tNeutralWrap');
