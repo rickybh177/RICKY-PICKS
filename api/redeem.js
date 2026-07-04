@@ -20,6 +20,7 @@ const CODES = {
   'IGNACIO1': 'torneo',
   'MUGUELVIP': 'torneo',
   'MIGUELVIP': 'torneo',
+  'JOSHVIP':   'torneo',
 };
 
 function bearer(req) {
