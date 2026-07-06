@@ -80,7 +80,7 @@
   .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.02rem; }
 
   /* PRICING */
-  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
   .tier { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 30px 26px; display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
   .tier:hover { transform: translateY(-3px); box-shadow: 0 20px 44px -28px rgba(8,23,46,0.4); }
   .tier.featured { border: 2px solid var(--blue-bright); position: relative; box-shadow: 0 24px 50px -30px rgba(47,123,255,0.45); }
@@ -305,9 +305,9 @@
     <div class="record">
       <div>
         <div class="record-stats">
-          <div class="stat"><div class="num data">71.7%</div><div class="lbl">Aciertos</div></div>
+          <div class="stat"><div class="num data">71.8%</div><div class="lbl">Aciertos</div></div>
           <div class="stat"><div class="num data">115</div><div class="lbl">Picks publicados</div></div>
-          <div class="stat"><div class="num data">104-41</div><div class="lbl">Ganados · Perdidos</div></div>
+          <div class="stat"><div class="num data">107-42</div><div class="lbl">Ganados · Perdidos</div></div>
         </div>
       </div>
       <div class="streak" aria-hidden="true">
@@ -323,7 +323,7 @@
                 fill="none" stroke="#2f7bff" stroke-width="2.5" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="record-note">Picks del modelo sobre todos los partidos jugados, del 11 al 5 de julio · todos publicados, ganados y perdidos · 104-41.</div>
+      <div class="record-note">Picks del modelo sobre todos los partidos jugados, del 11 al 6 de julio · todos publicados, ganados y perdidos · 107-42.</div>
     </div>
   </div>
 </header>
@@ -342,6 +342,10 @@
           <tr><th>Fecha</th><th>Partido</th><th>Pick</th><th>Resultado</th></tr>
         </thead>
         <tbody>
+          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Noruega gana</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
+          <tr><td class="date">05 JUL</td><td>🇲🇽 México vs. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</td><td class="pick">México gana</td><td><span class="badge loss">Perdido</span></td></tr>
           <tr><td class="date">04 JUL</td><td>🇫🇷 Francia vs. 🇵🇾 Paraguay</td><td class="pick">Francia gana</td><td><span class="badge win">Ganado</span></td></tr>
           <tr><td class="date">04 JUL</td><td>🇫🇷 Francia vs. 🇵🇾 Paraguay</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
           <tr><td class="date">04 JUL</td><td>🇨🇦 Canadá vs. 🇲🇦 Marruecos</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
@@ -489,7 +493,7 @@
         </tbody>
       </table>
     </div>
-    <p class="history-foot">Picks del modelo sobre los partidos ya jugados, con su resultado real. 104 ganados · 41 perdidos al 5 de julio.</p>
+    <p class="history-foot">Picks del modelo sobre los partidos ya jugados, con su resultado real. 107 ganados · 42 perdidos al 6 de julio.</p>
   </div>
 </section>
 
@@ -588,26 +592,13 @@
         <button class="btn btn-ghost" id="freeBtn">Ver pick gratis</button>
       </div>
       <div class="tier">
-        <h3>🇲🇽 Partido de México</h3>
-        <div class="price" style="margin-bottom:2px"><span class="amt">$199</span><span class="cur">MXN</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin:-6px 0 12px">$9.99 USD</div>
-        <div class="desc">Solo el análisis del partido de México:</div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink);margin:10px 0 14px">🇲🇽 México <span style="font-weight:400;color:var(--muted)">vs</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</div>
-        <ul>
-          <li>Herramienta completa con tus momios</li>
-          <li>Probabilidades, xG, córners, tarjetas</li>
-          <li>Acceso inmediato con tu cuenta</li>
-        </ul>
-        <a href="/checkout.html?plan=mexico" class="btn btn-primary">Comprar partido MX</a>
-      </div>
-      <div class="tier">
         <h3>Partidos del día</h3>
         <div class="price" style="margin-bottom:2px"><span class="amt">$299</span><span class="cur">MXN</span></div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin:-6px 0 12px">$14.99 USD</div>
         <div class="desc">Los 2 partidos de hoy con el análisis completo:</div>
         <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0 14px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇲🇽 México <span style="font-weight:400;color:var(--muted)">vs</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇧🇷 Brasil <span style="font-weight:400;color:var(--muted)">vs</span> 🇳🇴 Noruega</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇺🇸 Estados Unidos <span style="font-weight:400;color:var(--muted)">vs</span> 🇧🇪 Bélgica</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇵🇹 Portugal <span style="font-weight:400;color:var(--muted)">vs</span> 🇪🇸 España</div>
         </div>
         <ul>
           <li>Herramienta completa con tus momios</li>
