@@ -250,6 +250,18 @@
     .antab { font-size: 0.82rem; }
     .antab th, .antab td { padding: 8px 5px; }
     .an-match { font-size: 0.9rem; }
+    /* historial table → card layout en móvil */
+    .history-wrap { overflow: hidden; width: 100%; max-width: 100%; }
+    .history-wrap table { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+    .history-wrap tbody { display: block; width: 100%; max-width: 100%; box-sizing: border-box; }
+    .history-wrap thead { display: none; }
+    .history-wrap tr { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); gap: 2px 8px; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+    .history-wrap tr:last-child { border-bottom: none; }
+    .history-wrap td { display: block; border: none !important; padding: 0; min-width: 0; box-sizing: border-box; }
+    .history-wrap td.date { order: 1; width: 100%; font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .history-wrap tr td:nth-child(2) { order: 2; width: 100%; font-size: 0.88rem; font-weight: 500; }
+    .history-wrap td.pick { order: 3; flex: 1; font-size: 0.78rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; min-width: 0; }
+    .history-wrap tr td:last-child { order: 4; flex-shrink: 0; }
     .nav-link { display: none !important; }
     .nav-link.nav-models-active { display: inline-flex !important; }
     /* carrusel guía */
