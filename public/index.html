@@ -984,7 +984,7 @@ async function openFree(){
 
   modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-bright);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=individual" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O cuartos de final por $199 MXN</a></div>';
+  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-bright);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=individual" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O cuartos de final por $299 MXN</a></div>';
   const hosts = (CONFIG && CONFIG.hosts) || [];
   const isHost = hosts.includes(f.home);
   const neutralWrap = document.getElementById('tNeutralWrap');
