@@ -397,8 +397,11 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
 
 async function checkEntitlement(){
   if(!sb) return null;
+  // Mundial y MLB viven en filas separadas (product). Filtramos por el
+  // producto del plan que se está comprando para no cruzar accesos.
+  const product = planId && planId.startsWith('mlb_') ? 'mlb' : 'mundial';
   try{
-    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true).limit(1);
+    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true).eq('product',product).limit(1);
     if(data && data.length && data[0].active) {
       const ent = data[0];
       // Plan individual expira al día siguiente — permitir re-compra
@@ -425,7 +428,8 @@ async function renderSession(session){
     return;
   }
   const ent = await checkEntitlement();
-  if(ent && (ent.plan === planId || ent.plan === 'torneo')){
+  const topTier = ent && (ent.plan === 'torneo' || ent.plan === 'mlb_temporada' || ent.plan === 'mlb_fundador');
+  if(ent && (ent.plan === planId || topTier)){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }

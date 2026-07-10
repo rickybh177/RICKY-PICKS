@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
     if (user) {
       if (ADMIN_EMAILS.includes(user.email)) access = 'full';
       else {
-        const ent = await getEntitlement(user.id, user.email);
+        const ent = await getEntitlement(user.id, user.email, 'mlb');
         if (mlbAccessValid(ent)) access = 'full';
       }
     }

@@ -159,6 +159,7 @@
       RICKY<span>·</span>PICKS
     </a>
     <div class="nav-right">
+      <a class="nav-btn" id="mlbSwitchBtn" href="/mlb.html" style="display:none;color:var(--blue);font-weight:700">Modelo MLB →</a>
       <span class="nav-plan-badge" id="navPlanBadge" style="display:none"></span>
       <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>
     </div>
@@ -375,6 +376,18 @@ function rowHTML(name, mp, dec){
 }
 
 let _accessToken = null;
+
+/* Si el usuario también tiene acceso activo al modelo MLB, muestra el
+   link de cambio en el nav (independiente de si tiene o no Mundial). */
+async function checkMlbSwitch(){
+  if(!_accessToken) return;
+  try{
+    const res = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _accessToken } });
+    if(!res.ok) return;
+    const data = await res.json();
+    if(data && data.mlb) document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
+  }catch(e){ /* si falla, simplemente no se muestra el switcher */ }
+}
 
 async function fetchMarkets(home, away, neutral){
   const headers = { 'Content-Type': 'application/json' };
@@ -603,19 +616,24 @@ async function loadAndShow(session){
   if(ADMIN_EMAILS.includes(userEmail)){
     if(pago) history.replaceState(null,'','/mis-modelos.html');
     showMain('torneo');
+    document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
     loadConfig().then(() => { if(CONFIG) wireTorneo(); }).catch(()=>{});
     return;
   }
 
-  /* verificar acceso con timeout de 5s */
+  /* verificar acceso con timeout de 5s (solo producto "mundial": el
+     de MLB vive en su propia fila y no debe mezclarse aquí) */
   let ent = null;
   try {
     const timeout = new Promise(r => setTimeout(() => r({data:null,error:'timeout'}), 3000));
-    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true).limit(1);
+    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true).eq('product','mundial').limit(1);
     const result = await Promise.race([query, timeout]);
     const d = result.data;
     if(d && d.length && d[0].active) ent = d[0];
   } catch(e) { /* si falla el query, ent queda null */ }
+
+  /* ¿tiene también acceso al modelo MLB? mostrar el switcher en el nav */
+  checkMlbSwitch();
 
   if(!ent){
     showState('stateNoPlan');

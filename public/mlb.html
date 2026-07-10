@@ -178,6 +178,7 @@
       <button id="nextDay" aria-label="Día siguiente">›</button>
     </div>
     <div class="nav-actions">
+      <a class="enter" id="mundialSwitchBtn" href="/mis-modelos.html" style="display:none;color:var(--blue);border-color:var(--blue)">Mundial 2026 →</a>
       <button class="refresh" id="refreshBtn" title="Recalcular con alineaciones y clima de ahora">⟳ <span>Actualizar</span></button>
       <button class="enter" id="enterBtn"><span>Entrar</span>→</button>
     </div>
@@ -273,6 +274,19 @@ async function authHeader() {
     const t = data && data.session && data.session.access_token;
     return t ? { Authorization: 'Bearer ' + t } : {};
   } catch (e) { return {}; }
+}
+
+/* Si el usuario también tiene acceso activo al Mundial 2026, muestra
+   el link de cambio en el nav. */
+async function checkMundialSwitch() {
+  try {
+    const headers = await authHeader();
+    if (!headers.Authorization) return;
+    const res = await fetch('/api/my-access', { headers });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.mundial) $('mundialSwitchBtn').style.display = 'inline-block';
+  } catch (e) { /* si falla, simplemente no se muestra el switcher */ }
 }
 
 async function loadRecord() {
@@ -452,7 +466,7 @@ $('lkGo').addEventListener('click', async () => {
     });
     if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
     $('loginOverlay').classList.remove('open');
-    load(currentDate); loadRecord();
+    load(currentDate); loadRecord(); checkMundialSwitch();
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
 });
 
@@ -462,6 +476,7 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
 
 load(null);
 loadRecord();
+checkMundialSwitch();
 </script>
 </body>
 </html>
