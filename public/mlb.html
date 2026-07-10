@@ -63,13 +63,6 @@
     .model-toggle .mt-opt { flex: 1; padding: 10px 8px; font-size: 0.82rem; }
   }
 
-  .recband { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 24px 0 6px; }
-  .rec { background: var(--g1); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-  .rec .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.9rem); letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-  .rec .n.green { color: var(--bet); } .rec .n.red { color: var(--skip); } .rec .n.blue { color: var(--blue); }
-  .rec .l { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--faint); margin-top: 8px; }
-  .rec-note { font-size: 0.76rem; font-weight: 450; color: var(--faint); margin-bottom: 4px; }
-
   /* ---- GAME CARDS ---- */
   .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
   .card { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 18px; animation: rise .4s ease both; animation-delay: calc(var(--i) * 30ms); position: relative; }
@@ -204,12 +197,6 @@
       <a class="mt-opt" role="tab" aria-selected="false" id="mundialSwitchBtn" href="/">🌍 Mundial 2026 <span class="mt-lock" id="mundialLock">🔒</span></a>
     </div>
     <p class="lede">El modelo ya jugó cada partido 10,000 veces. El juego destacado es gratis todos los días; el resto se desbloquea con tu plan.</p>
-    <div class="recband">
-      <div class="rec"><div class="n green" id="recW">—</div><div class="l">Ganados · 7 días</div></div>
-      <div class="rec"><div class="n red" id="recL">—</div><div class="l">Perdidos · 7 días</div></div>
-      <div class="rec"><div class="n blue" id="recP">—</div><div class="l">Efectividad</div></div>
-    </div>
-    <div class="rec-note" id="recNote">Todos los picks del modelo, calificados contra los marcadores reales.</div>
   </div>
 </header>
 
@@ -308,20 +295,6 @@ async function checkMundialSwitch() {
       if (btn) { btn.href = '/mis-modelos.html'; btn.title = 'Ir a Mis modelos'; }
     }
   } catch (e) { /* si falla, el candado simplemente se queda */ }
-}
-
-async function loadRecord() {
-  try {
-    const res = await fetch('/api/mlb-record');
-    if (!res.ok) throw new Error();
-    const r = await res.json();
-    $('recW').textContent = r.wins;
-    $('recL').textContent = r.losses;
-    $('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
-    $('recNote').textContent = 'Todos los picks del modelo en los últimos ' + r.days + ' días, calificados contra los marcadores reales. Sin borrar perdidos.';
-  } catch (e) {
-    $('recNote').textContent = 'El récord no está disponible en este momento.';
-  }
 }
 
 async function load(date, refresh) {
@@ -487,7 +460,7 @@ $('lkGo').addEventListener('click', async () => {
     });
     if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
     $('loginOverlay').classList.remove('open');
-    load(currentDate); loadRecord(); checkMundialSwitch();
+    load(currentDate); checkMundialSwitch();
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
 });
 
@@ -513,7 +486,6 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
 })();
 
 load(null);
-loadRecord();
 checkMundialSwitch();
 </script>
 </body>
