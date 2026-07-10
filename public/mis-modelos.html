@@ -378,15 +378,19 @@ function rowHTML(name, mp, dec){
 let _accessToken = null;
 
 /* Si el usuario también tiene acceso activo al modelo MLB, muestra el
-   link de cambio en el nav (independiente de si tiene o no Mundial). */
+   link de cambio en el nav (independiente de si tiene o no Mundial).
+   Regresa true/false para que loadAndShow decida si debe redirigir
+   a un cliente que SOLO tiene MLB (no debe ver "sin plan" aquí). */
 async function checkMlbSwitch(){
-  if(!_accessToken) return;
+  if(!_accessToken) return false;
   try{
     const res = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _accessToken } });
-    if(!res.ok) return;
+    if(!res.ok) return false;
     const data = await res.json();
-    if(data && data.mlb) document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
-  }catch(e){ /* si falla, simplemente no se muestra el switcher */ }
+    const hasMlb = !!(data && data.mlb);
+    if(hasMlb) document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
+    return hasMlb;
+  }catch(e){ return false; /* si falla, simplemente no se muestra el switcher */ }
 }
 
 async function fetchMarkets(home, away, neutral){
@@ -635,9 +639,12 @@ async function loadAndShow(session){
   } catch(e) { /* si falla el query, ent queda null */ }
 
   /* ¿tiene también acceso al modelo MLB? mostrar el switcher en el nav */
-  checkMlbSwitch();
+  const hasMlb = await checkMlbSwitch();
 
   if(!ent){
+    /* Solo tiene MLB (no Mundial): esta página no le sirve de nada,
+       mándalo directo a donde sí tiene acceso. */
+    if(hasMlb){ window.location.href = '/mlb.html'; return; }
     showState('stateNoPlan');
     return;
   }
