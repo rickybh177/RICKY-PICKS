@@ -199,7 +199,7 @@
       <div id="entitledStep" style="display:none">
         <h2>Ya tienes acceso</h2>
         <p class="sub">Tu cuenta ya tiene el plan activo. Entra a tus modelos para ver los picks.</p>
-        <a href="/mis-modelos.html" class="btn-pay" style="margin-top:20px;text-decoration:none">Ir a Mis modelos →</a>
+        <a href="/mis-modelos.html" class="btn-pay" id="entitledGo" style="margin-top:20px;text-decoration:none">Ir a Mis modelos →</a>
       </div>
     </div>
   </div>
@@ -308,6 +308,18 @@ const PLANS = {
 const params = new URLSearchParams(window.location.search);
 const planId = params.get('plan');
 const payoErr = params.get('pago');
+
+/* a qué modelo pertenece un plan: mlb_* -> /mlb.html, resto -> Mundial */
+const modelUrl = p => (p || '').startsWith('mlb_') ? '/mlb.html' : '/mis-modelos.html';
+
+/* el botón de "Ya tienes acceso" lleva al modelo del plan que se ve */
+(function(){
+  const go = document.getElementById('entitledGo');
+  if(go && planId && planId.startsWith('mlb_')){
+    go.href = '/mlb.html';
+    go.textContent = 'Ir al Modelo MLB →';
+  }
+})();
 
 const plan = PLANS[planId];
 
@@ -479,10 +491,10 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
       msg.className = 'msg ok';
       btn.textContent = 'Aplicado';
     } else {
-      // Código de acceso gratis
+      // Código de acceso gratis — redirigir al modelo que otorga el plan
       msg.textContent = '¡Código canjeado! Redirigiendo…';
       msg.className = 'msg ok';
-      setTimeout(() => { window.location.href = '/mis-modelos.html?pago=' + (data.plan || 'torneo'); }, 1200);
+      setTimeout(() => { window.location.href = modelUrl(data.plan) + '?pago=' + (data.plan || 'torneo'); }, 1200);
     }
   } catch(e) {
     msg.textContent = e.message;
@@ -616,8 +628,9 @@ document.getElementById('paypalBtn').addEventListener('click', async () => {
     });
     const out = await res.json();
     if (out.ok) {
-      history.replaceState(null, '', '/mis-modelos.html?pago=' + out.plan);
-      window.location.href = '/mis-modelos.html?pago=' + out.plan;
+      const dest = modelUrl(out.plan) + '?pago=' + out.plan;
+      history.replaceState(null, '', dest);
+      window.location.href = dest;
     }
   } catch (e) { console.error('stripe capture error', e); }
 })();
@@ -643,8 +656,9 @@ document.getElementById('paypalBtn').addEventListener('click', async () => {
     });
     const out = await res.json();
     if (out.ok) {
-      history.replaceState(null, '', '/mis-modelos.html?pago=' + out.plan);
-      window.location.href = '/mis-modelos.html?pago=' + out.plan;
+      const dest = modelUrl(out.plan) + '?pago=' + out.plan;
+      history.replaceState(null, '', dest);
+      window.location.href = dest;
     }
   } catch (e) { console.error('paypal capture error', e); }
 })();

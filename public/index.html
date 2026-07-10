@@ -193,7 +193,11 @@
   .btn-ghost:hover { border-color: var(--blue); }
 
   /* ---- PRECIOS ---- */
-  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 44px; align-items: stretch; }
+  .cur-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin-top: 26px; }
+  .cur-toggle button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--muted); background: none; border: none; padding: 8px 20px; border-radius: 980px; cursor: pointer; transition: color .15s, background .15s; }
+  .cur-toggle button:hover { color: var(--text); }
+  .cur-toggle button.active { background: var(--g0); color: var(--blue); box-shadow: 0 2px 10px -4px rgba(0,0,0,0.35); }
+  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; align-items: stretch; }
   .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
   .tier:hover { border-color: var(--line-2); transform: translateY(-3px); }
   .tier.featured { border: 1.5px solid var(--blue); background: linear-gradient(180deg, rgba(47,123,255,0.08), var(--g1) 40%); }
@@ -526,11 +530,15 @@
     <div class="sec-eyebrow reveal">Preventa fundador</div>
     <h2 class="sec-title reveal">Acceso anticipado a MLB.</h2>
     <p class="sec-lede reveal">El modelo sale a finales de julio. Resérvalo hoy y entras con acceso anticipado desde el primer día — el precio fundador se respeta de por vida mientras sigas activo. Los que lleguen tarde pagarán más.</p>
+    <div class="cur-toggle reveal" id="curToggle" role="tablist" aria-label="Moneda">
+      <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
+      <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
+    </div>
     <div class="tiers">
       <div class="tier reveal">
         <h3>Pase del día</h3>
         <div class="was"></div>
-        <div class="amt">$99<small>MXN</small></div>
+        <div class="amt" data-mxn="$99<small>MXN</small>" data-usd="$5.99<small>USD</small>">$99<small>MXN</small></div>
         <div class="per">Todos los juegos de hoy · 24 h</div>
         <ul>
           <li>Veredictos de <strong>todos</strong> los juegos de hoy</li>
@@ -543,7 +551,7 @@
       <div class="tier reveal">
         <h3>Semana de prueba</h3>
         <div class="was"></div>
-        <div class="amt">$149<small>MXN</small></div>
+        <div class="amt" data-mxn="$149<small>MXN</small>" data-usd="$8.99<small>USD</small>">$149<small>MXN</small></div>
         <div class="per">7 días de acceso completo</div>
         <ul>
           <li>Todos los juegos, todos los días</li>
@@ -556,8 +564,8 @@
       <div class="tier featured reveal">
         <span class="flag">Fundador</span>
         <h3>Mensual Fundador</h3>
-        <div class="was">$499 MXN</div>
-        <div class="amt">$399<small>MXN</small></div>
+        <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
+        <div class="amt" data-mxn="$399<small>MXN</small>" data-usd="$21.99<small>USD</small>">$399<small>MXN</small></div>
         <div class="per">30 días · precio congelado de por vida</div>
         <ul>
           <li>Todos los juegos de MLB, cada día</li>
@@ -570,7 +578,7 @@
       <div class="tier reveal">
         <h3>Temporada 2026</h3>
         <div class="was"></div>
-        <div class="amt">$2,999<small>MXN</small></div>
+        <div class="amt" data-mxn="$2,999<small>MXN</small>" data-usd="$164.99<small>USD</small>">$2,999<small>MXN</small></div>
         <div class="per">Hasta el último out de la Serie Mundial</div>
         <ul>
           <li>Acceso total, sin renovar nada</li>
@@ -602,12 +610,12 @@
       </div>
       <div class="mini-tier">
         <h4>Cuartos de final</h4>
-        <div class="amt">$299 <small>MXN</small></div>
+        <div class="amt" data-mxn="$299 <small>MXN</small>" data-usd="$14.99 <small>USD</small>">$299 <small>MXN</small></div>
         <a href="/checkout.html?plan=individual" id="buyIndividual">Comprar</a>
       </div>
       <div class="mini-tier">
         <h4>Torneo completo</h4>
-        <div class="amt">$499 <small>MXN</small></div>
+        <div class="amt" data-mxn="$499 <small>MXN</small>" data-usd="$28.99 <small>USD</small>">$499 <small>MXN</small></div>
         <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar</a>
       </div>
     </div>
@@ -849,6 +857,23 @@
     }
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+
+/* Toggle de moneda en precios: cambia todos los montos con data-mxn/data-usd */
+(function(){
+  const t = document.getElementById('curToggle');
+  if (!t) return;
+  t.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+    t.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('active', b === btn);
+      b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+    });
+    const cur = btn.dataset.cur;
+    document.querySelectorAll('[data-mxn]').forEach(el => {
+      const v = cur === 'usd' ? el.dataset.usd : el.dataset.mxn;
+      if (v) el.innerHTML = v;
+    });
+  }));
 })();
 </script>
 

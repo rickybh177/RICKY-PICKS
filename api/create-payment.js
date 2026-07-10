@@ -51,6 +51,9 @@ module.exports = async function handler(req, res) {
   const finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
 
   const base = siteUrl(req);
+  // Al volver del pago, cada producto regresa a SU modelo:
+  // planes mlb_* -> /mlb.html, planes del Mundial -> /mis-modelos.html
+  const dest = plan.id.startsWith('mlb_') ? 'mlb.html' : 'mis-modelos.html';
   const preference = {
     items: [{
       id: plan.id,
@@ -64,8 +67,8 @@ module.exports = async function handler(req, res) {
     external_reference: `${user.id}:${plan.id}`,
     metadata: { user_id: user.id, plan: plan.id },
     back_urls: {
-      success: `${base}/mis-modelos.html?pago=ok`,
-      pending: `${base}/mis-modelos.html?pago=pendiente`,
+      success: `${base}/${dest}?pago=ok`,
+      pending: `${base}/${dest}?pago=pendiente`,
       failure: `${base}/checkout.html?plan=${plan.id}&pago=error`,
     },
     // auto_return solo funciona con URLs HTTPS públicas (no localhost)

@@ -200,6 +200,7 @@
 </header>
 
 <main class="wrap">
+  <div id="payBanner" style="display:none;margin:14px 0 0;background:rgba(22,163,74,0.08);color:var(--bet);border:1px solid rgba(22,163,74,0.3);border-radius:12px;padding:14px 18px;font-size:0.9rem;font-weight:600"></div>
   <div class="games" id="games">
     <div class="state" id="loading"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>
   </div>
@@ -473,6 +474,23 @@ $('lkGo').addEventListener('click', async () => {
 $('prevDay').addEventListener('click', () => currentDate && load(shiftDate(currentDate, -1)));
 $('nextDay').addEventListener('click', () => currentDate && load(shiftDate(currentDate, 1)));
 $('refreshBtn').addEventListener('click', () => load(currentDate, true));
+
+/* banner al volver de un pago (Stripe/PayPal/Mercado Pago/código) */
+(function(){
+  const pago = qs0.get('pago');
+  if(!pago) return;
+  const b = $('payBanner');
+  if(pago === 'pendiente'){
+    b.style.color = 'var(--blue)';
+    b.style.background = 'var(--blue-tint)';
+    b.style.borderColor = 'rgba(47,123,255,0.3)';
+    b.textContent = '⏳ Tu pago está en proceso. Cuando se confirme, tu acceso se activará automáticamente.';
+  } else {
+    b.textContent = '✓ ¡Pago confirmado! Tu acceso al Modelo MLB está activo. Bienvenido.';
+  }
+  b.style.display = 'block';
+  history.replaceState(null, '', '/mlb.html');
+})();
 
 load(null);
 loadRecord();

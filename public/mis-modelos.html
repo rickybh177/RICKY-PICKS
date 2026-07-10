@@ -49,6 +49,17 @@
   .btn-cta { font-weight: 700; font-size: 0.95rem; padding: 14px 28px; border-radius: 980px; border: none; cursor: pointer; text-decoration: none; display: inline-block; background: var(--blue); color: #fff; box-shadow: 0 10px 26px -12px rgba(47,123,255,0.7); transition: transform .15s ease, background .15s ease; }
   .btn-cta:hover { transform: translateY(-1px); background: var(--blue-deep); }
 
+  /* TOGGLE DE MODELO (Mundial | MLB) */
+  .model-toggle { display: inline-flex; background: var(--soft); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.88rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle .mt-opt:hover { color: var(--ink); }
+  .model-toggle .mt-opt.active { background: #fff; color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(22,29,46,0.25); }
+  .model-toggle .mt-lock { font-size: 0.72rem; opacity: 0.7; }
+  @media (max-width: 560px) {
+    .model-toggle { display: flex; width: 100%; }
+    .model-toggle .mt-opt { flex: 1; padding: 10px 8px; font-size: 0.84rem; }
+  }
+
   /* HERO */
   .page-hero { padding: 40px 0 30px; margin-bottom: 32px; }
   .page-hero .eyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; display: inline-block; }
@@ -140,11 +151,23 @@
     .tool-inputs { position: static; }
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { grid-template-columns: 1fr; }
-    nav .nav-plan-badge { display: none; }
+    nav .nav-plan-badge { display: none !important; }
   }
   @media (max-width: 560px) {
     .wrap { padding: 0 18px; }
-    .page-hero { padding: 30px 0 22px; }
+    .page-hero { padding: 26px 0 18px; margin-bottom: 22px; }
+    .page-hero h1 { font-size: 1.7rem; }
+    .page-hero p { font-size: 0.92rem; }
+    .tool-block { padding: 16px 14px; border-radius: 16px; }
+    .analysis { padding: 16px 14px; border-radius: 16px; }
+    .an-match { font-size: 1rem; }
+    table.antab { font-size: 0.8rem; }
+    table.antab td { padding: 9px 4px; }
+    .score-card .sc-score { font-size: 1.3rem; }
+    .score-card.top1 .sc-score { font-size: 1.55rem; }
+    .scores-wrap { gap: 7px; }
+    .nav-btn { padding: 7px 12px; font-size: 0.8rem; }
+    .tool-run { padding: 13px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
   :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
@@ -159,7 +182,6 @@
       RICKY<span>·</span>PICKS
     </a>
     <div class="nav-right">
-      <a class="nav-btn" id="mlbSwitchBtn" href="/mlb.html" style="display:none;color:var(--blue);font-weight:700">Modelo MLB →</a>
       <span class="nav-plan-badge" id="navPlanBadge" style="display:none"></span>
       <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>
     </div>
@@ -213,8 +235,12 @@
 <div id="mainContent" style="display:none">
   <div class="wrap">
     <div class="page-hero">
-      <div class="eyebrow">Mundial 2026</div>
+      <div class="eyebrow">Mis modelos</div>
       <h1>Mis modelos</h1>
+      <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+        <span class="mt-opt active" role="tab" aria-selected="true">🌍 Mundial 2026</span>
+        <a class="mt-opt" role="tab" aria-selected="false" id="mtMlb" href="/mlb.html">⚾ MLB <span class="mt-lock" id="mtMlbLock">🔒</span></a>
+      </div>
       <p id="heroSub">Herramienta completa. Elige el partido, ingresa tus momios y calcula el valor.</p>
     </div>
 
@@ -377,8 +403,15 @@ function rowHTML(name, mp, dec){
 
 let _accessToken = null;
 
-/* Si el usuario también tiene acceso activo al modelo MLB, muestra el
-   link de cambio en el nav (independiente de si tiene o no Mundial).
+/* Marca el lado MLB del toggle como desbloqueado (sin candado). */
+function unlockMlbToggle(){
+  const lock = document.getElementById('mtMlbLock');
+  if(lock) lock.style.display = 'none';
+}
+
+/* Si el usuario también tiene acceso activo al modelo MLB, quita el
+   candado del toggle (el link a /mlb.html funciona siempre: esa página
+   tiene su propio candado y muestra el pick gratis a quien no tiene plan).
    Regresa true/false para que loadAndShow decida si debe redirigir
    a un cliente que SOLO tiene MLB (no debe ver "sin plan" aquí). */
 async function checkMlbSwitch(){
@@ -388,9 +421,9 @@ async function checkMlbSwitch(){
     if(!res.ok) return false;
     const data = await res.json();
     const hasMlb = !!(data && data.mlb);
-    if(hasMlb) document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
+    if(hasMlb) unlockMlbToggle();
     return hasMlb;
-  }catch(e){ return false; /* si falla, simplemente no se muestra el switcher */ }
+  }catch(e){ return false; /* si falla, el candado simplemente se queda */ }
 }
 
 async function fetchMarkets(home, away, neutral){
@@ -620,7 +653,7 @@ async function loadAndShow(session){
   if(ADMIN_EMAILS.includes(userEmail)){
     if(pago) history.replaceState(null,'','/mis-modelos.html');
     showMain('torneo');
-    document.getElementById('mlbSwitchBtn').style.display = 'inline-block';
+    unlockMlbToggle();
     loadConfig().then(() => { if(CONFIG) wireTorneo(); }).catch(()=>{});
     return;
   }
@@ -662,6 +695,12 @@ async function loadAndShow(session){
   /* tiene acceso: mostrar modelo PRIMERO, luego cargar config en background */
   if(pago) history.replaceState(null,'','/mis-modelos.html');
   showMain(ent.plan);
+  /* si viene de un pago, confirmar visualmente */
+  if(pago === 'pendiente'){
+    document.getElementById('pendingBanner').style.display = 'flex';
+  } else if(pago){
+    document.getElementById('successBanner').style.display = 'flex';
+  }
   loadConfig().then(() => {
     if(!CONFIG) return;
     if(ent.plan==='individual') wireIndividual();
