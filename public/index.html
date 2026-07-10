@@ -3,352 +3,402 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY-PICKS — Picks con modelo, no con corazonadas</title>
-<meta name="description" content="El mejor modelo de predicciones del Mundial 2026, respaldado con más de 20 años de estadísticas. Picks con valor, no corazonadas.">
+<title>RICKY·PICKS — Juega con cabeza</title>
+<meta name="description" content="Modelos de predicción deportiva. Mundial 2026 y MLB. Miles de simulaciones por juego. Picks con valor, no corazonadas.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%232f7bff'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='22' fill='white'%3ER·P%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --ink: #08172e;
-    --ink-2: #0d2444;
-    --blue: #1d4ed8;
-    --blue-bright: #2f7bff;
-    --white: #ffffff;
-    --paper: #f5f8fd;
-    --line: #dce6f5;
-    --muted: #5e6f86;
-    --win: #15a34a;
-    --loss: #d83a3a;
-    --shadow-cta: 0 8px 22px -8px rgba(47,123,255,0.6);
+    --night: #04060b;
+    --night-2: #0a0f1a;
+    --bg: #ffffff;
+    --soft: #f5f7fa;
+    --soft-2: #eceff5;
+    --ink: #0e1116;
+    --muted: #667084;
+    --line: #e7ebf1;
+    --blue: #2f7bff;
+    --blue-deep: #1d4ed8;
+    --blue-tint: #eaf2ff;
+    --win: #16a34a;
+    --loss: #dc2626;
+    --r-xl: 28px;
+    --r-md: 18px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; }
-  .data { font-family: 'JetBrains Mono', monospace; font-feature-settings: "tnum" 1; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: 17px;
+  }
+  .num { font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+  img, video { max-width: 100%; }
+  button { font: inherit; }
 
-  /* NAV */
-  nav { position: sticky; top: 0; z-index: 50; background: rgba(245,248,253,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; color: var(--ink); display: flex; align-items: center; gap: 9px; text-decoration: none; }
-  .logo span { color: var(--blue); }
-  .logo svg { width: 26px; height: 26px; display: block; }
-  .nav-right { display: flex; align-items: center; gap: 14px; }
-  .nav-link { font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--blue); text-decoration: none; padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--line); transition: border-color .15s ease, background .15s ease; }
-  .nav-link:hover { border-color: var(--blue); background: rgba(29,78,216,0.05); }
-  .nav-cta { font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--white); background: var(--blue-bright); padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; transition: transform .15s ease, background .15s ease; }
-  .nav-cta:hover { background: var(--blue); transform: translateY(-1px); }
+  /* ============ NAV ============ */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 80; transition: background .35s ease, border-color .35s ease; border-bottom: 1px solid transparent; }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+  nav.on-light { background: rgba(255,255,255,0.72); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-bottom-color: var(--line); }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; color: #fff; transition: color .35s ease; }
+  nav.on-light .logo { color: var(--ink); }
+  .logo .mark { width: 30px; height: 30px; border-radius: 10px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; }
+  .logo span.dot { color: var(--blue); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-link { font-size: 0.86rem; font-weight: 600; color: rgba(255,255,255,0.85); text-decoration: none; padding: 8px 14px; border-radius: 999px; transition: color .35s ease, background .15s ease; }
+  nav.on-light .nav-link { color: var(--muted); }
+  .nav-link:hover { background: rgba(127,150,200,0.15); }
+  .nav-cta { font-size: 0.86rem; font-weight: 700; color: #fff; background: var(--blue); padding: 9px 18px; border-radius: 999px; border: none; cursor: pointer; transition: background .15s ease; }
+  .nav-cta:hover { background: var(--blue-deep); }
 
-  /* HERO */
-  .hero { padding: 80px 0 64px; }
-  .hero-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
-  .brand-mark { width: 58px; height: 58px; display: block; flex-shrink: 0; border-radius: 16px; box-shadow: 0 12px 30px -10px rgba(47,123,255,0.55); }
-  .brand-word { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 2.1rem; letter-spacing: -0.03em; color: var(--ink); line-height: 1; }
-  .brand-dot { color: var(--blue-bright); }
-  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; }
-  .eyebrow::before { content: ''; width: 18px; height: 1.5px; background: var(--blue-bright); display: inline-block; }
-  .hero h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; font-size: clamp(2.4rem, 6vw, 4rem); max-width: 16ch; margin-bottom: 22px; }
-  .hero h1 em { font-style: normal; color: var(--blue); }
-  .hero p.lede { font-size: 1.12rem; color: var(--muted); max-width: 52ch; margin-bottom: 36px; }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-  .btn { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.95rem; padding: 14px 26px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; display: inline-block; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
-  .btn:disabled { opacity: 0.7; cursor: default; transform: none !important; }
-  .btn-primary { background: var(--blue-bright); color: var(--white); box-shadow: var(--shadow-cta); }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px -8px rgba(47,123,255,0.7); }
-  .btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
-  .btn-ghost:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+  /* ============ HERO CINEMATOGRÁFICO ============ */
+  .stage { height: 420vh; position: relative; background: var(--night); }
+  .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .12s linear; will-change: opacity; }
+  .vid.v1 { opacity: 1; }
+  .veil { position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 50% 10%, transparent 40%, rgba(4,6,11,0.55) 100%),
+      linear-gradient(180deg, rgba(4,6,11,0.55) 0%, rgba(4,6,11,0.05) 30%, rgba(4,6,11,0.12) 62%, rgba(4,6,11,0.78) 100%);
+  }
+  .stage-dim { position: absolute; inset: 0; background: var(--night); opacity: 0; pointer-events: none; will-change: opacity; }
+  .to-white { position: absolute; left: 0; right: 0; bottom: 0; height: 26vh; background: linear-gradient(180deg, transparent, var(--bg)); opacity: 0; pointer-events: none; }
 
-  /* RECORD CARD */
-  .record { margin-top: 56px; background: var(--ink); border-radius: 18px; padding: 32px 34px; color: var(--white); display: grid; grid-template-columns: 1.1fr 1fr; gap: 30px; align-items: center; box-shadow: 0 24px 60px -28px rgba(8,23,46,0.6); position: relative; overflow: hidden; }
-  .record::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 100% 30px; pointer-events: none; }
-  .record-stats { display: flex; gap: 34px; flex-wrap: wrap; position: relative; }
-  .stat .num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2.1rem; letter-spacing: -0.02em; line-height: 1; }
-  .stat .lbl { font-size: 0.72rem; color: #9db4d6; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
-  .record-note { grid-column: 1 / -1; font-size: 0.8rem; color: #9db4d6; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; margin-top: 4px; position: relative; }
-  .streak svg { width: 100%; height: auto; display: block; position: relative; }
-  .streak .spark { stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw 1.6s ease forwards .25s; }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 10vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
+  .hero-eyebrow { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.85); margin-bottom: 14px; }
+  .hero-eyebrow b { color: var(--blue); }
+  h1.mega { color: #fff; font-weight: 900; letter-spacing: -0.045em; line-height: 0.96; font-size: clamp(3rem, 11.5vw, 9.5rem); text-shadow: 0 10px 60px rgba(4,6,11,0.5); }
+  h1.mega em { font-style: normal; color: var(--blue); }
+  .hero-sub { color: rgba(255,255,255,0.75); font-size: clamp(0.95rem, 2vw, 1.15rem); font-weight: 500; margin-top: 16px; }
+  .scroll-hint { position: absolute; bottom: 3.5vh; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.55); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scroll-hint::after { content: ''; width: 1px; height: 34px; background: linear-gradient(180deg, rgba(255,255,255,0.7), transparent); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: top; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
-  /* SECTIONS */
-  section { padding: 76px 0; }
-  .sec-head { margin-bottom: 44px; max-width: 56ch; }
-  .sec-head .eyebrow { margin-bottom: 14px; }
-  .sec-head h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.1; }
-  .sec-head p { color: var(--muted); margin-top: 14px; font-size: 1.02rem; }
+  /* ---- LA CARD QUE SE ENSAMBLA ---- */
+  .pickstage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .pickcard { width: min(430px, calc(100vw - 40px)); pointer-events: auto; }
+  .pc-piece { will-change: transform, opacity; opacity: 0; }
+  .pc-shell { background: rgba(10,15,26,0.72); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(140,170,230,0.22); border-radius: var(--r-xl); padding: 22px; box-shadow: 0 40px 120px -30px rgba(0,0,0,0.8); }
+  .pc-tag { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .pc-tag .t1 { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); }
+  .pc-tag .t2 { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .pc-team { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; color: #fff; }
+  .pc-team img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); }
+  .pc-team .tn { font-weight: 800; font-size: 1.12rem; letter-spacing: -0.02em; line-height: 1.15; }
+  .pc-team .tn small { display: block; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0; }
+  .pc-team .pr { font-weight: 900; font-size: 1.5rem; letter-spacing: -0.03em; color: rgba(255,255,255,0.55); }
+  .pc-team.fav .pr { color: var(--blue); }
+  .pc-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: rgba(255,255,255,0.12); margin: 12px 0 4px; }
+  .pc-bar .a { background: rgba(255,255,255,0.35); }
+  .pc-bar .h { background: linear-gradient(90deg, var(--blue), #6ea4ff); }
+  .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: rgba(47,123,255,0.14); border: 1px solid rgba(47,123,255,0.4); border-radius: 16px; padding: 12px 15px; color: #fff; }
+  .pc-pick .star { color: var(--blue); font-size: 0.95rem; }
+  .pc-pick .sel { font-weight: 800; font-size: 0.98rem; letter-spacing: -0.01em; flex: 1; }
+  .pc-pick .odds { font-weight: 700; font-size: 0.78rem; color: rgba(255,255,255,0.7); }
+  .pc-foot { display: flex; justify-content: space-between; margin-top: 14px; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.45); }
+  .pc-cta { margin-top: 18px; text-align: center; }
+  .pc-cta button { background: var(--blue); color: #fff; border: none; font-weight: 800; font-size: 1rem; padding: 16px 34px; border-radius: 999px; cursor: pointer; box-shadow: 0 16px 44px -14px rgba(47,123,255,0.8); transition: transform .15s ease, background .15s ease; }
+  .pc-cta button:hover { transform: translateY(-2px); background: var(--blue-deep); }
+  .pc-cta .mini { display: block; margin-top: 10px; color: rgba(255,255,255,0.5); font-size: 0.74rem; font-weight: 600; }
 
-  /* PRICING */
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
-  .tier { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 30px 26px; display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
-  .tier:hover { transform: translateY(-3px); box-shadow: 0 20px 44px -28px rgba(8,23,46,0.4); }
-  .tier.featured { border: 2px solid var(--blue-bright); position: relative; box-shadow: 0 24px 50px -30px rgba(47,123,255,0.45); }
-  .tier.featured::after { content: 'Más vendido'; position: absolute; top: -11px; left: 26px; background: var(--blue-bright); color: var(--white); font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.03em; }
-  .tier h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1.15rem; margin-bottom: 6px; }
-  .tier .price { font-family: 'JetBrains Mono', monospace; font-weight: 700; margin: 14px 0 4px; }
-  .tier .price .amt { font-size: 2rem; color: var(--ink); }
-  .tier .price .cur { font-size: 0.9rem; color: var(--muted); margin-left: 4px; }
-  .tier .desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 22px; min-height: 40px; }
-  .tier .limited { color: var(--loss); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.76rem; line-height: 1.4; margin: -6px 0 16px; }
-  .tier ul { list-style: none; margin-bottom: 26px; flex: 1; }
-  .tier li { font-size: 0.88rem; padding: 7px 0 7px 24px; position: relative; color: var(--ink); border-bottom: 1px solid var(--paper); }
-  .tier li::before { content: '✓'; position: absolute; left: 0; color: var(--blue); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-  .tier .btn { width: 100%; text-align: center; }
+  /* ============ CUERPO (blanco) ============ */
+  section { padding: 110px 0; }
+  .sec-eyebrow { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
+  .sec-title { font-weight: 900; letter-spacing: -0.04em; line-height: 1.0; font-size: clamp(2.1rem, 6vw, 3.6rem); max-width: 18ch; }
+  .sec-lede { color: var(--muted); font-size: 1.06rem; max-width: 52ch; margin-top: 18px; font-weight: 500; }
 
-  /* HISTORY TABLE */
-  .history-wrap { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s cubic-bezier(.2,.65,.25,1), transform .7s cubic-bezier(.2,.65,.25,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---- HISTORIAL ---- */
+  .statband { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 44px 0 18px; }
+  .stat { background: var(--soft); border-radius: var(--r-xl); padding: 30px 28px; }
+  .stat .n { font-weight: 900; font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.045em; line-height: 1; color: var(--ink); }
+  .stat .n em { font-style: normal; color: var(--blue); }
+  .stat .l { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-top: 10px; }
+  .history-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r-xl); background: #fff; }
   table { width: 100%; border-collapse: collapse; min-width: 560px; }
-  thead th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 16px 20px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--white); z-index: 2; }
-  tbody td { padding: 14px 20px; font-size: 0.9rem; border-bottom: 1px solid var(--paper); }
+  thead th { text-align: left; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 15px 22px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #fff; z-index: 2; }
+  tbody td { padding: 13px 22px; font-size: 0.9rem; border-bottom: 1px solid var(--soft); font-weight: 500; }
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background .12s ease; }
-  tbody tr:hover { background: var(--paper); }
-  td.date { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-size: 0.82rem; }
-  td.pick { font-family: 'JetBrains Mono', monospace; font-size: 0.84rem; }
-  .badge { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.72rem; padding: 3px 10px; border-radius: 6px; }
-  .badge.win { background: rgba(21,163,74,0.12); color: var(--win); }
-  .badge.loss { background: rgba(216,58,58,0.1); color: var(--loss); }
-  .history-foot { font-size: 0.82rem; color: var(--muted); margin-top: 16px; }
+  tbody tr:hover { background: var(--soft); }
+  td.date { color: var(--muted); font-size: 0.76rem; font-weight: 700; }
+  td.pick { font-size: 0.86rem; color: var(--muted); }
+  .badge { font-weight: 800; font-size: 0.72rem; padding: 5px 12px; border-radius: 999px; }
+  .badge.win { background: rgba(22,163,74,0.1); color: var(--win); }
+  .badge.loss { background: rgba(220,38,38,0.08); color: var(--loss); }
+  .history-foot { font-size: 0.82rem; color: var(--muted); margin-top: 16px; font-weight: 500; }
 
-  /* REDEEM */
-  .redeem-sec { background: var(--ink-2); color: var(--white); }
-  .redeem-card { background: var(--white); color: var(--ink); border-radius: 18px; padding: 40px; max-width: 520px; margin: 0 auto; box-shadow: 0 30px 70px -30px rgba(0,0,0,0.5); }
-  .redeem-card h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; text-align: center; margin-bottom: 8px; }
-  .redeem-card p.sub { text-align: center; color: var(--muted); font-size: 0.92rem; margin-bottom: 24px; }
-  .code-field { display: flex; gap: 10px; }
-  .code-field input { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 10px; outline: none; transition: border .15s ease; }
-  .code-field input:focus { border-color: var(--blue-bright); }
-  .code-field button { white-space: nowrap; }
-  .disclaimer { margin-top: 18px; font-size: 0.8rem; color: var(--muted); background: var(--paper); border-left: 3px solid var(--blue-bright); padding: 12px 16px; border-radius: 0 8px 8px 0; line-height: 1.5; }
-  .disclaimer strong { color: var(--ink); }
-  .redeem-msg { margin-top: 18px; padding: 14px 16px; border-radius: 10px; font-size: 0.9rem; display: none; line-height: 1.5; }
-  .redeem-msg.ok { display: block; background: rgba(21,163,74,0.1); color: var(--win); border: 1px solid rgba(21,163,74,0.3); }
-  .redeem-msg.bad { display: block; background: rgba(216,58,58,0.08); color: var(--loss); border: 1px solid rgba(216,58,58,0.3); }
+  /* ---- CÓMO FUNCIONA ---- */
+  #como { background: var(--soft); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; }
+  .step { background: #fff; border-radius: var(--r-xl); padding: 32px 28px; }
+  .step .ico { width: 58px; height: 58px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; background: var(--blue-tint); }
+  .step .ico svg { width: 26px; height: 26px; stroke: var(--blue); }
+  .step h3 { font-weight: 800; font-size: 1.16rem; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .step p { color: var(--muted); font-size: 0.93rem; font-weight: 500; }
+  .mlbrow { margin-top: 16px; background: var(--night); color: #fff; border-radius: var(--r-xl); padding: 34px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .mlbrow .t { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.025em; }
+  .mlbrow .t em { font-style: normal; color: var(--blue); }
+  .mlbrow .s { color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 500; margin-top: 4px; }
+  .mlbrow .tag { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); border: 1px solid rgba(47,123,255,0.5); padding: 8px 16px; border-radius: 999px; white-space: nowrap; }
 
-  /* FOOTER */
-  footer { background: var(--ink); color: #9db4d6; padding: 48px 0; font-size: 0.82rem; }
-  footer .wrap { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: center; }
-  footer .logo { color: var(--white); }
-  footer .resp { max-width: 46ch; line-height: 1.5; }
-  footer .resp strong { color: var(--white); }
+  /* ---- CARRUSEL (guía) ---- */
+  #guia .carousel-wrap { margin-top: 40px; }
+  #guia .sec-lede { margin-bottom: 0; }
 
-  /* MODAL / OVERLAY (solo pick gratis) */
-  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(8,23,46,0.55); backdrop-filter: blur(4px); align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; }
+  /* ---- PRICING ---- */
+  .price-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; flex-wrap: wrap; }
+  .cur-toggle { display: inline-flex; background: var(--soft-2); border-radius: 999px; padding: 4px; gap: 2px; }
+  .cur-toggle button { font-size: 0.82rem; font-weight: 800; padding: 9px 22px; border-radius: 999px; border: none; cursor: pointer; color: var(--muted); background: transparent; transition: all .18s ease; }
+  .cur-toggle button.active { background: #fff; color: var(--ink); box-shadow: 0 4px 14px -6px rgba(14,17,22,0.25); }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; margin-top: 44px; }
+  .tier { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); padding: 34px 30px; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease; }
+  .tier:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -30px rgba(14,17,22,0.25); }
+  .tier.featured { background: var(--night); border-color: var(--night); color: #fff; position: relative; }
+  .tier.featured::after { content: 'Más vendido'; position: absolute; top: 22px; right: 22px; background: var(--blue); color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 13px; border-radius: 999px; }
+  .tier h3 { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
+  .tier .was { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-decoration: line-through; margin-top: 16px; min-height: 1.2em; }
+  .tier.featured .was { color: rgba(255,255,255,0.45); }
+  .tier .amt { font-weight: 900; font-size: 3rem; letter-spacing: -0.05em; line-height: 1; }
+  .tier .amt small { font-size: 1rem; font-weight: 700; color: var(--muted); letter-spacing: -0.01em; margin-left: 4px; }
+  .tier.featured .amt small { color: rgba(255,255,255,0.55); }
+  .tier .per { font-size: 0.84rem; color: var(--muted); font-weight: 600; margin-top: 8px; }
+  .tier.featured .per { color: rgba(255,255,255,0.6); }
+  .tier ul { list-style: none; margin: 22px 0 26px; flex: 1; }
+  .tier li { font-size: 0.9rem; font-weight: 500; padding: 8px 0 8px 28px; position: relative; }
+  .tier li::before { content: '✓'; position: absolute; left: 4px; color: var(--blue); font-weight: 900; }
+  .tier.featured li { color: rgba(255,255,255,0.88); }
+  .tier .btn { width: 100%; text-align: center; font-weight: 800; font-size: 0.98rem; padding: 15px; border-radius: 999px; border: none; cursor: pointer; text-decoration: none; display: block; transition: transform .15s ease, background .15s ease; }
+  .btn-blue { background: var(--blue); color: #fff; box-shadow: 0 14px 34px -14px rgba(47,123,255,0.7); }
+  .btn-blue:hover { background: var(--blue-deep); transform: translateY(-1px); }
+  .btn-quiet { background: var(--soft); color: var(--ink); }
+  .btn-quiet:hover { background: var(--soft-2); }
+  .tier.featured .btn-quiet { background: rgba(255,255,255,0.12); color: #fff; }
+
+  /* ---- AVISO ---- */
+  .aviso { background: var(--soft); border-radius: var(--r-xl); padding: 34px; max-width: 720px; margin: 0 auto; }
+  .aviso h4 { font-weight: 800; font-size: 1rem; margin-bottom: 8px; }
+  .aviso p { color: var(--muted); font-size: 0.88rem; font-weight: 500; line-height: 1.6; }
+  .aviso p + h4 { margin-top: 20px; }
+
+  /* ---- FOOTER ---- */
+  footer { background: var(--night); color: rgba(255,255,255,0.55); padding: 60px 0 70px; font-size: 0.84rem; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
+  footer .logo { color: #fff; }
+  footer .resp { max-width: 46ch; line-height: 1.6; font-weight: 500; }
+  footer .resp strong { color: #fff; }
+
+  /* ============ MODALES (auth + pick gratis Mundial) ============ */
+  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(4,6,11,0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
   .overlay.open { display: flex; }
-  .modal { background: var(--white); border-radius: 18px; width: 100%; max-width: 560px; margin: auto; box-shadow: 0 40px 90px -30px rgba(0,0,0,0.6); animation: pop .25s ease both; }
-  @keyframes pop { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px; border-bottom: 1px solid var(--line); }
-  .modal-head h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; }
-  .modal-head .day { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-  .modal-close { border: none; background: var(--paper); width: 34px; height: 34px; border-radius: 9px; font-size: 1.1rem; cursor: pointer; color: var(--muted); line-height: 1; }
-  .modal-close:hover { background: var(--line); color: var(--ink); }
-  .modal-body { padding: 20px 26px 26px; }
-  .modal-note { font-size: 0.84rem; color: var(--muted); margin-bottom: 16px; }
+  .modal { background: #fff; border-radius: var(--r-xl); width: 100%; max-width: 560px; margin: auto; box-shadow: 0 50px 120px -30px rgba(0,0,0,0.5); animation: pop .28s cubic-bezier(.2,.65,.25,1) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 24px 26px 14px; }
+  .modal-head h3 { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+  .modal-head .day { font-size: 0.78rem; color: var(--muted); margin-top: 2px; font-weight: 600; }
+  .modal-close { border: none; background: var(--soft); width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-close:hover { background: var(--soft-2); color: var(--ink); }
+  .modal-body { padding: 4px 26px 26px; }
+  .modal-note { font-size: 0.86rem; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
   .modal-foot { font-size: 0.78rem; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.5; }
   .modal-foot a { color: var(--blue); }
 
-  /* TOOL BLOCK (en el modal) */
-  .analysis { border: 1.5px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; overflow: hidden; }
-  .analysis:last-child { margin-bottom: 0; }
+  .analysis { border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 14px; overflow: hidden; }
   .an-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-  .an-match { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem; }
-  .an-xg { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); margin-bottom: 12px; }
-  .an-conf { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 20px; white-space: nowrap; border: 1px solid; }
-  .an-conf.alta { color: var(--win); border-color: rgba(21,163,74,.4); background: rgba(21,163,74,.08); }
-  .an-conf.media { color: var(--blue); border-color: rgba(29,78,216,.4); background: rgba(29,78,216,.08); }
-  .an-conf.baja { color: var(--loss); border-color: rgba(216,58,58,.4); background: rgba(216,58,58,.08); }
-  table.antab { width: 100%; min-width: 0; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
-  table.antab th { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); font-weight: 500; }
+  .an-match { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
+  .an-xg { font-size: 0.76rem; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  .an-conf { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
+  .an-conf.alta { color: var(--win); background: rgba(22,163,74,.1); }
+  .an-conf.media { color: var(--blue-deep); background: var(--blue-tint); }
+  .an-conf.baja { color: var(--loss); background: rgba(220,38,38,.08); }
+  table.antab { width: 100%; min-width: 0; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
+  table.antab th { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); }
   table.antab th:first-child { text-align: left; }
-  table.antab td { padding: 7px 4px; border-bottom: 1px solid var(--paper); font-family: 'JetBrains Mono', monospace; text-align: right; word-break: break-word; }
-  table.antab td:first-child { text-align: left; font-family: 'Inter', sans-serif; line-height: 1.3; }
+  table.antab td { padding: 8px 4px; border-bottom: 1px solid var(--soft); text-align: right; word-break: break-word; font-weight: 600; }
+  table.antab td:first-child { text-align: left; line-height: 1.3; font-weight: 500; }
   table.antab th:first-child, table.antab td:first-child { width: 38%; }
   table.antab tr:last-child td { border-bottom: none; }
-  .edge-pos { color: var(--win); font-weight: 700; }
+  .edge-pos { color: var(--win); font-weight: 800; }
   .edge-neg { color: var(--muted); }
   td.mut { color: var(--muted); }
-  .mk { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .mk.bet { background: rgba(21,163,74,.14); color: var(--win); }
-  .mk.skip { background: rgba(94,111,134,.12); color: var(--muted); }
-  .mk.fade { background: rgba(216,58,58,.12); color: var(--loss); }
-  .an-subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 14px 0 4px; }
-  .an-note { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .mk { display: inline-block; font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mk.bet { background: rgba(22,163,74,.12); color: var(--win); }
+  .mk.skip { background: var(--soft-2); color: var(--muted); }
+  .mk.fade { background: rgba(220,38,38,.1); color: var(--loss); }
+  .an-subhead { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 14px 0 4px; }
+  .an-note { font-size: 0.72rem; color: var(--muted); margin-top: 8px; line-height: 1.5; font-weight: 500; }
   .scores-wrap { display: flex; gap: 10px; margin: 14px 0 4px; }
-  .score-card { flex: 1; background: var(--ink); border-radius: 12px; padding: 14px 10px 12px; text-align: center; position: relative; overflow: hidden; }
-  .score-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(47,123,255,0.18) 0%, transparent 70%); pointer-events: none; }
-  .score-card.top1::before { background: linear-gradient(135deg, rgba(47,123,255,0.32) 0%, transparent 70%); }
-  .score-card .sc-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
-  .score-card.top1 .sc-rank { color: #2f7bff; }
-  .score-card .sc-score { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.6rem; color: #fff; letter-spacing: -0.02em; line-height: 1; }
-  .score-card.top1 .sc-score { font-size: 1.9rem; }
-  .score-card .sc-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 6px; }
-  .score-card.top1 .sc-pct { color: #2f7bff; font-weight: 700; font-size: 0.78rem; }
-  .tool-block { border: 1.5px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
-  .tool-label { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px; }
-  .tlab { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 5px; }
-  .tlab2 { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
-  .tool-block select, .tool-block input { width: 100%; background: var(--paper); border: 1px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.9rem; padding: 9px 11px; border-radius: 8px; outline: none; }
-  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue-bright); }
+  .score-card { flex: 1; background: var(--soft); border-radius: var(--r-md); padding: 14px 10px 12px; text-align: center; }
+  .score-card.top1 { background: linear-gradient(160deg, var(--blue), var(--blue-deep)); }
+  .score-card .sc-rank { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+  .score-card.top1 .sc-rank { color: rgba(255,255,255,0.7); }
+  .score-card .sc-score { font-weight: 900; font-size: 1.6rem; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
+  .score-card.top1 .sc-score { font-size: 1.9rem; color: #fff; }
+  .score-card .sc-pct { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-top: 6px; }
+  .score-card.top1 .sc-pct { color: rgba(255,255,255,0.85); }
+  .tool-block { border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 14px; }
+  .tool-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 12px; }
+  .tlab { display: block; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 5px; }
+  .tlab2 { display: block; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+  .tool-block select, .tool-block input { width: 100%; background: var(--soft); border: 1px solid var(--line); color: var(--ink); font: inherit; font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; outline: none; }
+  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue); background: #fff; }
   .tool-row { display: flex; gap: 10px; margin-top: 10px; }
   .tool-row > div { flex: 1; }
-  .tool-toggle { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-top: 12px; cursor: pointer; }
-  .tool-toggle input { width: auto; }
+  .tool-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-top: 12px; cursor: pointer; }
+  .tool-toggle input { width: auto; accent-color: var(--blue); }
   .odds-mode { display: flex; gap: 6px; margin-bottom: 12px; }
-  .om { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 5px 11px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; }
-  .om.active { border-color: var(--blue-bright); color: var(--blue); }
+  .om { font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); cursor: pointer; transition: all .15s ease; }
+  .om.active { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
   .odds3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .tool-run { margin-top: 16px; width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 12px; border-radius: 9px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); transition: background .15s ease; }
-  .tool-run:hover:not(:disabled) { background: var(--blue); }
+  .tool-run { margin-top: 16px; width: 100%; font-weight: 800; font-size: 0.95rem; padding: 14px; border-radius: 999px; border: none; cursor: pointer; background: var(--blue); color: #fff; transition: background .15s ease; }
+  .tool-run:hover:not(:disabled) { background: var(--blue-deep); }
   .tool-run:disabled { opacity: 0.65; cursor: default; }
-  .tool-loading { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); padding: 14px 2px; }
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .7s linear infinite; }
+  .tool-loading { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--muted); padding: 14px 2px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .auth-input { width: 100%; background: var(--paper); border: 1.5px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.95rem; padding: 12px 14px; border-radius: 9px; outline: none; }
-  .auth-input:focus { border-color: var(--blue-bright); }
-  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--blue); cursor: pointer; }
+  .auth-input { width: 100%; background: var(--soft); border: 1.5px solid var(--line); color: var(--ink); font: inherit; font-size: 0.95rem; padding: 13px 15px; border-radius: 14px; outline: none; }
+  .auth-input:focus { border-color: var(--blue); background: #fff; }
+  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; font-weight: 600; color: var(--blue); cursor: pointer; }
   .auth-toggle:hover { text-decoration: underline; }
+  .redeem-msg { margin-top: 18px; padding: 14px 16px; border-radius: 14px; font-size: 0.9rem; display: none; line-height: 1.5; font-weight: 500; }
+  .redeem-msg.ok { display: block; background: rgba(22,163,74,0.08); color: var(--win); }
+  .redeem-msg.bad { display: block; background: rgba(220,38,38,0.06); color: var(--loss); }
 
-  /* RESPONSIVE */
-  @media (max-width: 820px) {
-    .record { grid-template-columns: 1fr; gap: 22px; }
-    .tiers { grid-template-columns: 1fr; }
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 860px) {
+    .statband { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .tiers { grid-template-columns: 1fr; max-width: 460px; }
+    section { padding: 76px 0; }
   }
   @media (max-width: 560px) {
+    body { font-size: 16px; }
     .wrap { padding: 0 18px; }
-    nav .wrap { height: 56px; }
-    .hero { padding: 48px 0 40px; }
-    .hero-brand { margin-bottom: 24px; }
-    .brand-word { font-size: 1.55rem; }
-    .brand-mark { width: 48px; height: 48px; }
-    .hero h1 { margin-bottom: 16px; }
-    .hero p.lede { font-size: 1rem; margin-bottom: 26px; }
-    .hero-actions { flex-direction: column; align-items: stretch; }
-    .hero-actions .btn { text-align: center; width: 100%; }
-    .record { margin-top: 38px; padding: 24px 22px; }
-    .record-stats { gap: 24px; }
-    .stat .num { font-size: 1.7rem; }
-    section { padding: 52px 0; }
-    .sec-head { margin-bottom: 32px; }
-    .tier { padding: 26px 22px; }
-    .tier.featured::after { left: 22px; }
-    .redeem-card { padding: 28px 22px; }
-    .code-field { flex-direction: column; }
-    .code-field button { width: 100%; }
+    .stage { height: 480vh; }
+    .vid { object-position: 50% 68%; } /* en vertical, mantener al bateador en cuadro */
+    .hero-copy { bottom: 12vh; }
+    .nav-link { display: none; }
+    #mlbLink.admin-on { display: inline-flex !important; }
+    .price-head { flex-direction: column; align-items: flex-start; }
+    .pc-shell { padding: 18px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
-    footer .wrap { flex-direction: column; align-items: flex-start; gap: 18px; }
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { flex-direction: column; }
-    /* score cards — móvil */
-    .scores-wrap { gap: 6px; }
-    .score-card { padding: 10px 6px 10px; border-radius: 10px; }
-    .score-card .sc-score { font-size: 1.25rem; }
-    .score-card.top1 .sc-score { font-size: 1.4rem; }
-    .score-card .sc-rank { font-size: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .score-card .sc-pct { font-size: 0.64rem; }
-    /* tabla mercados — móvil */
-    .antab { font-size: 0.82rem; }
-    .antab th, .antab td { padding: 8px 5px; }
-    .an-match { font-size: 0.9rem; }
-    /* historial table → card layout en móvil */
-    .history-wrap { overflow: hidden; width: 100%; max-width: 100%; }
-    .history-wrap table { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
-    .history-wrap tbody { display: block; width: 100%; max-width: 100%; box-sizing: border-box; }
+    footer .wrap { flex-direction: column; }
+    /* historial → cards */
+    .history-wrap { max-height: 440px; }
+    .history-wrap table { display: block; min-width: 0; }
+    .history-wrap tbody { display: block; }
     .history-wrap thead { display: none; }
-    .history-wrap tr { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); gap: 2px 8px; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+    .history-wrap tr { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); gap: 2px 8px; }
     .history-wrap tr:last-child { border-bottom: none; }
-    .history-wrap td { display: block; border: none !important; padding: 0; min-width: 0; box-sizing: border-box; }
-    .history-wrap td.date { order: 1; width: 100%; font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-    .history-wrap tr td:nth-child(2) { order: 2; width: 100%; font-size: 0.88rem; font-weight: 500; }
-    .history-wrap td.pick { order: 3; flex: 1; font-size: 0.78rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; min-width: 0; }
+    .history-wrap td { display: block; border: none !important; padding: 0; }
+    .history-wrap td.date { order: 1; width: 100%; }
+    .history-wrap tr td:nth-child(2) { order: 2; width: 100%; font-size: 0.9rem; }
+    .history-wrap td.pick { order: 3; flex: 1; font-size: 0.78rem; }
     .history-wrap tr td:last-child { order: 4; flex-shrink: 0; }
-    .nav-link { display: none !important; }
-    .nav-link.nav-models-active { display: inline-flex !important; }
-    /* carrusel guía */
-    #guia .carousel-wrap { max-width: 420px; }
-    #guia .carousel-img { max-height: 560px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
-    .streak .spark { stroke-dashoffset: 0; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .stage { height: auto; }
+    .stage-sticky { position: relative; height: 100vh; }
+    .pc-piece { opacity: 1 !important; transform: none !important; }
   }
-  :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 </style>
 </head>
 <body>
 
-<nav>
+<nav id="topnav">
   <div class="wrap">
-    <a href="/" class="logo">
-      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="48" height="48" rx="12" fill="#08172e"/>
-        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="38" cy="13" r="4" fill="#ffffff"/>
-      </svg>
-      RICKY<span>·</span>PICKS
-    </a>
+    <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
+      <a href="#historial" class="nav-link">Récord</a>
+      <a href="#precios" class="nav-link">Planes</a>
+      <a href="/mlb.html" class="nav-link" id="mlbLink" style="display:none">MLB</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
       <button id="authBtn" class="nav-cta">Iniciar sesión</button>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
-<header class="hero">
-  <div class="wrap">
-    <div class="hero-brand">
-      <svg class="brand-mark" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="48" height="48" rx="16" fill="#08172e"/>
-        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="38" cy="13" r="4.2" fill="#ffffff"/>
-        <circle cx="10" cy="34" r="2.4" fill="#2f7bff"/>
-      </svg>
-      <span class="brand-word">RICKY<span class="brand-dot">·</span>PICKS</span>
-    </div>
-    <div class="eyebrow">Mundial 2026 · modelo Dixon-Coles</div>
-    <h1>Si vas a jugar, <em>juega con cabeza.</em></h1>
-    <p class="lede">El mejor modelo de predicciones, respaldado con más de 20 años de estadísticas y datos. El objetivo de este modelo no es saber quién va a ganar, sino saber cuáles son los picks que tienen más valor.</p>
-    <div class="hero-actions">
-      <button class="btn btn-primary" data-scroll="precios">Ver picks de hoy</button>
-      <button class="btn btn-ghost" data-scroll="historial">Ver el récord completo</button>
+<!-- ============ HERO CINEMATOGRÁFICO ============ -->
+<div class="stage" id="stage">
+  <div class="stage-sticky">
+    <video class="vid v1" id="vid1" src="/video/hero-pitch.mp4" poster="/video/hero-pitch.jpg" muted playsinline autoplay loop preload="auto"></video>
+    <video class="vid v2" id="vid2" src="/video/hero-swing.mp4" poster="/video/hero-swing.jpg" muted playsinline preload="metadata"></video>
+    <div class="veil"></div>
+    <div class="stage-dim" id="stageDim"></div>
+
+    <div class="hero-copy" id="heroCopy">
+      <div class="hero-eyebrow">RICKY<b>·</b>PICKS</div>
+      <h1 class="mega">Juega con <em>cabeza.</em></h1>
+      <div class="hero-sub">Miles de simulaciones por juego. Un pick a la vez.</div>
     </div>
 
-    <div class="record">
-      <div>
-        <div class="record-stats">
-          <div class="stat"><div class="num data">71.8%</div><div class="lbl">Aciertos</div></div>
-          <div class="stat"><div class="num data">115</div><div class="lbl">Picks publicados</div></div>
-          <div class="stat"><div class="num data">107-42</div><div class="lbl">Ganados · Perdidos</div></div>
+    <div class="pickstage">
+      <div class="pickcard" id="pickcard">
+        <div class="pc-piece pc-shell" data-piece="0">
+          <div class="pc-piece pc-tag" data-piece="1">
+            <span class="t1">Pick gratis · MLB</span>
+            <span class="t2 num" id="pcDate">HOY</span>
+          </div>
+          <div class="pc-piece" data-piece="2">
+            <div class="pc-team" id="pcAway">
+              <img id="pcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="pcAwayName">Visitante</span><small id="pcAwayPit"></small></div>
+              <div class="pr num" id="pcAwayProb">—</div>
+            </div>
+          </div>
+          <div class="pc-piece" data-piece="3">
+            <div class="pc-team fav" id="pcHome">
+              <img id="pcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="pcHomeName">Local</span><small id="pcHomePit"></small></div>
+              <div class="pr num" id="pcHomeProb">—</div>
+            </div>
+          </div>
+          <div class="pc-piece" data-piece="4">
+            <div class="pc-bar"><div class="a" id="pcBarA" style="width:50%"></div><div class="h" id="pcBarH" style="width:50%"></div></div>
+          </div>
+          <div class="pc-piece" data-piece="5">
+            <div class="pc-pick">
+              <span class="star">★</span>
+              <span class="sel" id="pcPickSel">Pick del modelo</span>
+              <span class="odds num" id="pcPickOdds"></span>
+            </div>
+            <div class="pc-foot"><span id="pcSims">10,000 simulaciones</span><span id="pcVenue"></span></div>
+          </div>
+        </div>
+        <div class="pc-piece pc-cta" data-piece="6">
+          <button id="heroFreeBtn">Ver pick gratis</button>
+          <span class="mini">Sin tarjeta. El pick del Mundial de hoy, completo.</span>
         </div>
       </div>
-      <div class="streak" aria-hidden="true">
-        <svg viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2f7bff" stop-opacity="0.35"/>
-              <stop offset="100%" stop-color="#2f7bff" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <path d="M0,100 L30,92 L60,96 L90,80 L120,84 L150,68 L180,72 L210,54 L240,60 L270,42 L300,38 L330,26 L360,20 L360,120 L0,120 Z" fill="url(#g)"/>
-          <path class="spark" d="M0,100 L30,92 L60,96 L90,80 L120,84 L150,68 L180,72 L210,54 L240,60 L270,42 L300,38 L330,26 L360,20"
-                fill="none" stroke="#2f7bff" stroke-width="2.5" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="record-note">Picks del modelo sobre todos los partidos jugados, del 11 al 6 de julio · todos publicados, ganados y perdidos · 109-43.</div>
     </div>
-  </div>
-</header>
 
-<!-- HISTORIAL -->
+    <div class="scroll-hint" id="scrollHint">Scroll</div>
+    <div class="to-white" id="toWhite"></div>
+  </div>
+</div>
+
+<!-- ============ HISTORIAL ============ -->
 <section id="historial">
   <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">Historial</div>
-      <h2>Todos los picks, ganados y perdidos.</h2>
-      <p>Esto no se filtra. Cada pick que el modelo marcó como apuesta aparece aquí con su resultado real. Así se construye la confianza: enseñando todo.</p>
+    <div class="sec-eyebrow reveal">Historial</div>
+    <h2 class="sec-title reveal">Todos los picks. Ganados y perdidos.</h2>
+    <p class="sec-lede reveal">Esto no se filtra. Cada pick que el modelo marcó como apuesta está aquí con su resultado real. Así se construye la confianza: enseñando todo.</p>
+    <div class="statband reveal">
+      <div class="stat"><div class="n num" data-count="71.8" data-suffix="%"><em>0%</em></div><div class="l">Aciertos</div></div>
+      <div class="stat"><div class="n num" data-count="115"><em>0</em></div><div class="l">Picks publicados</div></div>
+      <div class="stat"><div class="n num"><em>107-42</em></div><div class="l">Ganados · Perdidos</div></div>
     </div>
-    <div class="history-wrap">
+    <div class="history-wrap reveal">
       <table>
         <thead>
           <tr><th>Fecha</th><th>Partido</th><th>Pick</th><th>Resultado</th></tr>
@@ -505,22 +555,54 @@
           <tr><td class="date">11 JUN</td><td>🇰🇷 Corea del Sur vs. Chequia 🇨🇿</td><td class="pick">Corea gana</td><td><span class="badge win">Ganado</span></td></tr>
           <tr><td class="date">11 JUN</td><td>🇲🇽 México vs. Sudáfrica 🇿🇦</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
           <tr><td class="date">11 JUN</td><td>🇲🇽 México vs. Sudáfrica 🇿🇦</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
+        
         </tbody>
       </table>
     </div>
-    <p class="history-foot">Picks del modelo sobre los partidos ya jugados, con su resultado real. 109 ganados · 43 perdidos al 6 de julio.</p>
+    <p class="history-foot reveal">Picks del modelo sobre los partidos ya jugados, con su resultado real. 109 ganados · 43 perdidos al 6 de julio.</p>
   </div>
 </section>
 
-<!-- GUÍA DEL MODELO — CARRUSEL -->
-<section id="guia" style="padding-top:0;padding-bottom:48px;">
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section id="como">
   <div class="wrap">
-    <div class="sec-head" style="margin-bottom:28px">
-      <h2>Cómo usar el modelo</h2>
-      <p class="sec-sub">Sigue los pasos del carrusel para sacarle el máximo provecho.</p>
+    <div class="sec-eyebrow reveal">El método</div>
+    <h2 class="sec-title reveal">No adivinamos. Simulamos.</h2>
+    <p class="sec-lede reveal">Un modelo matemático estudia a los dos equipos con más de 20 años de datos y calcula la probabilidad real de cada resultado. Después la compara contra los momios de tu casa: si el mercado paga de más, ahí hay valor.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c3 3.5 3 16.5 0 20M12 2c-3 3.5-3 16.5 0 20"/></svg></div>
+        <h3>1 · Elige el partido</h3>
+        <p>Mundial 2026 hoy. El modelo cubre cada partido que queda del torneo.</p>
+      </div>
+      <div class="step reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <h3>2 · El modelo calcula</h3>
+        <p>Probabilidades de cada marcador, goles esperados, córners y tarjetas. Números, no corazonadas.</p>
+      </div>
+      <div class="step reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h3>3 · Detecta el valor</h3>
+        <p>Ingresa tus momios y el modelo marca dónde el mercado paga de más. Verde = juega. Gris = pasa.</p>
+      </div>
     </div>
+    <div class="mlbrow reveal">
+      <div>
+        <div class="t">Beisbol: cada juego, <em>simulado 10,000 veces.</em></div>
+        <div class="s">Matchup real pitcher-bateador, parque, clima y bullpen. El pick del hero sale de ahí.</div>
+      </div>
+      <span class="tag">MLB · Muy pronto</span>
+    </div>
+  </div>
+</section>
 
-    <div class="carousel-wrap" style="max-width:420px;margin:0 auto;position:relative;user-select:none;">
+<!-- ============ GUÍA (carrusel) ============ -->
+<section id="guia">
+  <div class="wrap">
+    <div class="sec-eyebrow reveal">Guía</div>
+    <h2 class="sec-title reveal">Cómo usar el modelo</h2>
+    <p class="sec-lede reveal">Sigue los pasos del carrusel para sacarle el máximo provecho.</p>
+<div class="carousel-wrap" style="max-width:420px;margin:0 auto;position:relative;user-select:none;">
       <!-- Track de imágenes -->
       <div id="carouselTrack" style="overflow:hidden;border-radius:20px;background:#f0f0f0;aspect-ratio:4/5;position:relative;">
         <div id="carouselInner" style="display:flex;transition:transform 0.35s cubic-bezier(.4,0,.2,1);height:100%;">
@@ -584,81 +666,85 @@
     go(0);
   })();
   </script>
+  </div>
 </section>
 
-<!-- PRECIOS -->
-<section id="precios" style="padding-top:0;">
+<!-- ============ PRECIOS ============ -->
+<section id="precios">
   <div class="wrap">
-    <div class="sec-head">
-      <div class="eyebrow">Precios</div>
-      <h2>Elige cuánto del Mundial quieres cubrir.</h2>
-      <p>Un pick gratis cada día para que veas cómo funciona. Si quieres más, lo desbloqueas.</p>
+    <div class="price-head reveal">
+      <div>
+        <div class="sec-eyebrow">Planes</div>
+        <h2 class="sec-title">Elige cuánto quieres cubrir.</h2>
+      </div>
+      <div class="cur-toggle" id="curToggle" role="tablist" aria-label="Moneda">
+        <button class="active" data-cur="mxn">MXN</button>
+        <button data-cur="usd">USD</button>
+      </div>
     </div>
     <div class="tiers">
-      <div class="tier">
+      <div class="tier reveal">
         <h3>Pick gratis</h3>
-        <div class="price"><span class="amt">$0</span><span class="cur">USD</span></div>
-        <div class="desc">Vista parcial · 9 de julio:</div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink);margin:10px 0 14px">🇫🇷 Francia <span style="font-weight:400;color:var(--muted)">vs</span> 🇲🇦 Marruecos</div>
+        <div class="was"></div>
+        <div class="amt num">$0</div>
+        <div class="per">🇪🇸 España vs 🇧🇪 Bélgica · 10 jul</div>
         <ul>
-          <li>Prueba el modelo completo</li>
+          <li>El análisis completo de un partido</li>
+          <li>Prueba el modelo real, no un demo</li>
           <li>Sin tarjeta</li>
         </ul>
-        <button class="btn btn-ghost" id="freeBtn">Ver pick gratis</button>
+        <button class="btn btn-quiet" id="freeBtn">Ver pick gratis</button>
       </div>
-      <div class="tier">
+      <div class="tier reveal">
         <h3>Cuartos de final</h3>
-        <div class="price" style="margin-bottom:2px"><span class="amt">$299</span><span class="cur">MXN</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin:-6px 0 12px">$14.99 USD</div>
-        <div class="desc">Todos los cuartos de final:</div>
-        <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0 14px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇫🇷 Francia <span style="font-weight:400;color:var(--muted)">vs</span> 🇲🇦 Marruecos <span style="font-weight:400;color:var(--muted);font-size:0.75rem">· 9 jul</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇪🇸 España <span style="font-weight:400;color:var(--muted)">vs</span> 🇧🇪 Bélgica <span style="font-weight:400;color:var(--muted);font-size:0.75rem">· 10 jul</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇳🇴 Noruega <span style="font-weight:400;color:var(--muted)">vs</span> 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra <span style="font-weight:400;color:var(--muted);font-size:0.75rem">· 11 jul</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:600;color:var(--ink)">🇦🇷 Argentina <span style="font-weight:400;color:var(--muted)">vs</span> 🇨🇭 Suiza <span style="font-weight:400;color:var(--muted);font-size:0.75rem">· 11 jul</span></div>
-        </div>
+        <div class="was"></div>
+        <div class="amt num" data-mxn="$299" data-usd="$14.99">$299<small class="cur-lbl">MXN</small></div>
+        <div class="per">Los 4 cuartos de final completos</div>
         <ul>
+          <li>Francia–Marruecos · España–Bélgica</li>
+          <li>Noruega–Inglaterra · Argentina–Suiza</li>
           <li>Herramienta completa con tus momios</li>
           <li>Probabilidades, xG, córners, tarjetas</li>
-          <li>Acceso inmediato con tu cuenta</li>
         </ul>
-        <a href="/checkout.html?plan=individual" class="btn btn-primary" id="buyIndividual">Acceso a cuartos de final</a>
+        <a href="/checkout.html?plan=individual" class="btn btn-blue" id="buyIndividual">Acceso a cuartos</a>
       </div>
-      <div class="tier featured">
+      <div class="tier featured reveal">
         <h3>Torneo completo</h3>
-        <!-- Precio tachado -->
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);text-decoration:line-through;margin-bottom:4px">$899 MXN · $49.99 USD</div>
-        <!-- Precio real en rojo -->
-        <div class="price" style="margin-top:0;margin-bottom:2px"><span class="amt" style="color:#dc2626">$499</span><span class="cur" style="color:#dc2626">MXN</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#dc2626;font-weight:600;margin:-6px 0 10px">$28.99 USD</div>
-        <div class="limited" style="background:rgba(220,38,38,0.08);color:#dc2626;border-color:rgba(220,38,38,0.2)">⚡ Precio exclusivo de cuartos de final — sube al final del torneo.</div>
-        <div class="desc">Acceso a todos los picks de todos los partidos que quedan del torneo.</div>
+        <div class="was num" data-mxn="$899 MXN" data-usd="$49.99 USD">$899 MXN</div>
+        <div class="amt num" data-mxn="$499" data-usd="$28.99">$499<small class="cur-lbl">MXN</small></div>
+        <div class="per">Todo lo que queda del Mundial 2026</div>
         <ul>
-          <li>Todos los partidos del torneo</li>
-          <li>Cuartos, semis y final incluidos</li>
-          <li>El modelo se paga solo desde la primera apuesta con valor</li>
+          <li>Cuartos, semifinales y la final</li>
+          <li>Todos los mercados, sin límite</li>
+          <li>Detección de valor con tus momios</li>
+          <li>Acceso desde cualquier dispositivo</li>
         </ul>
-        <a href="/checkout.html?plan=torneo" class="btn btn-primary" id="buyTorneo">Acceso total</a>
+        <a href="/checkout.html?plan=torneo" class="btn btn-blue" id="buyTorneo">Acceso total</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CANJEAR CÓDIGO -->
-<section class="redeem-sec">
+<!-- ============ AVISO ============ -->
+<section style="padding-top:0">
   <div class="wrap">
-    <div class="redeem-card">
-      <h3>¿Cómo usar el modelo?</h3>
-      <p class="sub">El modelo está diseñado para identificar picks con ventaja estadística real — no para apostar ciegamente.</p>
-      <div class="disclaimer" style="margin-top:0">
-        <strong>Usa el edge a tu favor.</strong> Cada pick muestra la probabilidad del modelo y el edge vs. las cuotas de tu casa. Tú decides cuáles tienen suficiente valor para jugar y cuánto arriesgar. No todos los picks con edge alto van a ganar — la ventaja se acumula a largo plazo con disciplina y gestión de bankroll.
-      </div>
-      <div class="disclaimer" style="margin-top:12px;border-color:#e5b94a">
-        <strong style="color:#b8860b">⚠️ Aviso importante.</strong> Las predicciones de RICKY·PICKS son análisis estadísticos basados en datos históricos. No constituyen consejos financieros, de inversión ni asesoría de ningún tipo. Apostar implica riesgo de pérdida. Juega con responsabilidad y solo lo que estás dispuesto a perder.
-      </div>
+    <div class="aviso reveal">
+      <h4>Usa el valor a tu favor.</h4>
+      <p>Cada pick muestra la probabilidad del modelo y el edge contra las cuotas de tu casa. Tú decides cuáles jugar y cuánto arriesgar. No todos los picks con edge ganan — la ventaja se acumula a largo plazo con disciplina y gestión de bankroll.</p>
+      <h4>⚠️ Aviso importante</h4>
+      <p>Las predicciones de RICKY·PICKS son análisis estadísticos basados en datos históricos. No constituyen consejos financieros ni de inversión. Apostar implica riesgo de pérdida. Juega con responsabilidad y solo lo que estás dispuesto a perder.</p>
     </div>
   </div>
 </section>
+
+<footer>
+  <div class="wrap">
+    <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
+    <div class="resp">
+      <strong>Juega con responsabilidad.</strong> Solo para mayores de 18 años. Los picks son análisis estadístico, no garantía de resultado. Apuesta solo lo que puedas permitirte perder.
+    </div>
+  </div>
+</footer>
 
 <!-- AUTH MODAL -->
 <div class="overlay" id="authOverlay">
@@ -677,13 +763,13 @@
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
       <button class="tool-run" id="authSubmit" style="margin-top:16px">Crear cuenta</button>
       <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
-      <div style="text-align:center;margin-top:8px"><a href="#" id="forgotLink" style="font-size:13px;color:#888;text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
+      <div style="text-align:center;margin-top:8px"><a href="#" id="forgotLink" style="font-size:13px;color:var(--muted);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
       <div class="redeem-msg" id="authMsg"></div>
     </div>
   </div>
 </div>
 
-<!-- PICKS MODAL (solo pick gratis) -->
+<!-- PICKS MODAL (pick gratis Mundial) -->
 <div class="overlay" id="overlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-head">
@@ -701,14 +787,220 @@
   </div>
 </div>
 
-<footer>
-  <div class="wrap">
-    <div class="logo">RICKY<span style="color:var(--blue-bright)">·</span>PICKS</div>
-    <div class="resp">
-      <strong>Juega con responsabilidad.</strong> Solo para mayores de 18 años. Los picks son análisis estadístico, no garantía de resultado. Apuesta solo lo que puedas permitirte perder.
-    </div>
-  </div>
-</footer>
+<script>
+/* ============================================================
+   HERO CINEMATOGRÁFICO — scroll director
+   Fases (progreso 0-1 del stage):
+   0.00-0.26  video 1 (la recta viene) + titular gigante
+   0.26-0.40  crossfade al batazo (video 2 se reproduce una vez)
+   0.36-0.88  la card del pick gratis MLB se ensambla pieza por pieza
+   0.88-1.00  oscurece y funde a blanco hacia el cuerpo
+   ============================================================ */
+(function () {
+  const stage = document.getElementById('stage');
+  const vid1 = document.getElementById('vid1');
+  const vid2 = document.getElementById('vid2');
+  const heroCopy = document.getElementById('heroCopy');
+  const scrollHint = document.getElementById('scrollHint');
+  const stageDim = document.getElementById('stageDim');
+  const toWhite = document.getElementById('toWhite');
+  const nav = document.getElementById('topnav');
+  const pieces = Array.from(document.querySelectorAll('.pc-piece'));
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let v2Started = false;
+
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+  /* ventana de ensamblaje por pieza: [inicio, fin] en progreso global */
+  const windows = [
+    [0.36, 0.50], // shell
+    [0.44, 0.56], // tag
+    [0.50, 0.64], // visitante
+    [0.56, 0.70], // local
+    [0.63, 0.75], // barra
+    [0.69, 0.82], // pick
+    [0.76, 0.88], // CTA
+  ];
+  /* offsets iniciales (desde dónde "vuela" cada pieza) */
+  const offsets = [
+    [0, 90, -4], [-40, -30, 0], [-70, 0, -2], [70, 0, 2], [0, 40, 0], [0, 60, 3], [0, 40, 0],
+  ];
+
+  function frame() {
+    const rect = stage.getBoundingClientRect();
+    const total = stage.offsetHeight - window.innerHeight;
+    const p = clamp01(-rect.top / total);
+
+    /* nav: claro cuando salimos del stage */
+    nav.classList.toggle('on-light', rect.bottom - window.innerHeight * 0.5 <= 0);
+
+    if (reduced) return;
+
+    /* videos: crossfade 0.26 → 0.40 */
+    const xf = clamp01((p - 0.26) / 0.14);
+    vid1.style.opacity = String(1 - xf);
+    vid2.style.opacity = String(xf);
+    if (xf > 0.05 && !v2Started) {
+      v2Started = true;
+      try { vid2.play().catch(() => {}); } catch (e) {}
+    }
+    if (xf >= 1 && !vid1.paused) vid1.pause();
+    if (xf < 1 && vid1.paused && p < 0.26) { try { vid1.play().catch(() => {}); } catch (e) {} }
+
+    /* titular: presente al inicio, se desvanece hacia arriba 0.14 → 0.30 */
+    const hFade = clamp01((p - 0.14) / 0.16);
+    heroCopy.style.opacity = String(1 - hFade);
+    heroCopy.style.transform = 'translateY(' + (-60 * ease(hFade)) + 'px) scale(' + (1 - 0.1 * hFade) + ')';
+    heroCopy.style.pointerEvents = hFade > 0.6 ? 'none' : '';
+    scrollHint.style.opacity = String(1 - clamp01(p / 0.08));
+
+    /* atenuar video mientras entra la card */
+    stageDim.style.opacity = String(0.55 * clamp01((p - 0.36) / 0.2) + 0.35 * clamp01((p - 0.88) / 0.12));
+
+    /* ensamblaje de la card */
+    for (let i = 0; i < pieces.length; i++) {
+      const [a, b] = windows[i];
+      const t = ease(clamp01((p - a) / (b - a)));
+      const [ox, oy, rot] = offsets[i];
+      pieces[i].style.opacity = String(t);
+      pieces[i].style.transform =
+        'translate(' + (ox * (1 - t)) + 'px,' + (oy * (1 - t)) + 'px) rotate(' + (rot * (1 - t)) + 'deg)';
+    }
+
+    /* fundido a blanco al final */
+    toWhite.style.opacity = String(clamp01((p - 0.86) / 0.14));
+  }
+
+  if (reduced) {
+    pieces.forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    vid1.removeAttribute('autoplay');
+  }
+
+  /* frame() es barato (7 nodos): correr directo en scroll es más
+     confiable que rAF (que se pausa en pestañas en segundo plano). */
+  window.addEventListener('scroll', frame, { passive: true });
+  window.addEventListener('resize', frame, { passive: true });
+  frame();
+
+  /* CTA del hero → mismo flujo que el pick gratis */
+  document.getElementById('heroFreeBtn').addEventListener('click', () => {
+    document.getElementById('freeBtn').click();
+  });
+})();
+
+/* ============================================================
+   PICK GRATIS MLB — datos reales para la card del hero
+   (solo probabilidades; con fallback si el API no responde)
+   ============================================================ */
+(function () {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const logo = id => 'https://www.mlbstatic.com/team-logos/team-cap-on-dark/' + id + '.svg';
+  const amOdds = p => !p || p <= 0 || p >= 1 ? '' : (p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p));
+  const pct = p => Math.round(p * 100) + '%';
+
+  function pickTxt(pick, g) {
+    if (!pick) return 'Pick del modelo';
+    const name = sel => sel === 'home' ? g.home.name : g.away.name;
+    switch (pick.market) {
+      case 'ML': return 'Ganan los ' + name(pick.sel);
+      case 'F5': return name(pick.sel) + ' adelante en la 5ª';
+      case 'RL': {
+        const team = pick.sel.indexOf('home') === 0 ? g.home.name : g.away.name;
+        return pick.sel.indexOf('-1.5') > -1 ? team + ' ganan por 2+' : team + ' no pierden por 2+';
+      }
+      case 'TOTAL': return (pick.sel.indexOf('Over') === 0 ? 'Más de ' : 'Menos de ') + pick.sel.split(' ')[1] + ' carreras';
+      case 'F5_TOTAL': return (pick.sel.indexOf('Over') === 0 ? 'Más de ' : 'Menos de ') + pick.sel.split(' ')[1] + ' en las primeras 5';
+      case 'NRFI': return pick.sel === 'NRFI' ? 'Nadie anota en la 1ª entrada' : 'Hay carrera en la 1ª entrada';
+    }
+    return pick.sel;
+  }
+
+  function apply(g) {
+    set('pcAwayName', g.away.name); set('pcHomeName', g.home.name);
+    set('pcAwayProb', pct(g.moneyline.away)); set('pcHomeProb', pct(g.moneyline.home));
+    set('pcAwayPit', g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '');
+    set('pcHomePit', g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '');
+    set('pcVenue', g.venue || '');
+    set('pcSims', (g.sims ? g.sims.toLocaleString('en-US') : '10,000') + ' simulaciones');
+    set('pcPickSel', pickTxt(g.pick, g));
+    set('pcPickOdds', g.pick ? pct(g.pick.prob) + (amOdds(g.pick.prob) ? ' · ' + amOdds(g.pick.prob) : '') : '');
+    const dt = new Date(g.game_date);
+    set('pcDate', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
+    document.getElementById('pcAwayLogo').src = logo(g.away.id);
+    document.getElementById('pcHomeLogo').src = logo(g.home.id);
+    document.getElementById('pcBarA').style.width = (g.moneyline.away * 100) + '%';
+    document.getElementById('pcBarH').style.width = (g.moneyline.home * 100) + '%';
+    const homeFav = g.moneyline.home >= g.moneyline.away;
+    document.getElementById('pcHome').classList.toggle('fav', homeFav);
+    document.getElementById('pcAway').classList.toggle('fav', !homeFav);
+  }
+
+  const fallback = {
+    game_date: new Date().toISOString(), venue: 'Dodger Stadium',
+    home: { id: 119, name: 'Dodgers' }, away: { id: 115, name: 'Rockies' },
+    pitchers: { home: { name: 'Yamamoto' }, away: { name: 'Freeland' } },
+    moneyline: { home: 0.72, away: 0.28 },
+    pick: { market: 'ML', sel: 'home', prob: 0.72 }, sims: 10000,
+  };
+
+  fetch('/api/mlb-free')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => apply(d && d.game ? d.game : fallback))
+    .catch(() => apply(fallback));
+})();
+
+/* ============================================================
+   REVELADOS + CONTADORES + TOGGLE DE MONEDA
+   ============================================================ */
+(function () {
+  const io = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.classList.add('in');
+      const counter = e.target.querySelector('[data-count]') || (e.target.matches('[data-count]') ? e.target : null);
+      io.unobserve(e.target);
+    }
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* contadores del statband */
+  const cio = new IntersectionObserver(entries => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      cio.unobserve(e.target);
+      const target = parseFloat(e.target.dataset.count);
+      const suffix = e.target.dataset.suffix || '';
+      const em = e.target.querySelector('em');
+      const dec = String(e.target.dataset.count).indexOf('.') > -1 ? 1 : 0;
+      const t0 = performance.now(), DUR = 1400;
+      (function tick(now) {
+        const t = Math.min(1, (now - t0) / DUR);
+        const v = target * (1 - Math.pow(1 - t, 3));
+        em.textContent = v.toFixed(dec) + suffix;
+        if (t < 1) requestAnimationFrame(tick);
+      })(t0);
+    }
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
+
+  /* toggle MXN / USD */
+  const toggle = document.getElementById('curToggle');
+  toggle.addEventListener('click', ev => {
+    const btn = ev.target.closest('button[data-cur]');
+    if (!btn) return;
+    toggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+    const cur = btn.dataset.cur;
+    document.querySelectorAll('[data-mxn]').forEach(el => {
+      const val = cur === 'mxn' ? el.dataset.mxn : el.dataset.usd;
+      const lbl = el.querySelector('.cur-lbl');
+      if (lbl) { el.childNodes[0].textContent = val; lbl.textContent = cur.toUpperCase(); }
+      else el.textContent = val;
+    });
+  });
+})();
+</script>
 
 <script>
 /* ============================================================
@@ -1097,6 +1389,12 @@ async function getEntitlement(){
 async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
+  const mlbLink = document.getElementById('mlbLink');
+  if (mlbLink) {
+    const isAdmin = !!(u && u.email === 'rickybh17@gmail.com');
+    mlbLink.style.display = isAdmin ? 'inline-flex' : 'none';
+    mlbLink.classList.toggle('admin-on', isAdmin);
+  }
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
