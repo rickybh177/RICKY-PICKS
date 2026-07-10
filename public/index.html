@@ -3,305 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY·PICKS — Juega con cabeza</title>
-<meta name="description" content="Modelos de predicción deportiva. Mundial 2026 y MLB. Miles de simulaciones por juego. Picks con valor, no corazonadas.">
+<title>RICKY·PICKS — Doctor MLB: 10,000 futuros por juego</title>
+<meta name="description" content="Doctor MLB simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%232f7bff'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='22' fill='white'%3ER·P%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ER·P%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --night: #04060b;
-    --night-2: #0a0f1a;
-    --bg: #ffffff;
-    --soft: #f5f7fa;
-    --soft-2: #eceff5;
-    --ink: #0e1116;
-    --muted: #667084;
-    --line: #e7ebf1;
-    --blue: #2f7bff;
-    --blue-deep: #1d4ed8;
-    --blue-tint: #eaf2ff;
-    --win: #16a34a;
-    --loss: #dc2626;
-    --r-xl: 28px;
-    --r-md: 18px;
+    --g0: #0a0d13;
+    --g1: #0e131c;
+    --g2: #141b27;
+    --line: #1e2634;
+    --line-2: #2b3547;
+    --text: #e9edf4;
+    --muted: #8b96a8;
+    --faint: #5f6a7d;
+    --blue: #4c7df0;
+    --blue-deep: #2b57c9;
+    --blue-tint: rgba(76,125,240,0.12);
+    --bet: #2fd57b;
+    --bet-bg: rgba(47,213,123,0.1);
+    --skip: #f2695c;
+    --skip-bg: rgba(242,105,92,0.1);
+    --win: #2fd57b;
+    --loss: #f2695c;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--bg); color: var(--ink);
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: 17px;
+    background: var(--g0); color: var(--text);
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased; font-size: 16.5px;
   }
-  .num { font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
   img, video { max-width: 100%; }
-  button { font: inherit; }
+  button { font: inherit; cursor: pointer; }
+  a { color: var(--blue); }
 
   /* ============ NAV ============ */
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 80; transition: background .35s ease, border-color .35s ease; border-bottom: 1px solid transparent; }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
-  nav.on-light { background: rgba(255,255,255,0.72); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-bottom-color: var(--line); }
-  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; color: #fff; transition: color .35s ease; }
-  nav.on-light .logo { color: var(--ink); }
-  .logo .mark { width: 30px; height: 30px; border-radius: 10px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; }
-  .logo span.dot { color: var(--blue); }
-  .nav-right { display: flex; align-items: center; gap: 10px; }
-  .nav-link { font-size: 0.86rem; font-weight: 600; color: rgba(255,255,255,0.85); text-decoration: none; padding: 8px 14px; border-radius: 999px; transition: color .35s ease, background .15s ease; }
-  nav.on-light .nav-link { color: var(--muted); }
-  .nav-link:hover { background: rgba(127,150,200,0.15); }
-  .nav-cta { font-size: 0.86rem; font-weight: 700; color: #fff; background: var(--blue); padding: 9px 18px; border-radius: 999px; border: none; cursor: pointer; transition: background .15s ease; }
-  .nav-cta:hover { background: var(--blue-deep); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 80; background: rgba(10,13,19,0.72); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid transparent; transition: border-color .3s ease; }
+  nav.scrolled { border-bottom-color: var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; color: var(--text); }
+  .logo .mark { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; }
+  .logo .dot { color: var(--blue); }
+  .nav-right { display: flex; align-items: center; gap: 6px; }
+  .nav-link { font-size: 0.84rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 8px 13px; border-radius: 9px; transition: color .15s, background .15s; }
+  .nav-link:hover { color: var(--text); background: var(--g2); }
+  .nav-ghost { font-size: 0.84rem; font-weight: 600; color: var(--text); background: none; border: 1px solid var(--line-2); padding: 8px 15px; border-radius: 10px; transition: border-color .15s; }
+  .nav-ghost:hover { border-color: var(--blue); }
+  .nav-cta { font-size: 0.84rem; font-weight: 600; color: #fff; background: var(--blue-deep); padding: 9px 16px; border-radius: 10px; border: none; text-decoration: none; transition: background .15s; }
+  .nav-cta:hover { background: var(--blue); }
+  .nav-link.soon { cursor: default; opacity: 0.55; display: inline-flex; align-items: baseline; gap: 5px; }
+  .nav-link.soon:hover { background: none; color: var(--muted); }
+  .nav-link.soon small { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); }
 
-  /* ============ HERO CINEMATOGRÁFICO ============ */
-  .stage { height: 420vh; position: relative; background: var(--night); }
+  /* ============ HERO (director de scroll, videos reutilizados) ============ */
+  .stage { height: 420vh; position: relative; background: var(--g0); }
   .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
-  .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .12s linear; will-change: opacity; }
+  .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
   .vid.v1 { opacity: 1; }
   .veil { position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(120% 90% at 50% 10%, transparent 40%, rgba(4,6,11,0.55) 100%),
-      linear-gradient(180deg, rgba(4,6,11,0.55) 0%, rgba(4,6,11,0.05) 30%, rgba(4,6,11,0.12) 62%, rgba(4,6,11,0.78) 100%);
+      radial-gradient(120% 90% at 50% 8%, transparent 35%, rgba(10,13,19,0.6) 100%),
+      linear-gradient(180deg, rgba(10,13,19,0.6) 0%, rgba(10,13,19,0.08) 30%, rgba(10,13,19,0.15) 60%, rgba(10,13,19,0.85) 100%);
   }
-  .stage-dim { position: absolute; inset: 0; background: var(--night); opacity: 0; pointer-events: none; will-change: opacity; }
-  .to-white { position: absolute; left: 0; right: 0; bottom: 0; height: 26vh; background: linear-gradient(180deg, transparent, var(--bg)); opacity: 0; pointer-events: none; }
+  .stage-dim { position: absolute; inset: 0; background: var(--g0); opacity: 0; pointer-events: none; }
+  .to-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30vh; background: linear-gradient(180deg, transparent, var(--g0)); opacity: 0; pointer-events: none; }
 
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 10vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
-  .hero-eyebrow { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.85); margin-bottom: 14px; }
-  .hero-eyebrow b { color: var(--blue); }
-  h1.mega { color: #fff; font-weight: 900; letter-spacing: -0.045em; line-height: 0.96; font-size: clamp(3rem, 11.5vw, 9.5rem); text-shadow: 0 10px 60px rgba(4,6,11,0.5); }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 13vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
+  .hero-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
+  h1.mega { color: #fff; font-weight: 800; letter-spacing: -0.04em; line-height: 0.98; font-size: clamp(2.6rem, 9.5vw, 7.5rem); text-shadow: 0 10px 60px rgba(10,13,19,0.6); text-wrap: balance; }
   h1.mega em { font-style: normal; color: var(--blue); }
-  .hero-sub { color: rgba(255,255,255,0.75); font-size: clamp(0.95rem, 2vw, 1.15rem); font-weight: 500; margin-top: 16px; }
-  .scroll-hint { position: absolute; bottom: 3.5vh; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.55); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .scroll-hint::after { content: ''; width: 1px; height: 34px; background: linear-gradient(180deg, rgba(255,255,255,0.7), transparent); animation: drip 1.8s ease-in-out infinite; }
+  .hero-sub { color: rgba(233,237,244,0.78); font-size: clamp(0.98rem, 2vw, 1.18rem); font-weight: 500; margin-top: 18px; max-width: 52ch; margin-left: auto; margin-right: auto; }
+  .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scroll-hint::after { content: ''; width: 1px; height: 32px; background: linear-gradient(180deg, var(--muted), transparent); animation: drip 1.8s ease-in-out infinite; }
   @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: top; } 100% { transform: scaleY(0); transform-origin: bottom; } }
 
-  /* ---- LA CARD QUE SE ENSAMBLA ---- */
+  /* ---- la card del pick que se ensambla (terminal) ---- */
   .pickstage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .pickcard { width: min(430px, calc(100vw - 40px)); pointer-events: auto; }
+  .pickcard { width: min(440px, calc(100vw - 36px)); pointer-events: auto; }
   .pc-piece { will-change: transform, opacity; opacity: 0; }
-  .pc-shell { background: rgba(10,15,26,0.72); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); border: 1px solid rgba(140,170,230,0.22); border-radius: var(--r-xl); padding: 22px; box-shadow: 0 40px 120px -30px rgba(0,0,0,0.8); }
-  .pc-tag { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .pc-tag .t1 { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); }
-  .pc-tag .t2 { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-  .pc-team { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; color: #fff; }
-  .pc-team img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); }
-  .pc-team .tn { font-weight: 800; font-size: 1.12rem; letter-spacing: -0.02em; line-height: 1.15; }
-  .pc-team .tn small { display: block; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0; }
-  .pc-team .pr { font-weight: 900; font-size: 1.5rem; letter-spacing: -0.03em; color: rgba(255,255,255,0.55); }
+  .pc-shell { background: rgba(14,19,28,0.82); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3); border: 1px solid var(--line-2); border-radius: 16px; padding: 20px; box-shadow: 0 40px 120px -30px rgba(0,0,0,0.85); }
+  .pc-tag { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; }
+  .pc-tag .t1 { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); display: flex; align-items: center; gap: 8px; }
+  .pc-tag .t1::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--bet); box-shadow: 0 0 8px var(--bet); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  .pc-tag .t2 { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.08em; color: var(--faint); }
+  .pc-team { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; }
+  .pc-team img { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+  .pc-team .tn { font-weight: 700; font-size: 1.06rem; letter-spacing: -0.015em; line-height: 1.2; color: var(--text); }
+  .pc-team .tn small { display: block; font-size: 0.7rem; font-weight: 500; color: var(--faint); letter-spacing: 0; }
+  .pc-team .pr { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.3rem; letter-spacing: -0.02em; color: var(--faint); font-variant-numeric: tabular-nums; }
   .pc-team.fav .pr { color: var(--blue); }
-  .pc-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: rgba(255,255,255,0.12); margin: 12px 0 4px; }
-  .pc-bar .a { background: rgba(255,255,255,0.35); }
-  .pc-bar .h { background: linear-gradient(90deg, var(--blue), #6ea4ff); }
-  .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: rgba(47,123,255,0.14); border: 1px solid rgba(47,123,255,0.4); border-radius: 16px; padding: 12px 15px; color: #fff; }
-  .pc-pick .star { color: var(--blue); font-size: 0.95rem; }
-  .pc-pick .sel { font-weight: 800; font-size: 0.98rem; letter-spacing: -0.01em; flex: 1; }
-  .pc-pick .odds { font-weight: 700; font-size: 0.78rem; color: rgba(255,255,255,0.7); }
-  .pc-foot { display: flex; justify-content: space-between; margin-top: 14px; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.45); }
-  .pc-cta { margin-top: 18px; text-align: center; }
-  .pc-cta button { background: var(--blue); color: #fff; border: none; font-weight: 800; font-size: 1rem; padding: 16px 34px; border-radius: 999px; cursor: pointer; box-shadow: 0 16px 44px -14px rgba(47,123,255,0.8); transition: transform .15s ease, background .15s ease; }
-  .pc-cta button:hover { transform: translateY(-2px); background: var(--blue-deep); }
-  .pc-cta .mini { display: block; margin-top: 10px; color: rgba(255,255,255,0.5); font-size: 0.74rem; font-weight: 600; }
+  .pc-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: var(--g2); margin: 12px 0 4px; }
+  .pc-bar .a { background: var(--line-2); }
+  .pc-bar .h { background: var(--blue); }
+  .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bet-bg); border: 1px solid rgba(47,213,123,0.35); border-radius: 12px; padding: 12px 14px; }
+  .pc-pick .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 6px; background: var(--bet); color: #06251545; color: #052816; }
+  .pc-pick .sel { font-weight: 700; font-size: 0.96rem; letter-spacing: -0.01em; flex: 1; color: var(--text); }
+  .pc-pick .odds { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.74rem; color: var(--muted); }
+  .pc-foot { display: flex; justify-content: space-between; margin-top: 13px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); letter-spacing: 0.04em; }
+  .pc-cta { margin-top: 16px; text-align: center; }
+  .pc-cta a { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.98rem; padding: 15px 32px; border-radius: 12px; box-shadow: 0 16px 44px -14px rgba(76,125,240,0.6); transition: transform .15s ease, background .15s ease; }
+  .pc-cta a:hover { transform: translateY(-2px); background: var(--blue); }
+  .pc-cta .mini { display: block; margin-top: 10px; color: var(--faint); font-size: 0.74rem; font-weight: 500; }
 
-  /* ============ CUERPO (blanco) ============ */
-  section { padding: 110px 0; }
-  .sec-eyebrow { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
-  .sec-title { font-weight: 900; letter-spacing: -0.04em; line-height: 1.0; font-size: clamp(2.1rem, 6vw, 3.6rem); max-width: 18ch; }
-  .sec-lede { color: var(--muted); font-size: 1.06rem; max-width: 52ch; margin-top: 18px; font-weight: 500; }
+  /* ============ SECCIONES ============ */
+  section { padding: 100px 0; }
+  .sec-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
+  .sec-title { font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; font-size: clamp(1.9rem, 5.6vw, 3.2rem); max-width: 20ch; text-wrap: balance; }
+  .sec-lede { color: var(--muted); font-size: 1.04rem; max-width: 56ch; margin-top: 16px; font-weight: 450; }
 
-  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s cubic-bezier(.2,.65,.25,1), transform .7s cubic-bezier(.2,.65,.25,1); }
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .65s cubic-bezier(.2,.65,.25,1), transform .65s cubic-bezier(.2,.65,.25,1); }
   .reveal.in { opacity: 1; transform: none; }
 
-  /* ---- HISTORIAL ---- */
-  .statband { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 44px 0 18px; }
-  .stat { background: var(--soft); border-radius: var(--r-xl); padding: 30px 28px; }
-  .stat .n { font-weight: 900; font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.045em; line-height: 1; color: var(--ink); }
-  .stat .n em { font-style: normal; color: var(--blue); }
-  .stat .l { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-top: 10px; }
-  .history-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: var(--r-xl); background: #fff; }
-  table { width: 100%; border-collapse: collapse; min-width: 560px; }
-  thead th { text-align: left; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 15px 22px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #fff; z-index: 2; }
-  tbody td { padding: 13px 22px; font-size: 0.9rem; border-bottom: 1px solid var(--soft); font-weight: 500; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: var(--soft); }
-  td.date { color: var(--muted); font-size: 0.76rem; font-weight: 700; }
-  td.pick { font-size: 0.86rem; color: var(--muted); }
-  .badge { font-weight: 800; font-size: 0.72rem; padding: 5px 12px; border-radius: 999px; }
-  .badge.win { background: rgba(22,163,74,0.1); color: var(--win); }
-  .badge.loss { background: rgba(220,38,38,0.08); color: var(--loss); }
-  .history-foot { font-size: 0.82rem; color: var(--muted); margin-top: 16px; font-weight: 500; }
+  /* ---- RÉCORD ---- */
+  #record { padding-top: 70px; }
+  .recgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 40px; }
+  .rec { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 26px 22px; }
+  .rec .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .rec .n.green { color: var(--bet); }
+  .rec .n.red { color: var(--skip); }
+  .rec .n.blue { color: var(--blue); }
+  .rec .l { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--faint); margin-top: 12px; }
+  .rec-note { font-size: 0.86rem; color: var(--muted); margin-top: 16px; font-weight: 450; max-width: 66ch; }
+  .rec-note strong { color: var(--text); font-weight: 600; }
 
-  /* ---- CÓMO FUNCIONA ---- */
-  #como { background: var(--soft); }
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; }
-  .step { background: #fff; border-radius: var(--r-xl); padding: 32px 28px; }
-  .step .ico { width: 58px; height: 58px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; background: var(--blue-tint); }
-  .step .ico svg { width: 26px; height: 26px; stroke: var(--blue); }
-  .step h3 { font-weight: 800; font-size: 1.16rem; letter-spacing: -0.02em; margin-bottom: 8px; }
-  .step p { color: var(--muted); font-size: 0.93rem; font-weight: 500; }
-  .mlbrow { margin-top: 16px; background: var(--night); color: #fff; border-radius: var(--r-xl); padding: 34px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-  .mlbrow .t { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.025em; }
-  .mlbrow .t em { font-style: normal; color: var(--blue); }
-  .mlbrow .s { color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 500; margin-top: 4px; }
-  .mlbrow .tag { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); border: 1px solid rgba(47,123,255,0.5); padding: 8px 16px; border-radius: 999px; white-space: nowrap; }
+  /* ---- MÉTODO ---- */
+  #metodo { background: var(--g1); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 44px; }
+  .step { background: var(--g0); border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; }
+  .step .ico { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; background: var(--blue-tint); border: 1px solid rgba(76,125,240,0.25); }
+  .step .ico svg { width: 20px; height: 20px; stroke: var(--blue); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .step h3 { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.015em; margin-bottom: 8px; }
+  .step p { color: var(--muted); font-size: 0.9rem; font-weight: 450; }
+  .strange { margin-top: 28px; border-left: 2px solid var(--blue); padding: 4px 0 4px 20px; color: var(--muted); font-size: 1rem; font-weight: 450; max-width: 62ch; }
+  .strange strong { color: var(--text); font-weight: 600; }
 
-  /* ---- CARRUSEL (guía) ---- */
-  #guia .carousel-wrap { margin-top: 40px; }
-  #guia .sec-lede { margin-bottom: 0; }
+  /* ---- EN VIVO ---- */
+  .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; margin-top: 10px; }
+  .live-card-holder { display: flex; justify-content: center; }
+  .live-cta { margin-top: 26px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .btn-primary { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.96rem; padding: 14px 26px; border-radius: 12px; border: none; transition: background .15s, transform .15s; }
+  .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
+  .btn-ghost { display: inline-block; background: none; color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.94rem; padding: 13px 24px; border-radius: 12px; border: 1px solid var(--line-2); transition: border-color .15s; }
+  .btn-ghost:hover { border-color: var(--blue); }
 
-  /* ---- PRICING ---- */
-  .price-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; flex-wrap: wrap; }
-  .cur-toggle { display: inline-flex; background: var(--soft-2); border-radius: 999px; padding: 4px; gap: 2px; }
-  .cur-toggle button { font-size: 0.82rem; font-weight: 800; padding: 9px 22px; border-radius: 999px; border: none; cursor: pointer; color: var(--muted); background: transparent; transition: all .18s ease; }
-  .cur-toggle button.active { background: #fff; color: var(--ink); box-shadow: 0 4px 14px -6px rgba(14,17,22,0.25); }
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; margin-top: 44px; }
-  .tier { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); padding: 34px 30px; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease; }
-  .tier:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -30px rgba(14,17,22,0.25); }
-  .tier.featured { background: var(--night); border-color: var(--night); color: #fff; position: relative; }
-  .tier.featured::after { content: 'Más vendido'; position: absolute; top: 22px; right: 22px; background: var(--blue); color: #fff; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 13px; border-radius: 999px; }
-  .tier h3 { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
-  .tier .was { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-decoration: line-through; margin-top: 16px; min-height: 1.2em; }
-  .tier.featured .was { color: rgba(255,255,255,0.45); }
-  .tier .amt { font-weight: 900; font-size: 3rem; letter-spacing: -0.05em; line-height: 1; }
-  .tier .amt small { font-size: 1rem; font-weight: 700; color: var(--muted); letter-spacing: -0.01em; margin-left: 4px; }
-  .tier.featured .amt small { color: rgba(255,255,255,0.55); }
-  .tier .per { font-size: 0.84rem; color: var(--muted); font-weight: 600; margin-top: 8px; }
-  .tier.featured .per { color: rgba(255,255,255,0.6); }
-  .tier ul { list-style: none; margin: 22px 0 26px; flex: 1; }
-  .tier li { font-size: 0.9rem; font-weight: 500; padding: 8px 0 8px 28px; position: relative; }
-  .tier li::before { content: '✓'; position: absolute; left: 4px; color: var(--blue); font-weight: 900; }
-  .tier.featured li { color: rgba(255,255,255,0.88); }
-  .tier .btn { width: 100%; text-align: center; font-weight: 800; font-size: 0.98rem; padding: 15px; border-radius: 999px; border: none; cursor: pointer; text-decoration: none; display: block; transition: transform .15s ease, background .15s ease; }
-  .btn-blue { background: var(--blue); color: #fff; box-shadow: 0 14px 34px -14px rgba(47,123,255,0.7); }
-  .btn-blue:hover { background: var(--blue-deep); transform: translateY(-1px); }
-  .btn-quiet { background: var(--soft); color: var(--ink); }
-  .btn-quiet:hover { background: var(--soft-2); }
-  .tier.featured .btn-quiet { background: rgba(255,255,255,0.12); color: #fff; }
+  /* ---- PRECIOS ---- */
+  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 44px; align-items: stretch; }
+  .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
+  .tier:hover { border-color: var(--line-2); transform: translateY(-3px); }
+  .tier.featured { border: 1.5px solid var(--blue); background: linear-gradient(180deg, rgba(76,125,240,0.08), var(--g1) 40%); }
+  .tier .flag { position: absolute; top: -11px; left: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--blue); color: #fff; padding: 4px 10px; border-radius: 6px; }
+  .tier h3 { font-weight: 700; font-size: 0.98rem; letter-spacing: -0.01em; }
+  .tier .was { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--faint); text-decoration: line-through; margin-top: 14px; min-height: 1.1em; }
+  .tier .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2.1rem; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tier .amt small { font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+  .tier .per { font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-top: 7px; }
+  .tier ul { list-style: none; margin: 18px 0 22px; flex: 1; }
+  .tier li { font-size: 0.84rem; font-weight: 450; color: var(--muted); padding: 6px 0 6px 20px; position: relative; }
+  .tier li::before { content: ''; position: absolute; left: 2px; top: 13px; width: 6px; height: 6px; border-radius: 2px; background: var(--blue); }
+  .tier li strong { color: var(--text); font-weight: 600; }
+  .tier .btn { width: 100%; text-align: center; font-weight: 700; font-size: 0.9rem; padding: 13px; border-radius: 11px; border: none; text-decoration: none; display: block; transition: background .15s, transform .15s; }
+  .btn-blue { background: var(--blue-deep); color: #fff; }
+  .btn-blue:hover { background: var(--blue); }
+  .btn-dim { background: var(--g2); color: var(--text); }
+  .btn-dim:hover { background: var(--line); }
 
-  /* ---- AVISO ---- */
-  .aviso { background: var(--soft); border-radius: var(--r-xl); padding: 34px; max-width: 720px; margin: 0 auto; }
-  .aviso h4 { font-weight: 800; font-size: 1rem; margin-bottom: 8px; }
-  .aviso p { color: var(--muted); font-size: 0.88rem; font-weight: 500; line-height: 1.6; }
-  .aviso p + h4 { margin-top: 20px; }
+  .guarantee { margin-top: 40px; border: 1px solid rgba(47,213,123,0.3); background: var(--bet-bg); border-radius: 14px; padding: 26px 28px; display: flex; gap: 18px; align-items: flex-start; }
+  .guarantee .g-ico { flex-shrink: 0; width: 42px; height: 42px; border-radius: 11px; background: rgba(47,213,123,0.15); display: flex; align-items: center; justify-content: center; }
+  .guarantee .g-ico svg { width: 20px; height: 20px; stroke: var(--bet); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .guarantee h3 { font-weight: 700; font-size: 1.12rem; letter-spacing: -0.015em; margin-bottom: 5px; }
+  .guarantee p { color: var(--muted); font-size: 0.92rem; font-weight: 450; max-width: 68ch; }
+  .guarantee p strong { color: var(--text); }
+
+  /* ---- MUNDIAL ---- */
+  #mundial .panel { background: var(--g1); border: 1px solid var(--line); border-radius: 16px; padding: 34px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 18px; align-items: center; }
+  #mundial h2 { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.025em; line-height: 1.15; }
+  #mundial .sub { color: var(--muted); font-size: 0.9rem; font-weight: 450; margin-top: 8px; }
+  #mundial .sub button { background: none; border: none; color: var(--blue); font-weight: 600; font-size: 0.9rem; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+  .mini-tier { background: var(--g0); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .mini-tier h4 { font-weight: 700; font-size: 0.92rem; }
+  .mini-tier .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; margin: 8px 0 12px; }
+  .mini-tier .amt small { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+  .mini-tier a { display: block; text-align: center; font-weight: 700; font-size: 0.82rem; padding: 10px; border-radius: 9px; text-decoration: none; background: var(--g2); color: var(--text); transition: background .15s; }
+  .mini-tier a:hover { background: var(--line); }
+
+  /* ---- FAQ ---- */
+  #faq details { border-bottom: 1px solid var(--line); }
+  #faq summary { list-style: none; cursor: pointer; padding: 20px 0; font-weight: 600; font-size: 1.02rem; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+  #faq summary::-webkit-details-marker { display: none; }
+  #faq summary::after { content: '+'; font-family: 'JetBrains Mono', monospace; color: var(--blue); font-size: 1.1rem; transition: transform .2s; }
+  #faq details[open] summary::after { transform: rotate(45deg); }
+  #faq details p { color: var(--muted); font-size: 0.94rem; font-weight: 450; padding-bottom: 20px; max-width: 64ch; }
 
   /* ---- FOOTER ---- */
-  footer { background: var(--night); color: rgba(255,255,255,0.55); padding: 60px 0 70px; font-size: 0.84rem; }
+  footer { border-top: 1px solid var(--line); padding: 50px 0 64px; color: var(--faint); font-size: 0.82rem; font-weight: 450; }
   footer .wrap { display: flex; justify-content: space-between; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
-  footer .logo { color: #fff; }
-  footer .resp { max-width: 46ch; line-height: 1.6; font-weight: 500; }
-  footer .resp strong { color: #fff; }
+  footer .logo { color: var(--text); }
+  footer .resp { max-width: 48ch; line-height: 1.6; }
+  footer .resp strong { color: var(--muted); }
 
   /* ============ MODALES (auth + pick gratis Mundial) ============ */
-  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(4,6,11,0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
+  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(6,8,12,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
   .overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: var(--r-xl); width: 100%; max-width: 560px; margin: auto; box-shadow: 0 50px 120px -30px rgba(0,0,0,0.5); animation: pop .28s cubic-bezier(.2,.65,.25,1) both; }
-  @keyframes pop { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
-  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 24px 26px 14px; }
-  .modal-head h3 { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
-  .modal-head .day { font-size: 0.78rem; color: var(--muted); margin-top: 2px; font-weight: 600; }
-  .modal-close { border: none; background: var(--soft); width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--muted); line-height: 1; }
-  .modal-close:hover { background: var(--soft-2); color: var(--ink); }
-  .modal-body { padding: 4px 26px 26px; }
-  .modal-note { font-size: 0.86rem; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
-  .modal-foot { font-size: 0.78rem; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.5; }
+  .modal { background: var(--g1); border: 1px solid var(--line-2); border-radius: 16px; width: 100%; max-width: 560px; margin: auto; box-shadow: 0 50px 120px -30px rgba(0,0,0,0.8); animation: pop .25s cubic-bezier(.2,.65,.25,1) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 12px; }
+  .modal-head h3 { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .modal-head .day { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--faint); margin-top: 3px; }
+  .modal-close { border: none; background: var(--g2); width: 34px; height: 34px; border-radius: 9px; font-size: 0.95rem; color: var(--muted); line-height: 1; }
+  .modal-close:hover { background: var(--line); color: var(--text); }
+  .modal-body { padding: 4px 24px 24px; }
+  .modal-note { font-size: 0.86rem; color: var(--muted); margin-bottom: 16px; font-weight: 450; }
+  .modal-foot { font-size: 0.78rem; color: var(--faint); margin-top: 16px; text-align: center; line-height: 1.5; }
   .modal-foot a { color: var(--blue); }
 
-  .analysis { border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 14px; overflow: hidden; }
+  .analysis { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; overflow: hidden; background: var(--g0); }
   .an-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-  .an-match { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
-  .an-xg { font-size: 0.76rem; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
-  .an-conf { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 11px; border-radius: 999px; white-space: nowrap; }
-  .an-conf.alta { color: var(--win); background: rgba(22,163,74,.1); }
-  .an-conf.media { color: var(--blue-deep); background: var(--blue-tint); }
-  .an-conf.baja { color: var(--loss); background: rgba(220,38,38,.08); }
+  .an-match { font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; }
+  .an-xg { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--faint); margin-bottom: 12px; }
+  .an-conf { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+  .an-conf.alta { color: var(--bet); background: var(--bet-bg); }
+  .an-conf.media { color: var(--blue); background: var(--blue-tint); }
+  .an-conf.baja { color: var(--skip); background: var(--skip-bg); }
   table.antab { width: 100%; min-width: 0; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
-  table.antab th { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  table.antab th { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); }
   table.antab th:first-child { text-align: left; }
-  table.antab td { padding: 8px 4px; border-bottom: 1px solid var(--soft); text-align: right; word-break: break-word; font-weight: 600; }
-  table.antab td:first-child { text-align: left; line-height: 1.3; font-weight: 500; }
+  table.antab td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: right; word-break: break-word; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+  table.antab td:first-child { text-align: left; font-family: 'Inter Tight', sans-serif; line-height: 1.3; font-weight: 500; }
   table.antab th:first-child, table.antab td:first-child { width: 38%; }
   table.antab tr:last-child td { border-bottom: none; }
-  .edge-pos { color: var(--win); font-weight: 800; }
-  .edge-neg { color: var(--muted); }
-  td.mut { color: var(--muted); }
-  .mk { display: inline-block; font-size: 0.62rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .mk.bet { background: rgba(22,163,74,.12); color: var(--win); }
-  .mk.skip { background: var(--soft-2); color: var(--muted); }
-  .mk.fade { background: rgba(220,38,38,.1); color: var(--loss); }
-  .an-subhead { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 14px 0 4px; }
-  .an-note { font-size: 0.72rem; color: var(--muted); margin-top: 8px; line-height: 1.5; font-weight: 500; }
+  .edge-pos { color: var(--bet); font-weight: 700; }
+  .edge-neg { color: var(--faint); }
+  td.mut { color: var(--faint); }
+  .mk { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mk.bet { background: var(--bet-bg); color: var(--bet); }
+  .mk.skip { background: var(--g2); color: var(--muted); }
+  .mk.fade { background: var(--skip-bg); color: var(--skip); }
+  .an-subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin: 14px 0 4px; }
+  .an-note { font-size: 0.72rem; color: var(--faint); margin-top: 8px; line-height: 1.5; }
   .scores-wrap { display: flex; gap: 10px; margin: 14px 0 4px; }
-  .score-card { flex: 1; background: var(--soft); border-radius: var(--r-md); padding: 14px 10px 12px; text-align: center; }
-  .score-card.top1 { background: linear-gradient(160deg, var(--blue), var(--blue-deep)); }
-  .score-card .sc-rank { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
-  .score-card.top1 .sc-rank { color: rgba(255,255,255,0.7); }
-  .score-card .sc-score { font-weight: 900; font-size: 1.6rem; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
-  .score-card.top1 .sc-score { font-size: 1.9rem; color: #fff; }
-  .score-card .sc-pct { font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-top: 6px; }
-  .score-card.top1 .sc-pct { color: rgba(255,255,255,0.85); }
-  .tool-block { border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 14px; }
-  .tool-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 12px; }
-  .tlab { display: block; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 5px; }
-  .tlab2 { display: block; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
-  .tool-block select, .tool-block input { width: 100%; background: var(--soft); border: 1px solid var(--line); color: var(--ink); font: inherit; font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; outline: none; }
-  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue); background: #fff; }
+  .score-card { flex: 1; background: var(--g2); border-radius: 10px; padding: 13px 10px 11px; text-align: center; }
+  .score-card.top1 { background: var(--blue-tint); border: 1px solid rgba(76,125,240,0.35); }
+  .score-card .sc-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.54rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--faint); margin-bottom: 6px; }
+  .score-card.top1 .sc-rank { color: var(--blue); }
+  .score-card .sc-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.4rem; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+  .score-card.top1 .sc-score { font-size: 1.6rem; }
+  .score-card .sc-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; color: var(--muted); margin-top: 6px; }
+  .tool-block { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; background: var(--g0); }
+  .tool-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--faint); margin-bottom: 12px; }
+  .tlab { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 5px; }
+  .tlab2 { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.54rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); margin-bottom: 4px; }
+  .tool-block select, .tool-block input { width: 100%; background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 0.9rem; padding: 10px 12px; border-radius: 9px; outline: none; }
+  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue); }
   .tool-row { display: flex; gap: 10px; margin-top: 10px; }
   .tool-row > div { flex: 1; }
-  .tool-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-top: 12px; cursor: pointer; }
+  .tool-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-top: 12px; cursor: pointer; }
   .tool-toggle input { width: auto; accent-color: var(--blue); }
   .odds-mode { display: flex; gap: 6px; margin-bottom: 12px; }
-  .om { font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); cursor: pointer; transition: all .15s ease; }
+  .om { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; padding: 6px 11px; border: 1px solid var(--line-2); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all .15s ease; }
   .om.active { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
   .odds3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .tool-run { margin-top: 16px; width: 100%; font-weight: 800; font-size: 0.95rem; padding: 14px; border-radius: 999px; border: none; cursor: pointer; background: var(--blue); color: #fff; transition: background .15s ease; }
-  .tool-run:hover:not(:disabled) { background: var(--blue-deep); }
-  .tool-run:disabled { opacity: 0.65; cursor: default; }
-  .tool-loading { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--muted); padding: 14px 2px; }
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+  .tool-run { margin-top: 16px; width: 100%; font-weight: 700; font-size: 0.94rem; padding: 13px; border-radius: 11px; border: none; background: var(--blue-deep); color: #fff; transition: background .15s ease; }
+  .tool-run:hover:not(:disabled) { background: var(--blue); }
+  .tool-run:disabled { opacity: 0.6; cursor: default; }
+  .tool-loading { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 14px 2px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--line-2); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .auth-input { width: 100%; background: var(--soft); border: 1.5px solid var(--line); color: var(--ink); font: inherit; font-size: 0.95rem; padding: 13px 15px; border-radius: 14px; outline: none; }
-  .auth-input:focus { border-color: var(--blue); background: #fff; }
-  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; font-weight: 600; color: var(--blue); cursor: pointer; }
+  .auth-input { width: 100%; background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 0.95rem; padding: 12px 14px; border-radius: 10px; outline: none; }
+  .auth-input:focus { border-color: var(--blue); }
+  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; font-weight: 500; color: var(--blue); cursor: pointer; }
   .auth-toggle:hover { text-decoration: underline; }
-  .redeem-msg { margin-top: 18px; padding: 14px 16px; border-radius: 14px; font-size: 0.9rem; display: none; line-height: 1.5; font-weight: 500; }
-  .redeem-msg.ok { display: block; background: rgba(22,163,74,0.08); color: var(--win); }
-  .redeem-msg.bad { display: block; background: rgba(220,38,38,0.06); color: var(--loss); }
+  .redeem-msg { margin-top: 18px; padding: 13px 15px; border-radius: 10px; font-size: 0.88rem; display: none; line-height: 1.5; font-weight: 500; }
+  .redeem-msg.ok { display: block; background: var(--bet-bg); color: var(--bet); }
+  .redeem-msg.bad { display: block; background: var(--skip-bg); color: var(--skip); }
 
   /* ============ RESPONSIVE ============ */
-  @media (max-width: 860px) {
-    .statband { grid-template-columns: 1fr; }
+  @media (max-width: 900px) {
+    .tiers { grid-template-columns: repeat(2, 1fr); }
+    .live-grid { grid-template-columns: 1fr; gap: 28px; }
+    #mundial .panel { grid-template-columns: 1fr; }
+    .recgrid { grid-template-columns: 1fr; gap: 10px; }
     .steps { grid-template-columns: 1fr; }
-    .tiers { grid-template-columns: 1fr; max-width: 460px; }
-    section { padding: 76px 0; }
   }
   @media (max-width: 560px) {
-    body { font-size: 16px; }
-    .wrap { padding: 0 18px; }
-    .stage { height: 480vh; }
-    .vid { object-position: 50% 68%; } /* en vertical, mantener al bateador en cuadro */
-    .hero-copy { bottom: 12vh; }
-    .nav-link { display: none; }
-    #mlbLink.admin-on { display: inline-flex !important; }
-    .price-head { flex-direction: column; align-items: flex-start; }
-    .pc-shell { padding: 18px; }
+    body { font-size: 15.5px; }
+    .wrap { padding: 0 16px; }
+    section { padding: 68px 0; }
+    .stage { height: 460vh; }
+    .vid { object-position: 50% 68%; }
+    .hero-copy { bottom: 10vh; }
+    .tiers { grid-template-columns: 1fr; }
+    .nav-link, .nav-ghost { display: none; }
+    .pc-shell { padding: 16px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { flex-direction: column; }
     footer .wrap { flex-direction: column; }
-    /* historial → cards */
-    .history-wrap { max-height: 440px; }
-    .history-wrap table { display: block; min-width: 0; }
-    .history-wrap tbody { display: block; }
-    .history-wrap thead { display: none; }
-    .history-wrap tr { display: flex; flex-wrap: wrap; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); gap: 2px 8px; }
-    .history-wrap tr:last-child { border-bottom: none; }
-    .history-wrap td { display: block; border: none !important; padding: 0; }
-    .history-wrap td.date { order: 1; width: 100%; }
-    .history-wrap tr td:nth-child(2) { order: 2; width: 100%; font-size: 0.9rem; }
-    .history-wrap td.pick { order: 3; flex: 1; font-size: 0.78rem; }
-    .history-wrap tr td:last-child { order: 4; flex-shrink: 0; }
+    .guarantee { flex-direction: column; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
@@ -310,7 +314,7 @@
     .stage-sticky { position: relative; height: 100vh; }
     .pc-piece { opacity: 1 !important; transform: none !important; }
   }
-  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -319,16 +323,17 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <a href="#historial" class="nav-link">Récord</a>
-      <a href="#precios" class="nav-link">Planes</a>
-      <a href="/mlb.html" class="nav-link" id="mlbLink" style="display:none">MLB</a>
+      <span class="nav-link soon" title="Doctor MLB llega muy pronto">El Doctor <small>pronto</small></span>
+      <a href="#record" class="nav-link">Récord</a>
+      <a href="#precios" class="nav-link">Precios</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
-      <button id="authBtn" class="nav-cta">Iniciar sesión</button>
+      <button id="authBtn" class="nav-ghost">Entrar</button>
+      <button id="navFreeBtn" class="nav-cta">Pick gratis</button>
     </div>
   </div>
 </nav>
 
-<!-- ============ HERO CINEMATOGRÁFICO ============ -->
+<!-- ============ HERO ============ -->
 <div class="stage" id="stage">
   <div class="stage-sticky">
     <video class="vid v1" id="vid1" src="/video/hero-pitch.mp4" poster="/video/hero-pitch.jpg" muted playsinline autoplay loop preload="auto"></video>
@@ -337,30 +342,30 @@
     <div class="stage-dim" id="stageDim"></div>
 
     <div class="hero-copy" id="heroCopy">
-      <div class="hero-eyebrow">RICKY<b>·</b>PICKS</div>
-      <h1 class="mega">Juega con <em>cabeza.</em></h1>
-      <div class="hero-sub">Miles de simulaciones por juego. Un pick a la vez.</div>
+      <div class="hero-eyebrow">Doctor MLB — 10,000 simulaciones por juego</div>
+      <h1 class="mega">Este juego ya se jugó <em>10,000 veces.</em></h1>
+      <div class="hero-sub">El Doctor simula cada partido antes del primer lanzamiento y te dice a qué entrarle. Y a qué no.</div>
     </div>
 
     <div class="pickstage">
       <div class="pickcard" id="pickcard">
         <div class="pc-piece pc-shell" data-piece="0">
           <div class="pc-piece pc-tag" data-piece="1">
-            <span class="t1">Pick gratis · MLB</span>
-            <span class="t2 num" id="pcDate">HOY</span>
+            <span class="t1">Pick gratis de hoy</span>
+            <span class="t2" id="pcDate">HOY</span>
           </div>
           <div class="pc-piece" data-piece="2">
             <div class="pc-team" id="pcAway">
               <img id="pcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
               <div class="tn"><span id="pcAwayName">Visitante</span><small id="pcAwayPit"></small></div>
-              <div class="pr num" id="pcAwayProb">—</div>
+              <div class="pr" id="pcAwayProb">—</div>
             </div>
           </div>
           <div class="pc-piece" data-piece="3">
             <div class="pc-team fav" id="pcHome">
               <img id="pcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
               <div class="tn"><span id="pcHomeName">Local</span><small id="pcHomePit"></small></div>
-              <div class="pr num" id="pcHomeProb">—</div>
+              <div class="pr" id="pcHomeProb">—</div>
             </div>
           </div>
           <div class="pc-piece" data-piece="4">
@@ -368,371 +373,222 @@
           </div>
           <div class="pc-piece" data-piece="5">
             <div class="pc-pick">
-              <span class="star">★</span>
-              <span class="sel" id="pcPickSel">Pick del modelo</span>
-              <span class="odds num" id="pcPickOdds"></span>
+              <span class="vchip">BET</span>
+              <span class="sel" id="pcPickSel">Pick del Doctor</span>
+              <span class="odds" id="pcPickOdds"></span>
             </div>
-            <div class="pc-foot"><span id="pcSims">10,000 simulaciones</span><span id="pcVenue"></span></div>
+            <div class="pc-foot"><span id="pcSims">10,000 SIMULACIONES</span><span id="pcVenue"></span></div>
           </div>
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
-          <button id="heroFreeBtn">Ver pick gratis</button>
-          <span class="mini">Sin tarjeta. El pick del Mundial de hoy, completo.</span>
+          <a href="#precios" id="heroFreeBtn">Reservar acceso fundador</a>
+          <span class="mini">Doctor MLB llega muy pronto. Congela el precio fundador hoy.</span>
         </div>
       </div>
     </div>
 
     <div class="scroll-hint" id="scrollHint">Scroll</div>
-    <div class="to-white" id="toWhite"></div>
+    <div class="to-ground" id="toGround"></div>
   </div>
 </div>
 
-<!-- ============ HISTORIAL ============ -->
-<section id="historial">
+<!-- ============ RÉCORD ============ -->
+<section id="record">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">Historial</div>
-    <h2 class="sec-title reveal">Todos los picks. Ganados y perdidos.</h2>
-    <p class="sec-lede reveal">Esto no se filtra. Cada pick que el modelo marcó como apuesta está aquí con su resultado real. Así se construye la confianza: enseñando todo.</p>
-    <div class="statband reveal">
-      <div class="stat"><div class="n num" data-count="71.8" data-suffix="%"><em>0%</em></div><div class="l">Aciertos</div></div>
-      <div class="stat"><div class="n num" data-count="115"><em>0</em></div><div class="l">Picks publicados</div></div>
-      <div class="stat"><div class="n num"><em>107-42</em></div><div class="l">Ganados · Perdidos</div></div>
+    <div class="sec-eyebrow reveal">Récord verificado</div>
+    <h2 class="sec-title reveal">Todos los picks cuentan. También los perdidos.</h2>
+    <p class="sec-lede reveal">Cada pick del Doctor se califica automáticamente contra el marcador real del juego. Esto es lo que hizo en los últimos 7 días — sin borrar nada.</p>
+    <div class="recgrid reveal">
+      <div class="rec"><div class="n green" id="recW">—</div><div class="l">Picks ganados · 7 días</div></div>
+      <div class="rec"><div class="n red" id="recL">—</div><div class="l">Picks perdidos · 7 días</div></div>
+      <div class="rec"><div class="n blue" id="recP">—</div><div class="l">Efectividad</div></div>
     </div>
-    <div class="history-wrap reveal">
-      <table>
-        <thead>
-          <tr><th>Fecha</th><th>Partido</th><th>Pick</th><th>Resultado</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="date">06 JUL</td><td>🇵🇹 Portugal vs. 🇪🇸 España</td><td class="pick">España gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">06 JUL</td><td>🇺🇸 USA vs. 🇧🇪 Bélgica</td><td class="pick">USA gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">06 JUL</td><td>🇺🇸 USA vs. 🇧🇪 Bélgica</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Noruega gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">05 JUL</td><td>🇳🇴 Noruega vs. 🇧🇷 Brasil</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">05 JUL</td><td>🇲🇽 México vs. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</td><td class="pick">México gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">04 JUL</td><td>🇫🇷 Francia vs. 🇵🇾 Paraguay</td><td class="pick">Francia gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">04 JUL</td><td>🇫🇷 Francia vs. 🇵🇾 Paraguay</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">04 JUL</td><td>🇨🇦 Canadá vs. 🇲🇦 Marruecos</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">03 JUL</td><td>🇦🇺 Australia vs. 🇪🇬 Egipto</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">03 JUL</td><td>🇦🇷 Argentina vs. 🇨🇻 Cabo Verde</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">03 JUL</td><td>🇨🇴 Colombia vs. 🇬🇭 Ghana</td><td class="pick">Colombia gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">03 JUL</td><td>🇨🇴 Colombia vs. 🇬🇭 Ghana</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">03 JUL</td><td>🇦🇷 Argentina vs. 🇨🇻 Cabo Verde</td><td class="pick">Argentina gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">02 JUL</td><td>🇵🇹 Portugal vs. 🇭🇷 Croacia</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">02 JUL</td><td>🇪🇸 España vs. 🇦🇹 Austria</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">02 JUL</td><td>🇵🇹 Portugal vs. 🇭🇷 Croacia</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">02 JUL</td><td>🇨🇭 Suiza vs. 🇩🇿 Argelia</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. 🇨🇩 Congo</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. 🇨🇩 Congo</td><td class="pick">Over 4.5 tarjetas</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🇧🇪 Bélgica vs. 🇸🇳 Senegal</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🇧🇪 Bélgica vs. 🇸🇳 Senegal</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🇺🇸 USA vs. 🇧🇦 Bosnia</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. 🇨🇩 Congo</td><td class="pick">Over 9.5 córners</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">01 JUL</td><td>🇧🇪 Bélgica vs. 🇸🇳 Senegal</td><td class="pick">Over 9.5 córners</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">30 JUN</td><td>🇲🇽 México vs. 🇪🇨 Ecuador</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">30 JUN</td><td>🇲🇽 México vs. 🇪🇨 Ecuador</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">30 JUN</td><td>🇨🇮 Costa de Marfil vs. 🇳🇴 Noruega</td><td class="pick">Noruega gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">30 JUN</td><td>🇨🇮 Costa de Marfil vs. 🇳🇴 Noruega</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇲🇦 Marruecos vs. 🇳🇱 Países Bajos</td><td class="pick">Marruecos clasifica</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇲🇦 Marruecos vs. 🇳🇱 Países Bajos</td><td class="pick">Marcador exacto 1-1</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇲🇦 Marruecos vs. 🇳🇱 Países Bajos</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇩🇪 Alemania vs. 🇵🇾 Paraguay</td><td class="pick">Marcador exacto 1-1</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇩🇪 Alemania vs. 🇵🇾 Paraguay</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇩🇪 Alemania vs. 🇵🇾 Paraguay</td><td class="pick">Paraguay gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">29 JUN</td><td>🇧🇷 Brasil vs. 🇯🇵 Japón</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇯🇴 Jordania vs. Argentina 🇦🇷</td><td class="pick">Over 3.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇨🇩 Congo vs. Uzbekistán 🇺🇿</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇩🇿 Argelia vs. Austria 🇦🇹</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇭🇷 Croacia vs. Ghana 🇬🇭</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇨🇴 Colombia vs. Portugal 🇵🇹</td><td class="pick">Colombia gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🇨🇩 Congo vs. Uzbekistán 🇺🇿</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">27 JUN</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. Panamá 🇵🇦</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇧🇪 Bélgica vs. Nueva Zelanda 🇳🇿</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇫🇷 Francia vs. Noruega 🇳🇴</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇮🇶 Iraq vs. Senegal 🇸🇳</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇺🇾 Uruguay vs. España 🇪🇸</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇨🇻 Cabo Verde vs. Arabia Saudita 🇸🇦</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇪🇬 Egipto vs. Irán 🇮🇷</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">26 JUN</td><td>🇧🇪 Bélgica vs. Nueva Zelanda 🇳🇿</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">25 JUN</td><td>🇩🇪 Alemania vs. Ecuador 🇪🇨</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">25 JUN</td><td>🇨🇼 Curazao vs. Costa de Marfil 🇨🇮</td><td class="pick">Over 3.5 tarjetas</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">25 JUN</td><td>🇳🇱 Países Bajos vs. Túnez 🇹🇳</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">25 JUN</td><td>🇯🇵 Japón vs. Suecia 🇸🇪</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇲🇽 México vs. Rep. Checa 🇨🇿</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇲🇽 México vs. Rep. Checa 🇨🇿</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇧🇷 Brasil vs. Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇲🇦 Marruecos vs. Haití 🇭🇹</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇿🇦 Sudáfrica vs. Corea del Sur 🇰🇷</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇧🇦 Bosnia vs. Catar 🇶🇦</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">24 JUN</td><td>🇨🇭 Suiza vs. Canadá 🇨🇦</td><td class="pick">Suiza gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">23 JUN</td><td>🇵🇹 Portugal vs. Uzbekistán 🇺🇿</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">23 JUN</td><td>🇨🇴 Colombia vs. RD Congo 🇨🇩</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">23 JUN</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. Ghana 🇬🇭</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">23 JUN</td><td>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra vs. Ghana 🇬🇭</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">23 JUN</td><td>🇵🇦 Panamá vs. Croacia 🇭🇷</td><td class="pick">Córners Over 8.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇫🇷 Francia vs. Irak 🇮🇶</td><td class="pick">Francia gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇫🇷 Francia vs. Irak 🇮🇶</td><td class="pick">Francia ambas mitades</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇫🇷 Francia vs. Irak 🇮🇶</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇦🇷 Argentina vs. Austria 🇦🇹</td><td class="pick">Argentina gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇳🇴 Noruega vs. Senegal 🇸🇳</td><td class="pick">Noruega gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇳🇴 Noruega vs. Senegal 🇸🇳</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇳🇴 Noruega vs. Senegal 🇸🇳</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇯🇴 Jordania vs. Argelia 🇩🇿</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">22 JUN</td><td>🇯🇴 Jordania vs. Argelia 🇩🇿</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">21 JUN</td><td>🇪🇸 España vs. Arabia Saudita 🇸🇦</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">21 JUN</td><td>🇺🇾 Uruguay vs. Cabo Verde 🇨🇻</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">21 JUN</td><td>🇺🇾 Uruguay vs. Cabo Verde 🇨🇻</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">21 JUN</td><td>🇧🇪 Bélgica vs. Irán 🇮🇷</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">21 JUN</td><td>🇳🇿 Nueva Zelanda vs. Egipto 🇪🇬</td><td class="pick">Under 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇯🇵 Japón vs. Túnez 🇹🇳</td><td class="pick">Japón gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇯🇵 Japón vs. Túnez 🇹🇳</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇩🇪 Alemania vs. Costa de Marfil 🇨🇮</td><td class="pick">Alemania gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇩🇪 Alemania vs. Costa de Marfil 🇨🇮</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇩🇪 Alemania vs. Costa de Marfil 🇨🇮</td><td class="pick">Over 10.5 córners</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇪🇨 Ecuador vs. Curazao 🇨🇼</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇪🇨 Ecuador vs. Curazao 🇨🇼</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇳🇱 Holanda vs. Suecia 🇸🇪</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">20 JUN</td><td>🇳🇱 Holanda vs. Suecia 🇸🇪</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇹🇷 Turquía vs. Paraguay 🇵🇾</td><td class="pick">Gana Paraguay</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇧🇷 Brasil vs. Haití 🇭🇹</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇧🇷 Brasil vs. Haití 🇭🇹</td><td class="pick">Marcador exacto 3-0</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia vs. Marruecos 🇲🇦</td><td class="pick">Marcador exacto 1-0 Marruecos</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 4.5 tarjetas amarillas</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 9.5 córners</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">19 JUN</td><td>🇺🇸 Estados Unidos vs. Australia 🇦🇺</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇲🇽 México vs. Corea del Sur 🇰🇷</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇲🇽 México vs. Corea del Sur 🇰🇷</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇶🇦 Qatar vs. Canadá 🇨🇦</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇨🇭 Suiza vs. Bosnia 🇧🇦</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇨🇿 Chequia vs. Sudáfrica 🇿🇦</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">18 JUN</td><td>🇨🇿 Chequia vs. Sudáfrica 🇿🇦</td><td class="pick">Under 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇺🇿 Uzbekistán vs. Colombia 🇨🇴</td><td class="pick">Under 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇬🇭 Ghana vs. Panamá 🇵🇦</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇵🇹 Portugal vs. RD Congo 🇨🇩</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇵🇹 Portugal vs. RD Congo 🇨🇩</td><td class="pick">Under 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇭🇷 Croacia vs. Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿</td><td class="pick">Under 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">17 JUN</td><td>🇭🇷 Croacia vs. Inglaterra 🏴󠁧󠁢󠁥󠁮󠁧󠁿</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇦🇹 Austria vs. Jordania 🇯🇴</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇦🇹 Austria vs. Jordania 🇯🇴</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇦🇷 Argentina vs. Argelia 🇩🇿</td><td class="pick">Under 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇮🇶 Irak vs. Noruega 🇳🇴</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇮🇶 Irak vs. Noruega 🇳🇴</td><td class="pick">Under 2.5 tarjetas</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">16 JUN</td><td>🇫🇷 Francia vs. Senegal 🇸🇳</td><td class="pick">Under 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇮🇷 Irán vs. Nueva Zelanda 🇳🇿</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇮🇷 Irán vs. Nueva Zelanda 🇳🇿</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇧🇪 Bélgica vs. Egipto 🇪🇬</td><td class="pick">Over 2.5 goles</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇧🇪 Bélgica vs. Egipto 🇪🇬</td><td class="pick">Over 2.5 tarjetas amarillas</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇸🇦 Arabia Saudita vs. Uruguay 🇺🇾</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇸🇦 Arabia Saudita vs. Uruguay 🇺🇾</td><td class="pick">Uruguay gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇪🇸 España vs. Cabo Verde 🇨🇻</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">15 JUN</td><td>🇪🇸 España vs. Cabo Verde 🇨🇻</td><td class="pick">España gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇹🇳 Túnez vs. Suecia 🇸🇪</td><td class="pick">Suecia gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇹🇳 Túnez vs. Suecia 🇸🇪</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇨🇮 Costa de Marfil vs. Ecuador 🇪🇨</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇨🇮 Costa de Marfil vs. Ecuador 🇪🇨</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇩🇪 Alemania vs. Curazao 🇨🇼</td><td class="pick">Over 3.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇩🇪 Alemania vs. Curazao 🇨🇼</td><td class="pick">Alemania -2.5 hándicap</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇯🇵 Japón vs. Países Bajos 🇳🇱</td><td class="pick">Países Bajos gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇯🇵 Japón vs. Países Bajos 🇳🇱</td><td class="pick">Over 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">14 JUN</td><td>🇯🇵 Japón vs. Países Bajos 🇳🇱</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇦🇺 Australia vs. Turquía 🇹🇷</td><td class="pick">Under 2.5 tarjetas</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇦🇺 Australia vs. Turquía 🇹🇷</td><td class="pick">Ambos anotan</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇭🇹 Haití vs. Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿</td><td class="pick">Escocia gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇭🇹 Haití vs. Escocia 🏴󠁧󠁢󠁳󠁣󠁴󠁿</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇧🇷 Brasil vs. Marruecos 🇲🇦</td><td class="pick">Over 2.5</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇧🇷 Brasil vs. Marruecos 🇲🇦</td><td class="pick">Brasil gana</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇶🇦 Qatar vs. Suiza 🇨🇭</td><td class="pick">Ambos anotan</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇶🇦 Qatar vs. Suiza 🇨🇭</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">13 JUN</td><td>🇶🇦 Qatar vs. Suiza 🇨🇭</td><td class="pick">Empate</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">12 JUN</td><td>🇺🇸 EE.UU. vs. Paraguay 🇵🇾</td><td class="pick">Under 3.5 tarjetas</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">12 JUN</td><td>🇺🇸 EE.UU. vs. Paraguay 🇵🇾</td><td class="pick">Over 3.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">12 JUN</td><td>🇺🇸 EE.UU. vs. Paraguay 🇵🇾</td><td class="pick">EE.UU. gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">12 JUN</td><td>🇨🇦 Canadá vs. Bosnia 🇧🇦</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">11 JUN</td><td>🇰🇷 Corea del Sur vs. Chequia 🇨🇿</td><td class="pick">Primero en anotar: Corea</td><td><span class="badge loss">Perdido</span></td></tr>
-          <tr><td class="date">11 JUN</td><td>🇰🇷 Corea del Sur vs. Chequia 🇨🇿</td><td class="pick">Over 2.5 goles</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">11 JUN</td><td>🇰🇷 Corea del Sur vs. Chequia 🇨🇿</td><td class="pick">Corea gana</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">11 JUN</td><td>🇲🇽 México vs. Sudáfrica 🇿🇦</td><td class="pick">Under 2.5</td><td><span class="badge win">Ganado</span></td></tr>
-          <tr><td class="date">11 JUN</td><td>🇲🇽 México vs. Sudáfrica 🇿🇦</td><td class="pick">México gana</td><td><span class="badge win">Ganado</span></td></tr>
-        
-        </tbody>
-      </table>
-    </div>
-    <p class="history-foot reveal">Picks del modelo sobre los partidos ya jugados, con su resultado real. 109 ganados · 43 perdidos al 6 de julio.</p>
+    <p class="rec-note reveal">El modelo original de RICKY·PICKS cerró el Mundial 2026 con <strong>71.8% de aciertos (109-43)</strong> — todos los picks publicados antes de cada partido, ganados y perdidos a la vista.</p>
   </div>
 </section>
 
-<!-- ============ CÓMO FUNCIONA ============ -->
-<section id="como">
+<!-- ============ MÉTODO ============ -->
+<section id="metodo">
   <div class="wrap">
     <div class="sec-eyebrow reveal">El método</div>
-    <h2 class="sec-title reveal">No adivinamos. Simulamos.</h2>
-    <p class="sec-lede reveal">Un modelo matemático estudia a los dos equipos con más de 20 años de datos y calcula la probabilidad real de cada resultado. Después la compara contra los momios de tu casa: si el mercado paga de más, ahí hay valor.</p>
+    <h2 class="sec-title reveal">No opina. Simula.</h2>
     <div class="steps">
       <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c3 3.5 3 16.5 0 20M12 2c-3 3.5-3 16.5 0 20"/></svg></div>
-        <h3>1 · Elige el partido</h3>
-        <p>Mundial 2026 hoy. El modelo cubre cada partido que queda del torneo.</p>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <h3>Lee el juego real</h3>
+        <p>Pitcher contra cada bateador del lineup, el parque, el clima y el bullpen. Datos oficiales de MLB, actualizados solos cada día.</p>
       </div>
       <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-        <h3>2 · El modelo calcula</h3>
-        <p>Probabilidades de cada marcador, goles esperados, córners y tarjetas. Números, no corazonadas.</p>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M9 20V4M14 20v-8M19 20V7"/></svg></div>
+        <h3>Juega 10,000 futuros</h3>
+        <p>Simula el partido completo diez mil veces, lanzamiento por lanzamiento, y cuenta en cuántos futuros gana cada apuesta.</p>
       </div>
       <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-        <h3>3 · Detecta el valor</h3>
-        <p>Ingresa tus momios y el modelo marca dónde el mercado paga de más. Verde = juega. Gris = pasa.</p>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h3>Te da el veredicto</h3>
+        <p>Sin números de adorno: cada mercado sale como BET, MAYBE o SKIP. Sabes a qué entrarle y a qué no, en palabras.</p>
       </div>
     </div>
-    <div class="mlbrow reveal">
-      <div>
-        <div class="t">Beisbol: cada juego, <em>simulado 10,000 veces.</em></div>
-        <div class="s">Matchup real pitcher-bateador, parque, clima y bullpen. El pick del hero sale de ahí.</div>
-      </div>
-      <span class="tag">MLB · Muy pronto</span>
-    </div>
+    <p class="strange reveal">Hay un doctor famoso que revisó 14 millones de futuros para encontrar el único donde ganaban. <strong>El nuestro revisa 10,000 por juego. Todos los días.</strong></p>
   </div>
 </section>
 
-<!-- ============ GUÍA (carrusel) ============ -->
-<section id="guia">
+<!-- ============ EN VIVO ============ -->
+<section id="vivo">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">Guía</div>
-    <h2 class="sec-title reveal">Cómo usar el modelo</h2>
-    <p class="sec-lede reveal">Sigue los pasos del carrusel para sacarle el máximo provecho.</p>
-<div class="carousel-wrap" style="max-width:420px;margin:0 auto;position:relative;user-select:none;">
-      <!-- Track de imágenes -->
-      <div id="carouselTrack" style="overflow:hidden;border-radius:20px;background:#f0f0f0;aspect-ratio:4/5;position:relative;">
-        <div id="carouselInner" style="display:flex;transition:transform 0.35s cubic-bezier(.4,0,.2,1);height:100%;">
-          <img class="carousel-img" src="/img/carousel/slide-0.jpg" alt="Portada — Cómo usar el modelo" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
-          <img class="carousel-img" src="/img/carousel/slide-1.jpg" alt="Paso 1 — Elige el partido" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
-          <img class="carousel-img" src="/img/carousel/slide-2.jpg" alt="Paso 2 — Introduce tus momios" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
-          <img class="carousel-img" src="/img/carousel/slide-3.jpg" alt="Paso 3 — Marcadores exactos" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
-          <img class="carousel-img" src="/img/carousel/slide-4.jpg" alt="Paso 4 — Mercados principales" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
-          <img class="carousel-img" src="/img/carousel/slide-5.jpg" alt="Paso 5" style="min-width:100%;height:100%;object-fit:cover;object-position:top;flex-shrink:0;" draggable="false">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">En vivo ahora</div>
+        <h2 class="sec-title reveal">El pick de hoy ya está sobre la mesa.</h2>
+        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. El resto del panel completo (todos los juegos, todos los veredictos) llega muy pronto — los fundadores entran primero.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="#precios">Reservar acceso fundador</a>
+          <a class="btn-ghost" href="#precios">Ver precios</a>
         </div>
-        <!-- Flechas -->
-        <button id="carouselPrev" aria-label="Anterior" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08172e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button id="carouselNext" aria-label="Siguiente" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.85);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08172e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
       </div>
-      <!-- Dots -->
-      <div id="carouselDots" style="display:flex;justify-content:center;gap:6px;margin-top:14px;"></div>
+      <div class="live-card-holder reveal">
+        <div class="pickcard" style="pointer-events:auto">
+          <div class="pc-shell" style="opacity:1">
+            <div class="pc-tag">
+              <span class="t1">Pick gratis de hoy</span>
+              <span class="t2" id="lcDate">HOY</span>
+            </div>
+            <div class="pc-team" id="lcAwayRow">
+              <img id="lcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="lcAwayName">Visitante</span><small id="lcAwayPit"></small></div>
+              <div class="pr" id="lcAwayProb">—</div>
+            </div>
+            <div class="pc-team fav" id="lcHomeRow">
+              <img id="lcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="lcHomeName">Local</span><small id="lcHomePit"></small></div>
+              <div class="pr" id="lcHomeProb">—</div>
+            </div>
+            <div class="pc-bar"><div class="a" id="lcBarA" style="width:50%"></div><div class="h" id="lcBarH" style="width:50%"></div></div>
+            <div class="pc-pick">
+              <span class="vchip">BET</span>
+              <span class="sel" id="lcPickSel">Pick del Doctor</span>
+              <span class="odds" id="lcPickOdds"></span>
+            </div>
+            <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="lcVenue"></span></div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <script>
-  (function(){
-    const inner = document.getElementById('carouselInner');
-    const dotsEl = document.getElementById('carouselDots');
-    const total = inner.children.length;
-    let cur = 0;
-
-    // Crear dots
-    for(let i=0;i<total;i++){
-      const d = document.createElement('button');
-      d.style.cssText='width:8px;height:8px;border-radius:50%;border:none;cursor:pointer;padding:0;transition:background 0.2s,width 0.2s;background:#d1d5db;';
-      d.setAttribute('aria-label','Slide '+(i+1));
-      d.addEventListener('click',()=>go(i));
-      dotsEl.appendChild(d);
-    }
-
-    function go(n){
-      cur = (n + total) % total;
-      inner.style.transform = `translateX(-${cur * 100}%)`;
-      Array.from(dotsEl.children).forEach((d,i)=>{
-        d.style.background = i===cur ? '#2f7bff' : '#d1d5db';
-        d.style.width = i===cur ? '22px' : '8px';
-        d.style.borderRadius = i===cur ? '4px' : '50%';
-      });
-    }
-
-    document.getElementById('carouselPrev').addEventListener('click',()=>go(cur-1));
-    document.getElementById('carouselNext').addEventListener('click',()=>go(cur+1));
-
-    // Swipe táctil
-    let startX=0;
-    inner.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
-    inner.addEventListener('touchend',e=>{
-      const dx=e.changedTouches[0].clientX-startX;
-      if(Math.abs(dx)>40) go(dx<0?cur+1:cur-1);
-    });
-
-    go(0);
-  })();
-  </script>
   </div>
 </section>
 
 <!-- ============ PRECIOS ============ -->
-<section id="precios">
+<section id="precios" style="background:var(--g1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
   <div class="wrap">
-    <div class="price-head reveal">
-      <div>
-        <div class="sec-eyebrow">Planes</div>
-        <h2 class="sec-title">Elige cuánto quieres cubrir.</h2>
-      </div>
-      <div class="cur-toggle" id="curToggle" role="tablist" aria-label="Moneda">
-        <button class="active" data-cur="mxn">MXN</button>
-        <button data-cur="usd">USD</button>
-      </div>
-    </div>
+    <div class="sec-eyebrow reveal">Preventa fundador</div>
+    <h2 class="sec-title reveal">Entra antes de que llegue la NFL.</h2>
+    <p class="sec-lede reveal">El precio fundador se respeta de por vida mientras sigas activo — y cada deporte nuevo (NFL en septiembre, Liga MX después) entra gratis a tu plan. Los que lleguen tarde pagarán más.</p>
     <div class="tiers">
       <div class="tier reveal">
-        <h3>Pick gratis</h3>
+        <h3>Pase del día</h3>
         <div class="was"></div>
-        <div class="amt num">$0</div>
-        <div class="per">🇪🇸 España vs 🇧🇪 Bélgica · 10 jul</div>
+        <div class="amt">$99<small>MXN</small></div>
+        <div class="per">Todos los juegos de hoy · 24 h</div>
         <ul>
-          <li>El análisis completo de un partido</li>
-          <li>Prueba el modelo real, no un demo</li>
-          <li>Sin tarjeta</li>
+          <li>Veredictos de <strong>todos</strong> los juegos de hoy</li>
+          <li>Análisis del Doctor por partido</li>
+          <li>Si subes al Fundador hoy, <strong>tus $99 se acreditan</strong></li>
         </ul>
-        <button class="btn btn-quiet" id="freeBtn">Ver pick gratis</button>
+        <a href="/checkout.html?plan=mlb_pase" class="btn btn-dim">Comprar pase</a>
       </div>
       <div class="tier reveal">
-        <h3>Cuartos de final</h3>
+        <h3>Semana de prueba</h3>
         <div class="was"></div>
-        <div class="amt num" data-mxn="$299" data-usd="$14.99">$299<small class="cur-lbl">MXN</small></div>
-        <div class="per">Los 4 cuartos de final completos</div>
+        <div class="amt">$149<small>MXN</small></div>
+        <div class="per">7 días de acceso completo</div>
         <ul>
-          <li>Francia–Marruecos · España–Bélgica</li>
-          <li>Noruega–Inglaterra · Argentina–Suiza</li>
-          <li>Herramienta completa con tus momios</li>
-          <li>Probabilidades, xG, córners, tarjetas</li>
+          <li>Todos los juegos, todos los días</li>
+          <li><strong>Garantía:</strong> semana perdedora = la siguiente gratis</li>
+          <li>Piensa: $21 por día de beisbol</li>
         </ul>
-        <a href="/checkout.html?plan=individual" class="btn btn-blue" id="buyIndividual">Acceso a cuartos</a>
+        <a href="/checkout.html?plan=mlb_semana" class="btn btn-dim">Probar 7 días</a>
       </div>
       <div class="tier featured reveal">
-        <h3>Torneo completo</h3>
-        <div class="was num" data-mxn="$899 MXN" data-usd="$49.99 USD">$899 MXN</div>
-        <div class="amt num" data-mxn="$499" data-usd="$28.99">$499<small class="cur-lbl">MXN</small></div>
-        <div class="per">Todo lo que queda del Mundial 2026</div>
+        <span class="flag">Fundador</span>
+        <h3>Mensual Fundador</h3>
+        <div class="was">$499 MXN</div>
+        <div class="amt">$399<small>MXN</small></div>
+        <div class="per">30 días · precio congelado de por vida</div>
         <ul>
-          <li>Cuartos, semifinales y la final</li>
-          <li>Todos los mercados, sin límite</li>
-          <li>Detección de valor con tus momios</li>
-          <li>Acceso desde cualquier dispositivo</li>
+          <li>Todos los juegos de MLB, cada día</li>
+          <li><strong>NFL y Liga MX gratis</strong> cuando lleguen</li>
+          <li>Precio fundador mientras sigas activo</li>
+          <li><strong>Garantía:</strong> semana perdedora = semana gratis</li>
         </ul>
-        <a href="/checkout.html?plan=torneo" class="btn btn-blue" id="buyTorneo">Acceso total</a>
+        <a href="/checkout.html?plan=mlb_fundador" class="btn btn-blue">Ser fundador</a>
+      </div>
+      <div class="tier reveal">
+        <h3>Temporada 2026</h3>
+        <div class="was"></div>
+        <div class="amt">$2,999<small>MXN</small></div>
+        <div class="per">Hasta el último out de la Serie Mundial</div>
+        <ul>
+          <li>Acceso total, sin renovar nada</li>
+          <li>Playoffs y Serie Mundial incluidos</li>
+          <li>NFL y Liga MX incluidos al llegar</li>
+        </ul>
+        <a href="/checkout.html?plan=mlb_temporada" class="btn btn-dim">Toda la temporada</a>
+      </div>
+    </div>
+    <div class="guarantee reveal">
+      <div class="g-ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div>
+        <h3>Semana perdedora = semana gratis.</h3>
+        <p>Si los picks <strong>BET</strong> del Doctor cierran una semana con récord perdedor, tu siguiente semana no se cobra. Así de simple: <strong>el riesgo lo carga el modelo, no tú.</strong></p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ AVISO ============ -->
-<section style="padding-top:0">
+<!-- ============ MUNDIAL (últimos partidos) ============ -->
+<section id="mundial">
   <div class="wrap">
-    <div class="aviso reveal">
-      <h4>Usa el valor a tu favor.</h4>
-      <p>Cada pick muestra la probabilidad del modelo y el edge contra las cuotas de tu casa. Tú decides cuáles jugar y cuánto arriesgar. No todos los picks con edge ganan — la ventaja se acumula a largo plazo con disciplina y gestión de bankroll.</p>
-      <h4>⚠️ Aviso importante</h4>
-      <p>Las predicciones de RICKY·PICKS son análisis estadísticos basados en datos históricos. No constituyen consejos financieros ni de inversión. Apostar implica riesgo de pérdida. Juega con responsabilidad y solo lo que estás dispuesto a perder.</p>
+    <div class="panel reveal">
+      <div>
+        <div class="sec-eyebrow" style="margin-bottom:10px">Últimos partidos</div>
+        <h2>El Mundial se acaba.<br>El modelo original sigue hasta la final.</h2>
+        <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
+      </div>
+      <div class="mini-tier">
+        <h4>Cuartos de final</h4>
+        <div class="amt">$299 <small>MXN</small></div>
+        <a href="/checkout.html?plan=individual" id="buyIndividual">Comprar</a>
+      </div>
+      <div class="mini-tier">
+        <h4>Torneo completo</h4>
+        <div class="amt">$499 <small>MXN</small></div>
+        <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" style="padding-top:20px">
+  <div class="wrap" style="max-width:760px">
+    <div class="sec-eyebrow reveal">Preguntas directas</div>
+    <div class="reveal">
+      <details>
+        <summary>¿Esto es una casa de apuestas?</summary>
+        <p>No. RICKY·PICKS es un modelo de análisis estadístico. No recibimos apuestas ni manejamos tu dinero de juego — te decimos dónde el modelo ve valor y tú decides en tu casa de apuestas.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si el Doctor tiene una mala semana?</summary>
+        <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si los picks BET cierran la semana con récord perdedor, tu siguiente semana va gratis. El récord completo, con perdidos incluidos, está publicado arriba.</p>
+      </details>
+      <details>
+        <summary>¿Cómo recibo los picks?</summary>
+        <p>Entras a tu cuenta y el modelo ya corrió: todos los juegos del día con su veredicto y análisis, actualizados con las alineaciones y el clima de ese día. Nada que descargar.</p>
+      </details>
+      <details>
+        <summary>¿Por qué "Fundador"?</summary>
+        <p>Porque estás entrando antes que nadie. El precio de $399 se congela para ti mientras sigas activo, y cada deporte que agreguemos (NFL en septiembre, Liga MX después) entra a tu plan sin costo. Cuando llegue la NFL, el precio para nuevos sube.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -741,7 +597,8 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="resp">
-      <strong>Juega con responsabilidad.</strong> Solo para mayores de 18 años. Los picks son análisis estadístico, no garantía de resultado. Apuesta solo lo que puedas permitirte perder.
+      <strong>Juega con responsabilidad. Solo +18.</strong><br>
+      Las predicciones son análisis estadístico basado en datos históricos; no constituyen consejo financiero ni garantía de resultado. Apuesta solo lo que puedas permitirte perder.
     </div>
   </div>
 </footer>
@@ -752,7 +609,7 @@
     <div class="modal-head">
       <div>
         <h3 id="authTitle">Crea tu cuenta</h3>
-        <div class="day">Para ver el pick gratis del día</div>
+        <div class="day">Para guardar tu acceso</div>
       </div>
       <button class="modal-close" id="authClose" aria-label="Cerrar">✕</button>
     </div>
@@ -763,7 +620,7 @@
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
       <button class="tool-run" id="authSubmit" style="margin-top:16px">Crear cuenta</button>
       <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
-      <div style="text-align:center;margin-top:8px"><a href="#" id="forgotLink" style="font-size:13px;color:var(--muted);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
+      <div style="text-align:center;margin-top:8px"><a href="#" id="forgotLink" style="font-size:13px;color:var(--faint);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
       <div class="redeem-msg" id="authMsg"></div>
     </div>
   </div>
@@ -774,7 +631,7 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-head">
       <div>
-        <h3 id="modalTitle">Pick gratis del día</h3>
+        <h3 id="modalTitle">Pick gratis del Mundial</h3>
         <div class="day" id="modalDay"></div>
       </div>
       <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
@@ -789,12 +646,8 @@
 
 <script>
 /* ============================================================
-   HERO CINEMATOGRÁFICO — scroll director
-   Fases (progreso 0-1 del stage):
-   0.00-0.26  video 1 (la recta viene) + titular gigante
-   0.26-0.40  crossfade al batazo (video 2 se reproduce una vez)
-   0.36-0.88  la card del pick gratis MLB se ensambla pieza por pieza
-   0.88-1.00  oscurece y funde a blanco hacia el cuerpo
+   DIRECTOR DEL HERO — mismos videos, sistema terminal.
+   frame() corre directo en scroll (rAF se congela en tabs de fondo).
    ============================================================ */
 (function () {
   const stage = document.getElementById('stage');
@@ -803,29 +656,20 @@
   const heroCopy = document.getElementById('heroCopy');
   const scrollHint = document.getElementById('scrollHint');
   const stageDim = document.getElementById('stageDim');
-  const toWhite = document.getElementById('toWhite');
+  const toGround = document.getElementById('toGround');
   const nav = document.getElementById('topnav');
-  const pieces = Array.from(document.querySelectorAll('.pc-piece'));
+  const pieces = Array.from(document.querySelectorAll('#stage .pc-piece'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let v2Started = false;
-
   const clamp01 = x => Math.max(0, Math.min(1, x));
-  const ease = t => 1 - Math.pow(1 - t, 3); // easeOutCubic
+  const ease = t => 1 - Math.pow(1 - t, 3);
 
-  /* ventana de ensamblaje por pieza: [inicio, fin] en progreso global */
   const windows = [
-    [0.36, 0.50], // shell
-    [0.44, 0.56], // tag
-    [0.50, 0.64], // visitante
-    [0.56, 0.70], // local
-    [0.63, 0.75], // barra
-    [0.69, 0.82], // pick
-    [0.76, 0.88], // CTA
+    [0.36, 0.50], [0.44, 0.56], [0.50, 0.64], [0.56, 0.70], [0.63, 0.75], [0.69, 0.82], [0.76, 0.88],
   ];
-  /* offsets iniciales (desde dónde "vuela" cada pieza) */
   const offsets = [
-    [0, 90, -4], [-40, -30, 0], [-70, 0, -2], [70, 0, 2], [0, 40, 0], [0, 60, 3], [0, 40, 0],
+    [0, 90, -3], [-40, -30, 0], [-70, 0, -2], [70, 0, 2], [0, 40, 0], [0, 60, 2], [0, 40, 0],
   ];
 
   function frame() {
@@ -833,12 +677,9 @@
     const total = stage.offsetHeight - window.innerHeight;
     const p = clamp01(-rect.top / total);
 
-    /* nav: claro cuando salimos del stage */
-    nav.classList.toggle('on-light', rect.bottom - window.innerHeight * 0.5 <= 0);
-
+    nav.classList.toggle('scrolled', window.scrollY > 30);
     if (reduced) return;
 
-    /* videos: crossfade 0.26 → 0.40 */
     const xf = clamp01((p - 0.26) / 0.14);
     vid1.style.opacity = String(1 - xf);
     vid2.style.opacity = String(xf);
@@ -849,17 +690,14 @@
     if (xf >= 1 && !vid1.paused) vid1.pause();
     if (xf < 1 && vid1.paused && p < 0.26) { try { vid1.play().catch(() => {}); } catch (e) {} }
 
-    /* titular: presente al inicio, se desvanece hacia arriba 0.14 → 0.30 */
     const hFade = clamp01((p - 0.14) / 0.16);
     heroCopy.style.opacity = String(1 - hFade);
-    heroCopy.style.transform = 'translateY(' + (-60 * ease(hFade)) + 'px) scale(' + (1 - 0.1 * hFade) + ')';
+    heroCopy.style.transform = 'translateY(' + (-60 * ease(hFade)) + 'px) scale(' + (1 - 0.08 * hFade) + ')';
     heroCopy.style.pointerEvents = hFade > 0.6 ? 'none' : '';
     scrollHint.style.opacity = String(1 - clamp01(p / 0.08));
 
-    /* atenuar video mientras entra la card */
-    stageDim.style.opacity = String(0.55 * clamp01((p - 0.36) / 0.2) + 0.35 * clamp01((p - 0.88) / 0.12));
+    stageDim.style.opacity = String(0.55 * clamp01((p - 0.36) / 0.2) + 0.3 * clamp01((p - 0.88) / 0.12));
 
-    /* ensamblaje de la card */
     for (let i = 0; i < pieces.length; i++) {
       const [a, b] = windows[i];
       const t = ease(clamp01((p - a) / (b - a)));
@@ -869,8 +707,7 @@
         'translate(' + (ox * (1 - t)) + 'px,' + (oy * (1 - t)) + 'px) rotate(' + (rot * (1 - t)) + 'deg)';
     }
 
-    /* fundido a blanco al final */
-    toWhite.style.opacity = String(clamp01((p - 0.86) / 0.14));
+    toGround.style.opacity = String(clamp01((p - 0.84) / 0.16));
   }
 
   if (reduced) {
@@ -878,21 +715,14 @@
     vid1.removeAttribute('autoplay');
   }
 
-  /* frame() es barato (7 nodos): correr directo en scroll es más
-     confiable que rAF (que se pausa en pestañas en segundo plano). */
   window.addEventListener('scroll', frame, { passive: true });
   window.addEventListener('resize', frame, { passive: true });
   frame();
-
-  /* CTA del hero → mismo flujo que el pick gratis */
-  document.getElementById('heroFreeBtn').addEventListener('click', () => {
-    document.getElementById('freeBtn').click();
-  });
 })();
 
 /* ============================================================
-   PICK GRATIS MLB — datos reales para la card del hero
-   (solo probabilidades; con fallback si el API no responde)
+   PICK GRATIS (Doctor MLB) — llena la card del hero y la de
+   "en vivo" con el juego destacado real. Fallback si no responde.
    ============================================================ */
 (function () {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -901,7 +731,7 @@
   const pct = p => Math.round(p * 100) + '%';
 
   function pickTxt(pick, g) {
-    if (!pick) return 'Pick del modelo';
+    if (!pick) return 'Pick del Doctor';
     const name = sel => sel === 'home' ? g.home.name : g.away.name;
     switch (pick.market) {
       case 'ML': return 'Ganan los ' + name(pick.sel);
@@ -917,24 +747,22 @@
     return pick.sel;
   }
 
-  function apply(g) {
-    set('pcAwayName', g.away.name); set('pcHomeName', g.home.name);
-    set('pcAwayProb', pct(g.moneyline.away)); set('pcHomeProb', pct(g.moneyline.home));
-    set('pcAwayPit', g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '');
-    set('pcHomePit', g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '');
-    set('pcVenue', g.venue || '');
-    set('pcSims', (g.sims ? g.sims.toLocaleString('en-US') : '10,000') + ' simulaciones');
-    set('pcPickSel', pickTxt(g.pick, g));
-    set('pcPickOdds', g.pick ? pct(g.pick.prob) + (amOdds(g.pick.prob) ? ' · ' + amOdds(g.pick.prob) : '') : '');
+  function applyTo(prefix, g) {
+    set(prefix + 'AwayName', g.away.name); set(prefix + 'HomeName', g.home.name);
+    set(prefix + 'AwayProb', pct(g.moneyline.away)); set(prefix + 'HomeProb', pct(g.moneyline.home));
+    set(prefix + 'AwayPit', g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '');
+    set(prefix + 'HomePit', g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '');
+    set(prefix + 'Venue', (g.venue || '').toUpperCase());
+    set(prefix + 'PickSel', pickTxt(g.pick, g));
+    set(prefix + 'PickOdds', g.pick ? pct(g.pick.prob) + (amOdds(g.pick.prob) ? ' · ' + amOdds(g.pick.prob) : '') : '');
     const dt = new Date(g.game_date);
-    set('pcDate', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
-    document.getElementById('pcAwayLogo').src = logo(g.away.id);
-    document.getElementById('pcHomeLogo').src = logo(g.home.id);
-    document.getElementById('pcBarA').style.width = (g.moneyline.away * 100) + '%';
-    document.getElementById('pcBarH').style.width = (g.moneyline.home * 100) + '%';
-    const homeFav = g.moneyline.home >= g.moneyline.away;
-    document.getElementById('pcHome').classList.toggle('fav', homeFav);
-    document.getElementById('pcAway').classList.toggle('fav', !homeFav);
+    set(prefix + 'Date', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
+    const al = document.getElementById(prefix + 'AwayLogo'), hl = document.getElementById(prefix + 'HomeLogo');
+    if (al) al.src = logo(g.away.id);
+    if (hl) hl.src = logo(g.home.id);
+    const ba = document.getElementById(prefix + 'BarA'), bh = document.getElementById(prefix + 'BarH');
+    if (ba) ba.style.width = (g.moneyline.away * 100) + '%';
+    if (bh) bh.style.width = (g.moneyline.home * 100) + '%';
   }
 
   const fallback = {
@@ -947,58 +775,32 @@
 
   fetch('/api/mlb-free')
     .then(r => r.ok ? r.json() : null)
-    .then(d => apply(d && d.game ? d.game : fallback))
-    .catch(() => apply(fallback));
+    .then(d => { const g = d && d.game ? d.game : fallback; applyTo('pc', g); applyTo('lc', g); })
+    .catch(() => { applyTo('pc', fallback); applyTo('lc', fallback); });
 })();
 
 /* ============================================================
-   REVELADOS + CONTADORES + TOGGLE DE MONEDA
+   RÉCORD PÚBLICO + REVELADOS
    ============================================================ */
 (function () {
+  fetch('/api/mlb-record')
+    .then(r => r.ok ? r.json() : null)
+    .then(r => {
+      if (!r) return;
+      document.getElementById('recW').textContent = r.wins;
+      document.getElementById('recL').textContent = r.losses;
+      document.getElementById('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
+    })
+    .catch(() => {});
+
   const io = new IntersectionObserver(entries => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
       e.target.classList.add('in');
-      const counter = e.target.querySelector('[data-count]') || (e.target.matches('[data-count]') ? e.target : null);
       io.unobserve(e.target);
     }
-  }, { threshold: 0.18 });
+  }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-  /* contadores del statband */
-  const cio = new IntersectionObserver(entries => {
-    for (const e of entries) {
-      if (!e.isIntersecting) continue;
-      cio.unobserve(e.target);
-      const target = parseFloat(e.target.dataset.count);
-      const suffix = e.target.dataset.suffix || '';
-      const em = e.target.querySelector('em');
-      const dec = String(e.target.dataset.count).indexOf('.') > -1 ? 1 : 0;
-      const t0 = performance.now(), DUR = 1400;
-      (function tick(now) {
-        const t = Math.min(1, (now - t0) / DUR);
-        const v = target * (1 - Math.pow(1 - t, 3));
-        em.textContent = v.toFixed(dec) + suffix;
-        if (t < 1) requestAnimationFrame(tick);
-      })(t0);
-    }
-  }, { threshold: 0.5 });
-  document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
-
-  /* toggle MXN / USD */
-  const toggle = document.getElementById('curToggle');
-  toggle.addEventListener('click', ev => {
-    const btn = ev.target.closest('button[data-cur]');
-    if (!btn) return;
-    toggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
-    const cur = btn.dataset.cur;
-    document.querySelectorAll('[data-mxn]').forEach(el => {
-      const val = cur === 'mxn' ? el.dataset.mxn : el.dataset.usd;
-      const lbl = el.querySelector('.cur-lbl');
-      if (lbl) { el.childNodes[0].textContent = val; lbl.textContent = cur.toUpperCase(); }
-      else el.textContent = val;
-    });
-  });
 })();
 </script>
 
@@ -1294,6 +1096,11 @@ document.getElementById('freeBtn').addEventListener('click', e => {
   if (!_session) { openAuth('signup'); return; }
   openFree();
 });
+document.getElementById('navFreeBtn').addEventListener('click', e => {
+  e.preventDefault();
+  if (!_session) { openAuth('signup'); return; }
+  openFree();
+});
 document.querySelectorAll('[data-scroll]').forEach(b => {
   b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
@@ -1389,12 +1196,6 @@ async function getEntitlement(){
 async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
-  const mlbLink = document.getElementById('mlbLink');
-  if (mlbLink) {
-    const isAdmin = !!(u && u.email === 'rickybh17@gmail.com');
-    mlbLink.style.display = isAdmin ? 'inline-flex' : 'none';
-    mlbLink.classList.toggle('admin-on', isAdmin);
-  }
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';

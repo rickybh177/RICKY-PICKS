@@ -10,10 +10,7 @@
    ============================================================ */
 const { buildDay } = require('../lib/mlb/model');
 const { fetchJson, BASE } = require('../lib/mlb/statsapi');
-const { getUserFromToken } = require('../lib/supabaseAdmin');
 
-const ADMIN_EMAILS = ['rickybh17@gmail.com'];
-const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 const DAYS = 7;
 
 const _graded = new Map(); // date -> { wins, losses, pushes }
@@ -114,14 +111,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Método no permitido.' });
   }
-  if (!IS_DEV) {
-    const h = req.headers.authorization || '';
-    const token = h.startsWith('Bearer ') ? h.slice(7) : null;
-    const user = await getUserFromToken(token);
-    if (!user || !ADMIN_EMAILS.includes(user.email)) {
-      return res.status(403).json({ error: 'Acceso no autorizado.' });
-    }
-  }
+  // Público: solo devuelve agregados (W-L-%), nunca picks.
   try {
     const today = todayET();
     const totals = { wins: 0, losses: 0, pushes: 0 };
