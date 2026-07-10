@@ -12,13 +12,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --g0: #0a0d13; --g1: #0e131c; --g2: #141b27;
-    --line: #1e2634; --line-2: #2b3547;
-    --text: #e9edf4; --muted: #8b96a8; --faint: #5f6a7d;
-    --blue: #4c7df0; --blue-deep: #2b57c9; --blue-tint: rgba(76,125,240,0.12);
-    --bet: #2fd57b; --bet-bg: rgba(47,213,123,0.1);
-    --maybe: #4c7df0; --maybe-bg: rgba(76,125,240,0.12);
-    --skip: #f2695c; --skip-bg: rgba(242,105,92,0.1);
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --blue: #2f7bff; --blue-deep: #1d4ed8; --blue-tint: rgba(47,123,255,0.08);
+    --bet: #16a34a; --bet-bg: rgba(22,163,74,0.1);
+    --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
+    --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -29,11 +29,11 @@
   a { color: var(--blue); }
 
   /* ---- NAV ---- */
-  nav { position: sticky; top: 0; z-index: 40; background: rgba(10,13,19,0.8); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.82); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--line); }
   nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 8px; }
   .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
   .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
-  .logo .doctor { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--blue); border: 1px solid rgba(76,125,240,0.4); border-radius: 6px; padding: 3px 8px; margin-left: 2px; }
+  .logo .doctor { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--blue); border: 1px solid rgba(47,123,255,0.4); border-radius: 6px; padding: 3px 8px; margin-left: 2px; }
   .datenav { display: flex; align-items: center; gap: 2px; }
   .datenav button { width: 34px; height: 34px; border-radius: 9px; color: var(--muted); font-size: 1rem; transition: background .15s; }
   .datenav button:hover { background: var(--g2); color: var(--text); }
@@ -62,8 +62,8 @@
   /* ---- GAME CARDS ---- */
   .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
   .card { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 18px; animation: rise .4s ease both; animation-delay: calc(var(--i) * 30ms); position: relative; }
-  .card.free { border-color: rgba(47,213,123,0.4); }
-  .card .freeflag { position: absolute; top: -10px; left: 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--bet); color: #05281a; padding: 3px 9px; border-radius: 6px; }
+  .card.free { border-color: rgba(22,163,74,0.4); }
+  .card .freeflag { position: absolute; top: -10px; left: 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--bet); color: #fff; padding: 3px 9px; border-radius: 6px; }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 
@@ -86,9 +86,9 @@
   .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
   .vrow .vl { font-weight: 600; font-size: 0.93rem; letter-spacing: -0.01em; }
   .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
-  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(47,213,123,0.35); }
-  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(76,125,240,0.35); }
-  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(242,105,92,0.3); }
+  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
+  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
+  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
   .vrow.skip .vl { color: var(--faint); font-weight: 500; }
 
   .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--blue); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
@@ -121,7 +121,7 @@
   .lock-cta a:hover { background: var(--blue); }
 
   /* ---- BANNER DE PLANES (invitado) ---- */
-  .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(10,13,19,0.86); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
+  .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
   .plans-banner.on { display: block; }
   .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
   .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
@@ -426,9 +426,9 @@ function distChart(m) {
     const h = Math.max(1.5, (d[r] / max) * (H - 14));
     const x = r * (bw + gap);
     bars += '<rect x="' + x + '" y="' + (H - 12 - h) + '" width="' + bw + '" height="' + h +
-      '" rx="1.5" fill="' + (r > line ? '#4c7df0' : '#2b3547') + '"></rect>';
+      '" rx="1.5" fill="' + (r > line ? '#2f7bff' : '#d8dfe9') + '"></rect>';
     if (r % 5 === 0 || r === n - 1) {
-      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#5f6a7d" font-family="JetBrains Mono,monospace">' +
+      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3" font-family="JetBrains Mono,monospace">' +
         (r === n - 1 ? '20+' : r) + '</text>';
     }
   }
