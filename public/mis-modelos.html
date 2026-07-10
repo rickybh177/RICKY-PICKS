@@ -239,7 +239,7 @@
       <h1>Mis modelos</h1>
       <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
         <span class="mt-opt active" role="tab" aria-selected="true">🌍 Mundial 2026</span>
-        <a class="mt-opt" role="tab" aria-selected="false" id="mtMlb" href="/mlb.html">⚾ MLB <span class="mt-lock" id="mtMlbLock">🔒</span></a>
+        <a class="mt-opt" role="tab" aria-selected="false" id="mtMlb" href="/#precios" title="Ver planes de MLB">⚾ MLB <span class="mt-lock" id="mtMlbLock">🔒</span></a>
       </div>
       <p id="heroSub">Herramienta completa. Elige el partido, ingresa tus momios y calcula el valor.</p>
     </div>
@@ -407,6 +407,8 @@ let _accessToken = null;
 function unlockMlbToggle(){
   const lock = document.getElementById('mtMlbLock');
   if(lock) lock.style.display = 'none';
+  const mtMlb = document.getElementById('mtMlb');
+  if(mtMlb){ mtMlb.href = '/mlb.html'; mtMlb.title = 'Ir al Modelo MLB'; }
 }
 
 /* Si el usuario también tiene acceso activo al modelo MLB, quita el
