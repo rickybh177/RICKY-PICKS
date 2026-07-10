@@ -397,13 +397,15 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
 
 async function checkEntitlement(){
   if(!sb) return null;
-  // Mundial y MLB viven en filas separadas (product). Filtramos por el
-  // producto del plan que se está comprando para no cruzar accesos.
-  const product = planId && planId.startsWith('mlb_') ? 'mlb' : 'mundial';
+  // Mundial y MLB viven en filas separadas. El producto se deriva del
+  // `plan` en JS (no de una columna) para no depender de la migración
+  // de Supabase. Filtramos por el producto del plan que se compra.
+  const wantMlb = planId && planId.startsWith('mlb_');
   try{
-    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true).eq('product',product).limit(1);
-    if(data && data.length && data[0].active) {
-      const ent = data[0];
+    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
+    const rows = (data||[]).filter(r => r.active && !!(r.plan||'').startsWith('mlb_') === wantMlb);
+    if(rows.length) {
+      const ent = rows[0];
       // Plan individual expira al día siguiente — permitir re-compra
       if(ent.plan === 'individual' && ent.updated_at) {
         const purchasedDate = ent.updated_at.slice(0, 10);

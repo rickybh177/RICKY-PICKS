@@ -621,15 +621,17 @@ async function loadAndShow(session){
     return;
   }
 
-  /* verificar acceso con timeout de 5s (solo producto "mundial": el
-     de MLB vive en su propia fila y no debe mezclarse aquí) */
+  /* verificar acceso: MLB vive en su propia fila (plan que empieza con
+     "mlb_") y no debe mezclarse aquí. El producto se deriva del `plan`
+     en JS, no de una columna — así funciona haya corrido o no la
+     migración de Supabase que agrega `product`. */
   let ent = null;
   try {
     const timeout = new Promise(r => setTimeout(() => r({data:null,error:'timeout'}), 3000));
-    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true).eq('product','mundial').limit(1);
+    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
     const result = await Promise.race([query, timeout]);
-    const d = result.data;
-    if(d && d.length && d[0].active) ent = d[0];
+    const rows = (result.data || []).filter(r => r.active && !(r.plan || '').startsWith('mlb_'));
+    if(rows.length) ent = rows[0];
   } catch(e) { /* si falla el query, ent queda null */ }
 
   /* ¿tiene también acceso al modelo MLB? mostrar el switcher en el nav */

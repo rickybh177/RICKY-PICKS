@@ -1245,10 +1245,12 @@ let _session = null;
 async function getEntitlement(){
   if(!sb && !initSupabase()) return null;
   try{
-    // Mundial y MLB viven en filas separadas (product); esta página solo
-    // maneja los CTAs del Mundial, así que filtramos por ese producto.
-    const {data}=await sb.from('entitlements').select('plan,active').eq('active',true).eq('product','mundial').limit(1);
-    if(data && data.length && data[0].active) return data[0];
+    // Mundial y MLB viven en filas separadas; esta página solo maneja
+    // los CTAs del Mundial. El producto se deriva del `plan` en JS
+    // (no de una columna) para no depender de la migración de Supabase.
+    const {data}=await sb.from('entitlements').select('plan,active').eq('active',true);
+    const rows=(data||[]).filter(r=>r.active && !(r.plan||'').startsWith('mlb_'));
+    if(rows.length) return rows[0];
   }catch(e){}
   return null;
 }
