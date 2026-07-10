@@ -23,7 +23,7 @@ const CODES = {
   'JOSHVIP':   'torneo',
   'PLATA100':  'torneo',
   'FINOVIP':   'torneo',
-  'MLBSOPORTE1': 'mlb_fundador', // código de soporte: desbloqueo manual de MLB mensual
+  'MLBPLATA': 'mlb_fundador', // código de soporte: desbloqueo manual de MLB mensual
 };
 
 function bearer(req) {
