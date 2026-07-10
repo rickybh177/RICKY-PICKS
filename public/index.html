@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY·PICKS — Doctor MLB: 10,000 futuros por juego</title>
-<meta name="description" content="Doctor MLB simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
+<title>RICKY·PICKS — Modelo MLB: 10,000 futuros por juego</title>
+<meta name="description" content="El modelo simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -57,9 +57,10 @@
   .nav-ghost:hover { border-color: var(--blue); }
   .nav-cta { font-size: 0.84rem; font-weight: 600; color: #fff; background: var(--blue-deep); padding: 9px 16px; border-radius: 10px; border: none; text-decoration: none; transition: background .15s; }
   .nav-cta:hover { background: var(--blue); }
-  .nav-link.soon { cursor: default; opacity: 0.55; display: inline-flex; align-items: baseline; gap: 5px; }
-  .nav-link.soon:hover { background: none; color: var(--muted); }
-  .nav-link.soon small { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); }
+  .nav-link.soon { position: relative; cursor: pointer; font: inherit; border: none; background: none; }
+  .nav-link.soon .toast { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; padding: 7px 12px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6); }
+  .nav-link.soon .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .nav-link.soon .toast::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--line-2); }
 
   /* ============ HERO (director de scroll, videos reutilizados) ============ */
   .stage { height: 420vh; position: relative; background: var(--g0); }
@@ -323,7 +324,7 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <span class="nav-link soon" title="Doctor MLB llega muy pronto">El Doctor <small>pronto</small></span>
+      <button class="nav-link soon" id="mlbSoonBtn">MLB<span class="toast" id="mlbSoonToast">Muy pronto</span></button>
       <a href="#record" class="nav-link">Récord</a>
       <a href="#precios" class="nav-link">Precios</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
@@ -342,9 +343,9 @@
     <div class="stage-dim" id="stageDim"></div>
 
     <div class="hero-copy" id="heroCopy">
-      <div class="hero-eyebrow">Doctor MLB — 10,000 simulaciones por juego</div>
+      <div class="hero-eyebrow">Modelo MLB — 10,000 simulaciones por juego</div>
       <h1 class="mega">Este juego ya se jugó <em>10,000 veces.</em></h1>
-      <div class="hero-sub">El Doctor simula cada partido antes del primer lanzamiento y te dice a qué entrarle. Y a qué no.</div>
+      <div class="hero-sub">El modelo simula cada partido antes del primer lanzamiento y te dice a qué entrarle. Y a qué no.</div>
     </div>
 
     <div class="pickstage">
@@ -374,7 +375,7 @@
           <div class="pc-piece" data-piece="5">
             <div class="pc-pick">
               <span class="vchip">BET</span>
-              <span class="sel" id="pcPickSel">Pick del Doctor</span>
+              <span class="sel" id="pcPickSel">Pick del modelo</span>
               <span class="odds" id="pcPickOdds"></span>
             </div>
             <div class="pc-foot"><span id="pcSims">10,000 SIMULACIONES</span><span id="pcVenue"></span></div>
@@ -382,7 +383,7 @@
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
           <a href="#precios" id="heroFreeBtn">Reservar acceso fundador</a>
-          <span class="mini">Doctor MLB llega muy pronto. Congela el precio fundador hoy.</span>
+          <span class="mini">El modelo llega muy pronto. Congela el precio fundador hoy.</span>
         </div>
       </div>
     </div>
@@ -397,7 +398,7 @@
   <div class="wrap">
     <div class="sec-eyebrow reveal">Récord verificado</div>
     <h2 class="sec-title reveal">Todos los picks cuentan. También los perdidos.</h2>
-    <p class="sec-lede reveal">Cada pick del Doctor se califica automáticamente contra el marcador real del juego. Esto es lo que hizo en los últimos 7 días — sin borrar nada.</p>
+    <p class="sec-lede reveal">Cada pick del modelo se califica automáticamente contra el marcador real del juego. Esto es lo que hizo en los últimos 7 días — sin borrar nada.</p>
     <div class="recgrid reveal">
       <div class="rec"><div class="n green" id="recW">—</div><div class="l">Picks ganados · 7 días</div></div>
       <div class="rec"><div class="n red" id="recL">—</div><div class="l">Picks perdidos · 7 días</div></div>
@@ -466,7 +467,7 @@
             <div class="pc-bar"><div class="a" id="lcBarA" style="width:50%"></div><div class="h" id="lcBarH" style="width:50%"></div></div>
             <div class="pc-pick">
               <span class="vchip">BET</span>
-              <span class="sel" id="lcPickSel">Pick del Doctor</span>
+              <span class="sel" id="lcPickSel">Pick del modelo</span>
               <span class="odds" id="lcPickOdds"></span>
             </div>
             <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="lcVenue"></span></div>
@@ -482,7 +483,7 @@
   <div class="wrap">
     <div class="sec-eyebrow reveal">Preventa fundador</div>
     <h2 class="sec-title reveal">Entra antes de que llegue la NFL.</h2>
-    <p class="sec-lede reveal">El precio fundador se respeta de por vida mientras sigas activo — y cada deporte nuevo (NFL en septiembre, Liga MX después) entra gratis a tu plan. Los que lleguen tarde pagarán más.</p>
+    <p class="sec-lede reveal">El precio fundador se respeta de por vida mientras sigas activo. Los que lleguen tarde pagarán más.</p>
     <div class="tiers">
       <div class="tier reveal">
         <h3>Pase del día</h3>
@@ -491,7 +492,7 @@
         <div class="per">Todos los juegos de hoy · 24 h</div>
         <ul>
           <li>Veredictos de <strong>todos</strong> los juegos de hoy</li>
-          <li>Análisis del Doctor por partido</li>
+          <li>Análisis del modelo por partido</li>
           <li>Si subes al Fundador hoy, <strong>tus $99 se acreditan</strong></li>
         </ul>
         <a href="/checkout.html?plan=mlb_pase" class="btn btn-dim">Comprar pase</a>
@@ -516,7 +517,6 @@
         <div class="per">30 días · precio congelado de por vida</div>
         <ul>
           <li>Todos los juegos de MLB, cada día</li>
-          <li><strong>NFL y Liga MX gratis</strong> cuando lleguen</li>
           <li>Precio fundador mientras sigas activo</li>
           <li><strong>Garantía:</strong> semana perdedora = semana gratis</li>
         </ul>
@@ -530,7 +530,6 @@
         <ul>
           <li>Acceso total, sin renovar nada</li>
           <li>Playoffs y Serie Mundial incluidos</li>
-          <li>NFL y Liga MX incluidos al llegar</li>
         </ul>
         <a href="/checkout.html?plan=mlb_temporada" class="btn btn-dim">Toda la temporada</a>
       </div>
@@ -539,7 +538,7 @@
       <div class="g-ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
       <div>
         <h3>Semana perdedora = semana gratis.</h3>
-        <p>Si los picks <strong>BET</strong> del Doctor cierran una semana con récord perdedor, tu siguiente semana no se cobra. Así de simple: <strong>el riesgo lo carga el modelo, no tú.</strong></p>
+        <p>Si los picks <strong>BET</strong> del modelo cierran una semana con récord perdedor, tu siguiente semana no se cobra. Así de simple: <strong>el riesgo lo carga el modelo, no tú.</strong></p>
       </div>
     </div>
   </div>
@@ -578,7 +577,7 @@
         <p>No. RICKY·PICKS es un modelo de análisis estadístico. No recibimos apuestas ni manejamos tu dinero de juego — te decimos dónde el modelo ve valor y tú decides en tu casa de apuestas.</p>
       </details>
       <details>
-        <summary>¿Qué pasa si el Doctor tiene una mala semana?</summary>
+        <summary>¿Qué pasa si el modelo tiene una mala semana?</summary>
         <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si los picks BET cierran la semana con récord perdedor, tu siguiente semana va gratis. El récord completo, con perdidos incluidos, está publicado arriba.</p>
       </details>
       <details>
@@ -587,7 +586,7 @@
       </details>
       <details>
         <summary>¿Por qué "Fundador"?</summary>
-        <p>Porque estás entrando antes que nadie. El precio de $399 se congela para ti mientras sigas activo, y cada deporte que agreguemos (NFL en septiembre, Liga MX después) entra a tu plan sin costo. Cuando llegue la NFL, el precio para nuevos sube.</p>
+        <p>Porque estás entrando antes que nadie. El precio de $399 se congela para ti mientras sigas activo. Los que se unan después pagarán más.</p>
       </details>
     </div>
   </div>
@@ -721,7 +720,7 @@
 })();
 
 /* ============================================================
-   PICK GRATIS (Doctor MLB) — llena la card del hero y la de
+   PICK GRATIS (Modelo MLB) — llena la card del hero y la de
    "en vivo" con el juego destacado real. Fallback si no responde.
    ============================================================ */
 (function () {
@@ -731,7 +730,7 @@
   const pct = p => Math.round(p * 100) + '%';
 
   function pickTxt(pick, g) {
-    if (!pick) return 'Pick del Doctor';
+    if (!pick) return 'Pick del modelo';
     const name = sel => sel === 'home' ? g.home.name : g.away.name;
     switch (pick.market) {
       case 'ML': return 'Ganan los ' + name(pick.sel);
@@ -1101,6 +1100,16 @@ document.getElementById('navFreeBtn').addEventListener('click', e => {
   if (!_session) { openAuth('signup'); return; }
   openFree();
 });
+(() => {
+  const btn = document.getElementById('mlbSoonBtn');
+  const toast = document.getElementById('mlbSoonToast');
+  let hideTimer = null;
+  btn.addEventListener('click', () => {
+    toast.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  });
+})();
 document.querySelectorAll('[data-scroll]').forEach(b => {
   b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
