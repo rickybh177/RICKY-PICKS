@@ -265,7 +265,7 @@ function amOdds(p) {
   if (!p || p <= 0 || p >= 1) return '—';
   return p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p);
 }
-function logoUrl(id) { return 'https://www.mlbstatic.com/team-logos/team-cap-on-dark/' + id + '.svg'; }
+function logoUrl(id) { return 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + id + '.svg'; }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function authHeader() {
