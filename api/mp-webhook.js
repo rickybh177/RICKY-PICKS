@@ -56,9 +56,11 @@ module.exports = async function handler(req, res) {
   if (!dataId) return res.status(200).end();
 
   if (!signatureValid(req, dataId)) {
+    console.error('mp-webhook: firma inválida o ausente para dataId=' + dataId + ' — revisa que MP_WEBHOOK_SECRET coincida con el secreto configurado en el panel de Mercado Pago.');
     return res.status(401).end();
   }
 
+  let ref = '';
   try {
     const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
       headers: { 'Authorization': `Bearer ${token}` },
@@ -73,18 +75,19 @@ module.exports = async function handler(req, res) {
       return res.status(200).end(); // pendiente/rechazado: nada que otorgar.
     }
 
-    const ref = payment.external_reference ||
+    ref = payment.external_reference ||
       (payment.metadata && `${payment.metadata.user_id}:${payment.metadata.plan}`) || '';
     const [userId, planId] = ref.split(':');
     if (!userId || !PLANS[planId]) {
-      console.error('webhook: external_reference inválido:', ref);
+      console.error('mp-webhook: external_reference inválido — ref=' + ref + ' payment_id=' + dataId);
       return res.status(200).end();
     }
 
     await grantEntitlement(userId, planId);
+    console.log('mp-webhook: acceso otorgado — user_id=' + userId + ' plan=' + planId + ' payment_id=' + dataId);
     return res.status(200).end();
   } catch (e) {
-    console.error('webhook:', e);
+    console.error('mp-webhook: error al otorgar acceso — ref=' + ref + ' payment_id=' + dataId, e);
     return res.status(502).end();
   }
 };
