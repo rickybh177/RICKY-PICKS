@@ -367,7 +367,7 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <button class="nav-link soon" id="mlbSoonBtn">MLB<span class="toast" id="mlbSoonToast">Muy pronto</span></button>
+      <button class="nav-link soon" id="mlbNavBtn">MLB</button>
       <a href="#record" class="nav-link">Récord</a>
       <a href="#precios" class="nav-link">Precios</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
@@ -1174,16 +1174,23 @@ document.getElementById('navFreeBtn').addEventListener('click', e => {
   if (!_session) { openAuth('signup'); return; }
   openFree();
 });
-(() => {
-  const btn = document.getElementById('mlbSoonBtn');
-  const toast = document.getElementById('mlbSoonToast');
-  let hideTimer = null;
-  btn.addEventListener('click', () => {
-    toast.classList.add('show');
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => toast.classList.remove('show'), 1800);
-  });
-})();
+/* Nav "MLB": si ya tiene el modelo activo lo manda a /mlb.html;
+   si no, lo manda directo a comprarlo (sin avisos de "no lo tienes"
+   — menos fricción, más conversión). */
+let _hasMlbAccess = false;
+document.getElementById('mlbNavBtn').addEventListener('click', () => {
+  if (_hasMlbAccess) { window.location.href = '/mlb.html'; return; }
+  window.location.hash = 'precios';
+});
+async function checkMlbNavAccess(){
+  if (!_session) { _hasMlbAccess = false; return; }
+  try {
+    const res = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+    if (!res.ok) { _hasMlbAccess = false; return; }
+    const data = await res.json();
+    _hasMlbAccess = !!(data && data.mlb);
+  } catch (e) { _hasMlbAccess = false; }
+}
 document.querySelectorAll('[data-scroll]').forEach(b => {
   b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
@@ -1283,6 +1290,7 @@ async function getEntitlement(){
 async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
+  checkMlbNavAccess();
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
