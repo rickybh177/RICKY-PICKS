@@ -52,6 +52,17 @@
   .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.8rem, 6vw, 2.8rem); text-wrap: balance; }
   .head .lede { color: var(--muted); font-size: 0.98rem; font-weight: 450; margin-top: 12px; max-width: 52ch; }
 
+  /* ---- TOGGLE DE MODELO (MLB | Mundial) ---- */
+  .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle .mt-opt:hover { color: var(--text); }
+  .model-toggle .mt-opt.active { background: var(--g0); color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
+  .model-toggle .mt-lock { font-size: 0.72rem; opacity: 0.7; }
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; width: 100%; max-width: 360px; }
+    .model-toggle .mt-opt { flex: 1; padding: 10px 8px; font-size: 0.82rem; }
+  }
+
   .recband { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 24px 0 6px; }
   .rec { background: var(--g1); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
   .rec .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.9rem); letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -178,7 +189,6 @@
       <button id="nextDay" aria-label="Día siguiente">›</button>
     </div>
     <div class="nav-actions">
-      <a class="enter" id="mundialSwitchBtn" href="/mis-modelos.html" style="display:none;color:var(--blue);border-color:var(--blue)">Mundial 2026 →</a>
       <button class="refresh" id="refreshBtn" title="Recalcular con alineaciones y clima de ahora">⟳ <span>Actualizar</span></button>
       <button class="enter" id="enterBtn"><span>Entrar</span>→</button>
     </div>
@@ -189,6 +199,10 @@
   <div class="wrap">
     <div class="eyebrow">Modelo MLB · 10,000 simulaciones por juego</div>
     <h1>A qué apostar hoy. Y a qué no.</h1>
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+      <span class="mt-opt active" role="tab" aria-selected="true">⚾ MLB</span>
+      <a class="mt-opt" role="tab" aria-selected="false" id="mundialSwitchBtn" href="/">🌍 Mundial 2026 <span class="mt-lock" id="mundialLock">🔒</span></a>
+    </div>
     <p class="lede">El modelo ya jugó cada partido 10,000 veces. El juego destacado es gratis todos los días; el resto se desbloquea con tu plan.</p>
     <div class="recband">
       <div class="rec"><div class="n green" id="recW">—</div><div class="l">Ganados · 7 días</div></div>
@@ -277,8 +291,9 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-/* Si el usuario también tiene acceso activo al Mundial 2026, muestra
-   el link de cambio en el nav. */
+/* Si el usuario también tiene acceso activo al Mundial 2026, quita el
+   candado del toggle y lo manda a su herramienta real (/mis-modelos.html)
+   en vez del homepage. */
 async function checkMundialSwitch() {
   try {
     const headers = await authHeader();
@@ -286,8 +301,13 @@ async function checkMundialSwitch() {
     const res = await fetch('/api/my-access', { headers });
     if (!res.ok) return;
     const data = await res.json();
-    if (data && data.mundial) $('mundialSwitchBtn').style.display = 'inline-block';
-  } catch (e) { /* si falla, simplemente no se muestra el switcher */ }
+    if (data && data.mundial) {
+      const lock = $('mundialLock');
+      if (lock) lock.style.display = 'none';
+      const btn = $('mundialSwitchBtn');
+      if (btn) { btn.href = '/mis-modelos.html'; btn.title = 'Ir a Mis modelos'; }
+    }
+  } catch (e) { /* si falla, el candado simplemente se queda */ }
 }
 
 async function loadRecord() {
