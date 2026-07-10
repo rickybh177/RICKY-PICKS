@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY·PICKS — MLB</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%232f7bff'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='22' fill='white'%3ER·P%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --night: #04060b;
+    --bg: #ffffff;
+    --soft: #f5f7fa;
+    --soft-2: #eceff5;
+    --ink: #0e1116;
+    --muted: #667084;
+    --line: #e7ebf1;
+    --blue: #2f7bff;
+    --blue-deep: #1d4ed8;
+    --blue-tint: #eaf2ff;
+    --win: #16a34a;
+    --loss: #dc2626;
+    --r-xl: 26px;
+    --r-md: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: 17px; }
+  .num { font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 18px; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  /* ---- NAV ---- */
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.78); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 8px; }
+  .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); font-weight: 800; font-size: 0.98rem; letter-spacing: -0.02em; white-space: nowrap; }
+  .logo .mark { width: 30px; height: 30px; border-radius: 10px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 900; }
+  .logo .dot { color: var(--blue); }
+  .logo .mlb { color: #fff; background: var(--night); font-size: 0.64rem; font-weight: 800; letter-spacing: 0.08em; border-radius: 7px; padding: 3px 8px; margin-left: 2px; }
+  .datenav { display: flex; align-items: center; gap: 2px; }
+  .datenav button { width: 36px; height: 36px; border-radius: 50%; color: var(--muted); font-size: 1.05rem; transition: background .15s; }
+  .datenav button:hover { background: var(--soft); color: var(--ink); }
+  .datenav .cur { font-weight: 800; font-size: 0.9rem; padding: 0 6px; min-width: 108px; text-align: center; }
+  .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--muted); background: var(--soft); padding: 9px 14px; border-radius: 999px; transition: background .15s; white-space: nowrap; }
+  .refresh:hover { background: var(--soft-2); color: var(--ink); }
+
+  /* ---- HEADER ---- */
+  .head { padding: 42px 0 6px; }
+  .head .eyebrow { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: var(--blue); margin-bottom: 12px; }
+  .head h1 { font-weight: 900; letter-spacing: -0.04em; line-height: 1.0; font-size: clamp(1.9rem, 6.4vw, 3rem); }
+  .head .lede { color: var(--muted); font-size: 1rem; font-weight: 500; margin-top: 12px; max-width: 46ch; }
+
+  /* ---- RÉCORD ---- */
+  .recband { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 26px 0 8px; }
+  .rec { background: var(--soft); border-radius: 20px; padding: 18px 20px; }
+  .rec .n { font-weight: 900; font-size: clamp(1.5rem, 4.5vw, 2.2rem); letter-spacing: -0.04em; line-height: 1; }
+  .rec .n.blue { color: var(--blue); }
+  .rec .n.green { color: var(--win); }
+  .rec .n.red { color: var(--loss); }
+  .rec .l { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 7px; }
+  .rec-note { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+
+  /* ---- GAME CARDS ---- */
+  .games { display: flex; flex-direction: column; gap: 14px; padding: 22px 0 70px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); padding: 20px; box-shadow: 0 8px 30px -22px rgba(14,17,22,0.25); animation: rise .4s ease both; animation-delay: calc(var(--i) * 35ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+  .card-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 0.74rem; font-weight: 600; color: var(--muted); margin-bottom: 14px; }
+  .card-meta .sep { opacity: 0.5; }
+  .badge { border-radius: 999px; padding: 3px 10px; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+  .badge.live { background: rgba(220,38,38,0.1); color: var(--loss); }
+  .badge.final { background: var(--soft-2); color: var(--muted); }
+  .badge.proj { background: rgba(184,134,11,0.1); color: #b8860b; }
+
+  .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
+  .team-row img { width: 34px; height: 34px; object-fit: contain; }
+  .team-name { font-weight: 800; font-size: 1.08rem; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .team-name .rec2 { font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+  .team-name .pit { display: block; font-size: 0.74rem; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+  .team-score { font-weight: 900; font-size: 1.2rem; color: var(--ink); min-width: 20px; text-align: right; }
+
+  /* ---- VEREDICTOS (el corazón de la vista) ---- */
+  .verdicts { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 4px; }
+  .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--soft); border-radius: var(--r-md); padding: 13px 16px; }
+  .vrow .vl { font-weight: 700; font-size: 0.98rem; letter-spacing: -0.01em; }
+  .vchip { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.08em; padding: 7px 14px; border-radius: 999px; white-space: nowrap; }
+  .vchip.bet { background: rgba(22,163,74,0.12); color: var(--win); }
+  .vchip.maybe { background: var(--blue-tint); color: var(--blue-deep); }
+  .vchip.skip { background: rgba(220,38,38,0.1); color: var(--loss); }
+  .vrow.skip .vl { color: var(--muted); font-weight: 600; }
+
+  /* ---- ANÁLISIS ---- */
+  .analysis-box { background: var(--night); color: rgba(255,255,255,0.92); border-radius: var(--r-md); padding: 16px 18px; margin-top: 12px; font-size: 0.92rem; font-weight: 500; line-height: 1.6; }
+  .analysis-box .a-lbl { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); margin-bottom: 7px; }
+
+  /* ---- DETALLE (momios y números, escondidos) ---- */
+  details.more { margin-top: 12px; }
+  details.more summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.84rem; font-weight: 800; color: var(--blue); background: var(--soft); border-radius: 999px; padding: 11px; transition: background .15s; user-select: none; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary:hover { background: var(--soft-2); }
+  details.more summary::after { content: '▾'; font-size: 0.8rem; transition: transform .2s; }
+  details.more[open] summary::after { transform: rotate(180deg); }
+  .det-rows { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 15px; font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid var(--soft); }
+  .det-row:last-child { border-bottom: none; }
+  .det-row .dl { color: var(--ink); font-weight: 600; }
+  .det-row .dv { color: var(--muted); font-weight: 700; white-space: nowrap; }
+  .dist { margin-top: 14px; }
+  .dist-lbl { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .dist svg { width: 100%; height: 52px; display: block; }
+
+  /* ---- estados ---- */
+  .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 500; }
+  .state h2 { font-weight: 900; color: var(--ink); margin-bottom: 8px; font-size: 1.25rem; letter-spacing: -0.025em; }
+  .spinner { width: 26px; height: 26px; border: 2.5px solid var(--line); border-top-color: var(--blue); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- lock ---- */
+  .lock { max-width: 400px; margin: 70px auto; background: #fff; border: 1px solid var(--line); border-radius: var(--r-xl); padding: 34px 30px; text-align: center; box-shadow: 0 20px 60px -30px rgba(14,17,22,0.3); }
+  .lock .mark { width: 56px; height: 56px; border-radius: 18px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 900; margin: 0 auto; }
+  .lock h2 { font-weight: 900; font-size: 1.3rem; letter-spacing: -0.025em; margin: 16px 0 6px; }
+  .lock p { color: var(--muted); font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; }
+  .lock input { width: 100%; background: var(--soft); border: 1.5px solid var(--line); border-radius: 14px; color: var(--ink); padding: 13px 15px; font: inherit; font-size: 0.92rem; margin-bottom: 10px; outline: none; }
+  .lock input:focus { border-color: var(--blue); background: #fff; }
+  .lock .go { width: 100%; background: var(--blue); color: #fff; font-weight: 800; padding: 14px; border-radius: 999px; transition: background .15s; }
+  .lock .go:hover { background: var(--blue-deep); }
+  .lock .err { color: var(--loss); font-size: 0.8rem; margin-top: 10px; min-height: 1.2em; }
+
+  footer { border-top: 1px solid var(--line); background: var(--soft); padding: 26px 0 44px; color: var(--muted); font-size: 0.76rem; font-weight: 500; }
+  footer .wrap { display: flex; flex-direction: column; gap: 6px; }
+
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .logo .word { display: none; }
+    .datenav .cur { min-width: 92px; font-size: 0.84rem; }
+    .refresh span { display: none; }
+    .card { padding: 17px 15px; border-radius: 22px; }
+    .recband { gap: 8px; }
+    .rec { padding: 14px 14px; border-radius: 16px; }
+    .vrow { padding: 12px 13px; }
+    .vrow .vl { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <span class="mark">R·P</span>
+      <span class="word">RICKY<span class="dot">·</span>PICKS</span><span class="mlb">MLB</span>
+    </a>
+    <div class="datenav">
+      <button id="prevDay" aria-label="Día anterior">‹</button>
+      <div class="cur num" id="curDate">—</div>
+      <button id="nextDay" aria-label="Día siguiente">›</button>
+    </div>
+    <button class="refresh" id="refreshBtn" title="Recalcular con alineaciones y clima de ahora">
+      ⟳ <span>Actualizar</span>
+    </button>
+  </div>
+</nav>
+
+<header class="head">
+  <div class="wrap">
+    <div class="eyebrow">Modelo MLB · beta privada</div>
+    <h1>A qué apostar hoy.<br>Y a qué no.</h1>
+    <p class="lede">La computadora juega cada partido 10,000 veces antes del primer lanzamiento. Esto es lo que encontró.</p>
+    <div class="recband" id="recband">
+      <div class="rec"><div class="n green num" id="recW">—</div><div class="l">Picks ganados</div></div>
+      <div class="rec"><div class="n red num" id="recL">—</div><div class="l">Picks perdidos</div></div>
+      <div class="rec"><div class="n blue num" id="recP">—</div><div class="l">Aciertos</div></div>
+    </div>
+    <div class="rec-note" id="recNote">Calculando el récord de los últimos 7 días…</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="games" id="games">
+    <div class="state" id="loading"><div class="spinner"></div>Jugando los partidos 10,000 veces…</div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Modelo estadístico con fines informativos. Ningún resultado está garantizado.</div>
+    <div>Juega responsable. +18.</div>
+  </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+let sb = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const MX_TZ = 'America/Mexico_City';
+const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+
+let currentDate = null;
+
+function fmtDateHuman(iso) {
+  const d = new Date(iso + 'T12:00:00Z');
+  const s = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).replace(/\./g, '');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function shiftDate(iso, days) {
+  const d = new Date(iso + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function pct(p) { return Math.round(p * 100) + '%'; }
+function amOdds(p) {
+  if (!p || p <= 0 || p >= 1) return '—';
+  return p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p);
+}
+function logoUrl(id) { return 'https://www.mlbstatic.com/team-logos/' + id + '.svg'; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function authHeader() {
+  if (!sb) return {};
+  try {
+    const { data } = await sb.auth.getSession();
+    const t = data && data.session && data.session.access_token;
+    return t ? { Authorization: 'Bearer ' + t } : {};
+  } catch (e) { return {}; }
+}
+
+/* ---- récord (dashboard de arriba) ---- */
+async function loadRecord() {
+  try {
+    const res = await fetch('/api/mlb-record', { headers: await authHeader() });
+    if (!res.ok) throw new Error();
+    const r = await res.json();
+    $('recW').textContent = r.wins;
+    $('recL').textContent = r.losses;
+    $('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
+    $('recNote').textContent = 'Todos los picks del modelo en los últimos ' + r.days + ' días, comparados contra los marcadores reales.';
+  } catch (e) {
+    $('recNote').textContent = 'El récord no está disponible en este momento.';
+  }
+}
+
+async function load(date, refresh) {
+  $('games').innerHTML = '<div class="state"><div class="spinner"></div>Jugando los partidos 10,000 veces…</div>';
+  const qs = new URLSearchParams();
+  if (date) qs.set('date', date);
+  if (refresh) qs.set('refresh', '1');
+  let res;
+  try {
+    res = await fetch('/api/mlb-picks?' + qs.toString(), { headers: await authHeader() });
+  } catch (e) {
+    return renderError('Sin conexión con el servidor. Intenta de nuevo.');
+  }
+  if (res.status === 401 || res.status === 403) return renderLock();
+  if (!res.ok) return renderError('El modelo no pudo calcular este día. Intenta actualizar.');
+  const day = await res.json();
+  currentDate = day.date;
+  $('curDate').textContent = fmtDateHuman(day.date);
+  renderDay(day);
+}
+
+function renderError(msg) {
+  $('games').innerHTML = '<div class="state"><h2>Algo salió mal</h2>' + esc(msg) + '</div>';
+}
+
+function renderLock() {
+  $('games').innerHTML =
+    '<div class="lock">' +
+    '<div class="mark">R·P</div>' +
+    '<h2>Beta privada</h2>' +
+    '<p>El modelo MLB todavía no es público. Inicia sesión con una cuenta autorizada.</p>' +
+    '<input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">' +
+    '<input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">' +
+    '<button class="go" id="lkGo">Entrar</button>' +
+    '<div class="err" id="lkErr"></div>' +
+    '</div>';
+  $('lkGo').addEventListener('click', async () => {
+    $('lkErr').textContent = '';
+    try {
+      const { error } = await sb.auth.signInWithPassword({
+        email: $('lkEmail').value.trim(), password: $('lkPass').value,
+      });
+      if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
+      load(currentDate); loadRecord();
+    } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
+  });
+}
+
+function renderDay(day) {
+  const games = day.games || [];
+  if (!games.length) {
+    $('games').innerHTML = '<div class="state"><h2>Este día no hay beisbol</h2>Usa las flechas de arriba para moverte de día.</div>';
+    return;
+  }
+  $('games').innerHTML = games.map((g, i) => g.error ? errCard(g, i) : gameCard(g, i)).join('');
+}
+
+function errCard(g, i) {
+  return '<div class="card" style="--i:' + i + '"><div class="card-meta">Juego ' + esc(g.gamePk) + '</div>' +
+    '<div style="color:var(--muted);font-size:0.9rem">' + esc(g.error) + '</div></div>';
+}
+
+function gameCard(g, i) {
+  const m = g.markets;
+  const time = new Date(g.game_date).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
+  const live = g.abstract_state === 'Live';
+  const final = g.abstract_state === 'Final';
+
+  const statusBadge = live ? '<span class="badge live">En vivo</span>'
+    : final ? '<span class="badge final">Terminó</span>' : '';
+  const lineupBadge = g.lineups_confirmed ? '' : '<span class="badge proj">alineaciones estimadas</span>';
+
+  const teamRow = (t, p, score) =>
+    '<div class="team-row">' +
+    '<img src="' + logoUrl(t.id) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
+    '<div class="team-name"><span>' + esc(t.name) + ' <span class="rec2">' + esc(t.record || '') + '</span>' +
+    '<span class="pit">' + pitcherTxt(p) + '</span></span></div>' +
+    '<div class="team-score num">' + (score != null && (live || final) ? score : '') + '</div>' +
+    '</div>';
+
+  const verdicts = (g.verdicts || []).map(v =>
+    '<div class="vrow ' + esc(v.verdict) + '">' +
+    '<span class="vl">' + esc(v.label) + '</span>' +
+    '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>' +
+    '</div>'
+  ).join('');
+
+  const analysis = g.analysis
+    ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
+    : '';
+
+  return '<div class="card" style="--i:' + i + '">' +
+    '<div class="card-meta">' +
+      '<span>' + time + '</span><span class="sep">·</span>' +
+      '<span>' + esc(g.venue) + '</span>' +
+      '<span style="flex:1"></span>' + lineupBadge + statusBadge +
+    '</div>' +
+    teamRow(g.away, g.pitchers.away, g.away.score) +
+    teamRow(g.home, g.pitchers.home, g.home.score) +
+    '<div class="verdicts">' + verdicts + '</div>' +
+    analysis +
+    moreDetails(g, m) +
+  '</div>';
+}
+
+function pitcherTxt(p) {
+  if (!p) return 'Pitcher por anunciar';
+  return 'Abre ' + esc(p.name);
+}
+
+/* detalle: aquí sí van los momios y números finos */
+function moreDetails(g, m) {
+  const rows = (g.verdicts || []).map(v =>
+    '<div class="det-row"><span class="dl">' + esc(v.label) + '</span>' +
+    '<span class="dv num">' + pct(v.prob) + ' · momio justo ' + amOdds(v.prob) + '</span></div>'
+  ).join('');
+  const rlFavHome = m.run_line.home_minus_1_5 >= m.run_line.away_minus_1_5;
+  const rlProb = Math.max(m.run_line.home_minus_1_5, m.run_line.away_minus_1_5);
+  const extra =
+    '<div class="det-row"><span class="dl">' + esc(rlFavHome ? g.home.name : g.away.name) + ' ganan por 2 o más</span>' +
+    '<span class="dv num">' + pct(rlProb) + ' · momio justo ' + amOdds(rlProb) + '</span></div>' +
+    '<div class="det-row"><span class="dl">Carreras esperadas</span>' +
+    '<span class="dv num">' + esc(g.away.abbr) + ' ' + m.expected.away_runs + ' — ' + esc(g.home.abbr) + ' ' + m.expected.home_runs + '</span></div>';
+  return '<details class="more"><summary>Ver detalle y momios</summary>' +
+    '<div class="det-rows">' + rows + extra + '</div>' + distChart(m) + '</details>';
+}
+
+function distChart(m) {
+  const d = m.total_dist || [];
+  if (!d.length) return '';
+  const W = 720, H = 52, n = d.length, gap = 3;
+  const bw = (W - gap * (n - 1)) / n;
+  const max = Math.max(...d, 0.001);
+  const line = m.total.line;
+  let bars = '';
+  for (let r = 0; r < n; r++) {
+    const h = Math.max(1.5, (d[r] / max) * (H - 14));
+    const x = r * (bw + gap);
+    bars += '<rect x="' + x + '" y="' + (H - 12 - h) + '" width="' + bw + '" height="' + h +
+      '" rx="2" fill="' + (r > line ? '#2f7bff' : '#d4dbe6') + '"></rect>';
+    if (r % 5 === 0 || r === n - 1) {
+      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#667084">' +
+        (r === n - 1 ? '20+' : r) + '</text>';
+    }
+  }
+  const lx = (line + 0.5) * (bw + gap) - gap / 2;
+  bars += '<line x1="' + lx + '" y1="0" x2="' + lx + '" y2="' + (H - 10) + '" stroke="#b8860b" stroke-width="1" stroke-dasharray="3 3"></line>';
+  return '<div class="dist">' +
+    '<div class="dist-lbl"><span>Cuántas carreras suelen caer (10,000 sims)</span><span>línea ' + line + '</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución de carreras">' + bars + '</svg>' +
+    '</div>';
+}
+
+$('prevDay').addEventListener('click', () => currentDate && load(shiftDate(currentDate, -1)));
+$('nextDay').addEventListener('click', () => currentDate && load(shiftDate(currentDate, 1)));
+$('refreshBtn').addEventListener('click', () => load(currentDate, true));
+
+load(null);
+loadRecord();
+</script>
+</body>
+</html>

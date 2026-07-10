@@ -4,24 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Restablecer contraseña — RICKY PICKS</title>
+<link rel="icon" type="image/png" href="/img/favicon.png">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',sans-serif;background:#0d0d0d;color:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-  .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:32px;width:100%;max-width:400px}
-  h2{font-size:22px;margin-bottom:8px}
-  p{font-size:14px;color:#888;margin-bottom:24px}
-  input{width:100%;background:#111;border:1px solid #333;border-radius:8px;padding:12px 14px;color:#f0f0f0;font-size:15px;outline:none;margin-bottom:16px}
-  input:focus{border-color:#4CAF50}
-  button{width:100%;background:#4CAF50;color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:600;cursor:pointer}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter','Segoe UI',Roboto,sans-serif;background:#f5f7fa;color:#16181d;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-font-smoothing:antialiased}
+  .card{background:#fff;border:1px solid #e7ebf1;border-radius:24px;padding:34px 30px;width:100%;max-width:400px;box-shadow:0 10px 40px -18px rgba(22,24,29,.18);text-align:center}
+  .card img{width:64px;height:64px;border-radius:50%;margin-bottom:14px}
+  h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+  p{font-size:14px;color:#6e7787;margin-bottom:24px}
+  input{width:100%;background:#f5f7fa;border:1.5px solid #e7ebf1;border-radius:14px;padding:13px 15px;color:#16181d;font-size:15px;outline:none;margin-bottom:10px;font-family:inherit}
+  input:focus{border-color:#2f7bff;background:#fff}
+  button{width:100%;background:#2f7bff;color:#fff;border:none;border-radius:980px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  button:hover:not(:disabled){background:#1d4ed8}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .msg{margin-top:14px;font-size:13px;text-align:center;padding:10px;border-radius:8px;display:none}
-  .msg.ok{display:block;background:#1a3a1a;color:#4CAF50}
-  .msg.bad{display:block;background:#3a1a1a;color:#f55}
-  a{color:#4CAF50;text-decoration:none;font-size:13px}
+  .msg{margin-top:14px;font-size:13px;text-align:center;padding:12px;border-radius:14px;display:none}
+  .msg.ok{display:block;background:rgba(22,163,74,.08);color:#16a34a}
+  .msg.bad{display:block;background:rgba(220,38,38,.06);color:#dc2626}
+  a{color:#2f7bff;text-decoration:none;font-size:13px;font-weight:500}
 </style>
 </head>
 <body>
 <div class="card">
+  <img src="/img/avatar.png" alt="">
   <h2>Nueva contraseña</h2>
   <p>Escribe tu nueva contraseña para acceder a RICKY PICKS.</p>
   <input type="password" id="pass1" placeholder="Nueva contraseña" autocomplete="new-password">

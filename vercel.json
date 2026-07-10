@@ -3,6 +3,15 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 15
+    },
+    "api/mlb-picks.js": {
+      "maxDuration": 60
+    },
+    "api/mlb-free.js": {
+      "maxDuration": 60
+    },
+    "api/mlb-record.js": {
+      "maxDuration": 60
     }
   }
 }
