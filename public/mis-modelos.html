@@ -205,11 +205,12 @@
 <!-- ESTADO: sin plan activo -->
 <div class="page-state" id="stateNoPlan">
   <div class="state-icon">🔐</div>
-  <div class="state-title">Aún no tienes ningún modelo activo</div>
+  <div class="state-title">Aún no tienes el modelo del Mundial</div>
   <div class="state-body">Adquiere un plan para acceder a las predicciones del Mundial 2026 con el modelo Dixon-Coles.</div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
     <a href="/checkout.html?plan=torneo" class="btn-cta" style="min-width:220px;text-align:center">Ver planes y comprar →</a>
     <span style="font-size:0.78rem;color:var(--muted)">¿Ya tienes un código? <a href="/checkout.html?plan=torneo" style="color:var(--blue);text-decoration:none">Canjéalo aquí</a></span>
+    <a href="/mlb.html" style="font-size:0.78rem;color:var(--muted);text-decoration:none">← Volver al modelo MLB</a>
   </div>
 </div>
 
@@ -673,13 +674,19 @@ async function loadAndShow(session){
     if(rows.length) ent = rows[0];
   } catch(e) { /* si falla el query, ent queda null */ }
 
-  /* ¿tiene también acceso al modelo MLB? mostrar el switcher en el nav */
-  const hasMlb = await checkMlbSwitch();
+  /* ¿tiene también acceso al modelo MLB? corre en paralelo: solo
+     desbloquea el toggle, NUNCA retrasa mostrar la herramienta. */
+  const mlbCheck = checkMlbSwitch();
 
   if(!ent){
-    /* Solo tiene MLB (no Mundial): esta página no le sirve de nada,
-       mándalo directo a donde sí tiene acceso. */
-    if(hasMlb){ window.location.href = '/mlb.html'; return; }
+    /* Solo tiene MLB (no Mundial): si llegó navegando por su cuenta,
+       mándalo a su modelo. Pero si vino del toggle de mlb.html
+       (from=mlb), quiere ver el Mundial a propósito: muéstrale el
+       estado "sin plan" para comprarlo — jamás rebotarlo de regreso. */
+    const fromMlb = params.get('from') === 'mlb';
+    let hasMlb = false;
+    try { hasMlb = await mlbCheck; } catch(e) {}
+    if(hasMlb && !fromMlb){ window.location.href = '/mlb.html'; return; }
     showState('stateNoPlan');
     return;
   }

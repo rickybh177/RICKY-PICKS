@@ -194,7 +194,7 @@
     <h1>A qué apostar hoy. Y a qué no.</h1>
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <span class="mt-opt active" role="tab" aria-selected="true">⚾ MLB</span>
-      <a class="mt-opt" role="tab" aria-selected="false" id="mundialSwitchBtn" href="/">🌍 Mundial 2026</a>
+      <a class="mt-opt" role="tab" aria-selected="false" id="mundialSwitchBtn" href="/mis-modelos.html?from=mlb">🌍 Mundial 2026</a>
     </div>
     <p class="lede">El modelo ya jugó cada partido 10,000 veces. El juego destacado es gratis todos los días; el resto se desbloquea con tu plan.</p>
   </div>
@@ -278,36 +278,12 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-/* Toggle "Mundial 2026": el destino se decide EN EL CLIC, no antes,
-   para que no haya carrera entre el tap del usuario y la verificación
-   de acceso (en móvil el tap suele ganar). Con acceso al Mundial va a
-   /mis-modelos.html; sin acceso, al homepage a comprar. */
-let _mundialAccessPromise = null;
-function checkMundialSwitch() {
-  _mundialAccessPromise = (async () => {
-    try {
-      const headers = await authHeader();
-      if (!headers.Authorization) return false;
-      const res = await fetch('/api/my-access', { headers });
-      if (!res.ok) return false;
-      const data = await res.json();
-      return !!(data && data.mundial);
-    } catch (e) { return false; }
-  })();
-  return _mundialAccessPromise;
-}
-$('mundialSwitchBtn').addEventListener('click', async (e) => {
-  e.preventDefault();
-  let hasMundial = false;
-  try {
-    // espera la verificación (con tope de 4s para no dejar el tap colgado)
-    hasMundial = await Promise.race([
-      _mundialAccessPromise || checkMundialSwitch(),
-      new Promise(r => setTimeout(() => r(false), 4000)),
-    ]);
-  } catch (err) {}
-  window.location.href = hasMundial ? '/mis-modelos.html' : '/';
-});
+/* Toggle "Mundial 2026": link directo, sin verificaciones asíncronas
+   (en móvil fallaban/perdían la carrera contra el tap). La página de
+   mis-modelos valida el acceso por sí misma: con Mundial muestra la
+   herramienta; sin él muestra el CTA de compra. El parámetro from=mlb
+   le indica que NO rebote de regreso aquí a usuarios solo-MLB. */
+function checkMundialSwitch() { /* ya no hace falta: el link es directo */ }
 
 async function load(date, refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>';
