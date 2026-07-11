@@ -278,26 +278,36 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-/* Si el usuario también tiene acceso activo al Mundial 2026, quita el
-   candado del toggle y lo manda a su herramienta real (/mis-modelos.html)
-   en vez del homepage. */
-/* Si ya tiene acceso al Mundial, el toggle lo manda a su herramienta
-   real. Si no, se queda apuntando al homepage (comprar) — nunca a
-   /mis-modelos.html, que lo rebotaría de regreso aquí por no tener
-   Mundial. */
-async function checkMundialSwitch() {
-  try {
-    const headers = await authHeader();
-    if (!headers.Authorization) return;
-    const res = await fetch('/api/my-access', { headers });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data && data.mundial) {
-      const btn = $('mundialSwitchBtn');
-      if (btn) { btn.href = '/mis-modelos.html'; btn.title = 'Ir a Mis modelos'; }
-    }
-  } catch (e) { /* si falla, se queda apuntando al homepage */ }
+/* Toggle "Mundial 2026": el destino se decide EN EL CLIC, no antes,
+   para que no haya carrera entre el tap del usuario y la verificación
+   de acceso (en móvil el tap suele ganar). Con acceso al Mundial va a
+   /mis-modelos.html; sin acceso, al homepage a comprar. */
+let _mundialAccessPromise = null;
+function checkMundialSwitch() {
+  _mundialAccessPromise = (async () => {
+    try {
+      const headers = await authHeader();
+      if (!headers.Authorization) return false;
+      const res = await fetch('/api/my-access', { headers });
+      if (!res.ok) return false;
+      const data = await res.json();
+      return !!(data && data.mundial);
+    } catch (e) { return false; }
+  })();
+  return _mundialAccessPromise;
 }
+$('mundialSwitchBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  let hasMundial = false;
+  try {
+    // espera la verificación (con tope de 4s para no dejar el tap colgado)
+    hasMundial = await Promise.race([
+      _mundialAccessPromise || checkMundialSwitch(),
+      new Promise(r => setTimeout(() => r(false), 4000)),
+    ]);
+  } catch (err) {}
+  window.location.href = hasMundial ? '/mis-modelos.html' : '/';
+});
 
 async function load(date, refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>';
