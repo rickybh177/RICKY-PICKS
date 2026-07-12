@@ -151,8 +151,12 @@
   .pc-cta a:hover { transform: translateY(-2px); background: var(--blue); }
   .pc-cta .mini { display: block; margin-top: 10px; color: var(--faint); font-size: 0.74rem; font-weight: 500; }
 
-  /* ============ SECCIONES ============ */
+  /* ============ SECCIONES ============
+     Un solo estilo para todas: mismo fondo, mismo padding base, y
+     un separador delgado consistente entre secciones consecutivas
+     (en vez de que cada una tenga su propia franja/borde suelto). */
   section { padding: 100px 0; }
+  section + section { border-top: 1px solid var(--line); }
   .sec-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
   .sec-title { font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; font-size: clamp(1.9rem, 5.6vw, 3.2rem); max-width: 20ch; text-wrap: balance; }
   .sec-lede { color: var(--muted); font-size: 1.04rem; max-width: 56ch; margin-top: 16px; font-weight: 450; }
@@ -173,7 +177,6 @@
   .rec-note strong { color: var(--text); font-weight: 600; }
 
   /* ---- MÉTODO ---- */
-  #metodo { background: var(--g1); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 44px; }
   .step { background: var(--g0); border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; }
   .step .ico { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); }
@@ -526,7 +529,7 @@
 </section>
 
 <!-- ============ PRECIOS ============ -->
-<section id="precios" style="background:var(--g1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<section id="precios">
   <div class="wrap">
     <div class="sec-eyebrow reveal">Preventa fundador</div>
     <h2 class="sec-title reveal">Acceso anticipado a MLB.</h2>
