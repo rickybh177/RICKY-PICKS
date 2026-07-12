@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MODELO NFL 26-27 — RICKY·PICKS (beta privada)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ER·P%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --blue: #2f7bff; --blue-deep: #1d4ed8; --blue-tint: rgba(47,123,255,0.08);
+    --bet: #16a34a; --bet-bg: rgba(22,163,74,0.1);
+    --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
+    --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
+    --beta: #7c3aed; --beta-bg: rgba(124,58,237,0.09);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--g0); color: var(--text); font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; font-size: 16px; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 18px; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  a { color: var(--blue); }
+
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.82); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 8px; }
+  .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
+  .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
+  .logo .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--beta); border: 1px solid rgba(124,58,237,0.4); background: var(--beta-bg); border-radius: 6px; padding: 3px 8px; margin-left: 2px; }
+  .weeknav { display: flex; align-items: center; gap: 2px; }
+  .weeknav button { width: 34px; height: 34px; border-radius: 9px; color: var(--muted); font-size: 1rem; transition: background .15s; }
+  .weeknav button:hover { background: var(--g2); color: var(--text); }
+  .weeknav .cur { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.8rem; padding: 0 6px; min-width: 96px; text-align: center; }
+  .nav-actions { display: flex; align-items: center; gap: 6px; }
+  .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--muted); background: var(--g2); padding: 8px 13px; border-radius: 9px; transition: background .15s; white-space: nowrap; }
+  .refresh:hover { background: var(--line); color: var(--text); }
+
+  .head { padding: 36px 0 8px; }
+  .head .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--beta); margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
+  .head .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--beta); box-shadow: 0 0 8px var(--beta); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.7rem, 6vw, 2.6rem); text-wrap: balance; }
+  .head .lede { color: var(--muted); font-size: 0.96rem; font-weight: 450; margin-top: 12px; max-width: 58ch; }
+  .meta-band { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .meta-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g1); border: 1px solid var(--line); padding: 6px 11px; border-radius: 8px; }
+
+  .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
+  .card { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 18px; animation: rise .4s ease both; animation-delay: calc(var(--i) * 30ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+  .card-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 500; color: var(--faint); margin-bottom: 13px; letter-spacing: 0.03em; }
+  .card-meta .sep { opacity: 0.5; }
+  .badge { border-radius: 6px; padding: 3px 8px; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .badge.live { background: var(--skip-bg); color: var(--skip); }
+  .badge.final { background: var(--g2); color: var(--muted); }
+  .badge.wx { background: rgba(229,185,74,0.12); color: #b8922e; }
+  .badge.neutral { background: var(--blue-tint); color: var(--blue-deep); }
+
+  .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
+  .team-row img { width: 34px; height: 34px; object-fit: contain; }
+  .team-name { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.015em; min-width: 0; }
+  .team-name .rec2 { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); font-weight: 500; margin-left: 7px; }
+  .team-name .sub { display: block; font-size: 0.7rem; color: var(--muted); font-weight: 450; }
+  .team-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.15rem; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .verdicts { display: flex; flex-direction: column; gap: 7px; margin: 13px 0 4px; }
+  .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
+  .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 500; color: var(--faint); margin-top: 2px; }
+  .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
+  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
+  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
+  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
+  .vrow.skip .vl { color: var(--faint); font-weight: 500; }
+
+  .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--beta); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
+  .analysis-box .a-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--beta); margin-bottom: 6px; }
+
+  details.more { margin-top: 11px; }
+  details.more summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g0); border: 1px solid var(--line); border-radius: 9px; padding: 10px; transition: color .15s; user-select: none; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary:hover { color: var(--text); }
+  details.more summary::after { content: '▾'; transition: transform .2s; }
+  details.more[open] summary::after { transform: rotate(180deg); }
+  .det-rows { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--g0); }
+  .det-h { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); padding: 10px 14px 4px; }
+  .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
+  .det-row:last-child { border-bottom: none; }
+  .det-row .dl { font-weight: 500; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.76rem; }
+  .det-row .dv b { color: var(--bet); }
+  .dist { margin-top: 12px; }
+  .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .dist svg { width: 100%; height: 54px; display: block; }
+
+  .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
+  .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .spinner { width: 26px; height: 26px; border: 2.5px solid var(--line-2); border-top-color: var(--beta); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .lockwrap { max-width: 380px; margin: 70px auto; padding: 0 18px; }
+  .lockbox { background: var(--g1); border: 1px solid var(--line-2); border-radius: 16px; padding: 30px 28px; text-align: center; }
+  .lockbox .ic { font-size: 2rem; margin-bottom: 10px; }
+  .lockbox h2 { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .lockbox p { color: var(--muted); font-size: 0.86rem; font-weight: 450; margin-bottom: 18px; }
+  .lockbox input { width: 100%; background: var(--g0); border: 1px solid var(--line-2); border-radius: 10px; color: var(--text); padding: 12px 14px; font: inherit; font-size: 0.9rem; margin-bottom: 10px; outline: none; }
+  .lockbox input:focus { border-color: var(--blue); }
+  .lockbox .go { width: 100%; background: var(--blue-deep); color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; transition: background .15s; }
+  .lockbox .go:hover { background: var(--blue); }
+  .lockbox .err { color: var(--skip); font-size: 0.78rem; margin-top: 10px; min-height: 1.2em; }
+
+  footer { border-top: 1px solid var(--line); padding: 26px 0 44px; color: var(--faint); font-size: 0.74rem; font-weight: 450; }
+  footer .wrap { display: flex; flex-direction: column; gap: 6px; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+  @media (max-width: 620px) {
+    .logo .word { display: none; }
+    .weeknav .cur { min-width: 84px; font-size: 0.74rem; }
+    .refresh span { display: none; }
+    .card { padding: 15px 13px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <span class="mark">R·P</span>
+      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">NFL · BETA</span>
+    </a>
+    <div class="weeknav" id="weeknav" style="display:none">
+      <button id="prevWeek" aria-label="Semana anterior">‹</button>
+      <div class="cur" id="curWeek">—</div>
+      <button id="nextWeek" aria-label="Semana siguiente">›</button>
+    </div>
+    <div class="nav-actions">
+      <button class="refresh" id="refreshBtn" title="Recalcular con datos de ahora">⟳ <span>Actualizar</span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- candado admin -->
+<div class="lockwrap" id="lockWrap" style="display:none">
+  <div class="lockbox">
+    <div class="ic">🔒</div>
+    <h2>Beta privada</h2>
+    <p>El modelo NFL 26-27 está en pruebas. Entra con la cuenta autorizada.</p>
+    <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
+    <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="go" id="lkGo">Entrar</button>
+    <div class="err" id="lkErr"></div>
+  </div>
+</div>
+
+<div id="appWrap" style="display:none">
+<header class="head">
+  <div class="wrap">
+    <div class="eyebrow">Modelo NFL 26-27 · beta privada · 10,000 simulaciones por juego</div>
+    <h1>Cada juego, jugado 10,000 veces antes del kickoff.</h1>
+    <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado.</p>
+    <div class="meta-band" id="metaBand"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="games" id="games">
+    <div class="state"><div class="spinner"></div>El modelo está jugando la semana 10,000 veces…</div>
+  </div>
+</main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>Beta privada — solo administración. Análisis estadístico con fines informativos.</div>
+    <div>Juega responsable. +18.</div>
+  </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+let sb = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const MX_TZ = 'America/Mexico_City';
+const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+let currentWeek = null;
+
+function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
+function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
+function am(v) { return v == null ? '—' : (v > 0 ? '+' + v : String(v)); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function authHeader() {
+  if (!sb) return {};
+  try {
+    const { data } = await sb.auth.getSession();
+    const t = data && data.session && data.session.access_token;
+    return t ? { Authorization: 'Bearer ' + t } : {};
+  } catch (e) { return {}; }
+}
+
+async function load(week, refresh) {
+  $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando la semana 10,000 veces…</div>';
+  const q = new URLSearchParams();
+  if (week) q.set('week', week);
+  if (refresh) q.set('refresh', '1');
+  let res;
+  try {
+    res = await fetch('/api/nfl-picks?' + q.toString(), { headers: await authHeader() });
+  } catch (e) { return renderError('Sin conexión con el servidor.'); }
+  if (res.status === 403) { showLock(); return; }
+  if (!res.ok) return renderError('El modelo no pudo calcular esta semana. Intenta actualizar.');
+  const wk = await res.json();
+  currentWeek = wk.week;
+  $('lockWrap').style.display = 'none';
+  $('appWrap').style.display = 'block';
+  $('weeknav').style.display = 'flex';
+  $('curWeek').textContent = 'SEMANA ' + wk.week;
+  renderMeta(wk);
+  renderWeek(wk);
+}
+
+function showLock() {
+  $('appWrap').style.display = 'none';
+  $('weeknav').style.display = 'none';
+  $('lockWrap').style.display = 'block';
+}
+
+function renderError(msg) {
+  $('games').innerHTML = '<div class="state"><h2>Algo salió mal</h2>' + esc(msg) + '</div>';
+}
+
+function renderMeta(wk) {
+  const chips = [
+    'Temporada ' + wk.season + '-' + String(wk.season + 1).slice(2),
+    wk.sims.toLocaleString() + ' sims/juego',
+    'Momios: ' + (wk.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'ESPN BET'),
+    wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings preseason (base 2025, se actualizan solos)',
+  ];
+  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
+}
+
+function renderWeek(wk) {
+  const games = wk.games || [];
+  if (!games.length) {
+    $('games').innerHTML = '<div class="state"><h2>Sin juegos esta semana</h2>Muévete de semana con las flechas de arriba.</div>';
+    return;
+  }
+  const sorted = [...games].sort((a, b) => (b.strength || 0) - (a.strength || 0));
+  $('games').innerHTML = sorted.map((g, i) => g.error ? '' : gameCard(g, i)).join('');
+}
+
+function metaRow(g) {
+  const d = new Date(g.date);
+  const day = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
+  const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
+  const live = g.state === 'in', final = g.state === 'post';
+  let badges = '';
+  if (live) badges += '<span class="badge live">En vivo</span>';
+  if (final) badges += '<span class="badge final">Terminó</span>';
+  if (g.neutral) badges += '<span class="badge neutral">Sede neutral</span>';
+  if (g.weather && g.weather.notes && g.weather.notes.length) badges += '<span class="badge wx">' + esc(g.weather.notes.join(' · ')) + '</span>';
+  return '<div class="card-meta"><span>' + day + ' · ' + time.toUpperCase() + '</span><span class="sep">·</span>' +
+    '<span>' + esc((g.venue || '').toUpperCase()) + '</span><span style="flex:1"></span>' + badges + '</div>';
+}
+
+function teamRows(g) {
+  const final = g.state !== 'pre' && g.score;
+  const row = (t, score, sub) =>
+    '<div class="team-row">' +
+    '<img src="' + esc(t.logo) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
+    '<div class="team-name">' + esc(t.name) + '<span class="rec2">' + esc(t.record || '') + '</span>' +
+    (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') + '</div>' +
+    '<div class="team-score">' + (final && score != null ? score : '') + '</div>' +
+    '</div>';
+  return row(g.away, final ? g.score.away : null, g.rest.away) + row(g.home, final ? g.score.home : null, g.rest.home);
+}
+
+function gameCard(g, i) {
+  const verdicts = (g.verdicts || []).map(v =>
+    '<div class="vrow ' + esc(v.verdict) + '">' +
+    '<span class="vl">' + esc(v.label) +
+    '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · edge ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
+    '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>' +
+    '</div>'
+  ).join('');
+  const analysis = g.analysis
+    ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
+    : '';
+  return '<div class="card" style="--i:' + i + '">' +
+    metaRow(g) + teamRows(g) +
+    '<div class="verdicts">' + verdicts + '</div>' +
+    analysis + moreDetails(g) +
+  '</div>';
+}
+
+function moreDetails(g) {
+  const m = g.markets;
+  if (!m) return '';
+  const fo = m.fair_odds || {};
+  const rows =
+    '<div class="det-h">Mercados de equipo</div>' +
+    det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
+    det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)) +
+    det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line) +
+    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total) +
+    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
+    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
+    det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
+    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total) +
+    '<div class="det-h">Props del QB (proyección del modelo)</div>' +
+    qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away);
+  return '<details class="more"><summary>Todos los mercados y props</summary>' +
+    '<div class="det-rows">' + rows + '</div>' + distChart(m, g) + '</details>';
+}
+function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
+function qbRows(team, p) {
+  if (!p) return '';
+  return det('QB de ' + team.name + ' · yardas por pase O/U ' + p.pass_yds.line, 'Over ' + pct1(p.pass_yds.over) + ' · proyección ' + p.pass_yds.mean + ' yds') +
+         det('QB de ' + team.name + ' · 2+ TDs de pase', pct1(p.pass_tds.over) + ' · proyección ' + p.pass_tds.mean);
+}
+
+function distChart(m, g) {
+  const d = m.margin_dist || [];
+  if (!d.length) return '';
+  const W = 720, H = 54, n = d.length, gap = 2;
+  const bw = (W - gap * (n - 1)) / n;
+  const max = Math.max(...d, 0.001);
+  let bars = '';
+  for (let i = 0; i < n; i++) {
+    const margin = i - 21; // -21 .. +21 (margen del local)
+    const h = Math.max(1.5, (d[i] / max) * (H - 16));
+    const x = i * (bw + gap);
+    bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h +
+      '" rx="1.5" fill="' + (margin > 0 ? '#2f7bff' : margin < 0 ? '#d8dfe9' : '#b8922e') + '"></rect>';
+    if ((margin + 21) % 7 === 0) {
+      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3" font-family="JetBrains Mono,monospace">' + margin + '</text>';
+    }
+  }
+  return '<div class="dist">' +
+    '<div class="dist-lbl"><span>Cómo cae el margen (' + esc(g.home.abbr) + ' positivo) en 10,000 futuros</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
+}
+
+/* ---- login (candado) ---- */
+$('lkGo').addEventListener('click', async () => {
+  $('lkErr').textContent = '';
+  try {
+    const { error } = await sb.auth.signInWithPassword({
+      email: $('lkEmail').value.trim(), password: $('lkPass').value,
+    });
+    if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
+    load(currentWeek);
+  } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
+});
+$('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
+
+$('prevWeek').addEventListener('click', () => currentWeek && currentWeek > 1 && load(currentWeek - 1));
+$('nextWeek').addEventListener('click', () => currentWeek && currentWeek < 18 && load(currentWeek + 1));
+$('refreshBtn').addEventListener('click', () => load(currentWeek, true));
+
+load(null);
+</script>
+</body>
+</html>
