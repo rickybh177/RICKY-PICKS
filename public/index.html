@@ -230,7 +230,7 @@
 
   /* ---- MUNDIAL ---- */
   #mundial .panel { background: var(--g1); border: 1px solid var(--line); border-radius: 16px; padding: 34px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; align-items: center; }
-  #mundial h2 { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.025em; line-height: 1.15; }
+  #mundial .sec-title { font-size: clamp(1.6rem, 3.2vw, 2.3rem); max-width: none; }
   #mundial .sub { color: var(--muted); font-size: 0.9rem; font-weight: 450; margin-top: 8px; }
   #mundial .sub button { background: none; border: none; color: var(--blue); font-weight: 600; font-size: 0.9rem; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .mini-tier { background: var(--g0); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
@@ -608,8 +608,8 @@
   <div class="wrap">
     <div class="panel reveal">
       <div>
-        <div class="sec-eyebrow" style="margin-bottom:10px">Últimos partidos</div>
-        <h2>El Mundial se acaba.<br>El modelo original sigue hasta la final.</h2>
+        <div class="sec-eyebrow reveal">Últimos partidos</div>
+        <h2 class="sec-title reveal">El Mundial se acaba.<br>El modelo original sigue hasta la final.</h2>
         <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
       </div>
       <div class="mini-tier">
