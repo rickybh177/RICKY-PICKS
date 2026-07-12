@@ -89,6 +89,8 @@
   .verdicts { display: flex; flex-direction: column; gap: 7px; margin: 13px 0 4px; }
   .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
   .vrow .vl { font-weight: 600; font-size: 0.93rem; letter-spacing: -0.01em; }
+  .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 500; color: var(--faint); margin-top: 2px; }
+  .vrow .vl small b { color: var(--bet); font-weight: 700; }
   .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
   .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
   .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
@@ -355,10 +357,22 @@ function teamRows(g) {
   return row(g.away, g.pitchers && g.pitchers.away, g.away.score) + row(g.home, g.pitchers && g.pitchers.home, g.home.score);
 }
 
+/* Sub-línea del veredicto: probabilidad + línea del mercado + edge. */
+function vSub(v) {
+  if (v.prob == null) return '';
+  const bits = [(v.prob * 100).toFixed(1) + '%'];
+  if (v.line_txt) bits.push(esc(v.line_txt));
+  if (v.edge != null) {
+    const e = (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%';
+    bits.push(v.edge >= 0.035 ? '<b>edge ' + e + '</b>' : 'edge ' + e);
+  }
+  return '<small>' + bits.join(' · ') + '</small>';
+}
+
 function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
-    '<span class="vl">' + esc(v.label) + '</span>' +
+    '<span class="vl">' + esc(v.label) + vSub(v) + '</span>' +
     '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>' +
     '</div>'
   ).join('');
