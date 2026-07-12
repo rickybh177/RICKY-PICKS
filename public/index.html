@@ -59,15 +59,12 @@
   }
   /* nav sobre fondo blanco: se activa junto con .scrolled */
   nav.scrolled { background: rgba(255,255,255,0.82); border-bottom-color: #e7ebf1; }
-  nav.scrolled .logo, nav.scrolled .nav-link.soon { color: #14181e; }
+  nav.scrolled .logo { color: #14181e; }
   nav.scrolled .logo .mark { border-color: #2f7bff; color: #2f7bff; }
-  nav.scrolled .nav-link:not(.soon) { color: #667084; }
-  nav.scrolled .nav-link:not(.soon):hover { color: #14181e; background: #eef2f7; }
-  nav.scrolled .nav-link.soon:hover { background: #eef2f7; }
+  nav.scrolled .nav-link { color: #667084; }
+  nav.scrolled .nav-link:hover { color: #14181e; background: #eef2f7; }
   nav.scrolled .nav-ghost { color: #14181e; border-color: #d8dfe9; }
   nav.scrolled .nav-ghost:hover { border-color: #2f7bff; }
-  nav.scrolled .nav-link.soon .toast { background: #eef2f7; border-color: #d8dfe9; color: #14181e; }
-  nav.scrolled .nav-link.soon .toast::before { border-bottom-color: #d8dfe9; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -89,13 +86,13 @@
   .logo .mark { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; }
   .logo .dot { color: var(--blue); }
   .nav-right { display: flex; align-items: center; gap: 6px; }
-  .nav-link { font-size: 0.84rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 8px 13px; border-radius: 9px; transition: color .15s, background .15s; }
+  .nav-link { font-size: 0.84rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 8px 13px; border-radius: 9px; transition: color .15s, background .15s; background: none; border: none; }
   .nav-link:hover { color: var(--text); background: var(--g2); }
   .nav-ghost { font-size: 0.84rem; font-weight: 600; color: var(--text); background: none; border: 1px solid var(--line-2); padding: 8px 15px; border-radius: 10px; transition: border-color .15s; }
   .nav-ghost:hover { border-color: var(--blue); }
   .nav-cta { font-size: 0.84rem; font-weight: 600; color: #fff; background: var(--blue-deep); padding: 9px 16px; border-radius: 10px; border: none; text-decoration: none; transition: background .15s; }
   .nav-cta:hover { background: var(--blue); }
-  .nav-link.soon { position: relative; cursor: pointer; font: inherit; border: none; background: none; }
+  .nav-link.soon { position: relative; cursor: pointer; }
   .nav-link.soon .toast { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; padding: 7px 12px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6); }
   .nav-link.soon .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .nav-link.soon .toast::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--line-2); }
@@ -370,7 +367,7 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <a href="/nfl.html" class="nav-link" id="nflNavBtn" style="display:none;color:#7c3aed;font-weight:700">NFL</a>
+      <a href="/nfl.html" class="nav-link" id="nflNavBtn" style="display:none">NFL</a>
       <button class="nav-link soon" id="mlbNavBtn">MLB</button>
       <a href="#record" class="nav-link">Récord</a>
       <a href="#precios" class="nav-link">Precios</a>
