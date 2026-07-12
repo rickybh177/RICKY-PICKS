@@ -226,7 +226,7 @@
   .launch-note { color: var(--faint); font-size: 0.78rem; font-weight: 450; margin-top: 18px; text-align: center; }
 
   /* ---- MUNDIAL ---- */
-  #mundial .panel { background: var(--g1); border: 1px solid var(--line); border-radius: 16px; padding: 34px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 18px; align-items: center; }
+  #mundial .panel { background: var(--g1); border: 1px solid var(--line); border-radius: 16px; padding: 34px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; align-items: center; }
   #mundial h2 { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.025em; line-height: 1.15; }
   #mundial .sub { color: var(--muted); font-size: 0.9rem; font-weight: 450; margin-top: 8px; }
   #mundial .sub button { background: none; border: none; color: var(--blue); font-weight: 600; font-size: 0.9rem; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
@@ -610,13 +610,8 @@
         <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
       </div>
       <div class="mini-tier">
-        <h4>Cuartos de final</h4>
-        <div class="amt" data-mxn="$299 <small>MXN</small>" data-usd="$14.99 <small>USD</small>">$299 <small>MXN</small></div>
-        <a href="/checkout.html?plan=individual" id="buyIndividual">Comprar</a>
-      </div>
-      <div class="mini-tier">
         <h4>Torneo completo</h4>
-        <div class="amt" data-mxn="$499 <small>MXN</small>" data-usd="$28.99 <small>USD</small>">$499 <small>MXN</small></div>
+        <div class="amt" data-mxn="$300 <small>MXN</small>" data-usd="$16.99 <small>USD</small>">$300 <small>MXN</small></div>
         <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar</a>
       </div>
     </div>
@@ -1147,14 +1142,14 @@ async function openFree(){
           Todavía hay <strong>3 partidos más hoy</strong> con análisis completo.<br>El modelo sigue corriendo.
         </div>
       </div>`;
-    modalFoot.innerHTML = '<a href="/checkout.html?plan=individual" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Ver los otros 3 partidos de hoy →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=torneo" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O llévate el torneo completo por $899 MXN</a></div>';
+    modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear el torneo completo por $300 MXN →</a>';
     overlay.classList.add('open');
     return;
   }
 
   modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo →</a><div style="text-align:center;margin-top:10px"><a href="/checkout.html?plan=individual" style="font-size:0.8rem;color:var(--blue);text-decoration:none">O cuartos de final por $299 MXN</a></div>';
+  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo por $300 MXN →</a>';
   const hosts = (CONFIG && CONFIG.hosts) || [];
   const isHost = hosts.includes(f.home);
   const neutralWrap = document.getElementById('tNeutralWrap');
@@ -1302,25 +1297,15 @@ async function refreshUI(){
     misModelosLink.style.display = 'inline-flex';
     misModelosLink.classList.add('nav-models-active');
     const ent = await getEntitlement();
-    if(ent && ent.plan === 'torneo'){
-      // Tiene torneo: ambos botones van a mis modelos
-      document.getElementById('buyIndividual').textContent = 'Ir a Mis modelos';
-      document.getElementById('buyIndividual').href = '/mis-modelos.html';
+    if(ent && (ent.plan === 'torneo' || ent.plan === 'individual')){
+      // Ya tiene acceso (torneo, o individual de clientes previos): a mis modelos
       document.getElementById('buyTorneo').textContent = 'Ir a Mis modelos';
       document.getElementById('buyTorneo').href = '/mis-modelos.html';
-    } else if(ent && ent.plan === 'individual'){
-      // Tiene individual: su botón va a mis modelos, torneo sigue al checkout
-      document.getElementById('buyIndividual').textContent = 'Ir a Mis modelos';
-      document.getElementById('buyIndividual').href = '/mis-modelos.html';
-      document.getElementById('buyTorneo').textContent = 'Mejorar a Torneo completo';
-      document.getElementById('buyTorneo').href = '/checkout.html?plan=torneo';
     }
   } else {
     authBtn.textContent = 'Iniciar sesión';
     misModelosLink.style.display = 'none';
     misModelosLink.classList.remove('nav-models-active');
-    document.getElementById('buyIndividual').textContent = 'Acceso a cuartos de final';
-    document.getElementById('buyIndividual').href = '/checkout.html?plan=individual';
     document.getElementById('buyTorneo').textContent = 'Acceso total';
     document.getElementById('buyTorneo').href = '/checkout.html?plan=torneo';
   }

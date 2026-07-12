@@ -18,8 +18,7 @@ function siteUrl(req) {
 
 const PLANS = {
   mexico:        { name: 'RICKY-PICKS — Partido de México', price: '9.99',    currency: 'USD' },
-  individual:    { name: 'RICKY-PICKS — Cuartos de final',  price: '14.99',   currency: 'USD' },
-  torneo:        { name: 'RICKY-PICKS — Torneo completo',   price: '28.99',   currency: 'USD' },
+  torneo:        { name: 'RICKY-PICKS — Torneo completo',   price: '16.99',   currency: 'USD' },
   mlb_pase:      { name: 'Modelo MLB — Pase del día',       price: '99.00',   currency: 'MXN' },
   mlb_semana:    { name: 'Modelo MLB — Semana de prueba',   price: '149.00',  currency: 'MXN' },
   mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',   price: '399.00',  currency: 'MXN' },

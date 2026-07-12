@@ -199,7 +199,7 @@
   <div class="state-icon">🔒</div>
   <div class="state-title">Inicia sesión para ver tus modelos</div>
   <div class="state-body">Crea tu cuenta o inicia sesión para acceder a los picks.</div>
-  <a href="/checkout.html?plan=individual" class="btn-cta">Ir a la tienda</a>
+  <a href="/checkout.html?plan=torneo" class="btn-cta">Ir a la tienda</a>
 </div>
 
 <!-- ESTADO: sin plan activo -->
@@ -214,14 +214,13 @@
   </div>
 </div>
 
-<!-- ESTADO: plan individual expirado -->
+<!-- ESTADO: plan individual expirado (clientes previos de "cuartos de final") -->
 <div class="page-state" id="stateExpired">
   <div class="state-icon">📅</div>
-  <div class="state-title">Tu pick del día ya venció</div>
-  <div class="state-body">El plan del día solo da acceso a los picks de la jornada en que compraste. Para ver los picks de hoy, adquiere un nuevo acceso.</div>
+  <div class="state-title">Tu acceso del día ya venció</div>
+  <div class="state-body">Ese plan solo daba acceso a los picks de la jornada en que compraste y ya no está disponible. Lleva el torneo completo para no depender de esto.</div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
-    <a href="/checkout.html?plan=individual" class="btn-cta" style="min-width:220px;text-align:center">Comprar picks de hoy →</a>
-    <a href="/checkout.html?plan=torneo" style="font-size:0.82rem;color:var(--blue);text-decoration:none">O llévate el torneo completo</a>
+    <a href="/checkout.html?plan=torneo" class="btn-cta" style="min-width:220px;text-align:center">Llevar el torneo completo →</a>
   </div>
 </div>
 
