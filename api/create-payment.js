@@ -5,9 +5,8 @@
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
 const { PLANS } = require('../lib/plans');
-const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
+const { getUserFromToken } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
-const { paseCreditFor } = require('../lib/pase-credit');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -48,21 +47,46 @@ module.exports = async function handler(req, res) {
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
-  let finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
-  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
-
-  /* Upgrade pase → fundador: si el usuario tiene un Pase del día
-     vigente, sus $99 se acreditan de verdad al precio del Fundador. */
-  if (planId === 'mlb_fundador' && !discount) {
-    const ent = await getEntitlement(user.id, user.email, 'mlb');
-    const credit = paseCreditFor(ent);
-    if (credit > 0) {
-      finalPrice = Math.max(0, finalPrice - credit);
-      finalTitle = `RICKY·PICKS — ${plan.title} (crédito del Pase: -$${credit})`;
-    }
-  }
+  const finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
+  const finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
 
   const base = siteUrl(req);
+
+  /* ---- Mensual Fundador: SUSCRIPCIÓN de Mercado Pago (preapproval).
+     Cargo automático de $399 cada mes; el alta y las renovaciones
+     llegan a /api/mp-webhook como eventos de suscripción. Nota: MP
+     cobra el mismo monto todos los meses, así que el crédito del
+     Pase del día solo aplica pagando con tarjeta (Stripe). */
+  if (planId === 'mlb_fundador') {
+    try {
+      const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason: `RICKY·PICKS — ${plan.title}`,
+          external_reference: `${user.id}:${plan.id}`,
+          payer_email: user.email,
+          auto_recurring: {
+            frequency: 1,
+            frequency_type: 'months',
+            transaction_amount: plan.price,
+            currency_id: plan.currency,
+          },
+          back_url: `${base}/mlb.html?pago=ok`,
+          status: 'pending',
+        }),
+      });
+      const data = await mpRes.json();
+      if (!mpRes.ok || !data.init_point) {
+        console.error('Mercado Pago preapproval error:', data);
+        return res.status(502).json({ error: 'No se pudo abrir la suscripción. Intenta con tarjeta.' });
+      }
+      return res.status(200).json({ checkout_url: data.init_point });
+    } catch (e) {
+      console.error('create-payment preapproval:', e);
+      return res.status(502).json({ error: 'No se pudo conectar con el servidor de pagos. Intenta de nuevo.' });
+    }
+  }
   // Al volver del pago, cada producto regresa a SU modelo:
   // planes mlb_* -> /mlb.html, planes del Mundial -> /mis-modelos.html
   const dest = plan.id.startsWith('mlb_') ? 'mlb.html' : 'mis-modelos.html';

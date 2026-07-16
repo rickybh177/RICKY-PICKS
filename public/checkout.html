@@ -261,12 +261,12 @@ const PLANS = {
     name: 'Modelo MLB — Mensual Fundador',
     price: '$399',
     currency: 'MXN',
-    period: '30 días de acceso completo · precio fundador',
+    period: 'Suscripción mensual · $399 cada mes, precio congelado',
     features: [
       'Todos los juegos de MLB, todos los días',
       'Precio fundador: se respeta mientras sigas activo (sube a $499)',
-      'Si compraste el Pase del día hoy, tus $99 se descuentan aquí',
-      'Acceso fundador: entras con el precio de lanzamiento',
+      'Si compraste el Pase del día hoy, tus $99 se descuentan del primer mes (con tarjeta)',
+      'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
   mlb_temporada: {
@@ -435,7 +435,7 @@ async function renderSession(session){
      (Date.now() - Date.parse(ent.updated_at)) <= 86400e3){
     document.getElementById('summaryPrice').innerHTML =
       `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$399</span> $300 MXN`;
-    document.getElementById('summaryName').textContent = plan.name + ' · crédito del Pase aplicado (-$99)';
+    document.getElementById('summaryName').textContent = plan.name + ' · 1er mes con crédito del Pase (-$99, con tarjeta)';
   }
 }
 

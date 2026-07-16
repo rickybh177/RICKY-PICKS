@@ -45,20 +45,50 @@ module.exports = async function handler(req, res) {
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
 
     const p = PLANS[plan];
-    let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
-    let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
+    const SITE_URL = siteUrl(req);
 
-    /* Upgrade pase → fundador: si el usuario tiene un Pase del día
-       vigente, sus $99 se acreditan de verdad al precio del Fundador. */
-    if (plan === 'mlb_fundador' && !discount) {
+    /* ---- Mensual Fundador: SUSCRIPCIÓN real (cargo cada mes) ----
+       El acceso inicial se otorga en stripe-capture al volver del
+       checkout; las RENOVACIONES mensuales las otorga
+       api/stripe-webhook (evento invoice.paid). El crédito del Pase
+       del día se aplica como cupón de una sola vez: primer mes $300,
+       después $399/mes. */
+    if (plan === 'mlb_fundador') {
+      const sessionParams = {
+        payment_method_types: ['card'],
+        mode: 'subscription',
+        line_items: [{
+          price_data: {
+            currency: p.currency,
+            product_data: { name: p.name },
+            unit_amount: p.price,
+            recurring: { interval: 'month' },
+          },
+          quantity: 1,
+        }],
+        // metadata en la suscripción: el webhook la lee en cada renovación
+        subscription_data: { metadata: { user_id: user.id, plan } },
+        success_url: `${SITE_URL}/checkout.html?plan=${plan}&via=stripe&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${SITE_URL}/checkout.html?plan=${plan}`,
+        metadata: { user_id: user.id, plan },
+        customer_email: user.email,
+      };
       const ent = await getEntitlement(user.id, user.email, 'mlb');
       const credit = paseCreditFor(ent); // MXN (99) o 0
       if (credit > 0) {
-        finalPrice = Math.max(0, finalPrice - credit * 100);
-        productName = `${p.name} (crédito de tu Pase del día aplicado: -$${credit})`;
+        const coupon = await stripe.coupons.create({
+          amount_off: credit * 100, currency: p.currency,
+          duration: 'once', name: 'Crédito Pase del día',
+        });
+        sessionParams.discounts = [{ coupon: coupon.id }];
       }
+      const session = await stripe.checkout.sessions.create(sessionParams);
+      return res.status(200).json({ url: session.url });
     }
-    const SITE_URL = siteUrl(req);
+
+    /* ---- resto de planes: pago único ---- */
+    let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
+    let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
