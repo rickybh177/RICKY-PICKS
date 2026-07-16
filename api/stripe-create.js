@@ -1,18 +1,19 @@
 /* POST /api/stripe-create  { plan }
    Crea una sesión de Stripe Checkout y devuelve la URL de pago. */
 const Stripe = require('stripe');
-const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
+const { paseCreditFor } = require('../lib/pase-credit');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PLANS = {
-  mexico:        { name: 'RICKY-PICKS — Partido de México',        price: 19900,  currency: 'mxn' },
-  torneo:        { name: 'RICKY-PICKS — Torneo completo',          price: 30000,  currency: 'mxn' },
-  mlb_pase:      { name: 'Modelo MLB — Pase del día',              price: 9900,   currency: 'mxn' },
-  mlb_semana:    { name: 'Modelo MLB — Semana de prueba',          price: 14900,  currency: 'mxn' },
-  mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',          price: 39900,  currency: 'mxn' },
-  mlb_temporada: { name: 'Modelo MLB — Temporada 2026',            price: 299900, currency: 'mxn' },
+  mexico:        { name: 'RICKY-PICKS — Partido de México',           price: 19900, currency: 'mxn' },
+  torneo:        { name: 'RICKY-PICKS — Partidos finales del Mundial', price: 29900, currency: 'mxn' },
+  mlb_pase:      { name: 'Modelo MLB — Pase del día',                 price: 9900,  currency: 'mxn' },
+  mlb_semana:    { name: 'Modelo MLB — Semana de prueba',             price: 14900, currency: 'mxn' },
+  mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',             price: 39900, currency: 'mxn' },
+  mlb_temporada: { name: 'Modelo MLB — Temporada 2026 (fundador)',    price: 99900, currency: 'mxn' },
 };
 
 function bearer(req) {
@@ -44,8 +45,19 @@ module.exports = async function handler(req, res) {
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
 
     const p = PLANS[plan];
-    const finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
-    const productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
+    let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
+    let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
+
+    /* Upgrade pase → fundador: si el usuario tiene un Pase del día
+       vigente, sus $99 se acreditan de verdad al precio del Fundador. */
+    if (plan === 'mlb_fundador' && !discount) {
+      const ent = await getEntitlement(user.id, user.email, 'mlb');
+      const credit = paseCreditFor(ent); // MXN (99) o 0
+      if (credit > 0) {
+        finalPrice = Math.max(0, finalPrice - credit * 100);
+        productName = `${p.name} (crédito de tu Pase del día aplicado: -$${credit})`;
+      }
+    }
     const SITE_URL = siteUrl(req);
 
     const session = await stripe.checkout.sessions.create({

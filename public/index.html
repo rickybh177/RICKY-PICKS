@@ -238,6 +238,8 @@
   .mini-tier h4 { font-weight: 700; font-size: 0.92rem; }
   .mini-tier .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; margin: 8px 0 12px; }
   .mini-tier .amt small { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+  .mini-tier ul { list-style: none; margin: 0 0 14px; }
+  .mini-tier li { font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 4px 0; }
   .mini-tier a { display: block; text-align: center; font-weight: 700; font-size: 0.82rem; padding: 10px; border-radius: 9px; text-decoration: none; background: var(--g2); color: var(--text); transition: background .15s; }
   .mini-tier a:hover { background: var(--line); }
 
@@ -492,7 +494,7 @@
       <div>
         <div class="sec-eyebrow reveal">En vivo ahora</div>
         <h2 class="sec-title reveal">El pick de hoy ya está sobre la mesa.</h2>
-        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. El resto del panel completo (todos los juegos, todos los veredictos) llega muy pronto — los fundadores entran primero.</p>
+        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. El panel completo — todos los juegos, todos los picks — ya está en vivo. Entra hoy con precio fundador.</p>
         <div class="live-cta reveal">
           <a class="btn-primary" href="#precios">Acceso fundador</a>
           <a class="btn-ghost" href="#precios">Ver precios</a>
@@ -532,9 +534,9 @@
 <!-- ============ PRECIOS ============ -->
 <section id="precios">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">Preventa fundador</div>
-    <h2 class="sec-title reveal">Acceso anticipado a MLB.</h2>
-    <p class="sec-lede reveal">El modelo sale a finales de julio. Resérvalo hoy y entras con acceso anticipado desde el primer día — el precio fundador se respeta de por vida mientras sigas activo. Los que lleguen tarde pagarán más.</p>
+    <div class="sec-eyebrow reveal">Acceso fundador</div>
+    <h2 class="sec-title reveal">MLB a precio fundador.</h2>
+    <p class="sec-lede reveal">El modelo acaba de salir y estos son los precios de lanzamiento — los más bajos que va a tener. Entra hoy y tu precio fundador se congela de por vida mientras sigas activo. Cuando suban, tú te quedas igual.</p>
     <div class="cur-toggle reveal" id="curToggle" role="tablist" aria-label="Moneda">
       <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
       <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
@@ -546,10 +548,10 @@
         <div class="amt" data-mxn="$99<small>MXN</small>" data-usd="$5.99<small>USD</small>">$99<small>MXN</small></div>
         <div class="per">Todos los juegos de hoy · 24 h</div>
         <ul>
-          <li>Veredictos de <strong>todos</strong> los juegos de hoy</li>
+          <li>Picks de <strong>todos</strong> los juegos de hoy</li>
           <li>Análisis del modelo por partido</li>
           <li>Si subes al Fundador hoy, <strong>tus $99 se acreditan</strong></li>
-          <li><strong>Acceso anticipado</strong>: entras desde que lance, finales de julio</li>
+          <li><strong>Acceso fundador</strong>: entras con el precio de lanzamiento</li>
         </ul>
         <a href="/checkout.html?plan=mlb_pase" class="btn btn-dim">Comprar pase</a>
       </div>
@@ -560,9 +562,8 @@
         <div class="per">7 días de acceso completo</div>
         <ul>
           <li>Todos los juegos, todos los días</li>
-          <li><strong>Garantía:</strong> semana perdedora = la siguiente gratis</li>
           <li>Piensa: $21 por día de beisbol</li>
-          <li><strong>Acceso anticipado</strong>: entras desde que lance, finales de julio</li>
+          <li><strong>Acceso fundador</strong>: entras con el precio de lanzamiento</li>
         </ul>
         <a href="/checkout.html?plan=mlb_semana" class="btn btn-dim">Probar 7 días</a>
       </div>
@@ -575,20 +576,20 @@
         <ul>
           <li>Todos los juegos de MLB, cada día</li>
           <li>Precio fundador mientras sigas activo</li>
-          <li><strong>Garantía:</strong> semana perdedora = semana gratis</li>
-          <li><strong>Acceso anticipado</strong>: entras desde que lance, finales de julio</li>
+          <li>Si ya compraste el pase de hoy, <strong>tus $99 se descuentan aquí</strong></li>
+          <li><strong>Acceso fundador</strong>: entras con el precio de lanzamiento</li>
         </ul>
         <a href="/checkout.html?plan=mlb_fundador" class="btn btn-blue">Ser fundador</a>
       </div>
       <div class="tier reveal">
         <h3>Temporada 2026</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$2,999<small>MXN</small>" data-usd="$164.99<small>USD</small>">$2,999<small>MXN</small></div>
+        <div class="was" data-mxn="$2,999 MXN" data-usd="$164.99 USD">$2,999 MXN</div>
+        <div class="amt" data-mxn="$999<small>MXN</small>" data-usd="$54.99<small>USD</small>">$999<small>MXN</small></div>
         <div class="per">Hasta el último out de la Serie Mundial</div>
         <ul>
+          <li><strong>Precio exclusivo del acceso fundador</strong></li>
           <li>Acceso total, sin renovar nada</li>
           <li>Playoffs y Serie Mundial incluidos</li>
-          <li><strong>Acceso anticipado</strong>: entras desde que lance, finales de julio</li>
         </ul>
         <a href="/checkout.html?plan=mlb_temporada" class="btn btn-dim">Toda la temporada</a>
       </div>
@@ -600,7 +601,7 @@
         <p>Si los picks <strong>BET</strong> del modelo cierran una semana con récord perdedor, tu siguiente semana no se cobra. Así de simple: <strong>el riesgo lo carga el modelo, no tú.</strong></p>
       </div>
     </div>
-    <p class="launch-note reveal">* El modelo de MLB llega a finales de julio de 2026. Al reservar hoy, tu acceso se activa desde el lanzamiento.</p>
+    <p class="launch-note reveal">* Precios de lanzamiento del acceso fundador. Tu acceso se activa al instante con tu cuenta.</p>
   </div>
 </section>
 
@@ -614,8 +615,12 @@
         <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
       </div>
       <div class="mini-tier">
-        <h4>Torneo completo</h4>
-        <div class="amt" data-mxn="$300 <small>MXN</small>" data-usd="$16.99 <small>USD</small>">$300 <small>MXN</small></div>
+        <h4>Partidos finales</h4>
+        <div class="amt" data-mxn="$299 <small>MXN</small>" data-usd="$16.99 <small>USD</small>">$299 <small>MXN</small></div>
+        <ul>
+          <li>🇫🇷 Francia vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra · tercer lugar · sáb 18</li>
+          <li>🇦🇷 Argentina vs 🇪🇸 España · la final · dom 19</li>
+        </ul>
         <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar</a>
       </div>
     </div>

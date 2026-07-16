@@ -220,16 +220,16 @@ const PLANS = {
     ],
   },
   torneo: {
-    name: 'Torneo completo',
-    price: '$300',
+    name: 'Partidos finales del Mundial',
+    price: '$299',
     currency: 'MXN',
-    period: 'Acceso a todos los partidos del Mundial 2026',
+    period: 'Los últimos 2 partidos del Mundial 2026',
     features: [
-      'Todos los partidos del Mundial',
+      '🇫🇷 Francia vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra · tercer lugar · sáb 18',
+      '🇦🇷 Argentina vs 🇪🇸 España · la final · dom 19',
       'Todos los mercados sin límite',
       'Herramienta completa con tus momios',
       'Detección de valor (edge) en tiempo real',
-      'Acceso desde cualquier dispositivo con tu cuenta',
     ],
   },
   mlb_pase: {
@@ -238,11 +238,11 @@ const PLANS = {
     currency: 'MXN',
     period: 'Todos los juegos de hoy, 24 horas de acceso',
     features: [
-      'Los veredictos BET / MAYBE / SKIP de todos los juegos de hoy',
+      'Los picks BET / MAYBE / SKIP de todos los juegos de hoy',
       'El análisis del modelo por partido',
       'Momios justos y detalle completo',
       'Si subes al Fundador hoy, estos $99 se acreditan',
-      'Acceso anticipado: el modelo lanza a finales de julio y entras desde el día uno',
+      'Acceso fundador: entras con el precio de lanzamiento',
     ],
   },
   mlb_semana: {
@@ -252,10 +252,9 @@ const PLANS = {
     period: '7 días de acceso completo',
     features: [
       'Todos los juegos, todos los días, por 7 días',
-      'Veredictos BET / MAYBE / SKIP + análisis del modelo',
-      'GARANTÍA: si la semana cierra perdedora, la siguiente va gratis',
+      'Picks BET / MAYBE / SKIP + análisis del modelo',
       'Acceso inmediato con tu cuenta',
-      'Acceso anticipado: el modelo lanza a finales de julio y entras desde el día uno',
+      'Acceso fundador: entras con el precio de lanzamiento',
     ],
   },
   mlb_fundador: {
@@ -266,20 +265,19 @@ const PLANS = {
     features: [
       'Todos los juegos de MLB, todos los días',
       'Precio fundador: se respeta mientras sigas activo (sube a $499)',
-      'GARANTÍA: semana perdedora = semana gratis',
-      'Acceso anticipado: el modelo lanza a finales de julio y entras desde el día uno',
+      'Si compraste el Pase del día hoy, tus $99 se descuentan aquí',
+      'Acceso fundador: entras con el precio de lanzamiento',
     ],
   },
   mlb_temporada: {
     name: 'Modelo MLB — Temporada 2026',
-    price: '$2,999',
+    price: '$999',
     currency: 'MXN',
     period: 'Toda la temporada + playoffs + Serie Mundial',
     features: [
+      'Precio exclusivo del acceso fundador (precio regular: $2,999)',
       'Acceso total hasta el último out de la Serie Mundial',
-      'Todos los veredictos y análisis, sin límite',
-      'GARANTÍA: semana perdedora = semana gratis',
-      'Acceso anticipado: el modelo lanza a finales de julio y entras desde el día uno',
+      'Todos los picks y análisis, sin límite',
     ],
   },
 };
@@ -429,6 +427,16 @@ async function renderSession(session){
   }
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
+
+  /* Upgrade pase → fundador: si su Pase del día sigue vigente,
+     mostrar el crédito de $99 reflejado en el precio ANTES de pagar.
+     (El cobro real ya lo descuenta el servidor en ambas pasarelas.) */
+  if(planId === 'mlb_fundador' && ent && ent.plan === 'mlb_pase' && ent.updated_at &&
+     (Date.now() - Date.parse(ent.updated_at)) <= 86400e3){
+    document.getElementById('summaryPrice').innerHTML =
+      `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$399</span> $300 MXN`;
+    document.getElementById('summaryName').textContent = plan.name + ' · crédito del Pase aplicado (-$99)';
+  }
 }
 
 document.getElementById('switchUser').addEventListener('click', async () => {

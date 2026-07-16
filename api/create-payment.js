@@ -5,8 +5,9 @@
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
 const { PLANS } = require('../lib/plans');
-const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
+const { paseCreditFor } = require('../lib/pase-credit');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -47,8 +48,19 @@ module.exports = async function handler(req, res) {
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
-  const finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
-  const finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
+  let finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
+  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
+
+  /* Upgrade pase → fundador: si el usuario tiene un Pase del día
+     vigente, sus $99 se acreditan de verdad al precio del Fundador. */
+  if (planId === 'mlb_fundador' && !discount) {
+    const ent = await getEntitlement(user.id, user.email, 'mlb');
+    const credit = paseCreditFor(ent);
+    if (credit > 0) {
+      finalPrice = Math.max(0, finalPrice - credit);
+      finalTitle = `RICKY·PICKS — ${plan.title} (crédito del Pase: -$${credit})`;
+    }
+  }
 
   const base = siteUrl(req);
   // Al volver del pago, cada producto regresa a SU modelo:
