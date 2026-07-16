@@ -223,8 +223,22 @@
   <div class="wrap">
     <div>Análisis estadístico con fines informativos. Ningún resultado está garantizado.</div>
     <div>Juega responsable. +18.</div>
+    <div><button id="cancelSubLink" style="background:none;border:none;padding:0;color:var(--faint);font:inherit;font-size:0.74rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer">Administrar o cancelar mi suscripción</button></div>
   </div>
 </footer>
+
+<!-- cancelar suscripción -->
+<div class="overlay" id="cancelOverlay">
+  <div class="lockbox" style="position:relative">
+    <button class="x refresh" id="cancelClose" style="position:absolute">✕</button>
+    <div class="ic" style="font-size:2rem;margin-bottom:10px">💳</div>
+    <h2>Cancelar suscripción</h2>
+    <p id="cancelMsg">Si cancelas, no se te vuelve a cobrar y conservas tu acceso hasta el final del periodo que ya pagaste. ¿Quieres continuar?</p>
+    <button class="go" id="cancelConfirm" style="background:#dc2626">Sí, cancelar mi suscripción</button>
+    <button class="refresh" id="cancelKeep" style="width:100%;justify-content:center;margin-top:10px">Conservar mi plan</button>
+    <div class="err" id="cancelErr"></div>
+  </div>
+</div>
 
 <!-- login -->
 <div class="overlay" id="loginOverlay">
@@ -464,6 +478,35 @@ $('lkGo').addEventListener('click', async () => {
     $('loginOverlay').classList.remove('open');
     load(currentDate); checkMundialSwitch();
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
+});
+
+/* ---- cancelar suscripción (link discreto del footer) ---- */
+$('cancelSubLink').addEventListener('click', async () => {
+  const headers = await authHeader();
+  if (!headers.Authorization) { $('loginOverlay').classList.add('open'); return; }
+  $('cancelMsg').textContent = 'Si cancelas, no se te vuelve a cobrar y conservas tu acceso hasta el final del periodo que ya pagaste. ¿Quieres continuar?';
+  $('cancelConfirm').style.display = '';
+  $('cancelKeep').textContent = 'Conservar mi plan';
+  $('cancelErr').textContent = '';
+  $('cancelOverlay').classList.add('open');
+});
+$('cancelClose').addEventListener('click', () => $('cancelOverlay').classList.remove('open'));
+$('cancelKeep').addEventListener('click', () => $('cancelOverlay').classList.remove('open'));
+$('cancelOverlay').addEventListener('click', e => { if (e.target === $('cancelOverlay')) $('cancelOverlay').classList.remove('open'); });
+$('cancelConfirm').addEventListener('click', async () => {
+  const btn = $('cancelConfirm');
+  btn.disabled = true; btn.textContent = 'Cancelando…'; $('cancelErr').textContent = '';
+  try {
+    const res = await fetch('/api/cancel-subscription', { method: 'POST', headers: await authHeader() });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error || 'error');
+    $('cancelMsg').textContent = out.message || 'Listo.';
+    btn.style.display = 'none';
+    $('cancelKeep').textContent = 'Cerrar';
+  } catch (e) {
+    $('cancelErr').textContent = 'No se pudo procesar. Intenta de nuevo o escríbenos.';
+  }
+  btn.disabled = false; btn.textContent = 'Sí, cancelar mi suscripción';
 });
 
 $('prevDay').addEventListener('click', () => currentDate && load(shiftDate(currentDate, -1)));
