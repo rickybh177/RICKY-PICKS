@@ -24,6 +24,7 @@ const CODES = {
   'PLATA100':  'torneo',
   'FINOVIP':   'torneo',
   'MLBPLATA': 'mlb_fundador', // código de soporte: desbloqueo manual de MLB mensual
+  'SAUMLB': 'mlb_semana', // código semanal de MLB
 };
 
 function bearer(req) {
