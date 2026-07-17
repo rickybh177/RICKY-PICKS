@@ -184,6 +184,7 @@
       <button id="nextDay" aria-label="Día siguiente">›</button>
     </div>
     <div class="nav-actions">
+      <button class="enter" id="manageSubBtn" title="Actualiza tu método de pago, revisa tus cobros o cancela">💳 <span>Administrar suscripción</span></button>
       <button class="refresh" id="refreshBtn" title="Recalcular con alineaciones y clima de ahora">⟳ <span>Actualizar</span></button>
       <button class="enter" id="enterBtn"><span>Entrar</span>→</button>
     </div>
@@ -480,15 +481,37 @@ $('lkGo').addEventListener('click', async () => {
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
 });
 
-/* ---- cancelar suscripción (link discreto del footer) ---- */
-$('cancelSubLink').addEventListener('click', async () => {
-  const headers = await authHeader();
-  if (!headers.Authorization) { $('loginOverlay').classList.add('open'); return; }
+/* ---- administrar suscripción (nav): portal de Stripe estilo Netflix.
+   Ahí el cliente actualiza su tarjeta, ve sus cobros y cancela.
+   Si no tiene portal (se suscribió por Mercado Pago, o no tiene
+   suscripción), cae a nuestro modal propio de cancelación. ---- */
+function openCancelModal() {
   $('cancelMsg').textContent = 'Si cancelas, no se te vuelve a cobrar y conservas tu acceso hasta el final del periodo que ya pagaste. ¿Quieres continuar?';
   $('cancelConfirm').style.display = '';
   $('cancelKeep').textContent = 'Conservar mi plan';
   $('cancelErr').textContent = '';
   $('cancelOverlay').classList.add('open');
+}
+$('manageSubBtn').addEventListener('click', async () => {
+  const headers = await authHeader();
+  if (!headers.Authorization) { $('loginOverlay').classList.add('open'); return; }
+  const btn = $('manageSubBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '💳 <span>Abriendo…</span>';
+  try {
+    const res = await fetch('/api/billing-portal', { method: 'POST', headers });
+    const out = await res.json();
+    if (out.url) { window.location.href = out.url; return; }
+  } catch (e) { /* cae al modal */ }
+  btn.disabled = false; btn.innerHTML = orig;
+  openCancelModal();
+});
+
+/* ---- cancelar suscripción (link discreto del footer) ---- */
+$('cancelSubLink').addEventListener('click', async () => {
+  const headers = await authHeader();
+  if (!headers.Authorization) { $('loginOverlay').classList.add('open'); return; }
+  openCancelModal();
 });
 $('cancelClose').addEventListener('click', () => $('cancelOverlay').classList.remove('open'));
 $('cancelKeep').addEventListener('click', () => $('cancelOverlay').classList.remove('open'));
