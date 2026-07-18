@@ -10,13 +10,14 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PLANS = {
   mexico:        { name: 'RICKY-PICKS — Partido de México',           price: 19900, currency: 'mxn' },
   torneo:        { name: 'RICKY-PICKS — Partidos finales del Mundial', price: 29900, currency: 'mxn' },
+  final:         { name: 'RICKY-PICKS — La final: Argentina vs España', price: 9900, currency: 'mxn' },
   mlb_pase:      { name: 'Modelo MLB — Pase del día',                 price: 9900,  currency: 'mxn' },
   mlb_semana:    { name: 'Modelo MLB — Semana de prueba',             price: 14900, currency: 'mxn' },
   mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',             price: 39900, currency: 'mxn' },
   mlb_temporada: { name: 'Modelo MLB — Temporada 2026 (fundador)',    price: 99900, currency: 'mxn' },
-  mx_fundador:    { name: 'Doctor Liga MX — Mensual Fundador',         price: 29900, currency: 'mxn' },
-  combo_fundador: { name: 'Doctor Deportes — MLB + Liga MX',           price: 49900, currency: 'mxn' },
-  mx_apertura:    { name: 'Doctor Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
+  mx_fundador:    { name: 'Modelo Liga MX — Mensual Fundador',         price: 39900, currency: 'mxn' },
+  combo_fundador: { name: 'Combo MLB + Liga MX',                       price: 49900, currency: 'mxn' },
+  mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
 };
 
 /* Planes que son suscripción mensual real (cargo recurrente). */

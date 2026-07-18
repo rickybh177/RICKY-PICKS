@@ -624,8 +624,8 @@ function showMain(plan){
   });
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('toolIndividual').classList.toggle('active', plan==='individual');
-  document.getElementById('toolTorneo').classList.toggle('active', plan==='torneo');
-  document.getElementById('navPlanBadge').textContent = plan==='torneo' ? 'Torneo completo' : 'Partidos del día';
+  document.getElementById('toolTorneo').classList.toggle('active', plan==='torneo' || plan==='final');
+  document.getElementById('navPlanBadge').textContent = plan==='torneo' ? 'Torneo completo' : plan==='final' ? 'La final' : 'Partidos del día';
   document.getElementById('navPlanBadge').style.display = 'inline-flex';
 }
 

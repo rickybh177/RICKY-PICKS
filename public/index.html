@@ -248,6 +248,10 @@
   .mini-tier li { font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 4px 0; }
   .mini-tier a { display: block; text-align: center; font-weight: 700; font-size: 0.82rem; padding: 10px; border-radius: 9px; text-decoration: none; background: var(--g2); color: var(--text); transition: background .15s; }
   .mini-tier a:hover { background: var(--line); }
+  .mini-or { text-align: center; font-size: 0.72rem; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: 0.08em; margin: 12px 0 8px; }
+  .mini-tier a.mini-final { background: var(--blue); color: #fff; }
+  .mini-tier a.mini-final:hover { background: var(--blue-deep); }
+  .mini-tier a.mini-final small { font-size: 0.7rem; opacity: 0.85; font-weight: 600; }
 
   /* ---- FAQ ---- */
   #faq details { border-bottom: 1px solid var(--line); }
@@ -544,7 +548,7 @@
     <div class="live-grid">
       <div>
         <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
-        <h2 class="sec-title reveal">El Doctor ahora también ve la Liga MX.</h2>
+        <h2 class="sec-title reveal">El modelo ahora también ve la Liga MX.</h2>
         <p class="sec-lede reveal">El mismo cerebro, ahora en el Apertura 2026: el modelo resuelve cada partido marcador por marcador, pesa la altitud real de la sede y mide sus picks contra los momios del mercado. Este es el pick gratis de la jornada — la cartelera completa vive en el combo.</p>
         <div class="live-cta reveal">
           <a class="btn-primary" href="#precios-mx">Ver planes Liga MX</a>
@@ -658,14 +662,14 @@
 <!-- ============ PRECIOS LIGA MX / COMBO ============ -->
 <section id="precios-mx">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">Combo Doctor Deportes</div>
-    <h2 class="sec-title reveal">Liga MX ya está en el consultorio.</h2>
+    <div class="sec-eyebrow reveal">Modelos · Liga MX + MLB</div>
+    <h2 class="sec-title reveal">Liga MX ya está disponible.</h2>
     <p class="sec-lede reveal">Arranca el Apertura 2026 y el modelo ya lo ve completo. Llévate solo la Liga MX — o el combo con MLB: <strong>dos modelos completos por menos de lo que cuesta uno y medio.</strong> Precio de lanzamiento, congelado de por vida.</p>
     <div class="tiers tiers-3">
       <div class="tier reveal">
         <h3>Liga MX Fundador</h3>
-        <div class="was" data-mxn="$399 MXN" data-usd="$21.99 USD">$399 MXN</div>
-        <div class="amt" data-mxn="$299<small>MXN</small>" data-usd="$16.99<small>USD</small>">$299<small>MXN</small></div>
+        <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
+        <div class="amt" data-mxn="$399<small>MXN</small>" data-usd="$21.99<small>USD</small>">$399<small>MXN</small></div>
         <div class="per">Suscripción mensual · precio congelado de por vida</div>
         <ul>
           <li>Toda la jornada, cada semana: 1X2, doble oportunidad, goles, ambos anotan y más</li>
@@ -678,13 +682,13 @@
       <div class="tier featured reveal">
         <span class="flag">Combo · 2 modelos</span>
         <h3>MLB + Liga MX</h3>
-        <div class="was" data-mxn="$698 MXN" data-usd="$37.99 USD">$698 MXN</div>
+        <div class="was" data-mxn="$900 MXN" data-usd="$49.99 USD">$900 MXN</div>
         <div class="amt" data-mxn="$499<small>MXN</small>" data-usd="$27.99<small>USD</small>">$499<small>MXN</small></div>
-        <div class="per">Suscripción mensual · ahorras $199 cada mes</div>
+        <div class="per">Suscripción mensual · ahorras $401 cada mes</div>
         <ul>
           <li><strong>Modelo MLB completo</strong>: todos los juegos, todos los días</li>
           <li><strong>Modelo Liga MX completo</strong>: toda la jornada, cada semana</li>
-          <li>Por separado costarían $698 — aquí, $499</li>
+          <li>Precio regular $900 al mes — hoy, $499 de lanzamiento</li>
           <li>Precio fundador congelado de por vida · cancela cuando quieras</li>
         </ul>
         <a href="/checkout.html?plan=combo_fundador" class="btn btn-blue">Quiero el combo</a>
@@ -722,7 +726,9 @@
           <li>🇫🇷 Francia vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra · tercer lugar · sáb 18</li>
           <li>🇦🇷 Argentina vs 🇪🇸 España · la final · dom 19</li>
         </ul>
-        <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar</a>
+        <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar los dos · $299</a>
+        <div class="mini-or">o solo la gran final</div>
+        <a href="/checkout.html?plan=final" id="buyFinal" class="mini-final">🇦🇷 Argentina vs 🇪🇸 España — <span data-mxn="$99 MXN" data-usd="$5.99 USD">$99 MXN</span></a>
       </div>
     </div>
   </div>
