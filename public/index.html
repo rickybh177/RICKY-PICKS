@@ -458,10 +458,10 @@
   <div class="wrap">
     <div class="sec-eyebrow reveal">Récord verificado</div>
     <h2 class="sec-title reveal">Todos los picks cuentan. También los perdidos.</h2>
-    <p class="sec-lede reveal">Cada pick del modelo se califica automáticamente contra el marcador real del juego. Esto es lo que hizo en los últimos 7 días — sin borrar nada.</p>
+    <p class="sec-lede reveal">Estos son los picks que publico, calificados contra el marcador real de cada juego — ganados y perdidos, a la vista. Sin borrar nada.</p>
     <div class="recgrid reveal">
-      <div class="rec"><div class="n green" id="recW">—</div><div class="l">Picks ganados · 7 días</div></div>
-      <div class="rec"><div class="n red" id="recL">—</div><div class="l">Picks perdidos · 7 días</div></div>
+      <div class="rec"><div class="n green" id="recW">—</div><div class="l" id="recWL">Picks ganados</div></div>
+      <div class="rec"><div class="n red" id="recL">—</div><div class="l" id="recLL">Picks perdidos</div></div>
       <div class="rec"><div class="n blue" id="recP">—</div><div class="l">Efectividad</div></div>
     </div>
     <p class="rec-note reveal">El modelo original de RICKY·PICKS cerró el Mundial 2026 con <strong>71.8% de aciertos (109-43)</strong> — todos los picks publicados antes de cada partido, ganados y perdidos a la vista.</p>
@@ -987,6 +987,10 @@
       document.getElementById('recW').textContent = r.wins;
       document.getElementById('recL').textContent = r.losses;
       document.getElementById('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
+      if (r.period_label) {
+        document.getElementById('recWL').textContent = 'Picks ganados · ' + r.period_label;
+        document.getElementById('recLL').textContent = 'Picks perdidos · ' + r.period_label;
+      }
     })
     .catch(() => {});
 

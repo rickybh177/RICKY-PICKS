@@ -13,6 +13,25 @@ const { fetchJson, BASE } = require('../lib/mlb/statsapi');
 
 const DAYS = 7;
 
+/* ============================================================
+   RÉCORD REAL PUBLICADO (manual).
+   El auto-grader de abajo califica los picks que GENERA el modelo,
+   que NO son exactamente los que el dueño comparte a su comunidad.
+   Este bloque refleja el récord real de los picks PUBLICADOS.
+   Cuando `enabled` es true, la API devuelve estos números y no
+   corre el auto-grader.
+
+   Para actualizarlo: edita `wins` y `losses` (el % se calcula solo)
+   y `period_label` (el texto bajo cada número). Nada más.
+   ============================================================ */
+const MANUAL_RECORD = {
+  enabled: true,
+  wins: 50,
+  losses: 20,
+  pushes: 0,
+  period_label: 'temporada',   // aparece como "Picks ganados · temporada"
+};
+
 const _graded = new Map(); // date -> { wins, losses, pushes }
 
 function todayET() {
@@ -113,6 +132,20 @@ module.exports = async function handler(req, res) {
   }
   // Público: solo devuelve agregados (W-L-%), nunca picks.
   try {
+    // Récord real publicado (manual): tiene prioridad sobre el auto-grader.
+    if (MANUAL_RECORD.enabled) {
+      const w = MANUAL_RECORD.wins, l = MANUAL_RECORD.losses;
+      const decided = w + l;
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).json({
+        wins: w,
+        losses: l,
+        pushes: MANUAL_RECORD.pushes || 0,
+        pct: decided ? Math.round(1000 * w / decided) / 10 : null,
+        period_label: MANUAL_RECORD.period_label || null,
+      });
+    }
+
     const today = todayET();
     const totals = { wins: 0, losses: 0, pushes: 0 };
     for (let i = 1; i <= DAYS; i++) {
