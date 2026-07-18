@@ -14,7 +14,13 @@ const PLANS = {
   mlb_semana:    { name: 'Modelo MLB — Semana de prueba',             price: 14900, currency: 'mxn' },
   mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',             price: 39900, currency: 'mxn' },
   mlb_temporada: { name: 'Modelo MLB — Temporada 2026 (fundador)',    price: 99900, currency: 'mxn' },
+  mx_fundador:    { name: 'Doctor Liga MX — Mensual Fundador',         price: 29900, currency: 'mxn' },
+  combo_fundador: { name: 'Doctor Deportes — MLB + Liga MX',           price: 49900, currency: 'mxn' },
+  mx_apertura:    { name: 'Doctor Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
 };
+
+/* Planes que son suscripción mensual real (cargo recurrente). */
+const SUBSCRIPTION_PLANS = ['mlb_fundador', 'mx_fundador', 'combo_fundador'];
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -47,13 +53,13 @@ module.exports = async function handler(req, res) {
     const p = PLANS[plan];
     const SITE_URL = siteUrl(req);
 
-    /* ---- Mensual Fundador: SUSCRIPCIÓN real (cargo cada mes) ----
+    /* ---- Mensuales (MLB, Liga MX, Combo): SUSCRIPCIÓN real ----
        El acceso inicial se otorga en stripe-capture al volver del
        checkout; las RENOVACIONES mensuales las otorga
        api/stripe-webhook (evento invoice.paid). El crédito del Pase
-       del día se aplica como cupón de una sola vez: primer mes $300,
-       después $399/mes. */
-    if (plan === 'mlb_fundador') {
+       del día se aplica como cupón de una sola vez en los planes que
+       incluyen MLB. */
+    if (SUBSCRIPTION_PLANS.includes(plan)) {
       const sessionParams = {
         payment_method_types: ['card'],
         mode: 'subscription',
@@ -73,7 +79,8 @@ module.exports = async function handler(req, res) {
         metadata: { user_id: user.id, plan },
         customer_email: user.email,
       };
-      const ent = await getEntitlement(user.id, user.email, 'mlb');
+      const includesMlb = plan === 'mlb_fundador' || plan === 'combo_fundador';
+      const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
       const credit = paseCreditFor(ent); // MXN (99) o 0
       if (credit > 0) {
         const coupon = await stripe.coupons.create({

@@ -190,6 +190,11 @@
      necesita un fondo oscuro SÓLIDO — la versión translúcida de
      .pc-shell se ve lavada/opaca aquí porque el blanco se transparenta. */
   .live-card-holder .pc-shell { background: #0e131c; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 30px 70px -20px rgba(14,19,28,0.35); }
+  /* la card es oscura aunque viva en la zona clara: fija el texto claro */
+  .live-card-holder .pc-team .tn { color: #e9edf4; }
+  .live-card-holder .pc-team .pr { color: #8b96a8; }
+  .live-card-holder .pc-team.fav .pr { color: #4c7df0; }
+  .live-card-holder .pc-pick .sel { color: #e9edf4; }
   .live-cta { margin-top: 26px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .btn-primary { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.96rem; padding: 14px 26px; border-radius: 12px; border: none; transition: background .15s, transform .15s; }
   .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
@@ -202,6 +207,7 @@
   .cur-toggle button:hover { color: var(--text); }
   .cur-toggle button.active { background: var(--g0); color: var(--blue); box-shadow: 0 2px 10px -4px rgba(0,0,0,0.35); }
   .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; align-items: stretch; }
+  .tiers.tiers-3 { grid-template-columns: repeat(3, 1fr); max-width: 940px; }
   .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
   .tier:hover { border-color: var(--line-2); transform: translateY(-3px); }
   .tier.featured { border: 1.5px solid var(--blue); background: linear-gradient(180deg, rgba(47,123,255,0.08), var(--g1) 40%); }
@@ -335,7 +341,7 @@
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 900px) {
-    .tiers { grid-template-columns: repeat(2, 1fr); }
+    .tiers, .tiers.tiers-3 { grid-template-columns: repeat(2, 1fr); }
     .live-grid { grid-template-columns: 1fr; gap: 28px; }
     #mundial .panel { grid-template-columns: 1fr; }
     .recgrid { grid-template-columns: 1fr; gap: 10px; }
@@ -348,7 +354,7 @@
     .stage { height: 460vh; }
     .vid { object-position: 50% 68%; }
     .hero-copy { bottom: 10vh; }
-    .tiers { grid-template-columns: 1fr; }
+    .tiers, .tiers.tiers-3 { grid-template-columns: 1fr; }
     .nav-link, .nav-ghost { display: none; }
     .pc-shell { padding: 16px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
@@ -373,7 +379,7 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <a href="/mx.html" class="nav-link" id="mxNavBtn" style="display:none">Liga MX</a>
+      <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
       <a href="/nfl.html" class="nav-link" id="nflNavBtn" style="display:none">NFL</a>
       <button class="nav-link soon" id="mlbNavBtn">MLB</button>
       <a href="#record" class="nav-link">Récord</a>
@@ -532,6 +538,49 @@
   </div>
 </section>
 
+<!-- ============ LIGA MX (pick gratis de la jornada) ============ -->
+<section id="vivo-mx">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
+        <h2 class="sec-title reveal">El Doctor ahora también ve la Liga MX.</h2>
+        <p class="sec-lede reveal">El mismo cerebro, ahora en el Apertura 2026: el modelo resuelve cada partido marcador por marcador, pesa la altitud real de la sede y mide sus picks contra los momios del mercado. Este es el pick gratis de la jornada — la cartelera completa vive en el combo.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="#precios-mx">Ver planes Liga MX</a>
+          <a class="btn-ghost" href="/mx.html">Abrir el tablero gratis</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="mxCardHolder">
+        <div class="pickcard" style="pointer-events:auto">
+          <div class="pc-shell" style="opacity:1">
+            <div class="pc-tag">
+              <span class="t1">Pick gratis · Liga MX</span>
+              <span class="t2" id="mcTag">JORNADA</span>
+            </div>
+            <div class="pc-team" id="mcHomeRow">
+              <img id="mcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="mcHomeName">Local</span><small>Local</small></div>
+              <div class="pr" id="mcHomeProb">—</div>
+            </div>
+            <div class="pc-team" id="mcAwayRow">
+              <img id="mcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="mcAwayName">Visitante</span><small>Visitante</small></div>
+              <div class="pr" id="mcAwayProb">—</div>
+            </div>
+            <div class="pc-bar"><div class="h" id="mcBarH" style="width:40%"></div><div id="mcBarD" style="width:27%;background:#5b6474"></div><div class="a" id="mcBarA" style="width:33%"></div></div>
+            <div class="pc-pick">
+              <span class="vchip" id="mcChip">BET</span>
+              <span class="sel" id="mcPickSel">Pick del modelo</span>
+            </div>
+            <div class="pc-foot"><span id="mcDraw">EMPATE —</span><span id="mcVenue"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ PRECIOS ============ -->
 <section id="precios">
   <div class="wrap">
@@ -603,6 +652,57 @@
       </div>
     </div>
     <p class="launch-note reveal">* Precios de lanzamiento del acceso fundador. Tu acceso se activa al instante con tu cuenta.</p>
+  </div>
+</section>
+
+<!-- ============ PRECIOS LIGA MX / COMBO ============ -->
+<section id="precios-mx">
+  <div class="wrap">
+    <div class="sec-eyebrow reveal">Combo Doctor Deportes</div>
+    <h2 class="sec-title reveal">Liga MX ya está en el consultorio.</h2>
+    <p class="sec-lede reveal">Arranca el Apertura 2026 y el modelo ya lo ve completo. Llévate solo la Liga MX — o el combo con MLB: <strong>dos modelos completos por menos de lo que cuesta uno y medio.</strong> Precio de lanzamiento, congelado de por vida.</p>
+    <div class="tiers tiers-3">
+      <div class="tier reveal">
+        <h3>Liga MX Fundador</h3>
+        <div class="was" data-mxn="$399 MXN" data-usd="$21.99 USD">$399 MXN</div>
+        <div class="amt" data-mxn="$299<small>MXN</small>" data-usd="$16.99<small>USD</small>">$299<small>MXN</small></div>
+        <div class="per">Suscripción mensual · precio congelado de por vida</div>
+        <ul>
+          <li>Toda la jornada, cada semana: 1X2, doble oportunidad, goles, ambos anotan y más</li>
+          <li>Ajuste por altitud y momios reales del mercado</li>
+          <li>Precio fundador mientras sigas activo</li>
+          <li>Se renueva solo · cancela cuando quieras</li>
+        </ul>
+        <a href="/checkout.html?plan=mx_fundador" class="btn btn-dim">Solo Liga MX</a>
+      </div>
+      <div class="tier featured reveal">
+        <span class="flag">Combo · 2 modelos</span>
+        <h3>MLB + Liga MX</h3>
+        <div class="was" data-mxn="$698 MXN" data-usd="$37.99 USD">$698 MXN</div>
+        <div class="amt" data-mxn="$499<small>MXN</small>" data-usd="$27.99<small>USD</small>">$499<small>MXN</small></div>
+        <div class="per">Suscripción mensual · ahorras $199 cada mes</div>
+        <ul>
+          <li><strong>Modelo MLB completo</strong>: todos los juegos, todos los días</li>
+          <li><strong>Modelo Liga MX completo</strong>: toda la jornada, cada semana</li>
+          <li>Por separado costarían $698 — aquí, $499</li>
+          <li>Precio fundador congelado de por vida · cancela cuando quieras</li>
+        </ul>
+        <a href="/checkout.html?plan=combo_fundador" class="btn btn-blue">Quiero el combo</a>
+      </div>
+      <div class="tier reveal">
+        <h3>Apertura completo</h3>
+        <div class="was" data-mxn="$1,999 MXN" data-usd="$109.99 USD">$1,999 MXN</div>
+        <div class="amt" data-mxn="$899<small>MXN</small>" data-usd="$49.99<small>USD</small>">$899<small>MXN</small></div>
+        <div class="per">Las 17 jornadas + liguilla · pago único</div>
+        <ul>
+          <li><strong>Precio exclusivo de lanzamiento</strong></li>
+          <li>Acceso total hasta la final de la liguilla</li>
+          <li>Sin renovaciones: pagas una vez y listo</li>
+        </ul>
+        <a href="/checkout.html?plan=mx_apertura" class="btn btn-dim">Todo el torneo</a>
+      </div>
+    </div>
+    <p class="launch-note reveal">La garantía es la misma de la casa: <strong>jornada perdedora = semana gratis.</strong> El riesgo lo carga el modelo, no tú.</p>
   </div>
 </section>
 
@@ -839,6 +939,41 @@
     .then(r => r.ok ? r.json() : null)
     .then(d => { const g = d && d.game ? d.game : fallback; applyTo('pc', g); applyTo('lc', g); })
     .catch(() => { applyTo('pc', fallback); applyTo('lc', fallback); });
+})();
+
+/* ============================================================
+   PICK GRATIS LIGA MX (card de la sección #vivo-mx)
+   ============================================================ */
+(function () {
+  const $ = id => document.getElementById(id);
+  const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
+  fetch('/api/mx-free')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const g = d && d.game;
+      if (!g) { const h = $('mxCardHolder'); if (h) h.style.display = 'none'; return; }
+      $('mcTag').textContent = 'JORNADA ' + (d.jornada || '');
+      $('mcHomeName').textContent = g.home.name;
+      $('mcAwayName').textContent = g.away.name;
+      if (g.home.logo) $('mcHomeLogo').src = g.home.logo;
+      if (g.away.logo) $('mcAwayLogo').src = g.away.logo;
+      const ml = g.moneyline || {};
+      $('mcHomeProb').textContent = pct(ml.home);
+      $('mcAwayProb').textContent = pct(ml.away);
+      $('mcDraw').textContent = 'EMPATE ' + pct(ml.draw) + ' · MATRIZ EXACTA';
+      $('mcVenue').textContent = (g.venue || '').toUpperCase();
+      if (ml.home != null) {
+        $('mcBarH').style.width = (ml.home * 100) + '%';
+        $('mcBarD').style.width = (ml.draw * 100) + '%';
+        $('mcBarA').style.width = (ml.away * 100) + '%';
+        $((ml.home >= ml.away ? 'mcHomeRow' : 'mcAwayRow')).classList.add('fav');
+      }
+      if (g.pick) {
+        $('mcChip').textContent = (g.pick.verdict || 'bet').toUpperCase();
+        $('mcPickSel').textContent = g.pick.label + ' · ' + pct(g.pick.prob);
+      }
+    })
+    .catch(() => { const h = $('mxCardHolder'); if (h) h.style.display = 'none'; });
 })();
 
 /* ============================================================
@@ -1299,10 +1434,9 @@ async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
   checkMlbNavAccess();
-  // NFL y Liga MX: betas privadas — los botones solo existen para la cuenta admin.
+  // NFL: beta privada — el botón solo existe para la cuenta admin.
+  // (Liga MX ya es pública: su botón siempre está visible.)
   document.getElementById('nflNavBtn').style.display =
-    (u && NFL_ADMIN_EMAILS.includes(u.email)) ? 'inline-flex' : 'none';
-  document.getElementById('mxNavBtn').style.display =
     (u && NFL_ADMIN_EMAILS.includes(u.email)) ? 'inline-flex' : 'none';
   if(u){
     authBtn.textContent = 'Salir';

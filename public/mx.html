@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MODELO LIGA MX — RICKY·PICKS (beta privada)</title>
-<meta name="robots" content="noindex, nofollow">
+<title>Doctor Liga MX — RICKY·PICKS · El Apertura 2026, marcador por marcador</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -121,6 +120,33 @@
   .lockbox .go:hover { background: var(--blue); }
   .lockbox .err { color: var(--skip); font-size: 0.78rem; margin-top: 10px; min-height: 1.2em; }
 
+  /* toggle entre modelos (mismo patrón que mlb.html / mis-modelos) */
+  .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle .mt-opt:hover { color: var(--text); }
+  .model-toggle .mt-opt.active { background: var(--g0); color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; width: 100%; max-width: 380px; }
+    .model-toggle .mt-opt { flex: 1; padding: 10px 8px; font-size: 0.8rem; }
+  }
+
+  /* barra de invitado (freemium) */
+  .guest-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); border-radius: 12px; padding: 13px 16px; margin-top: 16px; font-size: 0.88rem; font-weight: 500; }
+  .guest-bar .gb-cta { background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 0.82rem; padding: 9px 16px; border-radius: 9px; text-decoration: none; white-space: nowrap; }
+  .guest-bar .gb-cta:hover { background: var(--blue); }
+  .guest-bar .gb-login { font-size: 0.8rem; color: var(--blue-deep); font-weight: 600; white-space: nowrap; }
+
+  /* partido bloqueado (invitado) */
+  .badge.free { background: var(--bet-bg); color: var(--bet); }
+  .lockedbox { position: relative; margin: 13px 0 4px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .lockedbox .fake { filter: blur(7px); opacity: 0.55; pointer-events: none; user-select: none; padding: 11px 14px; display: flex; flex-direction: column; gap: 7px; }
+  .lockedbox .fake .frow { height: 40px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; }
+  .lockedbox .over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 12px; }
+  .lockedbox .over .lk-t { font-weight: 700; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .lockedbox .over .lk-s { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--muted); }
+  .lockedbox .over a { background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 0.8rem; padding: 9px 16px; border-radius: 9px; text-decoration: none; }
+  .lockedbox .over a:hover { background: var(--blue); }
+
   footer { border-top: 1px solid var(--line); padding: 26px 0 44px; color: var(--faint); font-size: 0.74rem; font-weight: 450; }
   footer .wrap { display: flex; flex-direction: column; gap: 6px; }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
@@ -138,7 +164,7 @@
   <div class="wrap">
     <a class="logo" href="/">
       <span class="mark">R·P</span>
-      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">LIGA MX · BETA</span>
+      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">LIGA MX</span>
     </a>
     <div class="jorn" id="jornChip" style="display:none">—</div>
     <div class="nav-actions">
@@ -151,8 +177,8 @@
 <div class="lockwrap" id="lockWrap" style="display:none">
   <div class="lockbox">
     <div class="ic">🔒</div>
-    <h2>Beta privada</h2>
-    <p>El modelo Liga MX está en pruebas. Entra con la cuenta autorizada.</p>
+    <h2>Entra a tu cuenta</h2>
+    <p>Inicia sesión para activar tu acceso al modelo Liga MX.</p>
     <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
     <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="go" id="lkGo">Entrar</button>
@@ -163,10 +189,20 @@
 <div id="appWrap" style="display:none">
 <header class="head">
   <div class="wrap">
-    <div class="eyebrow">Modelo Liga MX · Apertura 2026 · beta privada</div>
+    <div class="eyebrow">Modelo Liga MX · Apertura 2026 · Doctor Deportes</div>
     <h1>Cada partido, resuelto marcador por marcador.</h1>
     <p class="lede">El modelo no simula: calcula la probabilidad exacta de cada marcador posible con 2.5 años de Liga MX, corrige por la altitud real de la sede — el peso invisible de la liga — y aprende solo con cada jornada. 1X2, doble oportunidad, goles y ambos anotan con veredicto claro, medido contra los momios reales.</p>
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+      <span class="mt-opt active" role="tab" aria-selected="true">⚽ Liga MX</span>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mis-modelos.html?from=mx">🌍 Mundial 2026</a>
+    </div>
     <div class="meta-band" id="metaBand"></div>
+    <div class="guest-bar" id="guestBar" style="display:none">
+      <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
+      <a class="gb-cta" href="/#precios-mx">Desbloquear la jornada</a>
+      <a class="gb-login" href="#" id="guestLogin">¿Ya tienes acceso? Entrar</a>
+    </div>
   </div>
 </header>
 
@@ -179,7 +215,7 @@
 
 <footer>
   <div class="wrap">
-    <div>Beta privada — solo administración. Análisis estadístico con fines informativos.</div>
+    <div>Análisis estadístico con fines informativos. No es asesoría de apuestas.</div>
     <div>Juega responsable. +18.</div>
   </div>
 </footer>
@@ -193,6 +229,8 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+let currentAccess = 'full';
+let featuredId = null;
 
 function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
@@ -212,6 +250,8 @@ async function load(refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>';
   const q = new URLSearchParams();
   if (refresh) q.set('refresh', '1');
+  // dev: ?as=guest en la URL de la página fuerza la vista de invitado
+  if (new URLSearchParams(location.search).get('as') === 'guest') q.set('as', 'guest');
   const headers = await authHeader();
   let res;
   try {
@@ -224,12 +264,15 @@ async function load(refresh) {
   }
   if (!res.ok) return renderError('El modelo no pudo calcular la jornada. Intenta actualizar.');
   const bd = await res.json();
+  currentAccess = bd.access || 'full';
   $('lockWrap').style.display = 'none';
   $('appWrap').style.display = 'block';
   $('jornChip').style.display = 'block';
   $('jornChip').textContent = 'JORNADA ' + bd.jornada;
+  $('guestBar').style.display = currentAccess === 'guest' ? 'flex' : 'none';
   renderMeta(bd);
   renderBoard(bd);
+  return bd;
 }
 
 function showLock(msg) {
@@ -263,6 +306,7 @@ function dayKey(iso) {
 }
 
 function renderBoard(bd) {
+  featuredId = bd.featured_id || null;
   const games = (bd.games || []).filter(g => !g.error);
   if (!games.length) {
     $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La Liga MX descansa. Vuelve cerca de la próxima jornada.</div>';
@@ -285,6 +329,7 @@ function metaRow(g) {
   const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
   const live = g.state === 'in', final = g.state === 'post';
   let badges = '';
+  if (currentAccess === 'guest' && g.id === featuredId && !g.locked) badges += '<span class="badge free">Pick gratis</span>';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
   if (g.altitude_m >= 700) badges += '<span class="badge alt">+' + g.altitude_m.toLocaleString() + ' m para la visita</span>';
@@ -314,6 +359,19 @@ function teamRows(g) {
 }
 
 function gameCard(g, i) {
+  // invitado: partido bloqueado — equipos visibles, veredictos censurados
+  // (el candado es del servidor: aquí no hay datos que esconder)
+  if (g.locked) {
+    return '<div class="card" style="--i:' + (i % 12) + '">' +
+      metaRow(g) + teamRows(g) +
+      '<div class="lockedbox">' +
+      '<div class="fake"><div class="frow"></div><div class="frow"></div><div class="frow"></div></div>' +
+      '<div class="over">' +
+      '<div class="lk-t">4 veredictos listos para este partido</div>' +
+      '<div class="lk-s">1X2 · DOBLE OPORTUNIDAD · GOLES · AMBOS ANOTAN</div>' +
+      '<a href="/#precios-mx">Desbloquear la jornada</a>' +
+      '</div></div></div>';
+  }
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
     '<span class="vl">' + esc(v.label) +
@@ -410,8 +468,23 @@ $('lkGo').addEventListener('click', async () => {
 $('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
 
 $('refreshBtn').addEventListener('click', () => load(true));
+$('guestLogin').addEventListener('click', e => { e.preventDefault(); showLock(''); });
 
-load();
+/* Al volver del pago (?pago=ok): el webhook puede tardar unos
+   segundos en otorgar el acceso — reintentamos hasta verlo. */
+const _params = new URLSearchParams(location.search);
+if (_params.get('pago') === 'ok') {
+  $('guestMsg').innerHTML = 'Pago recibido — <strong>activando tu acceso…</strong>';
+  let _tries = 0;
+  (async function poll() {
+    const bd = await load();
+    if (bd && bd.access === 'full') { history.replaceState(null, '', '/mx.html'); return; }
+    if (++_tries < 6) setTimeout(poll, 1800);
+    else $('guestMsg').innerHTML = 'Tu pago se está procesando. Si en unos minutos no ves tu acceso, recarga la página o escríbenos.';
+  })();
+} else {
+  load();
+}
 </script>
 </body>
 </html>

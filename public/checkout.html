@@ -280,6 +280,41 @@ const PLANS = {
       'Todos los picks y análisis, sin límite',
     ],
   },
+  mx_fundador: {
+    name: 'Doctor Liga MX — Mensual Fundador',
+    price: '$299',
+    currency: 'MXN',
+    period: 'Suscripción mensual · precio fundador congelado',
+    features: [
+      'Toda la jornada de Liga MX, cada semana',
+      '1X2, doble oportunidad, goles, ambos anotan y más',
+      'Precio fundador: se respeta mientras sigas activo (sube a $399)',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  combo_fundador: {
+    name: 'Doctor Deportes — MLB + Liga MX',
+    price: '$499',
+    currency: 'MXN',
+    period: 'Suscripción mensual · los DOS modelos completos',
+    features: [
+      'Modelo MLB completo: todos los juegos, todos los días',
+      'Modelo Liga MX completo: toda la jornada, cada semana',
+      'Ahorras $199/mes contra pagarlos por separado',
+      'Precio fundador congelado de por vida · cancela cuando quieras',
+    ],
+  },
+  mx_apertura: {
+    name: 'Doctor Liga MX — Apertura 2026 completo',
+    price: '$899',
+    currency: 'MXN',
+    period: 'Las 17 jornadas + liguilla, sin renovar nada',
+    features: [
+      'Precio exclusivo de lanzamiento (precio regular: $1,999)',
+      'Acceso total hasta la final de la liguilla',
+      'Todos los picks y análisis, sin límite',
+    ],
+  },
 };
 
 /* leer plan de la URL */
@@ -287,15 +322,28 @@ const params = new URLSearchParams(window.location.search);
 const planId = params.get('plan');
 const payoErr = params.get('pago');
 
-/* a qué modelo pertenece un plan: mlb_* -> /mlb.html, resto -> Mundial */
-const modelUrl = p => (p || '').startsWith('mlb_') ? '/mlb.html' : '/mis-modelos.html';
+// a qué modelo pertenece un plan:
+// mlb_ -> /mlb.html · mx_ y combo_ -> /mx.html · resto -> Mundial
+const modelUrl = p => {
+  p = p || '';
+  if(p.startsWith('mlb_')) return '/mlb.html';
+  if(p.startsWith('mx_') || p.startsWith('combo_')) return '/mx.html';
+  return '/mis-modelos.html';
+};
 
 /* el botón de "Ya tienes acceso" lleva al modelo del plan que se ve */
 (function(){
   const go = document.getElementById('entitledGo');
-  if(go && planId && planId.startsWith('mlb_')){
+  if(!go || !planId) return;
+  if(planId.startsWith('mlb_')){
     go.href = '/mlb.html';
     go.textContent = 'Ir al Modelo MLB →';
+  } else if(planId.startsWith('mx_')){
+    go.href = '/mx.html';
+    go.textContent = 'Ir al Modelo Liga MX →';
+  } else if(planId.startsWith('combo_')){
+    go.href = '/mx.html';
+    go.textContent = 'Ir a tus modelos →';
   }
 })();
 
@@ -385,15 +433,25 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
 
 document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
 
+/* Productos que cubre un plan: mlb_* -> mlb, mx_* -> mx,
+   combo_* -> mlb+mx, resto -> mundial. */
+function productsOf(p){
+  p = p || '';
+  if(p.startsWith('combo_')) return ['mlb','mx'];
+  if(p.startsWith('mlb_')) return ['mlb'];
+  if(p.startsWith('mx_')) return ['mx'];
+  return ['mundial'];
+}
+
 async function checkEntitlement(){
   if(!sb) return null;
-  // Mundial y MLB viven en filas separadas. El producto se deriva del
-  // `plan` en JS (no de una columna) para no depender de la migración
-  // de Supabase. Filtramos por el producto del plan que se compra.
-  const wantMlb = planId && planId.startsWith('mlb_');
+  // Cada producto (mundial / mlb / mx) vive en su propia fila. El
+  // producto se deriva del `plan` en JS. Buscamos cualquier fila cuyo
+  // producto se traslape con el del plan que se está comprando.
+  const want = productsOf(planId);
   try{
     const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
-    const rows = (data||[]).filter(r => r.active && !!(r.plan||'').startsWith('mlb_') === wantMlb);
+    const rows = (data||[]).filter(r => r.active && productsOf(r.plan).some(p => want.includes(p)));
     if(rows.length) {
       const ent = rows[0];
       // Plan individual expira al día siguiente — permitir re-compra
@@ -420,8 +478,14 @@ async function renderSession(session){
     return;
   }
   const ent = await checkEntitlement();
-  const topTier = ent && (ent.plan === 'torneo' || ent.plan === 'mlb_temporada' || ent.plan === 'mlb_fundador');
-  if(ent && (ent.plan === planId || topTier)){
+  /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
+     El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
+     solo una pata SÍ se permite (es el upgrade). */
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador'] };
+  const buyingCombo = (planId||'').startsWith('combo_');
+  const covered = ent && !buyingCombo &&
+    productsOf(planId).every(p => (TOP[p]||[]).includes(ent.plan));
+  if(ent && (ent.plan === planId || covered)){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }

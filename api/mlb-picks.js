@@ -29,10 +29,10 @@ function todayET() {
   }).format(new Date());
 }
 
-/* ¿El entitlement da acceso Doctor MLB vigente? */
+/* ¿El entitlement da acceso Doctor MLB vigente? (mlb_* o combo_*) */
 function mlbAccessValid(ent) {
   if (!ent || !ent.active || !ent.plan) return false;
-  if (!ent.plan.startsWith('mlb_')) return false;
+  if (!ent.plan.startsWith('mlb_') && !ent.plan.startsWith('combo_')) return false;
   const plan = PLANS[ent.plan];
   if (!plan) return false;
   const days = plan.days || 30;

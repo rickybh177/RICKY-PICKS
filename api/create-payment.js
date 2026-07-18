@@ -52,12 +52,14 @@ module.exports = async function handler(req, res) {
 
   const base = siteUrl(req);
 
-  /* ---- Mensual Fundador: SUSCRIPCIÓN de Mercado Pago (preapproval).
-     Cargo automático de $399 cada mes; el alta y las renovaciones
-     llegan a /api/mp-webhook como eventos de suscripción. Nota: MP
-     cobra el mismo monto todos los meses, así que el crédito del
-     Pase del día solo aplica pagando con tarjeta (Stripe). */
-  if (planId === 'mlb_fundador') {
+  /* ---- Mensuales (MLB, Liga MX, Combo): SUSCRIPCIÓN de Mercado
+     Pago (preapproval). Cargo automático cada mes; el alta y las
+     renovaciones llegan a /api/mp-webhook como eventos de
+     suscripción. Nota: MP cobra el mismo monto todos los meses, así
+     que el crédito del Pase del día solo aplica con tarjeta (Stripe). */
+  const SUBSCRIPTION_PLANS = ['mlb_fundador', 'mx_fundador', 'combo_fundador'];
+  if (SUBSCRIPTION_PLANS.includes(planId)) {
+    const subDest = planId === 'mlb_fundador' ? 'mlb.html' : 'mx.html';
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',
@@ -72,7 +74,7 @@ module.exports = async function handler(req, res) {
             transaction_amount: plan.price,
             currency_id: plan.currency,
           },
-          back_url: `${base}/mlb.html?pago=ok`,
+          back_url: `${base}/${subDest}?pago=ok`,
           status: 'pending',
         }),
       });
@@ -88,8 +90,10 @@ module.exports = async function handler(req, res) {
     }
   }
   // Al volver del pago, cada producto regresa a SU modelo:
-  // planes mlb_* -> /mlb.html, planes del Mundial -> /mis-modelos.html
-  const dest = plan.id.startsWith('mlb_') ? 'mlb.html' : 'mis-modelos.html';
+  // mlb_* -> /mlb.html, mx_*/combo_* -> /mx.html, Mundial -> /mis-modelos.html
+  const dest = plan.id.startsWith('mlb_') ? 'mlb.html'
+    : (plan.id.startsWith('mx_') || plan.id.startsWith('combo_')) ? 'mx.html'
+    : 'mis-modelos.html';
   const preference = {
     items: [{
       id: plan.id,

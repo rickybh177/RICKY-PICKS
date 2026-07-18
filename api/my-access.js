@@ -25,12 +25,15 @@ module.exports = async function handler(req, res) {
     const ents = await getEntitlements(user.id, user.email);
     const mundial = ents.find(e => e.product === 'mundial' && e.active);
     const mlb = ents.find(e => e.product === 'mlb' && e.active);
+    const mx = ents.find(e => e.product === 'mx' && e.active);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       mundial: !!mundial,
       mundial_plan: mundial ? mundial.plan : null,
       mlb: !!mlb,
       mlb_plan: mlb ? mlb.plan : null,
+      mx: !!mx,
+      mx_plan: mx ? mx.plan : null,
     });
   } catch (e) {
     console.error('my-access:', e);
