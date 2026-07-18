@@ -25,7 +25,7 @@ try {
   console.warn('⚠ Sin .env (las API van a fallar sin variables)');
 }
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const API_DIR    = path.join(__dirname, 'api');
 

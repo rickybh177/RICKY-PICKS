@@ -373,6 +373,7 @@
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
+      <a href="/mx.html" class="nav-link" id="mxNavBtn" style="display:none">Liga MX</a>
       <a href="/nfl.html" class="nav-link" id="nflNavBtn" style="display:none">NFL</a>
       <button class="nav-link soon" id="mlbNavBtn">MLB</button>
       <a href="#record" class="nav-link">Récord</a>
@@ -1298,8 +1299,10 @@ async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
   checkMlbNavAccess();
-  // NFL: beta privada — el botón solo existe para la cuenta admin.
+  // NFL y Liga MX: betas privadas — los botones solo existen para la cuenta admin.
   document.getElementById('nflNavBtn').style.display =
+    (u && NFL_ADMIN_EMAILS.includes(u.email)) ? 'inline-flex' : 'none';
+  document.getElementById('mxNavBtn').style.display =
     (u && NFL_ADMIN_EMAILS.includes(u.email)) ? 'inline-flex' : 'none';
   if(u){
     authBtn.textContent = 'Salir';

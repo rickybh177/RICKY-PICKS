@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MODELO NFL 26-27 — RICKY·PICKS (beta privada)</title>
+<title>MODELO LIGA MX — RICKY·PICKS (beta privada)</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,7 @@
     --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
     --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
     --beta: #7c3aed; --beta-bg: rgba(124,58,237,0.09);
+    --alt: #b8922e; --alt-bg: rgba(229,185,74,0.12);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -34,10 +35,7 @@
   .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
   .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
   .logo .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--beta); border: 1px solid rgba(124,58,237,0.4); background: var(--beta-bg); border-radius: 6px; padding: 3px 8px; margin-left: 2px; }
-  .weeknav { display: flex; align-items: center; gap: 2px; }
-  .weeknav button { width: 34px; height: 34px; border-radius: 9px; color: var(--muted); font-size: 1rem; transition: background .15s; }
-  .weeknav button:hover { background: var(--g2); color: var(--text); }
-  .weeknav .cur { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.8rem; padding: 0 6px; min-width: 96px; text-align: center; }
+  .jorn { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.8rem; color: var(--muted); }
   .nav-actions { display: flex; align-items: center; gap: 6px; }
   .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--muted); background: var(--g2); padding: 8px 13px; border-radius: 9px; transition: background .15s; white-space: nowrap; }
   .refresh:hover { background: var(--line); color: var(--text); }
@@ -47,11 +45,12 @@
   .head .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--beta); box-shadow: 0 0 8px var(--beta); animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: 0.35; } }
   .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.7rem, 6vw, 2.6rem); text-wrap: balance; }
-  .head .lede { color: var(--muted); font-size: 0.96rem; font-weight: 450; margin-top: 12px; max-width: 58ch; }
+  .head .lede { color: var(--muted); font-size: 0.96rem; font-weight: 450; margin-top: 12px; max-width: 60ch; }
   .meta-band { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .meta-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g1); border: 1px solid var(--line); padding: 6px 11px; border-radius: 8px; }
 
   .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
+  .day-h { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); padding: 14px 2px 0; }
   .card { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 18px; animation: rise .4s ease both; animation-delay: calc(var(--i) * 30ms); }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
@@ -61,14 +60,16 @@
   .badge { border-radius: 6px; padding: 3px 8px; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
   .badge.live { background: var(--skip-bg); color: var(--skip); }
   .badge.final { background: var(--g2); color: var(--muted); }
-  .badge.wx { background: rgba(229,185,74,0.12); color: #b8922e; }
-  .badge.neutral { background: var(--blue-tint); color: var(--blue-deep); }
+  .badge.alt { background: var(--alt-bg); color: var(--alt); }
+  .badge.noodds { background: var(--blue-tint); color: var(--blue-deep); }
 
   .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
   .team-row img { width: 34px; height: 34px; object-fit: contain; }
-  .team-name { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.015em; min-width: 0; }
-  .team-name .rec2 { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); font-weight: 500; margin-left: 7px; }
-  .team-name .sub { display: block; font-size: 0.7rem; color: var(--muted); font-weight: 450; }
+  .team-name { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.015em; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .form { display: inline-flex; gap: 2.5px; }
+  .form i { width: 13px; height: 13px; border-radius: 3.5px; font-style: normal; font-family: 'JetBrains Mono', monospace; font-size: 0.5rem; font-weight: 700; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .form .W { background: var(--bet); } .form .D { background: #b8922e; } .form .L { background: var(--skip); }
+  .team-sub { display: block; font-size: 0.68rem; color: var(--muted); font-weight: 450; }
   .team-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.15rem; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
 
   .verdicts { display: flex; flex-direction: column; gap: 7px; margin: 13px 0 4px; }
@@ -96,10 +97,13 @@
   .det-row:last-child { border-bottom: none; }
   .det-row .dl { font-weight: 500; }
   .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.76rem; }
-  .det-row .dv b { color: var(--bet); }
+  .scores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; padding: 10px 14px 14px; }
+  .score-cell { background: var(--g1); border: 1px solid var(--line); border-radius: 8px; text-align: center; padding: 8px 4px; }
+  .score-cell b { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; display: block; }
+  .score-cell span { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--faint); }
   .dist { margin-top: 12px; }
   .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .dist svg { width: 100%; height: 54px; display: block; }
+  .dist svg { width: 100%; height: 60px; display: block; }
 
   .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
   .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
@@ -123,7 +127,6 @@
 
   @media (max-width: 620px) {
     .logo .word { display: none; }
-    .weeknav .cur { min-width: 84px; font-size: 0.74rem; }
     .refresh span { display: none; }
     .card { padding: 15px 13px; }
   }
@@ -135,13 +138,9 @@
   <div class="wrap">
     <a class="logo" href="/">
       <span class="mark">R·P</span>
-      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">NFL · BETA</span>
+      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">LIGA MX · BETA</span>
     </a>
-    <div class="weeknav" id="weeknav" style="display:none">
-      <button id="prevWeek" aria-label="Semana anterior">‹</button>
-      <div class="cur" id="curWeek">—</div>
-      <button id="nextWeek" aria-label="Semana siguiente">›</button>
-    </div>
+    <div class="jorn" id="jornChip" style="display:none">—</div>
     <div class="nav-actions">
       <button class="refresh" id="refreshBtn" title="Recalcular con datos de ahora">⟳ <span>Actualizar</span></button>
     </div>
@@ -153,7 +152,7 @@
   <div class="lockbox">
     <div class="ic">🔒</div>
     <h2>Beta privada</h2>
-    <p>El modelo NFL 26-27 está en pruebas. Entra con la cuenta autorizada.</p>
+    <p>El modelo Liga MX está en pruebas. Entra con la cuenta autorizada.</p>
     <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
     <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="go" id="lkGo">Entrar</button>
@@ -164,16 +163,16 @@
 <div id="appWrap" style="display:none">
 <header class="head">
   <div class="wrap">
-    <div class="eyebrow">Modelo NFL 26-27 · beta privada · 10,000 simulaciones por juego</div>
-    <h1>Cada juego, jugado 10,000 veces antes del kickoff.</h1>
-    <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado.</p>
+    <div class="eyebrow">Modelo Liga MX · Apertura 2026 · beta privada</div>
+    <h1>Cada partido, resuelto marcador por marcador.</h1>
+    <p class="lede">El modelo no simula: calcula la probabilidad exacta de cada marcador posible con 2.5 años de Liga MX, corrige por la altitud real de la sede — el peso invisible de la liga — y aprende solo con cada jornada. 1X2, doble oportunidad, goles y ambos anotan con veredicto claro, medido contra los momios reales.</p>
     <div class="meta-band" id="metaBand"></div>
   </div>
 </header>
 
 <main class="wrap">
   <div class="games" id="games">
-    <div class="state"><div class="spinner"></div>El modelo está jugando la semana 10,000 veces…</div>
+    <div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>
   </div>
 </main>
 </div>
@@ -194,7 +193,6 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
-let currentWeek = null;
 
 function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
@@ -210,34 +208,33 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-async function load(week, refresh) {
-  $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando la semana 10,000 veces…</div>';
+async function load(refresh) {
+  $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>';
   const q = new URLSearchParams();
-  if (week) q.set('week', week);
   if (refresh) q.set('refresh', '1');
   const headers = await authHeader();
   let res;
   try {
-    res = await fetch('/api/nfl-picks?' + q.toString(), { headers });
+    res = await fetch('/api/mx-picks?' + q.toString(), { headers });
   } catch (e) { return renderError('Sin conexión con el servidor.'); }
   if (res.status === 403) {
+    // 403 CON sesión iniciada = cuenta válida pero sin acceso a la beta
     showLock(headers.Authorization ? 'Esta cuenta no tiene acceso a la beta privada.' : '');
     return;
   }
-  if (!res.ok) return renderError('El modelo no pudo calcular esta semana. Intenta actualizar.');
-  const wk = await res.json();
-  currentWeek = wk.week;
+  if (!res.ok) return renderError('El modelo no pudo calcular la jornada. Intenta actualizar.');
+  const bd = await res.json();
   $('lockWrap').style.display = 'none';
   $('appWrap').style.display = 'block';
-  $('weeknav').style.display = 'flex';
-  $('curWeek').textContent = 'SEMANA ' + wk.week;
-  renderMeta(wk);
-  renderWeek(wk);
+  $('jornChip').style.display = 'block';
+  $('jornChip').textContent = 'JORNADA ' + bd.jornada;
+  renderMeta(bd);
+  renderBoard(bd);
 }
 
 function showLock(msg) {
   $('appWrap').style.display = 'none';
-  $('weeknav').style.display = 'none';
+  $('jornChip').style.display = 'none';
   $('lockWrap').style.display = 'block';
   $('lkErr').textContent = msg || '';
 }
@@ -249,115 +246,153 @@ function renderError(msg) {
   $('games').innerHTML = '<div class="state"><h2>Algo salió mal</h2>' + esc(msg) + '</div>';
 }
 
-function renderMeta(wk) {
+function renderMeta(bd) {
   const chips = [
-    'Temporada ' + wk.season + '-' + String(wk.season + 1).slice(2),
-    wk.sims.toLocaleString() + ' sims/juego',
-    'Momios: ' + (wk.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'ESPN BET'),
-    wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings preseason (base 2025, se actualizan solos)',
+    esc(bd.tournament),
+    'Jornada ' + bd.jornada,
+    'Matriz exacta de marcadores',
+    bd.games_learned > 0 ? 'Ratings al día con ' + bd.games_learned + ' juegos del torneo' : 'Ratings base: ' + (bd.league ? bd.league.fit_games : '—') + ' juegos 2024-26',
+    'Momios: ' + esc(bd.odds_source || '—'),
+    'Ajuste por altitud de la sede',
   ];
-  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
+  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + c + '</span>').join('');
 }
 
-function renderWeek(wk) {
-  const games = wk.games || [];
+function dayKey(iso) {
+  return new Date(iso).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: MX_TZ });
+}
+
+function renderBoard(bd) {
+  const games = (bd.games || []).filter(g => !g.error);
   if (!games.length) {
-    $('games').innerHTML = '<div class="state"><h2>Sin juegos esta semana</h2>Muévete de semana con las flechas de arriba.</div>';
+    $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La Liga MX descansa. Vuelve cerca de la próxima jornada.</div>';
     return;
   }
-  const sorted = [...games].sort((a, b) => (b.strength || 0) - (a.strength || 0));
-  $('games').innerHTML = sorted.map((g, i) => g.error ? '' : gameCard(g, i)).join('');
+  // agrupar por día requiere orden cronológico (el API manda los
+  // terminados al final)
+  games.sort((a, b) => new Date(a.date) - new Date(b.date));
+  let html = '', lastDay = '', i = 0;
+  for (const g of games) {
+    const d = dayKey(g.date);
+    if (d !== lastDay) { html += '<div class="day-h">' + esc(d.toUpperCase()) + '</div>'; lastDay = d; }
+    html += gameCard(g, i++);
+  }
+  $('games').innerHTML = html;
 }
 
 function metaRow(g) {
   const d = new Date(g.date);
-  const day = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
   const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
   const live = g.state === 'in', final = g.state === 'post';
   let badges = '';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
-  if (g.neutral) badges += '<span class="badge neutral">Sede neutral</span>';
-  if (g.weather && g.weather.notes && g.weather.notes.length) badges += '<span class="badge wx">' + esc(g.weather.notes.join(' · ')) + '</span>';
-  return '<div class="card-meta"><span>' + day + ' · ' + time.toUpperCase() + '</span><span class="sep">·</span>' +
+  if (g.altitude_m >= 700) badges += '<span class="badge alt">+' + g.altitude_m.toLocaleString() + ' m para la visita</span>';
+  if (!g.market_source && !final && !live) badges += '<span class="badge noodds">Aún sin momios</span>';
+  return '<div class="card-meta"><span>' + time.toUpperCase() + '</span><span class="sep">·</span>' +
     '<span>' + esc((g.venue || '').toUpperCase()) + '</span><span style="flex:1"></span>' + badges + '</div>';
+}
+
+function formDots(f) {
+  if (!f) return '';
+  return '<span class="form">' + f.slice(0, 5).split('').map(c =>
+    '<i class="' + (c === 'W' ? 'W' : c === 'D' ? 'D' : 'L') + '">' + (c === 'W' ? 'G' : c === 'D' ? 'E' : 'P') + '</i>'
+  ).join('') + '</span>';
 }
 
 function teamRows(g) {
   const final = g.state !== 'pre' && g.score;
-  const row = (t, score, sub) =>
+  const row = (t, score) =>
     '<div class="team-row">' +
     '<img src="' + esc(t.logo) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
-    '<div class="team-name">' + esc(t.name) + '<span class="rec2">' + esc(t.record || '') + '</span>' +
-    (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') + '</div>' +
+    '<div><div class="team-name">' + esc(t.name) + ' ' + formDots(t.form) + '</div>' +
+    (t.record ? '<span class="team-sub mono">' + esc(t.record) + ' (G-E-P)</span>' : '') + '</div>' +
     '<div class="team-score">' + (final && score != null ? score : '') + '</div>' +
     '</div>';
-  return row(g.away, final ? g.score.away : null, g.rest.away) + row(g.home, final ? g.score.home : null, g.rest.home);
+  // convención Liga MX: el LOCAL va arriba (a diferencia de MLB/NFL)
+  return row(g.home, final ? g.score.home : null) + row(g.away, final ? g.score.away : null);
 }
 
 function gameCard(g, i) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
     '<span class="vl">' + esc(v.label) +
-    '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · edge ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
+    '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · EV ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
     '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>' +
     '</div>'
   ).join('');
   const analysis = g.analysis
     ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
     : '';
-  return '<div class="card" style="--i:' + i + '">' +
+  return '<div class="card" style="--i:' + (i % 12) + '">' +
     metaRow(g) + teamRows(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
     analysis + moreDetails(g) +
   '</div>';
 }
 
+function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
+
 function moreDetails(g) {
   const m = g.markets;
   if (!m) return '';
-  const fo = m.fair_odds || {};
-  const rows =
-    '<div class="det-h">Mercados de equipo</div>' +
-    det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
-    det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)) +
-    det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line) +
-    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total) +
-    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
-    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
-    det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
-    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total) +
-    '<div class="det-h">Props del QB (proyección del modelo)</div>' +
-    qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away);
-  return '<details class="more"><summary>Todos los mercados y props</summary>' +
-    '<div class="det-rows">' + rows + '</div>' + distChart(m, g) + '</details>';
-}
-function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
-function qbRows(team, p) {
-  if (!p) return '';
-  return det('QB de ' + team.name + ' · yardas por pase O/U ' + p.pass_yds.line, 'Over ' + pct1(p.pass_yds.over) + ' · proyección ' + p.pass_yds.mean + ' yds') +
-         det('QB de ' + team.name + ' · 2+ TDs de pase', pct1(p.pass_tds.over) + ' · proyección ' + p.pass_tds.mean);
+  const H = g.home.name, A = g.away.name;
+  const ml = m.moneyline, fair = ml.fair || {};
+  let rows =
+    '<div class="det-h">Resultado</div>' +
+    det('Gana ' + H, pct1(ml.home) + ' · justo ' + am(fair.home)) +
+    det('Empate', pct1(ml.draw) + ' · justo ' + am(fair.draw)) +
+    det('Gana ' + A, pct1(ml.away) + ' · justo ' + am(fair.away)) +
+    det(H + ' o empate (1X)', pct1(m.double_chance.home_draw)) +
+    det(A + ' o empate (X2)', pct1(m.double_chance.away_draw)) +
+    det('No hay empate (12)', pct1(m.double_chance.home_away)) +
+    det('Empate no acción: ' + H, pct1(m.dnb.home)) +
+    (m.asian_handicap && m.asian_handicap.line != null
+      ? det('Hándicap ' + H + ' ' + (m.asian_handicap.line > 0 ? '+' : '') + m.asian_handicap.line, pct1(m.asian_handicap.home_cover) + ' cubre')
+      : '') +
+    '<div class="det-h">Goles</div>' +
+    m.totals.map(t => det('Más de ' + t.line + ' goles', pct1(t.over))).join('') +
+    det('Ambos anotan', 'Sí ' + pct1(m.btts.yes) + ' · No ' + pct1(m.btts.no)) +
+    det('Goles de ' + H, 'esperado ' + m.team_totals.home.mean + ' · anota ' + pct1(m.team_totals.home.over_05) + ' · 2+ ' + pct1(m.team_totals.home.over_15)) +
+    det('Goles de ' + A, 'esperado ' + m.team_totals.away.mean + ' · anota ' + pct1(m.team_totals.away.over_05) + ' · 2+ ' + pct1(m.team_totals.away.over_15)) +
+    det('Portería en cero ' + H, pct1(m.clean_sheet.home)) +
+    det('Portería en cero ' + A, pct1(m.clean_sheet.away)) +
+    '<div class="det-h">1ª mitad</div>' +
+    det('Al descanso: ' + H + ' / empate / ' + A, pct1(m.first_half.home) + ' / ' + pct1(m.first_half.draw) + ' / ' + pct1(m.first_half.away)) +
+    det('Gol antes del descanso (O 0.5)', pct1(m.first_half.over_05)) +
+    det('1ª mitad: más de 1.5 goles', pct1(m.first_half.over_15)) +
+    '<div class="det-h">Córneres</div>' +
+    det('Total de córneres O/U ' + m.corners.line, 'Más ' + pct1(m.corners.over) + ' · modelo espera ' + m.corners.model_total);
+
+  const scores = (m.exact_scores || []).map(e =>
+    '<div class="score-cell"><b>' + esc(e.score) + '</b><span>' + pct1(e.p) + '</span></div>'
+  ).join('');
+
+  return '<details class="more"><summary>Todos los mercados</summary>' +
+    '<div class="det-rows">' + rows +
+    '<div class="det-h">Marcadores más probables (' + esc(g.home.abbr) + '-' + esc(g.away.abbr) + ')</div>' +
+    '<div class="scores-grid">' + scores + '</div>' +
+    '</div>' + distChart(m, g) + '</details>';
 }
 
 function distChart(m, g) {
   const d = m.margin_dist || [];
   if (!d.length) return '';
-  const W = 720, H = 54, n = d.length, gap = 2;
+  const W = 720, H = 60, n = d.length, gap = 6;
   const bw = (W - gap * (n - 1)) / n;
   const max = Math.max(...d, 0.001);
   let bars = '';
   for (let i = 0; i < n; i++) {
-    const margin = i - 21; // -21 .. +21 (margen del local)
-    const h = Math.max(1.5, (d[i] / max) * (H - 16));
+    const margin = i - 4; // -4 .. +4 (margen del local)
+    const h = Math.max(1.5, (d[i] / max) * (H - 18));
     const x = i * (bw + gap);
-    bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h +
-      '" rx="1.5" fill="' + (margin > 0 ? '#2f7bff' : margin < 0 ? '#d8dfe9' : '#b8922e') + '"></rect>';
-    if ((margin + 21) % 7 === 0) {
-      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3" font-family="JetBrains Mono,monospace">' + margin + '</text>';
-    }
+    bars += '<rect x="' + x + '" y="' + (H - 16 - h) + '" width="' + bw + '" height="' + h +
+      '" rx="2.5" fill="' + (margin > 0 ? '#2f7bff' : margin < 0 ? '#d8dfe9' : '#b8922e') + '"></rect>';
+    const lbl = margin === 0 ? 'E' : (margin > 0 ? '+' + margin : margin);
+    bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="9" fill="#8a93a3" font-family="JetBrains Mono,monospace">' + lbl + '</text>';
   }
   return '<div class="dist">' +
-    '<div class="dist-lbl"><span>Cómo cae el margen (' + esc(g.home.abbr) + ' positivo) en 10,000 futuros</span></div>' +
+    '<div class="dist-lbl"><span>Cómo cae el marcador: margen de ' + esc(g.home.name) + ' (E = empate)</span></div>' +
     '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
 }
 
@@ -369,16 +404,14 @@ $('lkGo').addEventListener('click', async () => {
       email: $('lkEmail').value.trim(), password: $('lkPass').value,
     });
     if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
-    load(currentWeek);
+    load();
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
 });
 $('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
 
-$('prevWeek').addEventListener('click', () => currentWeek && currentWeek > 1 && load(currentWeek - 1));
-$('nextWeek').addEventListener('click', () => currentWeek && currentWeek < 18 && load(currentWeek + 1));
-$('refreshBtn').addEventListener('click', () => load(currentWeek, true));
+$('refreshBtn').addEventListener('click', () => load(true));
 
-load(null);
+load();
 </script>
 </body>
 </html>
