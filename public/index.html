@@ -720,14 +720,11 @@
         <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
       </div>
       <div class="mini-tier">
-        <h4>Partidos finales</h4>
-        <div class="amt" data-mxn="$299 <small>MXN</small>" data-usd="$16.99 <small>USD</small>">$299 <small>MXN</small></div>
+        <h4>La gran final</h4>
+        <div class="amt" data-mxn="$99 <small>MXN</small>" data-usd="$5.99 <small>USD</small>">$99 <small>MXN</small></div>
         <ul>
-          <li>🇫🇷 Francia vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra · tercer lugar · sáb 18</li>
           <li>🇦🇷 Argentina vs 🇪🇸 España · la final · dom 19</li>
         </ul>
-        <a href="/checkout.html?plan=torneo" id="buyTorneo">Comprar los dos · $299</a>
-        <div class="mini-or">o solo la gran final</div>
         <a href="/checkout.html?plan=final" id="buyFinal" class="mini-final">🇦🇷 Argentina vs 🇪🇸 España — <span data-mxn="$99 MXN" data-usd="$5.99 USD">$99 MXN</span></a>
       </div>
     </div>
@@ -1453,17 +1450,15 @@ async function refreshUI(){
     misModelosLink.style.display = 'inline-flex';
     misModelosLink.classList.add('nav-models-active');
     const ent = await getEntitlement();
-    if(ent && (ent.plan === 'torneo' || ent.plan === 'individual')){
-      // Ya tiene acceso (torneo, o individual de clientes previos): a mis modelos
-      document.getElementById('buyTorneo').textContent = 'Ir a Mis modelos';
-      document.getElementById('buyTorneo').href = '/mis-modelos.html';
+    if(ent && (ent.plan === 'torneo' || ent.plan === 'individual' || ent.plan === 'final')){
+      // Ya tiene acceso a la final (torneo, individual, o ya compró el plan final): a mis modelos
+      const bf = document.getElementById('buyFinal');
+      if(bf){ bf.textContent = 'Ir a Mis modelos'; bf.href = '/mis-modelos.html'; }
     }
   } else {
     authBtn.textContent = 'Iniciar sesión';
     misModelosLink.style.display = 'none';
     misModelosLink.classList.remove('nav-models-active');
-    document.getElementById('buyTorneo').textContent = 'Acceso total';
-    document.getElementById('buyTorneo').href = '/checkout.html?plan=torneo';
   }
 }
 
