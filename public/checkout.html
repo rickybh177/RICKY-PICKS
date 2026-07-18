@@ -660,17 +660,35 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
   });
   await waitSession();
   if (!_currentSession) return;
-  try {
-    const res = await fetch(`/api/stripe-capture?session_id=${session_id}`, {
-      headers: { Authorization: `Bearer ${_currentSession.access_token}` },
-    });
-    const out = await res.json();
-    if (out.ok) {
-      const dest = modelUrl(out.plan) + '?pago=' + out.plan;
-      history.replaceState(null, '', dest);
-      window.location.href = dest;
+  /* El pago YA se hizo: si el capture falla (red, error interno),
+     reintentamos varias veces y avisamos al cliente en vez de dejarlo
+     en silencio — el webhook de Stripe termina otorgando el acceso
+     aunque este capture no lo logre. */
+  const banner = document.getElementById('errorBanner');
+  for (let intento = 1; intento <= 4; intento++) {
+    try {
+      const res = await fetch(`/api/stripe-capture?session_id=${session_id}`, {
+        headers: { Authorization: `Bearer ${_currentSession.access_token}` },
+      });
+      const out = await res.json();
+      if (out.ok) {
+        const dest = modelUrl(out.plan) + '?pago=' + out.plan;
+        history.replaceState(null, '', dest);
+        window.location.href = dest;
+        return;
+      }
+      if (res.status === 402) return; // pago no completado: no insistir
+    } catch (e) { console.error('stripe capture error', e); }
+    if (banner) {
+      banner.textContent = 'Tu pago fue recibido — estamos activando tu acceso… (intento ' + intento + ' de 4)';
+      banner.classList.add('show');
     }
-  } catch (e) { console.error('stripe capture error', e); }
+    await new Promise(r => setTimeout(r, 2500));
+  }
+  if (banner) {
+    banner.textContent = 'Tu pago fue recibido, pero la activación está tardando. Tu acceso se activará solo en unos minutos; si no, escríbenos y lo resolvemos de inmediato.';
+    banner.classList.add('show');
+  }
 })();
 
 /* inicio — onAuthStateChange nos da la sesión directamente, sin llamar getSession() */

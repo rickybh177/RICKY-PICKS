@@ -4,6 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { paseCreditFor } = require('../lib/pase-credit');
+const { isSubscription } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -20,8 +21,9 @@ const PLANS = {
   mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
 };
 
-/* Planes que son suscripción mensual real (cargo recurrente). */
-const SUBSCRIPTION_PLANS = ['mlb_fundador', 'mx_fundador', 'combo_fundador'];
+/* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
+   (bandera `recurring`). Los planes de temporada / pago único jamás
+   entran al modo suscripción. */
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -60,7 +62,7 @@ module.exports = async function handler(req, res) {
        api/stripe-webhook (evento invoice.paid). El crédito del Pase
        del día se aplica como cupón de una sola vez en los planes que
        incluyen MLB. */
-    if (SUBSCRIPTION_PLANS.includes(plan)) {
+    if (isSubscription(plan)) {
       const sessionParams = {
         payment_method_types: ['card'],
         mode: 'subscription',

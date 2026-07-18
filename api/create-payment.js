@@ -4,7 +4,7 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS } = require('../lib/plans');
+const { PLANS, isSubscription } = require('../lib/plans');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 
@@ -57,8 +57,9 @@ module.exports = async function handler(req, res) {
      renovaciones llegan a /api/mp-webhook como eventos de
      suscripción. Nota: MP cobra el mismo monto todos los meses, así
      que el crédito del Pase del día solo aplica con tarjeta (Stripe). */
-  const SUBSCRIPTION_PLANS = ['mlb_fundador', 'mx_fundador', 'combo_fundador'];
-  if (SUBSCRIPTION_PLANS.includes(planId)) {
+  // Suscripción vs pago único: ÚNICA fuente de verdad en lib/plans.js
+  // (bandera `recurring`). Temporada/pago único nunca crea preapproval.
+  if (isSubscription(planId)) {
     const subDest = planId === 'mlb_fundador' ? 'mlb.html' : 'mx.html';
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
