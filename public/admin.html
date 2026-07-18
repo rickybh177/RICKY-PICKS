@@ -91,6 +91,18 @@
   .plan-badge.torneo { background: rgba(21,163,74,0.12); color: var(--win); }
   .plan-badge.individual { background: rgba(47,123,255,0.1); color: var(--blue); }
   .plan-badge.none { background: rgba(94,111,134,0.1); color: var(--muted); }
+  /* badges por PRODUCTO/modelo */
+  .prod-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .prod-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; padding: 4px 9px; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .prod-badge b { font-weight: 700; }
+  .prod-badge .plan-name { opacity: 0.75; font-weight: 500; text-transform: none; letter-spacing: 0; }
+  .prod-badge.mundial { background: rgba(21,163,74,0.12); color: var(--win); }
+  .prod-badge.mlb { background: rgba(230,126,34,0.14); color: #c25e12; }
+  .prod-badge.mx { background: rgba(124,58,237,0.12); color: #6d28d9; }
+  .prod-badge.none { background: rgba(94,111,134,0.1); color: var(--muted); }
+  /* colores de los stat-cards de producto */
+  .stat-card .num.mlb { color: #c25e12; }
+  .stat-card .num.mx { color: #6d28d9; }
   .date-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
   .active-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
   .active-dot.yes { background: var(--win); }
@@ -108,8 +120,9 @@
   @media (max-width: 560px) {
     .wrap { padding: 0 16px; }
     .stats-row { grid-template-columns: 1fr 1fr; }
+    /* en móvil dejamos Correo + Modelos; ocultamos las fechas */
     .data-table thead th:nth-child(3), .data-table tbody td:nth-child(3) { display: none; }
-    .data-table thead th:nth-child(5), .data-table tbody td:nth-child(5) { display: none; }
+    .data-table thead th:nth-child(4), .data-table tbody td:nth-child(4) { display: none; }
   }
   :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
 </style>
@@ -165,9 +178,9 @@
     <!-- STATS -->
     <div class="stats-row">
       <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lbl">Usuarios registrados</div></div>
-      <div class="stat-card"><div class="num blue" id="statWithPlan">—</div><div class="lbl">Con plan activo</div></div>
-      <div class="stat-card"><div class="num green" id="statTorneo">—</div><div class="lbl">Plan torneo</div></div>
-      <div class="stat-card"><div class="num" id="statIndividual">—</div><div class="lbl">Plan partidos del día</div></div>
+      <div class="stat-card"><div class="num green" id="statMundial">—</div><div class="lbl">Modelo Mundial</div></div>
+      <div class="stat-card"><div class="num mlb" id="statMlb">—</div><div class="lbl">Modelo MLB</div></div>
+      <div class="stat-card"><div class="num mx" id="statMx">—</div><div class="lbl">Modelo Liga MX</div></div>
     </div>
 
     <!-- TABLA -->
@@ -176,8 +189,9 @@
       <input class="search-input" type="text" id="searchInput" placeholder="Buscar por correo…">
       <div class="filter-tabs">
         <div class="filter-tab active" data-filter="all">Todos</div>
-        <div class="filter-tab" data-filter="torneo">Torneo</div>
-        <div class="filter-tab" data-filter="individual">Partidos del día</div>
+        <div class="filter-tab" data-filter="mundial">Mundial</div>
+        <div class="filter-tab" data-filter="mlb">MLB</div>
+        <div class="filter-tab" data-filter="mx">Liga MX</div>
         <div class="filter-tab" data-filter="none">Sin plan</div>
       </div>
       <button class="refresh-btn" id="refreshBtn">↻ Actualizar</button>
@@ -189,14 +203,13 @@
         <thead>
           <tr>
             <th>Correo electrónico</th>
-            <th>Plan</th>
-            <th>Estado</th>
-            <th>Fecha de compra</th>
+            <th>Modelos activos</th>
+            <th>Última compra</th>
             <th>Registro</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="5" class="empty-state">Cargando…</td></tr>
+          <tr><td colspan="4" class="empty-state">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -237,24 +250,45 @@ function fmtDate(iso){
   return d.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
 }
 
+/* ---- nombre corto de cada plan (para el badge) ---- */
+const PLAN_SHORT = {
+  torneo: 'Torneo', individual: 'Partidos del día', mexico: 'México', final: 'La final',
+  mlb_pase: 'Pase día', mlb_semana: 'Semana', mlb_fundador: 'Fundador', mlb_temporada: 'Temporada',
+  combo_fundador: 'Combo', mx_fundador: 'Fundador', mx_apertura: 'Apertura',
+};
+const PRODUCT_LABEL = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX' };
+const PRODUCT_ORDER = ['mundial', 'mlb', 'mx'];
+
+/* helpers de acceso al resumen por producto */
+function prodOf(u){ return u.products || {}; }
+function hasProduct(u, p){ return !!prodOf(u)[p]; }
+
 /* ---- renderizar tabla ---- */
 function renderTable(users){
   const body = document.getElementById('tableBody');
   if(!users.length){
-    body.innerHTML = '<tr><td colspan="5" class="empty-state">No se encontraron clientes con ese filtro.</td></tr>';
+    body.innerHTML = '<tr><td colspan="4" class="empty-state">No se encontraron clientes con ese filtro.</td></tr>';
     document.getElementById('tableFooter').textContent = '';
     return;
   }
   body.innerHTML = users.map(u => {
-    const planClass = u.plan || 'none';
-    const planLabel = u.plan === 'torneo' ? 'Torneo' : u.plan === 'individual' ? 'Partidos del día' : 'Sin plan';
-    const activeColor = u.active ? 'yes' : 'no';
-    const activeLabel = u.active ? 'Activo' : u.plan ? 'Inactivo' : '—';
+    const prods = prodOf(u);
+    const active = PRODUCT_ORDER.filter(p => prods[p]);
+    const badges = active.length
+      ? '<div class="prod-badges">' + active.map(p => {
+          const plan = prods[p].plan;
+          const name = PLAN_SHORT[plan] || plan || '';
+          return `<span class="prod-badge ${p}"><b>${PRODUCT_LABEL[p]}</b><span class="plan-name">${name}</span></span>`;
+        }).join('') + '</div>'
+      : '<span class="prod-badge none">Sin plan</span>';
+    // última compra = la fecha más reciente entre los productos activos
+    const lastBuy = active.length
+      ? active.map(p => prods[p].updated_at).sort().slice(-1)[0]
+      : u.plan_updated;
     return `<tr>
       <td class="email-cell">${u.email || '—'}</td>
-      <td><span class="plan-badge ${planClass}">${planLabel}</span></td>
-      <td><span class="active-dot ${activeColor}"></span>${activeLabel}</td>
-      <td class="date-cell">${fmtDate(u.plan_updated)}</td>
+      <td>${badges}</td>
+      <td class="date-cell">${fmtDate(lastBuy)}</td>
       <td class="date-cell">${fmtDate(u.created_at)}</td>
     </tr>`;
   }).join('');
@@ -265,8 +299,8 @@ function applyFilters(){
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
   let list = allUsers;
   if(activeFilter !== 'all'){
-    if(activeFilter === 'none') list = list.filter(u => !u.plan);
-    else list = list.filter(u => u.plan === activeFilter);
+    if(activeFilter === 'none') list = list.filter(u => PRODUCT_ORDER.every(p => !hasProduct(u, p)));
+    else list = list.filter(u => hasProduct(u, activeFilter));
   }
   if(q) list = list.filter(u => u.email && u.email.toLowerCase().includes(q));
   renderTable(list);
@@ -274,9 +308,9 @@ function applyFilters(){
 
 function updateStats(users){
   document.getElementById('statTotal').textContent = users.length;
-  document.getElementById('statWithPlan').textContent = users.filter(u=>u.active&&u.plan).length;
-  document.getElementById('statTorneo').textContent = users.filter(u=>u.plan==='torneo'&&u.active).length;
-  document.getElementById('statIndividual').textContent = users.filter(u=>u.plan==='individual'&&u.active).length;
+  document.getElementById('statMundial').textContent = users.filter(u=>hasProduct(u,'mundial')).length;
+  document.getElementById('statMlb').textContent = users.filter(u=>hasProduct(u,'mlb')).length;
+  document.getElementById('statMx').textContent = users.filter(u=>hasProduct(u,'mx')).length;
 }
 
 async function loadUsers(tok){
@@ -292,7 +326,7 @@ async function loadUsers(tok){
     updateStats(allUsers);
     applyFilters();
   }catch(e){
-    document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="empty-state">${e.message}</td></tr>`;
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="empty-state">${e.message}</td></tr>`;
   }
   document.getElementById('tableLoader').style.display='none';
 }
