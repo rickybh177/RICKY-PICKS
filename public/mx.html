@@ -396,11 +396,14 @@ function moreDetails(g) {
   if (!m) return '';
   const H = g.home.name, A = g.away.name;
   const ml = m.moneyline, fair = ml.fair || {};
+  const mo = m.market_odds || {};
+  // momio real del mercado + el que calcula el modelo, lado a lado
+  const vs = (mkt, fairAm) => (mkt != null ? 'mercado ' + am(mkt) + ' · ' : '') + 'modelo ' + am(fairAm);
   let rows =
-    '<div class="det-h">Resultado</div>' +
-    det('Gana ' + H, pct1(ml.home) + ' · justo ' + am(fair.home)) +
-    det('Empate', pct1(ml.draw) + ' · justo ' + am(fair.draw)) +
-    det('Gana ' + A, pct1(ml.away) + ' · justo ' + am(fair.away)) +
+    '<div class="det-h">Resultado (momios: mercado vs modelo)</div>' +
+    det('Gana ' + H, pct1(ml.home) + ' · ' + vs(mo.ml_home, fair.home)) +
+    det('Empate', pct1(ml.draw) + ' · ' + vs(mo.ml_draw, fair.draw)) +
+    det('Gana ' + A, pct1(ml.away) + ' · ' + vs(mo.ml_away, fair.away)) +
     det(H + ' o empate (1X)', pct1(m.double_chance.home_draw)) +
     det(A + ' o empate (X2)', pct1(m.double_chance.away_draw)) +
     det('No hay empate (12)', pct1(m.double_chance.home_away)) +
@@ -409,6 +412,9 @@ function moreDetails(g) {
       ? det('Hándicap ' + H + ' ' + (m.asian_handicap.line > 0 ? '+' : '') + m.asian_handicap.line, pct1(m.asian_handicap.home_cover) + ' cubre')
       : '') +
     '<div class="det-h">Goles</div>' +
+    (mo.total_line != null
+      ? det('Total del mercado O/U ' + mo.total_line, 'Más ' + am(mo.total_over) + ' · Menos ' + am(mo.total_under))
+      : '') +
     m.totals.map(t => det('Más de ' + t.line + ' goles', pct1(t.over))).join('') +
     det('Ambos anotan', 'Sí ' + pct1(m.btts.yes) + ' · No ' + pct1(m.btts.no)) +
     det('Goles de ' + H, 'esperado ' + m.team_totals.home.mean + ' · anota ' + pct1(m.team_totals.home.over_05) + ' · 2+ ' + pct1(m.team_totals.home.over_15)) +
