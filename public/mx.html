@@ -81,6 +81,23 @@
   .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
   .vrow.skip .vl { color: var(--faint); font-weight: 500; }
 
+  /* momios manuales del usuario (opcional) */
+  .uodds-toggle { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 9px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--blue-deep); background: var(--blue-tint); border: 1px dashed rgba(47,123,255,0.35); border-radius: 9px; padding: 9px; cursor: pointer; user-select: none; }
+  .uodds-toggle:hover { background: rgba(47,123,255,0.12); }
+  .uodds-panel { display: none; background: var(--g0); border: 1px solid rgba(47,123,255,0.3); border-radius: 10px; padding: 13px 14px; margin-top: 8px; }
+  .uodds-panel.open { display: block; }
+  .uodds-note { font-size: 0.76rem; color: var(--muted); margin-bottom: 10px; line-height: 1.45; }
+  .uodds-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+  .uodds-field label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 3px; }
+  .uodds-field input, .uodds-field select { width: 100%; background: var(--g1); border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 8px 9px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; outline: none; }
+  .uodds-field input:focus, .uodds-field select:focus { border-color: var(--blue); }
+  .uodds-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .uodds-apply { flex: 1; background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 0.8rem; padding: 9px; border-radius: 8px; }
+  .uodds-apply:hover { background: var(--blue); }
+  .uodds-reset { font-size: 0.76rem; font-weight: 600; color: var(--muted); padding: 9px 12px; background: var(--g2); border-radius: 8px; }
+  .uodds-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-deep); background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.3); border-radius: 6px; padding: 3px 8px; margin-bottom: 7px; display: inline-block; }
+  @media (max-width: 620px) { .uodds-grid { grid-template-columns: repeat(2, 1fr); } }
+
   .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--beta); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
   .analysis-box .a-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--beta); margin-bottom: 6px; }
 
@@ -231,6 +248,10 @@ const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
 let currentAccess = 'full';
 let featuredId = null;
+let gamesById = {};
+/* momios manuales guardados por partido (persisten entre recargas) */
+let userOdds = {};
+try { userOdds = JSON.parse(localStorage.getItem('rp_mx_odds') || '{}') || {}; } catch (e) {}
 
 function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
@@ -307,6 +328,8 @@ function dayKey(iso) {
 
 function renderBoard(bd) {
   featuredId = bd.featured_id || null;
+  gamesById = {};
+  (bd.games || []).forEach(g => { if (!g.error) gamesById[g.id] = g; });
   const games = (bd.games || []).filter(g => !g.error);
   if (!games.length) {
     $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La Liga MX descansa. Vuelve cerca de la próxima jornada.</div>';
@@ -322,6 +345,7 @@ function renderBoard(bd) {
     html += gameCard(g, i++);
   }
   $('games').innerHTML = html;
+  reapplyUserOdds();
 }
 
 function metaRow(g) {
@@ -372,21 +396,60 @@ function gameCard(g, i) {
       '<a href="/#precios-mx">Desbloquear la jornada</a>' +
       '</div></div></div>';
   }
-  const verdicts = (g.verdicts || []).map(v =>
+  const analysis = g.analysis
+    ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
+    : '';
+  return '<div class="card" style="--i:' + (i % 12) + '">' +
+    metaRow(g) + teamRows(g) +
+    '<div class="verdicts" id="v-' + esc(g.id) + '">' + vrowsHtml(g.verdicts) + '</div>' +
+    (g.state === 'pre' ? uoddsHtml(g) : '') +
+    analysis + moreDetails(g) +
+  '</div>';
+}
+
+/* filas de veredicto (reutilizable: render inicial y recálculo con
+   los momios del usuario) */
+function vrowsHtml(verdicts, customBadge) {
+  const rows = (verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
     '<span class="vl">' + esc(v.label) +
     '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · EV ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
     '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>' +
     '</div>'
   ).join('');
-  const analysis = g.analysis
-    ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
-    : '';
-  return '<div class="card" style="--i:' + (i % 12) + '">' +
-    metaRow(g) + teamRows(g) +
-    '<div class="verdicts">' + verdicts + '</div>' +
-    analysis + moreDetails(g) +
-  '</div>';
+  return (customBadge ? '<span class="uodds-badge">Veredictos con TUS momios</span>' : '') + rows;
+}
+
+/* ---- momios manuales (opcional): panel por partido ---- */
+function uoddsHtml(g) {
+  const id = esc(g.id);
+  const mo = (g.markets && g.markets.market_odds) || {};
+  const val = x => (x == null ? '' : (x > 0 ? '+' + x : String(x)));
+  const saved = userOdds[g.id] || {};
+  const pick = (k, fallback) => saved[k] != null ? (saved[k] > 0 ? '+' + saved[k] : String(saved[k])) : fallback;
+  return '<div class="uodds-toggle" data-uo="' + id + '">⚙ Meter los momios de mi casa (opcional — análisis más preciso)</div>' +
+    '<div class="uodds-panel" id="uo-' + id + '">' +
+    '<div class="uodds-note">Escribe los momios <strong>americanos</strong> de tu casa de apuestas (ej. -150 o +240). El modelo recalcula el valor y los veredictos contra <strong>tus</strong> números — más preciso que el consenso general.</div>' +
+    '<div class="uodds-grid">' +
+    field(id, 'mlh', 'Gana ' + esc(g.home.name), pick('mlh', val(mo.ml_home))) +
+    field(id, 'mld', 'Empate', pick('mld', val(mo.ml_draw))) +
+    field(id, 'mla', 'Gana ' + esc(g.away.name), pick('mla', val(mo.ml_away))) +
+    '<div class="uodds-field"><label>Línea de goles</label><select id="uo-' + id + '-line">' +
+      [1.5, 2.5, 3.5].map(l => '<option value="' + l + '"' + ((saved.line || mo.total_line || 2.5) === l ? ' selected' : '') + '>O/U ' + l + '</option>').join('') +
+    '</select></div>' +
+    field(id, 'ovr', 'Más (over)', pick('ovr', val(mo.total_over))) +
+    field(id, 'und', 'Menos (under)', pick('und', val(mo.total_under))) +
+    field(id, 'btsy', 'Ambos anotan: SÍ', pick('btsy', '')) +
+    field(id, 'btsn', 'Ambos anotan: NO', pick('btsn', '')) +
+    '</div>' +
+    '<div class="uodds-actions">' +
+    '<button class="uodds-apply" data-uoapply="' + id + '">Recalcular con mis momios</button>' +
+    '<button class="uodds-reset" data-uoreset="' + id + '">Restaurar</button>' +
+    '</div></div>';
+}
+function field(id, key, label, value) {
+  return '<div class="uodds-field"><label>' + label + '</label>' +
+    '<input id="uo-' + id + '-' + key + '" inputmode="text" placeholder="-110" value="' + esc(value || '') + '"></div>';
 }
 
 function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
@@ -459,6 +522,113 @@ function distChart(m, g) {
     '<div class="dist-lbl"><span>Cómo cae el marcador: margen de ' + esc(g.home.name) + ' (E = empate)</span></div>' +
     '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
 }
+
+/* ============================================================
+   MOMIOS MANUALES DEL USUARIO — recalcula el valor y los
+   veredictos contra los momios de SU casa. Réplica exacta de la
+   lógica de EV del servidor (solo usa probabilidades que ya son
+   públicas en el payload; los coeficientes nunca viajan).
+   ============================================================ */
+const amProb = a => { const n = Number(String(a).replace('+', '')); if (!isFinite(n) || n === 0) return null; return n > 0 ? 100 / (n + 100) : -n / (-n + 100); };
+const parseAm = raw => { if (raw == null) return null; const s = String(raw).trim().replace('+', ''); if (!s) return null; const n = Number(s); return (isFinite(n) && Math.abs(n) >= 100) ? n : null; };
+function devigN(arr) { const c = arr.map(amProb); if (c.some(x => x == null)) return arr.map(() => null); const s = c.reduce((a, b) => a + b, 0); return s > 0 ? c.map(x => x / s) : c; }
+/* mismo blend y barras que el servidor (22% mercado; bet 3%/2.5%) */
+function evOf(p, amOdd, pMkt, floor, betBar, maybeBar) {
+  const imp = amProb(amOdd); if (imp == null || p == null) return null;
+  const pb = pMkt != null ? 0.78 * p + 0.22 * pMkt : p;
+  const ev = pb * (1 / imp) - 1;
+  const verdict = (pb >= floor && ev >= betBar) ? 'bet' : (pb >= floor && ev >= maybeBar) ? 'maybe' : 'skip';
+  return { ev: +ev.toFixed(3), verdict };
+}
+function readUoInputs(gid) {
+  const V = k => { const el = document.getElementById('uo-' + gid + '-' + k); return el ? parseAm(el.value) : null; };
+  const lineEl = document.getElementById('uo-' + gid + '-line');
+  return { mlh: V('mlh'), mld: V('mld'), mla: V('mla'), line: lineEl ? Number(lineEl.value) : 2.5, ovr: V('ovr'), und: V('und'), btsy: V('btsy'), btsn: V('btsn') };
+}
+const fmtAm = a => (a > 0 ? '+' : '') + a;
+
+function recalcUserVerdicts(gid, o) {
+  const g = gamesById[gid];
+  if (!g || !g.markets) return null;
+  const m = g.markets;
+  const repl = {};
+  // 1X2 (requiere los tres momios)
+  if (o.mlh != null && o.mld != null && o.mla != null) {
+    const dv = devigN([o.mlh, o.mld, o.mla]);
+    const opts = [
+      { label: 'Gana ' + g.home.name, p: m.moneyline.home, am: o.mlh, mk: dv[0], txt: '1X2 ' + g.home.abbr },
+      { label: 'Empate', p: m.moneyline.draw, am: o.mld, mk: dv[1], txt: '1X2 empate' },
+      { label: 'Gana ' + g.away.name, p: m.moneyline.away, am: o.mla, mk: dv[2], txt: '1X2 ' + g.away.abbr },
+    ];
+    opts.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.2, 0.03, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+    const value = opts.filter(x => x.verdict !== 'skip').sort((a, b) => b.ev - a.ev)[0];
+    const best = value || opts.slice().sort((a, b) => b.p - a.p)[0];
+    repl['1x2'] = { label: best.label, prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: best.txt + ' · tu momio ' + fmtAm(best.am) };
+  }
+  // Total (línea 1.5/2.5/3.5 + ambos precios)
+  if (o.ovr != null && o.und != null) {
+    const t = (m.totals || []).find(t => t.line === o.line);
+    if (t) {
+      const dv = devigN([o.ovr, o.und]);
+      const sides = [
+        { side: 'Más', p: t.over, am: o.ovr, mk: dv[0], pre: 'O ' },
+        { side: 'Menos', p: 1 - t.over, am: o.und, mk: dv[1], pre: 'U ' },
+      ];
+      sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.3, 0.025, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+      const best = sides.slice().sort((a, b) => ((b.ev == null ? -9 : b.ev) - (a.ev == null ? -9 : a.ev)))[0];
+      repl['total'] = { label: best.side + ' de ' + o.line + ' goles', prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: best.pre + o.line + ' · tu momio ' + fmtAm(best.am) };
+    }
+  }
+  // Ambos anotan (ambos precios)
+  if (o.btsy != null && o.btsn != null) {
+    const dv = devigN([o.btsy, o.btsn]);
+    const sides = [
+      { side: 'SÍ', p: m.btts.yes, am: o.btsy, mk: dv[0] },
+      { side: 'NO', p: m.btts.no, am: o.btsn, mk: dv[1] },
+    ];
+    sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.2, 0.025, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+    const best = sides.slice().sort((a, b) => ((b.ev == null ? -9 : b.ev) - (a.ev == null ? -9 : a.ev)))[0];
+    repl['btts'] = { label: 'Ambos equipos anotan: ' + best.side, prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: 'BTTS · tu momio ' + fmtAm(best.am) };
+  }
+  if (!Object.keys(repl).length) return null;
+  // misma estructura y orden que el servidor; DC se conserva tal cual
+  return (g.verdicts || []).map(v => repl[v.market] || v);
+}
+
+function saveUserOdds() { try { localStorage.setItem('rp_mx_odds', JSON.stringify(userOdds)); } catch (e) {} }
+
+function applyUserOdds(gid) {
+  const o = readUoInputs(gid);
+  const list = recalcUserVerdicts(gid, o);
+  const box = document.getElementById('v-' + gid);
+  if (!list || !box) return;
+  userOdds[gid] = o; saveUserOdds();
+  box.innerHTML = vrowsHtml(list, true);
+}
+function resetUserOdds(gid) {
+  delete userOdds[gid]; saveUserOdds();
+  const g = gamesById[gid];
+  const box = document.getElementById('v-' + gid);
+  if (g && box) box.innerHTML = vrowsHtml(g.verdicts);
+  const panel = document.getElementById('uo-' + gid);
+  if (panel) panel.classList.remove('open');
+}
+/* re-aplicar los momios guardados tras cada render */
+function reapplyUserOdds() {
+  for (const gid in userOdds) {
+    if (!gamesById[gid]) continue;
+    const list = recalcUserVerdicts(gid, userOdds[gid]);
+    const box = document.getElementById('v-' + gid);
+    if (list && box) box.innerHTML = vrowsHtml(list, true);
+  }
+}
+$('games').addEventListener('click', e => {
+  const t = e.target.closest('[data-uo],[data-uoapply],[data-uoreset]');
+  if (!t) return;
+  if (t.dataset.uo != null) { const p = document.getElementById('uo-' + t.dataset.uo); if (p) p.classList.toggle('open'); }
+  else if (t.dataset.uoapply != null) applyUserOdds(t.dataset.uoapply);
+  else if (t.dataset.uoreset != null) resetUserOdds(t.dataset.uoreset);
+});
 
 /* ---- login (candado) ---- */
 $('lkGo').addEventListener('click', async () => {
