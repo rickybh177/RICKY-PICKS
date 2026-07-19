@@ -560,12 +560,19 @@ function wireIndividual(){
 }
 
 /* ---- wiring para plan torneo ---- */
-function wireTorneo(){
+function wireTorneo(plan){
   const cfg = CONFIG;
   const allFixtures = (cfg && cfg.fixtures) || [];
   const todayIso = (cfg && cfg.today_iso) || '2026-06-17';
-  // Solo mostrar partidos desde hoy en adelante
-  const fixtures = allFixtures.filter(f => f.date >= todayIso);
+  // Plan "final" ($99 / código): SOLO la gran final, sin importar la
+  // fecha del día (así no se rompe si today_iso queda atrás).
+  const isFinalPlan = plan === 'final';
+  const FINAL = { home: 'Argentina', away: 'Spain' };
+  const fixtures = isFinalPlan
+    ? allFixtures.filter(f =>
+        (f.home_team === FINAL.home && f.away_team === FINAL.away) ||
+        (f.home_team === FINAL.away && f.away_team === FINAL.home))
+    : allFixtures.filter(f => f.date >= todayIso); // resto: de hoy en adelante
   const teams = (cfg && cfg.wc_teams) || [];
   const fxSel = document.getElementById('tFixture');
   fxSel.innerHTML = ['<option value="">— Elegir fixture —</option>']
@@ -606,9 +613,9 @@ function wireTorneo(){
     }
     btn.disabled=false; btn.textContent='Calcular picks';
   };
-  /* auto-seleccionar primer fixture de hoy */
-  const todayIdx = fixtures.findIndex(f => f.date === todayIso);
-  if(todayIdx >= 0){ fxSel.value = String(todayIdx); fxSel.dispatchEvent(new Event('change')); }
+  /* auto-seleccionar: la final (plan final) o el primer partido de hoy */
+  const autoIdx = isFinalPlan ? 0 : fixtures.findIndex(f => f.date === todayIso);
+  if(autoIdx >= 0){ fxSel.value = String(autoIdx); fxSel.dispatchEvent(new Event('change')); }
 }
 
 /* ---- estados ---- */
@@ -657,7 +664,7 @@ async function loadAndShow(session){
     if(pago) history.replaceState(null,'','/mis-modelos.html');
     showMain('torneo');
     unlockMlbToggle();
-    loadConfig().then(() => { if(CONFIG) wireTorneo(); }).catch(()=>{});
+    loadConfig().then(() => { if(CONFIG) wireTorneo('torneo'); }).catch(()=>{});
     return;
   }
 
@@ -713,7 +720,7 @@ async function loadAndShow(session){
   loadConfig().then(() => {
     if(!CONFIG) return;
     if(ent.plan==='individual') wireIndividual();
-    else wireTorneo();
+    else wireTorneo(ent.plan);
   }).catch(()=>{});
 }
 
