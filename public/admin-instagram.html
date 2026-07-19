@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY-PICKS — Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #08172e; --ink-2: #0d2444; --blue: #1d4ed8; --blue-bright: #2f7bff;
+    --white: #ffffff; --paper: #f5f8fd; --line: #dce6f5; --muted: #5e6f86;
+    --win: #15a34a; --loss: #d83a3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  nav { background: var(--ink); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; color: var(--white); display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo span { color: var(--blue-bright); }
+  .logo svg { width: 24px; height: 24px; }
+  .admin-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 10px; border-radius: 20px; background: rgba(47,123,255,0.25); color: #90b4ff; border: 1px solid rgba(47,123,255,0.35); }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .user-email { font-size: 0.82rem; color: #9db4d6; }
+  .btn-sm { font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 7px 14px; border-radius: 7px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: #9db4d6; cursor: pointer; text-decoration: none; transition: border-color .15s, color .15s; }
+  .btn-sm:hover { border-color: rgba(255,255,255,0.35); color: var(--white); }
+
+  .page-state { display: none; padding: 80px 24px; text-align: center; }
+  .page-state.active { display: block; }
+  .state-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: 10px; }
+  .state-body { color: var(--muted); margin-bottom: 24px; }
+  .auth-card { max-width: 380px; margin: 0 auto; background: var(--white); border-radius: 18px; padding: 36px; border: 1px solid var(--line); box-shadow: 0 20px 60px -24px rgba(8,23,46,0.15); }
+  .auth-card h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 6px; }
+  .auth-card .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 22px; }
+  .form-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 5px; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--paper); border: 1.5px solid var(--line); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 0.92rem; padding: 11px 13px; border-radius: 9px; outline: none; margin-bottom: 14px; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--blue-bright); }
+  .form-textarea { resize: vertical; min-height: 76px; }
+  .btn-login { width: 100%; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.95rem; padding: 13px; border-radius: 10px; border: none; cursor: pointer; background: var(--blue-bright); color: var(--white); transition: background .15s; }
+  .btn-login:hover { background: var(--blue); }
+  .err-msg { margin-top: 12px; padding: 11px 13px; border-radius: 9px; font-size: 0.85rem; display: none; background: rgba(216,58,58,0.08); color: var(--loss); border: 1px solid rgba(216,58,58,0.25); }
+  .err-msg.show { display: block; }
+
+  #mainContent { display: none; padding: 28px 0 80px; }
+
+  /* barra de estado de conexión */
+  .conn-bar { display: flex; align-items: center; gap: 10px; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 13px 18px; margin-bottom: 22px; font-size: 0.88rem; }
+  .conn-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .conn-dot.ok { background: var(--win); }
+  .conn-dot.bad { background: var(--loss); }
+  .conn-bar code { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; background: var(--paper); padding: 1px 6px; border-radius: 5px; }
+
+  /* tabs principales */
+  .main-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+  .main-tab { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600; padding: 9px 20px; border-radius: 9px; border: 1px solid var(--line); color: var(--muted); cursor: pointer; background: var(--white); transition: all .12s; display: flex; align-items: center; gap: 8px; }
+  .main-tab.active { border-color: var(--blue-bright); color: var(--blue); background: rgba(47,123,255,0.06); }
+  .unread-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; background: var(--loss); color: var(--white); border-radius: 20px; padding: 1px 7px; display: none; }
+  .unread-pill.show { display: inline-block; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.15rem; flex: 1; }
+  .refresh-btn { font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--white); color: var(--ink); cursor: pointer; transition: border-color .12s; }
+  .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .refresh-btn.primary { background: var(--blue-bright); border-color: var(--blue-bright); color: var(--white); }
+  .refresh-btn.primary:hover { background: var(--blue); color: var(--white); }
+
+  .table-wrap { background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table thead th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--paper); font-weight: 500; white-space: nowrap; }
+  .data-table tbody td { padding: 13px 18px; font-size: 0.87rem; border-bottom: 1px solid var(--paper); vertical-align: middle; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover { background: var(--paper); }
+  .empty-state { text-align: center; padding: 42px 20px; color: var(--muted); font-size: 0.9rem; }
+  .kw-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; background: rgba(47,123,255,0.08); color: var(--blue); border-radius: 6px; padding: 2px 8px; margin: 1px 2px 1px 0; display: inline-block; }
+  .type-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 6px; white-space: nowrap; }
+  .type-badge.comment { background: rgba(230,126,34,0.14); color: #c25e12; }
+  .type-badge.dm { background: rgba(124,58,237,0.12); color: #6d28d9; }
+  .onoff { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .onoff.yes { background: var(--win); }
+  .onoff.no { background: var(--line); }
+  .row-btn { font-family: 'Space Grotesk', sans-serif; font-size: 0.76rem; font-weight: 600; padding: 5px 11px; border-radius: 7px; border: 1px solid var(--line); background: var(--white); color: var(--ink); cursor: pointer; margin-right: 5px; }
+  .row-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .row-btn.danger:hover { border-color: var(--loss); color: var(--loss); }
+  .date-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--muted); white-space: nowrap; }
+
+  /* form de regla */
+  .rule-form { background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 22px; display: none; }
+  .rule-form.show { display: block; }
+  .rule-form h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 16px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .hint { font-size: 0.76rem; color: var(--muted); margin: -8px 0 14px; }
+  .form-check { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin-bottom: 14px; }
+  .form-actions { display: flex; gap: 10px; }
+
+  /* inbox */
+  .inbox { display: grid; grid-template-columns: 320px 1fr; gap: 0; background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; height: 600px; }
+  .conv-list { border-right: 1px solid var(--line); overflow-y: auto; }
+  .conv-item { padding: 13px 16px; border-bottom: 1px solid var(--paper); cursor: pointer; transition: background .1s; }
+  .conv-item:hover, .conv-item.active { background: var(--paper); }
+  .conv-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .conv-name { font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .conv-time { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); flex: none; }
+  .conv-preview { font-size: 0.8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .conv-badges { display: flex; gap: 6px; align-items: center; margin-top: 5px; }
+  .win-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px 7px; border-radius: 5px; }
+  .win-badge.open { background: rgba(21,163,74,0.12); color: var(--win); }
+  .win-badge.closed { background: rgba(94,111,134,0.12); color: var(--muted); }
+  .unread-dot { min-width: 18px; height: 18px; border-radius: 10px; background: var(--blue-bright); color: var(--white); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+
+  .thread { display: flex; flex-direction: column; }
+  .thread-head { padding: 13px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .thread-head .who { font-weight: 600; font-size: 0.92rem; }
+  .thread-msgs { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 8px; background: var(--paper); }
+  .bubble { max-width: 72%; padding: 9px 13px; border-radius: 14px; font-size: 0.88rem; white-space: pre-wrap; word-break: break-word; }
+  .bubble.in { background: var(--white); border: 1px solid var(--line); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .bubble.out { background: var(--blue-bright); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
+  .bubble .meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; opacity: 0.65; margin-top: 4px; }
+  .bubble.out.auto { background: var(--ink-2); }
+  .composer { display: flex; gap: 10px; padding: 13px 16px; border-top: 1px solid var(--line); }
+  .composer textarea { flex: 1; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 13px; font-family: 'Inter', sans-serif; font-size: 0.9rem; resize: none; height: 44px; outline: none; background: var(--paper); }
+  .composer textarea:focus { border-color: var(--blue-bright); }
+  .composer button { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.88rem; padding: 0 22px; border-radius: 10px; border: none; background: var(--blue-bright); color: var(--white); cursor: pointer; }
+  .composer button:disabled { opacity: 0.5; cursor: default; }
+  .thread-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.9rem; background: var(--paper); }
+  .send-err { padding: 8px 16px; font-size: 0.8rem; color: var(--loss); display: none; }
+  .send-err.show { display: block; }
+
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .7s linear infinite; margin: 48px auto; display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 860px) {
+    .inbox { grid-template-columns: 1fr; height: auto; }
+    .conv-list { max-height: 260px; border-right: none; border-bottom: 1px solid var(--line); }
+    .thread-msgs { min-height: 300px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .data-table thead th:nth-child(4), .data-table tbody td:nth-child(4) { display: none; }
+  }
+  @media (max-width: 560px) { .wrap { padding: 0 16px; } }
+  :focus-visible { outline: 3px solid var(--blue-bright); outline-offset: 2px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="#08172e"/>
+        <polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="38" cy="13" r="4" fill="#ffffff"/>
+      </svg>
+      RICKY<span>·</span>PICKS
+    </a>
+    <div class="nav-right">
+      <a class="btn-sm" href="/admin.html">Clientes</a>
+      <span class="admin-badge">Instagram</span>
+      <span class="user-email" id="navEmail"></span>
+      <button class="btn-sm" id="signOutBtn">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-state active" id="stateLogin">
+  <div class="auth-card">
+    <h2>Panel de Instagram</h2>
+    <p class="sub">Solo accesible para la cuenta de administrador.</p>
+    <label class="form-label" for="loginEmail">Correo</label>
+    <input class="form-input" type="email" id="loginEmail" placeholder="tu@correo.com" autocomplete="email">
+    <label class="form-label" for="loginPass">Contraseña</label>
+    <input class="form-input" type="password" id="loginPass" placeholder="••••••••">
+    <button class="btn-login" id="loginBtn">Entrar</button>
+    <div class="err-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<div class="page-state" id="stateUnauth">
+  <div class="state-title">Acceso no autorizado</div>
+  <div class="state-body">Esta página solo es accesible para el administrador del sitio.</div>
+</div>
+
+<div class="page-state" id="stateLoading"><div class="spinner"></div></div>
+
+<div id="mainContent">
+  <div class="wrap">
+
+    <div class="conn-bar" id="connBar">
+      <span class="conn-dot bad" id="connDot"></span>
+      <span id="connText">Verificando conexión con Instagram…</span>
+    </div>
+
+    <div class="main-tabs">
+      <div class="main-tab active" data-tab="rules">Automatizaciones</div>
+      <div class="main-tab" data-tab="inbox">Inbox <span class="unread-pill" id="unreadPill"></span></div>
+      <div class="main-tab" data-tab="comments">Comentarios</div>
+    </div>
+
+    <!-- ===== AUTOMATIZACIONES ===== -->
+    <div class="tab-panel active" id="panel-rules">
+      <div class="toolbar">
+        <h2>Reglas de respuesta automática</h2>
+        <button class="refresh-btn" id="rulesRefresh">↻ Actualizar</button>
+        <button class="refresh-btn primary" id="newRuleBtn">+ Nueva regla</button>
+      </div>
+
+      <div class="rule-form" id="ruleForm">
+        <h3 id="ruleFormTitle">Nueva regla</h3>
+        <div class="form-grid">
+          <div>
+            <label class="form-label" for="rfName">Nombre de la regla</label>
+            <input class="form-input" id="rfName" placeholder="Ej. Comenta PICKS → link">
+          </div>
+          <div>
+            <label class="form-label" for="rfType">Se activa con</label>
+            <select class="form-select" id="rfType">
+              <option value="comment">Comentario en un post</option>
+              <option value="dm">Mensaje directo (DM)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="rfKeywords">Palabras clave (separadas por coma)</label>
+            <input class="form-input" id="rfKeywords" placeholder="picks, precio, info">
+            <div class="hint">Vacío = responde a TODOS. No distingue mayúsculas ni acentos.</div>
+          </div>
+          <div>
+            <label class="form-label" for="rfMatch">Tipo de coincidencia</label>
+            <select class="form-select" id="rfMatch">
+              <option value="contains">Contiene la palabra</option>
+              <option value="exact">Texto exacto</option>
+            </select>
+          </div>
+          <div class="full" id="rfMediaWrap">
+            <label class="form-label" for="rfMedia">ID del post (opcional)</label>
+            <input class="form-input" id="rfMedia" placeholder="Vacío = aplica a todos los posts">
+          </div>
+          <div class="full" id="rfCommentWrap">
+            <label class="form-label" for="rfCommentReply">Respuesta pública al comentario (opcional)</label>
+            <textarea class="form-textarea" id="rfCommentReply" placeholder="¡Listo @{{username}}! Te mandé el link por DM 📩"></textarea>
+          </div>
+          <div class="full">
+            <label class="form-label" for="rfDmReply">Mensaje directo (DM)</label>
+            <textarea class="form-textarea" id="rfDmReply" placeholder="Hola {{username}} 👋 Aquí está el link: https://rickypicks.com.mx"></textarea>
+            <div class="hint">Puedes usar <b>{{username}}</b> y <b>{{nombre}}</b> para personalizar.</div>
+          </div>
+        </div>
+        <label class="form-check"><input type="checkbox" id="rfActive" checked> Regla activa</label>
+        <div class="form-actions">
+          <button class="refresh-btn primary" id="rfSave">Guardar regla</button>
+          <button class="refresh-btn" id="rfCancel">Cancelar</button>
+        </div>
+        <div class="err-msg" id="rfErr"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th></th><th>Regla</th><th>Tipo</th><th>Palabras clave</th><th>Usos</th><th></th></tr></thead>
+          <tbody id="rulesBody"><tr><td colspan="6" class="empty-state">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== INBOX ===== -->
+    <div class="tab-panel" id="panel-inbox">
+      <div class="toolbar">
+        <h2>Conversaciones</h2>
+        <button class="refresh-btn" id="inboxRefresh">↻ Actualizar</button>
+      </div>
+      <div class="inbox">
+        <div class="conv-list" id="convList"><div class="empty-state">Cargando…</div></div>
+        <div class="thread" id="threadPane">
+          <div class="thread-empty" id="threadEmpty">Elige una conversación</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COMENTARIOS ===== -->
+    <div class="tab-panel" id="panel-comments">
+      <div class="toolbar">
+        <h2>Comentarios procesados</h2>
+        <button class="refresh-btn" id="commentsRefresh">↻ Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Usuario</th><th>Comentario</th><th>Acciones</th><th>Fecha</th></tr></thead>
+          <tbody id="commentsBody"><tr><td colspan="4" class="empty-state">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+const ADMIN_EMAIL  = 'rickybh17@gmail.com';
+
+let sb = null, TOK = null;
+function initSb(){
+  if(sb) return true;
+  if(window.supabase && window.supabase.createClient){
+    try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); return true; }catch(e){ return false; }
+  }
+  return false;
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(action, opts){
+  const url = '/api/ig-admin?action=' + encodeURIComponent(action) + (opts && opts.qs ? '&' + opts.qs : '');
+  const res = await fetch(url, {
+    method: opts && opts.body ? 'POST' : 'GET',
+    headers: Object.assign({ 'Authorization': 'Bearer ' + TOK }, opts && opts.body ? {'Content-Type':'application/json'} : {}),
+    body: opts && opts.body ? JSON.stringify(Object.assign({action}, opts.body)) : undefined,
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || ('Error ' + res.status));
+  return data;
+}
+
+function fmtTime(iso){
+  if(!iso) return '';
+  const d = new Date(iso), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return sameDay
+    ? d.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})
+    : d.toLocaleDateString('es-MX', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+const windowOpen = c => c.last_in_at && (Date.now() - new Date(c.last_in_at).getTime()) < 24*3600*1000;
+
+/* ================= ESTADO DE CONEXIÓN ================= */
+async function loadStatus(){
+  try{
+    const s = await api('status');
+    if(s.connected){
+      $('connDot').className = 'conn-dot ok';
+      $('connText').innerHTML = 'Conectado a Instagram como <b>@' + esc(s.account.username||'?') + '</b>';
+    }else{
+      $('connDot').className = 'conn-dot bad';
+      const missing = Object.entries(s.env||{}).filter(([,v])=>!v).map(([k])=>'<code>'+k+'</code>').join(', ');
+      $('connText').innerHTML = missing
+        ? 'Sin conectar — faltan variables en Vercel: ' + missing + '. Ver <code>IG-README.md</code>.'
+        : 'Token configurado pero la API respondió: ' + esc(s.error||'error') + ' (¿token vencido?)';
+    }
+  }catch(e){
+    $('connText').textContent = 'No se pudo verificar la conexión: ' + e.message;
+  }
+}
+
+/* ================= REGLAS ================= */
+let RULES = [];
+function syncRuleFormFields(){
+  const isComment = $('rfType').value === 'comment';
+  $('rfCommentWrap').style.display = isComment ? '' : 'none';
+  $('rfMediaWrap').style.display = isComment ? '' : 'none';
+}
+$('rfType').addEventListener('change', syncRuleFormFields);
+
+function openRuleForm(rule){
+  $('ruleForm').classList.add('show');
+  $('ruleFormTitle').textContent = rule ? 'Editar regla' : 'Nueva regla';
+  $('ruleForm').dataset.id = rule ? rule.id : '';
+  $('rfName').value = rule ? rule.name : '';
+  $('rfType').value = rule ? rule.trigger_type : 'comment';
+  $('rfKeywords').value = rule ? (rule.keywords||[]).join(', ') : '';
+  $('rfMatch').value = rule ? rule.match_type : 'contains';
+  $('rfMedia').value = rule && rule.media_id ? rule.media_id : '';
+  $('rfCommentReply').value = rule && rule.comment_reply ? rule.comment_reply : '';
+  $('rfDmReply').value = rule && rule.dm_reply ? rule.dm_reply : '';
+  $('rfActive').checked = rule ? !!rule.active : true;
+  $('rfErr').className = 'err-msg';
+  syncRuleFormFields();
+  $('rfName').focus();
+}
+$('newRuleBtn').addEventListener('click', ()=>openRuleForm(null));
+$('rfCancel').addEventListener('click', ()=>$('ruleForm').classList.remove('show'));
+
+$('rfSave').addEventListener('click', async ()=>{
+  const rule = {
+    id: $('ruleForm').dataset.id || undefined,
+    name: $('rfName').value.trim(),
+    trigger_type: $('rfType').value,
+    keywords: $('rfKeywords').value.split(',').map(s=>s.trim()).filter(Boolean),
+    match_type: $('rfMatch').value,
+    media_id: $('rfType').value === 'comment' ? $('rfMedia').value.trim() : '',
+    comment_reply: $('rfType').value === 'comment' ? $('rfCommentReply').value.trim() : '',
+    dm_reply: $('rfDmReply').value.trim(),
+    active: $('rfActive').checked,
+  };
+  $('rfSave').disabled = true;
+  try{
+    await api('save-rule', {body:{rule}});
+    $('ruleForm').classList.remove('show');
+    await loadRules();
+  }catch(e){
+    $('rfErr').textContent = e.message; $('rfErr').className = 'err-msg show';
+  }
+  $('rfSave').disabled = false;
+});
+
+function renderRules(){
+  const body = $('rulesBody');
+  if(!RULES.length){
+    body.innerHTML = '<tr><td colspan="6" class="empty-state">Sin reglas todavía. Crea la primera con “+ Nueva regla”.</td></tr>';
+    return;
+  }
+  body.innerHTML = RULES.map(r => `<tr>
+    <td><span class="onoff ${r.active?'yes':'no'}" title="${r.active?'Activa':'Pausada'}"></span></td>
+    <td style="font-weight:600">${esc(r.name)}</td>
+    <td><span class="type-badge ${r.trigger_type}">${r.trigger_type==='comment'?'Comentario':'DM'}</span></td>
+    <td>${(r.keywords&&r.keywords.length)? r.keywords.map(k=>'<span class="kw-badge">'+esc(k)+'</span>').join('') : '<span style="color:var(--muted);font-size:0.8rem">todos</span>'}</td>
+    <td class="date-cell">${r.hits||0}</td>
+    <td style="white-space:nowrap">
+      <button class="row-btn" data-act="toggle" data-id="${r.id}">${r.active?'Pausar':'Activar'}</button>
+      <button class="row-btn" data-act="edit" data-id="${r.id}">Editar</button>
+      <button class="row-btn danger" data-act="del" data-id="${r.id}">Borrar</button>
+    </td>
+  </tr>`).join('');
+}
+$('rulesBody').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.row-btn'); if(!btn) return;
+  const rule = RULES.find(r=>r.id===btn.dataset.id); if(!rule) return;
+  if(btn.dataset.act==='edit') return openRuleForm(rule);
+  if(btn.dataset.act==='toggle'){
+    btn.disabled = true;
+    try{ await api('save-rule',{body:{rule:Object.assign({},rule,{active:!rule.active})}}); await loadRules(); }
+    catch(err){ alert(err.message); }
+    return;
+  }
+  if(btn.dataset.act==='del'){
+    if(!confirm('¿Borrar la regla "'+rule.name+'"?')) return;
+    btn.disabled = true;
+    try{ await api('delete-rule',{body:{id:rule.id}}); await loadRules(); }
+    catch(err){ alert(err.message); }
+  }
+});
+async function loadRules(){
+  try{ RULES = (await api('rules')).rules; renderRules(); }
+  catch(e){ $('rulesBody').innerHTML = '<tr><td colspan="6" class="empty-state">'+esc(e.message)+'</td></tr>'; }
+}
+$('rulesRefresh').addEventListener('click', loadRules);
+
+/* ================= INBOX ================= */
+let CONVS = [], activeIgsid = null, pollTimer = null;
+
+function renderConvs(){
+  const list = $('convList');
+  const totalUnread = CONVS.reduce((s,c)=>s+(c.unread||0),0);
+  $('unreadPill').textContent = totalUnread;
+  $('unreadPill').className = 'unread-pill' + (totalUnread>0?' show':'');
+  if(!CONVS.length){
+    list.innerHTML = '<div class="empty-state">Sin conversaciones todavía. Aparecerán aquí cuando alguien te escriba o comente con una regla activa.</div>';
+    return;
+  }
+  list.innerHTML = CONVS.map(c => `<div class="conv-item ${c.igsid===activeIgsid?'active':''}" data-igsid="${esc(c.igsid)}">
+    <div class="conv-top">
+      <span class="conv-name">${esc(c.username ? '@'+c.username : (c.name || c.igsid))}</span>
+      <span class="conv-time">${fmtTime(c.last_msg_at)}</span>
+    </div>
+    <div class="conv-preview">${esc(c.last_msg_text||'')}</div>
+    <div class="conv-badges">
+      <span class="win-badge ${windowOpen(c)?'open':'closed'}">${windowOpen(c)?'ventana 24h abierta':'ventana cerrada'}</span>
+      ${c.unread>0?'<span class="unread-dot">'+c.unread+'</span>':''}
+    </div>
+  </div>`).join('');
+}
+$('convList').addEventListener('click', e=>{
+  const item = e.target.closest('.conv-item'); if(!item) return;
+  openThread(item.dataset.igsid);
+});
+
+async function loadConvs(){
+  try{ CONVS = (await api('conversations')).conversations; renderConvs(); }
+  catch(e){ $('convList').innerHTML = '<div class="empty-state">'+esc(e.message)+'</div>'; }
+}
+$('inboxRefresh').addEventListener('click', async ()=>{ await loadConvs(); if(activeIgsid) await openThread(activeIgsid, true); });
+
+async function openThread(igsid, keepScroll){
+  activeIgsid = igsid;
+  renderConvs();
+  const pane = $('threadPane');
+  try{
+    const data = await api('messages', {qs:'igsid='+encodeURIComponent(igsid)});
+    const c = data.contact || {igsid};
+    const open = windowOpen(c);
+    pane.innerHTML = `
+      <div class="thread-head">
+        <span class="who">${esc(c.username ? '@'+c.username : (c.name || igsid))}</span>
+        <span class="win-badge ${open?'open':'closed'}">${open?'puedes responder (24h)':'ventana de 24h cerrada'}</span>
+      </div>
+      <div class="thread-msgs" id="threadMsgs">${
+        (data.messages||[]).map(m => `<div class="bubble ${m.direction} ${m.rule_id?'auto':''}">${esc(m.text||'[adjunto]')}<span class="meta">${m.direction==='out'?(m.rule_id?'automático · ':'tú · '):''}${fmtTime(m.ts)}</span></div>`).join('')
+        || '<div style="color:var(--muted);font-size:0.85rem;text-align:center">Sin mensajes</div>'
+      }</div>
+      <div class="send-err" id="sendErr"></div>
+      <div class="composer">
+        <textarea id="composerText" placeholder="Escribe una respuesta…"></textarea>
+        <button id="composerSend">Enviar</button>
+      </div>`;
+    const msgs = $('threadMsgs');
+    msgs.scrollTop = msgs.scrollHeight;
+    const send = async ()=>{
+      const text = $('composerText').value.trim(); if(!text) return;
+      $('composerSend').disabled = true;
+      $('sendErr').className = 'send-err';
+      try{
+        await api('send', {body:{igsid, text}});
+        $('composerText').value = '';
+        await openThread(igsid, true);
+        await loadConvs();
+      }catch(e){
+        $('sendErr').textContent = e.message.includes('24') ? 'Fuera de la ventana de 24 horas: Instagram no permite enviar este mensaje.' : e.message;
+        $('sendErr').className = 'send-err show';
+        $('composerSend').disabled = false;
+      }
+    };
+    $('composerSend').addEventListener('click', send);
+    $('composerText').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+  }catch(e){
+    pane.innerHTML = '<div class="thread-empty">'+esc(e.message)+'</div>';
+  }
+}
+
+/* ================= COMENTARIOS ================= */
+async function loadComments(){
+  try{
+    const data = await api('comments');
+    const body = $('commentsBody');
+    if(!data.comments.length){
+      body.innerHTML = '<tr><td colspan="4" class="empty-state">Aún no se procesan comentarios.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.comments.map(c => `<tr>
+      <td style="font-weight:600;white-space:nowrap">${esc(c.from_username?'@'+c.from_username:(c.from_id||'—'))}</td>
+      <td>${esc(c.text||'')}</td>
+      <td style="white-space:nowrap;font-size:0.78rem">
+        ${c.replied?'<span class="kw-badge">respondido</span>':''}
+        ${c.dm_sent?'<span class="kw-badge">DM enviado</span>':''}
+        ${!c.replied&&!c.dm_sent?'<span style="color:var(--muted)">sin acción</span>':''}
+      </td>
+      <td class="date-cell">${fmtTime(c.ts)}</td>
+    </tr>`).join('');
+  }catch(e){
+    $('commentsBody').innerHTML = '<tr><td colspan="4" class="empty-state">'+esc(e.message)+'</td></tr>';
+  }
+}
+$('commentsRefresh').addEventListener('click', loadComments);
+
+/* ================= TABS ================= */
+document.querySelectorAll('.main-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-'+tab.dataset.tab).classList.add('active');
+    if(tab.dataset.tab==='inbox') loadConvs();
+    if(tab.dataset.tab==='comments') loadComments();
+  });
+});
+
+/* ================= LOGIN / BOOT ================= */
+function setState(id){
+  ['stateLogin','stateUnauth','stateLoading'].forEach(s=>$(s).classList.toggle('active', s===id));
+  $('mainContent').style.display = 'none';
+}
+function showMain(){
+  ['stateLogin','stateUnauth','stateLoading'].forEach(s=>$(s).classList.remove('active'));
+  $('mainContent').style.display = 'block';
+}
+$('loginBtn').addEventListener('click', async ()=>{
+  if(!sb && !initSb()) return;
+  const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
+  if(!email || !pass){ $('loginErr').textContent='Escribe correo y contraseña.'; $('loginErr').className='err-msg show'; return; }
+  $('loginBtn').disabled = true; $('loginBtn').textContent = 'Entrando…';
+  try{
+    const {error} = await sb.auth.signInWithPassword({email, password: pass});
+    if(error) throw error;
+    await boot();
+  }catch(e){
+    $('loginErr').textContent = e.message || 'No se pudo iniciar sesión.'; $('loginErr').className='err-msg show';
+  }
+  $('loginBtn').disabled = false; $('loginBtn').textContent = 'Entrar';
+});
+$('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('loginBtn').click(); });
+$('signOutBtn').addEventListener('click', async ()=>{ if(sb) await sb.auth.signOut(); window.location.reload(); });
+
+async function boot(){
+  if(!initSb()){ setTimeout(boot, 200); return; }
+  setState('stateLoading');
+  const {data} = await sb.auth.getSession();
+  const session = data && data.session;
+  if(!session){ setState('stateLogin'); return; }
+  if(session.user.email !== ADMIN_EMAIL){ setState('stateUnauth'); return; }
+  TOK = session.access_token;
+  $('navEmail').textContent = session.user.email;
+  showMain();
+  loadStatus();
+  loadRules();
+  loadConvs();
+  // refresco suave del inbox cada 20 s
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async ()=>{
+    if(document.hidden) return;
+    await loadConvs();
+    if(activeIgsid && $('panel-inbox').classList.contains('active')) {
+      const focused = document.activeElement === $('composerText');
+      if(!focused) await openThread(activeIgsid, true);
+    }
+  }, 20000);
+}
+boot();
+</script>
+</body>
+</html>

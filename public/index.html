@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY·PICKS — Modelo MLB: 10,000 futuros por juego</title>
+<title>RICKY·PICKS — Modelos Liga MX y MLB: picks con valor real</title>
 <meta name="description" content="El modelo simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,6 +138,9 @@
   .pc-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: var(--g2); margin: 12px 0 4px; }
   .pc-bar .a { background: var(--line-2); }
   .pc-bar .h { background: var(--blue); }
+  /* hero (Liga MX): la primera fila/segmento es el LOCAL → azul */
+  #pickcard .pc-bar .a { background: var(--blue); }
+  #pickcard .pc-bar .h { background: var(--line-2); }
   .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bet-bg); border: 1px solid rgba(47,213,123,0.35); border-radius: 12px; padding: 12px 14px; }
   .pc-pick .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 6px; background: var(--bet); color: #06251545; color: #052816; }
   .pc-pick .sel { font-weight: 700; font-size: 0.96rem; letter-spacing: -0.01em; flex: 1; color: var(--text); }
@@ -398,22 +401,22 @@
 <!-- ============ HERO ============ -->
 <div class="stage" id="stage">
   <div class="stage-sticky">
-    <video class="vid v1" id="vid1" src="/video/hero-pitch.mp4" poster="/video/hero-pitch.jpg" muted playsinline autoplay loop preload="auto"></video>
-    <video class="vid v2" id="vid2" src="/video/hero-swing.mp4" poster="/video/hero-swing.jpg" muted playsinline preload="metadata"></video>
+    <!-- Fondo: imagen Liga MX (antes videos MLB) -->
+    <img class="vid v1" id="vid1" src="/img/ligamx.jpg" alt="" style="opacity:1">
     <div class="veil"></div>
     <div class="stage-dim" id="stageDim"></div>
 
     <div class="hero-copy" id="heroCopy">
-      <div class="hero-eyebrow">Modelo MLB — 10,000 simulaciones por juego</div>
-      <h1 class="mega">Este juego ya se jugó <em>10,000 veces.</em></h1>
-      <div class="hero-sub">El modelo simula cada partido antes del primer lanzamiento y te dice a qué entrarle. Y a qué no.</div>
+      <div class="hero-eyebrow">Modelo Liga MX — Apertura 2026 · también MLB</div>
+      <h1 class="mega">La Liga MX, resuelta <em>marcador por marcador.</em></h1>
+      <div class="hero-sub">El modelo calcula todos los marcadores posibles antes del silbatazo y te dice a qué entrarle. Y a qué no.</div>
     </div>
 
     <div class="pickstage">
       <div class="pickcard" id="pickcard">
         <div class="pc-piece pc-shell" data-piece="0">
           <div class="pc-piece pc-tag" data-piece="1">
-            <span class="t1">Pick gratis de hoy</span>
+            <span class="t1">Pick gratis · Liga MX</span>
             <span class="t2" id="pcDate">HOY</span>
           </div>
           <div class="pc-piece" data-piece="2">
@@ -443,7 +446,7 @@
           </div>
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
-          <a href="#precios" id="heroFreeBtn">Acceso fundador</a>
+          <a href="#precios-mx" id="heroFreeBtn">Acceso fundador</a>
           <span class="mini">Sé de los primeros. Precio fundador congelado de por vida — los que lleguen después pagarán más.</span>
         </div>
       </div>
@@ -816,8 +819,6 @@
    ============================================================ */
 (function () {
   const stage = document.getElementById('stage');
-  const vid1 = document.getElementById('vid1');
-  const vid2 = document.getElementById('vid2');
   const heroCopy = document.getElementById('heroCopy');
   const scrollHint = document.getElementById('scrollHint');
   const stageDim = document.getElementById('stageDim');
@@ -826,7 +827,6 @@
   const pieces = Array.from(document.querySelectorAll('#stage .pc-piece'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let v2Started = false;
   const clamp01 = x => Math.max(0, Math.min(1, x));
   const ease = t => 1 - Math.pow(1 - t, 3);
 
@@ -845,16 +845,7 @@
     nav.classList.toggle('scrolled', window.scrollY > 30);
     if (reduced) return;
 
-    const xf = clamp01((p - 0.26) / 0.14);
-    vid1.style.opacity = String(1 - xf);
-    vid2.style.opacity = String(xf);
-    if (xf > 0.05 && !v2Started) {
-      v2Started = true;
-      try { vid2.play().catch(() => {}); } catch (e) {}
-    }
-    if (xf >= 1 && !vid1.paused) vid1.pause();
-    if (xf < 1 && vid1.paused && p < 0.26) { try { vid1.play().catch(() => {}); } catch (e) {} }
-
+    // (el fondo ahora es una imagen fija: ya no hay crossfade de videos)
     const hFade = clamp01((p - 0.14) / 0.16);
     heroCopy.style.opacity = String(1 - hFade);
     heroCopy.style.transform = 'translateY(' + (-60 * ease(hFade)) + 'px) scale(' + (1 - 0.08 * hFade) + ')';
@@ -877,7 +868,6 @@
 
   if (reduced) {
     pieces.forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
-    vid1.removeAttribute('autoplay');
   }
 
   window.addEventListener('scroll', frame, { passive: true });
@@ -938,10 +928,49 @@
     pick: { market: 'ML', sel: 'home', prob: 0.72 }, sims: 10000,
   };
 
+  /* la card de "EN VIVO" (lc) sigue mostrando el pick gratis de MLB */
   fetch('/api/mlb-free')
     .then(r => r.ok ? r.json() : null)
-    .then(d => { const g = d && d.game ? d.game : fallback; applyTo('pc', g); applyTo('lc', g); })
-    .catch(() => { applyTo('pc', fallback); applyTo('lc', fallback); });
+    .then(d => { const g = d && d.game ? d.game : fallback; applyTo('lc', g); mlbFallbackHero = g; })
+    .catch(() => { applyTo('lc', fallback); });
+
+  // HERO: pick gratis de LIGA MX (la gente debe ver desde arriba que
+  // hay Liga MX). Ojo con los ids: los slots se llaman pcAway/pcHome
+  // por herencia del layout MLB, pero aquí la PRIMERA fila (slots
+  // "Away") lleva al LOCAL — convención Liga MX.
+  let mlbFallbackHero = null;
+  function applyMxHero(d) {
+    const g = d.game;
+    set('pcAwayName', g.home.name); set('pcAwayPit', 'Local');
+    set('pcHomeName', g.away.name); set('pcHomePit', 'Visitante');
+    const ml = g.moneyline || {};
+    set('pcAwayProb', pct(ml.home)); set('pcHomeProb', pct(ml.away));
+    // fila azul (fav) = el de mayor probabilidad
+    const r1 = document.getElementById('pcAway'), r2 = document.getElementById('pcHome');
+    if (r1 && r2) { r1.classList.toggle('fav', ml.home >= ml.away); r2.classList.toggle('fav', ml.away > ml.home); }
+    const al = document.getElementById('pcAwayLogo'), hl = document.getElementById('pcHomeLogo');
+    if (al && g.home.logo) al.src = g.home.logo;
+    if (hl && g.away.logo) hl.src = g.away.logo;
+    const ba = document.getElementById('pcBarA'), bh = document.getElementById('pcBarH');
+    if (ba) ba.style.width = (ml.home * 100) + '%';
+    if (bh) bh.style.width = (ml.away * 100) + '%';
+    set('pcDate', 'JORNADA ' + (d.jornada || ''));
+    if (g.pick) {
+      set('pcPickSel', g.pick.label);
+      set('pcPickOdds', pct(g.pick.prob));
+      const chip = document.querySelector('#pickcard .vchip');
+      if (chip) chip.textContent = (g.pick.verdict || 'bet').toUpperCase();
+    }
+    set('pcSims', 'EMPATE ' + pct(ml.draw) + ' · MATRIZ EXACTA');
+    set('pcVenue', (g.venue || '').toUpperCase());
+  }
+  fetch('/api/mx-free')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (d && d.game) applyMxHero(d);
+      else applyTo('pc', mlbFallbackHero || fallback); // sin partido MX: cae a MLB
+    })
+    .catch(() => { applyTo('pc', mlbFallbackHero || fallback); });
 })();
 
 /* ============================================================
