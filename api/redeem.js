@@ -25,6 +25,7 @@ const CODES = {
   'FINOVIP':   'torneo',
   'MLBPLATA': 'mlb_fundador', // código de soporte: desbloqueo manual de MLB mensual
   'SAUMLB': 'mlb_semana', // código semanal de MLB
+  'MLBSEM': 'mlb_semana', // código semanal de MLB
   'ARTUROF': 'mx_apertura', // acceso completo Liga MX (Apertura 2026 + liguilla)
   'LORDI': 'final', // acceso solo a la gran final del Mundial (Argentina vs España)
 };
