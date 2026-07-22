@@ -28,6 +28,7 @@ const CODES = {
   'MLBSEM': 'mlb_semana', // código semanal de MLB
   'ARTUROF': 'mx_apertura', // acceso completo Liga MX (Apertura 2026 + liguilla)
   'LORDI': 'final', // acceso solo a la gran final del Mundial (Argentina vs España)
+  'MLBFULL': 'mlb_temporada', // código de acceso completo MLB (temporada 2026)
 };
 
 function bearer(req) {
