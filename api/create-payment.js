@@ -13,11 +13,17 @@ function bearer(req) {
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
 
+/* Dominio del sitio: PRIMERO el host real de la petición (igual que
+   stripe-create) y la env como respaldo. Lección del 25-jul-2026:
+   SITE_URL quedó apuntando al dominio viejo ricky-picks.vercel.app
+   (hoy 404) y TODAS las notificaciones de pago de Mercado Pago
+   murieron ahí — pagos aprobados sin acceso otorgado. */
 function siteUrl(req) {
-  const env = process.env.SITE_URL || process.env.PUBLIC_SITE_URL;
-  if (env) return env.replace(/\/$/, '');
   const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0];
   const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (host && !host.includes('localhost')) return `${proto}://${host}`;
+  const env = process.env.SITE_URL || process.env.PUBLIC_SITE_URL;
+  if (env) return env.replace(/\/$/, '');
   return `${proto}://${host}`;
 }
 
