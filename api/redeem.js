@@ -29,6 +29,7 @@ const CODES = {
   'ARTUROF': 'mx_apertura', // acceso completo Liga MX (Apertura 2026 + liguilla)
   'LORDI': 'final', // acceso solo a la gran final del Mundial (Argentina vs España)
   'MLBFULL': 'mlb_temporada', // código de acceso completo MLB (temporada 2026)
+  'COMBOMES': 'combo_fundador', // pago por transferencia: MLB + Liga MX por 30 días (sin suscripción; expira solo)
 };
 
 function bearer(req) {
