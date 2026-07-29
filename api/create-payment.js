@@ -66,6 +66,11 @@ module.exports = async function handler(req, res) {
   // Suscripción vs pago único: ÚNICA fuente de verdad en lib/plans.js
   // (bandera `recurring`). Temporada/pago único nunca crea preapproval.
   if (isSubscription(planId)) {
+    if (discount) {
+      // MP cobra el mismo monto todos los meses: no hay "primer mes con
+      // descuento" en un preapproval. El código sí funciona con tarjeta.
+      return res.status(400).json({ error: 'Ese código de descuento solo aplica pagando con tarjeta.' });
+    }
     const subDest = planId === 'mlb_fundador' ? 'mlb.html' : 'mx.html';
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {

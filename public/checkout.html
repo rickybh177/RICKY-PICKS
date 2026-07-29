@@ -252,7 +252,7 @@ const PLANS = {
     features: [
       'Todos los juegos, todos los días, por 7 días',
       'Picks BET / MAYBE / SKIP + análisis del modelo',
-      'Acceso inmediato con tu cuenta',
+      'Gana tu Semana: si tus 7 días cierran con más BET perdidos que ganados, tus $149 se acreditan a tu primer mes de Fundador — solo escríbenos',
       'Acceso fundador: entras con el precio de lanzamiento',
     ],
   },
@@ -531,7 +531,8 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
 
     if (data.type === 'discount') {
       if (data.plan !== planId) {
-        throw new Error('Este código aplica solo al plan ' + (data.plan === 'torneo' ? 'Torneo completo' : 'Partidos del día') + '.');
+        const target = PLANS[data.plan];
+        throw new Error('Este código aplica solo al plan ' + (target ? target.name : data.plan) + '.');
       }
       _activeDiscount = { code, pct: data.pct, plan: data.plan };
       const original = PLANS[planId].price;

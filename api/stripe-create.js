@@ -83,15 +83,27 @@ module.exports = async function handler(req, res) {
         metadata: { user_id: user.id, plan },
         customer_email: user.email,
       };
-      const includesMlb = plan === 'mlb_fundador' || plan === 'combo_fundador';
-      const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
-      const credit = paseCreditFor(ent); // MXN (99) o 0
-      if (credit > 0) {
+      if (discount) {
+        /* Código de descuento sobre suscripción: cupón de UNA sola vez
+           (solo el primer mes; las renovaciones van a precio completo).
+           Redondeado a pesos para que coincida con lo que ve el cliente. */
+        const pesosOff = Math.round((p.price / 100) * (discount.pct / 100));
         const coupon = await stripe.coupons.create({
-          amount_off: credit * 100, currency: p.currency,
-          duration: 'once', name: 'Crédito Pase del día',
+          amount_off: pesosOff * 100, currency: p.currency,
+          duration: 'once', name: `Código ${discountCode}`,
         });
         sessionParams.discounts = [{ coupon: coupon.id }];
+      } else {
+        const includesMlb = plan === 'mlb_fundador' || plan === 'combo_fundador';
+        const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
+        const credit = paseCreditFor(ent); // MXN (99) o 0
+        if (credit > 0) {
+          const coupon = await stripe.coupons.create({
+            amount_off: credit * 100, currency: p.currency,
+            duration: 'once', name: 'Crédito Pase del día',
+          });
+          sessionParams.discounts = [{ coupon: coupon.id }];
+        }
       }
       const session = await stripe.checkout.sessions.create(sessionParams);
       return res.status(200).json({ url: session.url });
