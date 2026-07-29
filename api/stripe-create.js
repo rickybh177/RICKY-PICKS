@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { paseCreditFor } = require('../lib/pase-credit');
-const { isSubscription } = require('../lib/plans');
+const { isSubscription, PLANS: SERVER_PLANS } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -46,7 +46,8 @@ module.exports = async function handler(req, res) {
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
 
     const plan = (body && body.plan) || 'torneo';
-    if (!PLANS[plan]) return res.status(400).json({ error: 'Plan inválido.' });
+    const retired = SERVER_PLANS[plan] && SERVER_PLANS[plan].retired;
+    if (!PLANS[plan] || retired) return res.status(400).json({ error: 'Plan inválido.' });
     const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
     const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
 

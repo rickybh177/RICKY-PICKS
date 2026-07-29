@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   const planId = body && body.plan;
   const plan = PLANS[planId];
-  if (!plan) {
+  if (!plan || plan.retired) {
     return res.status(400).json({ error: 'Plan no válido.' });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
