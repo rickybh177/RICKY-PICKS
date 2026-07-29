@@ -166,7 +166,7 @@
 
   /* ---- RÉCORD ---- */
   #record { padding-top: 70px; }
-  .recgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 40px; }
+  .recgrid { display: grid; grid-template-columns: minmax(0, 320px); gap: 12px; margin-top: 40px; }
   .rec { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 26px 22px; }
   .rec .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
   .rec .n.green { color: var(--bet); }
@@ -464,14 +464,12 @@
 <section id="record">
   <div class="wrap">
     <div class="sec-eyebrow reveal">Récord verificado</div>
-    <h2 class="sec-title reveal">Todos los picks cuentan. También los perdidos.</h2>
-    <p class="sec-lede reveal">Estos son los picks que publico, calificados contra el marcador real de cada juego — ganados y perdidos, a la vista. Sin borrar nada.</p>
+    <h2 class="sec-title reveal">La efectividad habla por sí sola.</h2>
+    <p class="sec-lede reveal">Cada pick que publico se califica contra el marcador real del juego. Este es el resultado, verificado y a la vista. Sin adornos.</p>
     <div class="recgrid reveal">
-      <div class="rec"><div class="n green" id="recW">—</div><div class="l" id="recWL">Picks ganados</div></div>
-      <div class="rec"><div class="n red" id="recL">—</div><div class="l" id="recLL">Picks perdidos</div></div>
-      <div class="rec"><div class="n blue" id="recP">—</div><div class="l">Efectividad</div></div>
+      <div class="rec"><div class="n blue" id="recP">—</div><div class="l" id="recPL">Efectividad</div></div>
     </div>
-    <p class="rec-note reveal">El modelo original de RICKY·PICKS cerró el Mundial 2026 con <strong>71.8% de aciertos (109-43)</strong> — todos los picks publicados antes de cada partido, ganados y perdidos a la vista.</p>
+    <p class="rec-note reveal">El modelo original de RICKY·PICKS cerró el Mundial 2026 con <strong>71.8% de efectividad</strong> — todos los picks publicados antes de cada partido y verificados contra el marcador real.</p>
   </div>
 </section>
 
@@ -1016,12 +1014,9 @@
     .then(r => r.ok ? r.json() : null)
     .then(r => {
       if (!r) return;
-      document.getElementById('recW').textContent = r.wins;
-      document.getElementById('recL').textContent = r.losses;
       document.getElementById('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
       if (r.period_label) {
-        document.getElementById('recWL').textContent = 'Picks ganados · ' + r.period_label;
-        document.getElementById('recLL').textContent = 'Picks perdidos · ' + r.period_label;
+        document.getElementById('recPL').textContent = 'Efectividad · ' + r.period_label;
       }
     })
     .catch(() => {});
