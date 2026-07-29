@@ -102,16 +102,25 @@
   .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
   .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
   .vid.v1 { opacity: 1; }
-  /* Hero dividido: mitad Liga MX, mitad MLB */
-  .vid.half { width: 50%; }
-  .vid.half.left { right: auto; left: 0; }
-  .vid.half.right { left: auto; right: 0; }
+  /* Hero dividido: mitad Liga MX, mitad MLB.
+     Cada mitad recorta una imagen renderizada al ancho COMPLETO del hero,
+     así ninguna se ve más "acercada" que la otra — el sujeto de cada una
+     queda centrado en su propia mitad y no se desborda al otro lado. */
+  .hero-half { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; }
+  .hero-half.left { left: 0; }
+  .hero-half.right { right: 0; }
+  .hero-half img { position: absolute; top: 0; width: 200%; height: 100%; max-width: none; object-fit: cover; }
+  /* Cada sujeto queda centrado en su propia mitad */
+  .hero-half.left img { left: -50%; }
+  .hero-half.right img { left: -44%; }
   .split-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
   .half-tag { position: absolute; top: 96px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(255,255,255,0.85); background: rgba(10,13,19,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 16px; pointer-events: none; z-index: 1; }
   .half-tag.left-tag { left: 24px; }
   .half-tag.right-tag { right: 24px; }
-  .hero-ctas { display: flex; justify-content: center; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
-  .hero-cta { display: inline-block; background: rgba(14,19,28,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.22); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; padding: 13px 26px; border-radius: 12px; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
+  /* Dos columnas del mismo ancho: el hueco central cae justo sobre la
+     línea divisoria, así cada botón vive dentro de su propia mitad. */
+  .hero-ctas { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: 24px; margin-top: 26px; }
+  .hero-cta { display: block; text-align: center; background: rgba(14,19,28,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.22); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; padding: 13px 18px; border-radius: 12px; white-space: nowrap; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
   .hero-cta:hover { transform: translateY(-2px); background: var(--blue-deep); border-color: var(--blue-deep); }
   .veil { position: absolute; inset: 0; pointer-events: none;
     background:
@@ -122,7 +131,8 @@
   .to-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30vh; background: linear-gradient(180deg, transparent, var(--g0)); opacity: 0; pointer-events: none; }
 
   .hero-copy { position: absolute; left: 0; right: 0; bottom: 13vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
-  .hero-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
+  /* Píldora sólida: antes se perdía sobre las fotos del hero. */
+  .hero-eyebrow { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 18px; background: rgba(10,13,19,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 9px 20px; box-shadow: 0 8px 30px -8px rgba(0,0,0,0.7); }
   h1.mega { color: #fff; font-weight: 800; letter-spacing: -0.04em; line-height: 0.98; font-size: clamp(2.6rem, 9.5vw, 7.5rem); text-shadow: 0 10px 60px rgba(10,13,19,0.6); text-wrap: balance; }
   h1.mega em { font-style: normal; color: var(--blue); }
   .hero-sub { color: rgba(233,237,244,0.78); font-size: clamp(0.98rem, 2vw, 1.18rem); font-weight: 500; margin-top: 18px; max-width: 52ch; margin-left: auto; margin-right: auto; }
@@ -372,11 +382,13 @@
     .stage { height: 460vh; }
     .vid { object-position: 50% 68%; }
     /* Hero dividido en vertical: Liga MX arriba, MLB abajo */
-    .vid.half { width: 100%; height: 50%; }
-    .vid.half.left { bottom: auto; top: 0; }
-    .vid.half.right { top: auto; bottom: 0; }
+    .hero-half { width: 100%; height: 50%; top: auto; bottom: auto; }
+    .hero-half.left { top: 0; left: 0; }
+    .hero-half.right { bottom: 0; right: 0; }
+    .hero-half.left img, .hero-half.right img { left: 0; width: 100%; height: 100%; }
     .split-line { left: 0; right: 0; top: 50%; bottom: auto; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
     .half-tag { display: none; } /* en móvil el copy ya nombra ambas ligas */
+    .hero-ctas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .hero-cta { padding: 12px 20px; font-size: 0.88rem; }
     .hero-copy { bottom: 10vh; }
     .tiers, .tiers.tiers-3 { grid-template-columns: 1fr; }
@@ -420,8 +432,8 @@
 <div class="stage" id="stage">
   <div class="stage-sticky">
     <!-- Fondo dividido: mitad Liga MX, mitad MLB -->
-    <img class="vid v1 half left" id="vid1" src="/img/ligamx.jpg" alt="" style="opacity:1">
-    <img class="vid v1 half right" id="vid2" src="/video/hero-swing.jpg" alt="" style="opacity:1">
+    <div class="hero-half left"><img id="vid1" src="/img/ligamx.jpg" alt=""></div>
+    <div class="hero-half right"><img id="vid2" src="/video/hero-swing.jpg" alt=""></div>
     <div class="half-tag left-tag">Liga MX</div>
     <div class="half-tag right-tag">MLB</div>
     <div class="split-line"></div>
