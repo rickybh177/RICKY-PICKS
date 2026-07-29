@@ -133,7 +133,10 @@
   .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
   .plans-banner .txt small { display: block; font-weight: 450; color: var(--muted); font-size: 0.74rem; }
   .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; }
-  .plans-banner a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
+  /* Acotado a .acts: si no, el link "ver términos" del <small> también
+     se pinta como botón. */
+  .plans-banner .acts a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
+  .plans-banner .txt small a { color: inherit; text-decoration: underline; }
   .plans-banner a.day { background: var(--g2); color: var(--text); border: 1px solid var(--line-2); }
   .plans-banner a.founder { background: var(--blue-deep); color: #fff; }
   .plans-banner a.founder:hover { background: var(--blue); }
@@ -165,8 +168,13 @@
     .datenav .cur { min-width: 88px; font-size: 0.74rem; }
     .refresh span, .enter span { display: none; }
     .card { padding: 15px 13px; }
-    .plans-banner .txt small { display: none; }
-    .plans-banner .txt { font-size: 0.8rem; }
+    /* El banner se apila: la garantía es el gancho, no puede
+       desaparecer justo en el dispositivo donde está el tráfico. */
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 9px; }
+    .plans-banner .txt { font-size: 0.82rem; text-align: center; }
+    .plans-banner .txt small { font-size: 0.7rem; margin-top: 2px; }
+    .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .plans-banner .acts a { text-align: center; padding: 12px 8px; }
   }
 </style>
 </head>
@@ -184,7 +192,7 @@
       <button id="nextDay" aria-label="Día siguiente">›</button>
     </div>
     <div class="nav-actions">
-      <button class="enter" id="manageSubBtn" title="Actualiza tu método de pago, revisa tus cobros o cancela">💳 <span>Administrar suscripción</span></button>
+      <button class="enter" id="manageSubBtn" style="display:none" aria-label="Administrar suscripción" title="Actualiza tu método de pago, revisa tus cobros o cancela">💳 <span>Administrar suscripción</span></button>
       <button class="refresh" id="refreshBtn" title="Recalcular con alineaciones y clima de ahora">⟳ <span>Actualizar</span></button>
       <button class="enter" id="enterBtn"><span>Entrar</span>→</button>
     </div>
@@ -212,7 +220,7 @@
 
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>Prueba 7 días por $149 — si tu primera semana cierra perdedora, te devolvemos tus $149 (<a href="/#terminos" style="color:inherit">ver términos</a>)</small></div>
+    <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>7 días por $149 — semana perdedora, te devolvemos tus $149. <a href="/#terminos">Ver términos</a></small></div>
     <div class="acts">
       <a class="day" href="/checkout.html?plan=mlb_semana">Semana $149</a>
       <a class="founder" href="/checkout.html?plan=mlb_fundador">Fundador $399</a>
@@ -544,6 +552,17 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
   }
   b.style.display = 'block';
   history.replaceState(null, '', '/mlb.html');
+})();
+
+/* El botón "Administrar suscripción" solo tiene sentido para quien ya
+   tiene cuenta: un invitado no tiene nada que administrar (y en el nav
+   móvil el espacio es escaso). */
+(async () => {
+  if (!sb) return;
+  try {
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) $('manageSubBtn').style.display = '';
+  } catch (e) {}
 })();
 
 load(null);
