@@ -736,27 +736,6 @@
   </div>
 </section>
 
-<!-- ============ MUNDIAL (últimos partidos) ============ -->
-<section id="mundial">
-  <div class="wrap">
-    <div class="panel reveal">
-      <div>
-        <div class="sec-eyebrow reveal">Últimos partidos</div>
-        <h2 class="sec-title reveal">El Mundial se acaba.<br>El modelo original sigue hasta la final.</h2>
-        <p class="sub">71.8% de aciertos publicados. <button id="freeBtn">Ver el pick gratis del Mundial</button></p>
-      </div>
-      <div class="mini-tier">
-        <h4>La gran final</h4>
-        <div class="amt" data-mxn="$99 <small>MXN</small>" data-usd="$5.99 <small>USD</small>">$99 <small>MXN</small></div>
-        <ul>
-          <li>🇦🇷 Argentina vs 🇪🇸 España · la final · dom 19</li>
-        </ul>
-        <a href="/checkout.html?plan=final" id="buyFinal" class="mini-final">🇦🇷 Argentina vs 🇪🇸 España — <span data-mxn="$99 MXN" data-usd="$5.99 USD">$99 MXN</span></a>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ============ FAQ ============ -->
 <section id="faq" style="padding-top:20px">
   <div class="wrap" style="max-width:760px">
@@ -1361,15 +1340,12 @@ async function openFree(){
   overlay.classList.add('open');
 }
 
-document.getElementById('freeBtn').addEventListener('click', e => {
-  e.preventDefault();
-  if (!_session) { openAuth('signup'); return; }
-  openFree();
-});
+/* "Pick gratis": el Mundial ya terminó, así que ahora lleva al juego
+   destacado gratis del modelo MLB, que se publica solo cada día y no
+   necesita sesión (mlb.html tiene su propio candado para el resto). */
 document.getElementById('navFreeBtn').addEventListener('click', e => {
   e.preventDefault();
-  if (!_session) { openAuth('signup'); return; }
-  openFree();
+  window.location.href = '/mlb.html';
 });
 /* Nav "MLB": si ya tiene el modelo activo lo manda a /mlb.html;
    si no, lo manda directo a comprarlo (sin avisos de "no lo tienes"
@@ -1471,19 +1447,6 @@ authSubmit.addEventListener('click', async () => {
 
 let _session = null;
 
-async function getEntitlement(){
-  if(!sb && !initSupabase()) return null;
-  try{
-    // Mundial y MLB viven en filas separadas; esta página solo maneja
-    // los CTAs del Mundial. El producto se deriva del `plan` en JS
-    // (no de una columna) para no depender de la migración de Supabase.
-    const {data}=await sb.from('entitlements').select('plan,active').eq('active',true);
-    const rows=(data||[]).filter(r=>r.active && !(r.plan||'').startsWith('mlb_'));
-    if(rows.length) return rows[0];
-  }catch(e){}
-  return null;
-}
-
 const NFL_ADMIN_EMAILS = ['rickybh17@gmail.com'];
 
 async function refreshUI(){
@@ -1498,12 +1461,6 @@ async function refreshUI(){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
     misModelosLink.classList.add('nav-models-active');
-    const ent = await getEntitlement();
-    if(ent && (ent.plan === 'torneo' || ent.plan === 'individual' || ent.plan === 'final')){
-      // Ya tiene acceso a la final (torneo, individual, o ya compró el plan final): a mis modelos
-      const bf = document.getElementById('buyFinal');
-      if(bf){ bf.textContent = 'Ir a Mis modelos'; bf.href = '/mis-modelos.html'; }
-    }
   } else {
     authBtn.textContent = 'Iniciar sesión';
     misModelosLink.style.display = 'none';
