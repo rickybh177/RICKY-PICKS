@@ -22,7 +22,6 @@
     --blue-deep: #1d4ed8;
     --blue-tint: #eaf2ff;
     --win: #16a34a;
-    --loss: #dc2626;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -36,7 +35,6 @@
   .logo img { width: 32px; height: 32px; border-radius: 50%; display: block; }
   .logo span { color: var(--blue); }
   .nav-right { display: flex; align-items: center; gap: 10px; }
-  .nav-plan-badge { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 14px; border-radius: 980px; background: var(--blue-tint); color: var(--blue-deep); }
   .nav-btn { font-size: 0.85rem; font-weight: 600; color: var(--muted); background: var(--soft); border: none; padding: 8px 16px; border-radius: 980px; cursor: pointer; transition: background .15s, color .15s; }
   .nav-btn:hover { background: var(--soft-2); color: var(--ink); }
 
@@ -48,129 +46,38 @@
   .state-body { color: var(--muted); max-width: 40ch; margin: 0 auto 28px; font-size: 1rem; line-height: 1.55; }
   .btn-cta { font-weight: 700; font-size: 0.95rem; padding: 14px 28px; border-radius: 980px; border: none; cursor: pointer; text-decoration: none; display: inline-block; background: var(--blue); color: #fff; box-shadow: 0 10px 26px -12px rgba(47,123,255,0.7); transition: transform .15s ease, background .15s ease; }
   .btn-cta:hover { transform: translateY(-1px); background: var(--blue-deep); }
-
-  /* TOGGLE DE MODELO (Mundial | MLB) */
-  .model-toggle { display: inline-flex; background: var(--soft); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
-  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.88rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
-  .model-toggle .mt-opt:hover { color: var(--ink); }
-  .model-toggle .mt-opt.active { background: #fff; color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(22,29,46,0.25); }
-  .model-toggle .mt-lock { font-size: 0.72rem; opacity: 0.7; }
-  @media (max-width: 560px) {
-    .model-toggle { display: flex; width: 100%; }
-    .model-toggle .mt-opt { flex: 1; padding: 10px 8px; font-size: 0.84rem; }
-  }
+  .spinner { width: 22px; height: 22px; border: 2px solid var(--line); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* HERO */
-  .page-hero { padding: 40px 0 30px; margin-bottom: 32px; }
-  .page-hero .eyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; display: inline-block; }
-  .page-hero h1 { font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 10px; }
-  .page-hero p { color: var(--muted); font-size: 1rem; max-width: 52ch; }
+  .page-hero { padding: 56px 0 8px; }
+  .eyebrow { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--blue); margin-bottom: 12px; }
+  h1 { font-weight: 800; font-size: clamp(1.9rem, 5vw, 2.6rem); letter-spacing: -0.035em; line-height: 1.05; }
+  .lede { color: var(--muted); margin-top: 12px; max-width: 54ch; }
 
-  /* BANNERS */
-  .success-banner { background: rgba(22,163,74,0.08); color: var(--win); border-radius: 16px; padding: 16px 20px; margin-bottom: 28px; font-size: 0.92rem; font-weight: 500; display: flex; align-items: center; gap: 12px; }
-  .pending-banner { background: var(--blue-tint); color: var(--blue-deep); border-radius: 16px; padding: 16px 20px; margin-bottom: 28px; font-size: 0.92rem; display: flex; align-items: center; gap: 12px; }
+  /* TARJETAS DE MODELO */
+  .models { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 32px 0 40px; }
+  .model-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; background: #fff; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
+  .model-card:hover { transform: translateY(-2px); box-shadow: 0 18px 46px -26px rgba(22,24,29,0.4); border-color: #d5deea; }
+  .mc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .mc-ico { font-size: 1.9rem; line-height: 1; }
+  .mc-chip { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 12px; border-radius: 980px; background: var(--soft); color: var(--muted); white-space: nowrap; }
+  .mc-chip.on { background: rgba(22,163,74,0.1); color: var(--win); }
+  .model-card h2 { font-size: 1.22rem; font-weight: 750; letter-spacing: -0.02em; }
+  .model-card p { color: var(--muted); font-size: 0.92rem; margin-top: 8px; flex: 1; }
+  .mc-cta { margin-top: 20px; text-decoration: none; text-align: center; font-weight: 700; font-size: 0.92rem; padding: 13px 20px; border-radius: 12px; background: var(--blue); color: #fff; transition: background .15s ease; }
+  .mc-cta:hover { background: var(--blue-deep); }
+  .mc-cta.ghost { background: var(--soft); color: var(--ink); }
+  .mc-cta.ghost:hover { background: var(--soft-2); }
 
-  /* TOOL SECTION */
-  .tool-section { display: none; }
-  .tool-section.active { display: block; }
-  .tool-header { margin-bottom: 24px; }
-  .tool-header h2 { font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; margin-bottom: 6px; }
-  .tool-header p { color: var(--muted); font-size: 0.9rem; }
+  /* NOTA DE CIERRE DEL MUNDIAL */
+  .closed-note { border: 1px solid var(--line); background: var(--soft); border-radius: 14px; padding: 18px 20px; font-size: 0.88rem; color: var(--muted); margin-bottom: 56px; }
+  .closed-note strong { color: var(--ink); font-weight: 650; }
 
-  /* TOOL BLOCKS */
-  .tool-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
-  .tool-inputs { position: sticky; top: 76px; }
-  .tool-block { background: var(--soft); border: none; border-radius: 20px; padding: 20px 18px; margin-bottom: 14px; }
-  .tool-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 14px; }
-  .tlab { display: block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
-  .tlab2 { display: block; font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; text-align: center; }
-  .tool-block select, .tool-block input[type="text"], .tool-block input[type="number"] {
-    width: 100%; background: #fff; border: 1px solid var(--line); color: var(--ink);
-    font: inherit; font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; outline: none; box-sizing: border-box;
-    -webkit-appearance: none; appearance: none;
+  @media (max-width: 700px) {
+    .models { grid-template-columns: 1fr; }
+    .page-hero { padding: 36px 0 4px; }
   }
-  .tool-block select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%236e7787' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue); }
-  .tool-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .tool-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-top: 14px; cursor: pointer; }
-  .tool-toggle input { width: auto; accent-color: var(--blue); }
-  .odds-mode { display: flex; gap: 6px; margin-bottom: 14px; }
-  .om { font-size: 0.72rem; font-weight: 600; padding: 6px 12px; border: 1px solid var(--line); background: #fff; border-radius: 980px; color: var(--muted); cursor: pointer; transition: all .12s; }
-  .om.active { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
-  .odds3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .odds3 > div { min-width: 0; }
-  .odds3 input { padding: 10px 8px; font-size: 0.9rem; text-align: center; width: 100%; box-sizing: border-box; }
-  .tool-run { margin-top: 16px; width: 100%; font-weight: 700; font-size: 0.95rem; padding: 14px; border-radius: 980px; border: none; cursor: pointer; background: var(--blue); color: #fff; transition: background .15s ease; }
-  .tool-run:hover:not(:disabled) { background: var(--blue-deep); }
-  .tool-run:disabled { opacity: 0.65; cursor: default; }
-
-  /* RESULTS */
-  .result-area { min-height: 200px; overflow-x: auto; }
-  .tool-loading { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 24px 0; }
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .result-placeholder { background: var(--soft); border: 1.5px dashed var(--line); border-radius: 20px; padding: 40px; text-align: center; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
-
-  /* ANALYSIS OUTPUT */
-  .analysis { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 22px 24px; overflow-x: auto; }
-  .an-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-  .an-match { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; }
-  .an-xg { font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-bottom: 14px; }
-  .an-conf { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 5px 11px; border-radius: 980px; white-space: nowrap; }
-  .an-conf.alta { color: var(--win); background: rgba(22,163,74,.1); }
-  .an-conf.media { color: var(--blue-deep); background: var(--blue-tint); }
-  .an-conf.baja { color: var(--loss); background: rgba(220,38,38,.08); }
-  .an-note { font-size: 0.72rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
-  .scores-wrap { display: flex; gap: 10px; margin: 14px 0 4px; }
-  .score-card { flex: 1; background: var(--soft); border-radius: 16px; padding: 14px 10px 12px; text-align: center; }
-  .score-card.top1 { background: linear-gradient(160deg, var(--blue), var(--blue-deep)); }
-  .score-card .sc-rank { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
-  .score-card.top1 .sc-rank { color: rgba(255,255,255,0.7); }
-  .score-card .sc-score { font-weight: 800; font-size: 1.6rem; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
-  .score-card.top1 .sc-score { font-size: 1.9rem; color: #fff; }
-  .score-card .sc-pct { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-top: 6px; }
-  .score-card.top1 .sc-pct { color: rgba(255,255,255,0.85); font-size: 0.78rem; }
-  .an-subhead { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 6px; }
-  table.antab { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-  table.antab th { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); text-align: right; padding: 8px 6px; border-bottom: 1px solid var(--line); }
-  table.antab th:first-child { text-align: left; width: 40%; }
-  table.antab td { padding: 10px 6px; border-bottom: 1px solid var(--soft); text-align: right; font-weight: 500; font-feature-settings: "tnum" 1; }
-  table.antab td:first-child { text-align: left; line-height: 1.3; font-weight: 400; }
-  table.antab tr:last-child td { border-bottom: none; }
-  .edge-pos { color: var(--win); font-weight: 700; }
-  .edge-neg { color: var(--muted); }
-  td.mut { color: var(--muted); }
-  .mk { display: inline-block; font-size: 0.62rem; font-weight: 700; padding: 3px 9px; border-radius: 980px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .mk.bet { background: rgba(22,163,74,.12); color: var(--win); }
-  .mk.skip { background: var(--soft-2); color: var(--muted); }
-  .mk.fade { background: rgba(220,38,38,.1); color: var(--loss); }
-
-  @media (max-width: 760px) {
-    body { font-size: 16px; }
-    .tool-grid { grid-template-columns: 1fr; }
-    .tool-inputs { position: static; }
-    .odds3 { grid-template-columns: 1fr; }
-    .tool-row { grid-template-columns: 1fr; }
-    nav .nav-plan-badge { display: none !important; }
-  }
-  @media (max-width: 560px) {
-    .wrap { padding: 0 18px; }
-    .page-hero { padding: 26px 0 18px; margin-bottom: 22px; }
-    .page-hero h1 { font-size: 1.7rem; }
-    .page-hero p { font-size: 0.92rem; }
-    .tool-block { padding: 16px 14px; border-radius: 16px; }
-    .analysis { padding: 16px 14px; border-radius: 16px; }
-    .an-match { font-size: 1rem; }
-    table.antab { font-size: 0.8rem; }
-    table.antab td { padding: 9px 4px; }
-    .score-card .sc-score { font-size: 1.3rem; }
-    .score-card.top1 .sc-score { font-size: 1.55rem; }
-    .scores-wrap { gap: 7px; }
-    .nav-btn { padding: 7px 12px; font-size: 0.8rem; }
-    .tool-run { padding: 13px; }
-  }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 </style>
 </head>
 <body>
@@ -182,7 +89,6 @@
       RICKY<span>·</span>PICKS
     </a>
     <div class="nav-right">
-      <span class="nav-plan-badge" id="navPlanBadge" style="display:none"></span>
       <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>
     </div>
   </div>
@@ -199,36 +105,7 @@
   <div class="state-icon">🔒</div>
   <div class="state-title">Inicia sesión para ver tus modelos</div>
   <div class="state-body">Crea tu cuenta o inicia sesión para acceder a los picks.</div>
-  <a href="/checkout.html?plan=torneo" class="btn-cta">Ir a la tienda</a>
-</div>
-
-<!-- ESTADO: sin plan activo -->
-<div class="page-state" id="stateNoPlan">
-  <div class="state-icon">🔐</div>
-  <div class="state-title">Aún no tienes el modelo del Mundial</div>
-  <div class="state-body">Adquiere un plan para acceder a las predicciones del Mundial 2026 con el modelo Dixon-Coles.</div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
-    <a href="/checkout.html?plan=torneo" class="btn-cta" style="min-width:220px;text-align:center">Ver planes y comprar →</a>
-    <span style="font-size:0.78rem;color:var(--muted)">¿Ya tienes un código? <a href="/checkout.html?plan=torneo" style="color:var(--blue);text-decoration:none">Canjéalo aquí</a></span>
-    <a href="/mlb.html" style="font-size:0.78rem;color:var(--muted);text-decoration:none">← Volver al modelo MLB</a>
-  </div>
-</div>
-
-<!-- ESTADO: plan individual expirado (clientes previos de "cuartos de final") -->
-<div class="page-state" id="stateExpired">
-  <div class="state-icon">📅</div>
-  <div class="state-title">Tu acceso del día ya venció</div>
-  <div class="state-body">Ese plan solo daba acceso a los picks de la jornada en que compraste y ya no está disponible. Lleva el torneo completo para no depender de esto.</div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:8px">
-    <a href="/checkout.html?plan=torneo" class="btn-cta" style="min-width:220px;text-align:center">Llevar el torneo completo →</a>
-  </div>
-</div>
-
-<!-- ESTADO: verificando pago -->
-<div class="page-state" id="stateVerifying">
-  <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto 24px"></div>
-  <div class="state-title">Verificando tu pago…</div>
-  <div class="state-body">Estamos activando tu acceso. Esto suele tardar unos segundos.</div>
+  <a href="/#precios" class="btn-cta">Ver los modelos</a>
 </div>
 
 <!-- CONTENIDO PRINCIPAL -->
@@ -237,110 +114,34 @@
     <div class="page-hero">
       <div class="eyebrow">Mis modelos</div>
       <h1>Mis modelos</h1>
-      <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
-        <span class="mt-opt active" role="tab" aria-selected="true">🌍 Mundial 2026</span>
-        <a class="mt-opt" role="tab" aria-selected="false" id="mtMlb" href="/#precios" title="Ver planes de MLB">⚾ MLB <span class="mt-lock" id="mtMlbLock">🔒</span></a>
-        <a class="mt-opt" role="tab" aria-selected="false" id="mtMx" href="/mx.html" title="Ir al Modelo Liga MX">⚽ Liga MX</a>
-      </div>
-      <p id="heroSub">Herramienta completa. Elige el partido, ingresa tus momios y calcula el valor.</p>
+      <p class="lede">Estos son los modelos activos. Entra al que quieras para ver los picks del día.</p>
     </div>
 
-    <div id="successBanner" class="success-banner" style="display:none">
-      ✓ &nbsp;¡Pago confirmado! Tu acceso está activo. Bienvenido.
-    </div>
-    <div id="pendingBanner" class="pending-banner" style="display:none">
-      ⏳ &nbsp;Tu pago está en proceso. Cuando se confirme, tu acceso se activará automáticamente.
-    </div>
-
-    <!-- TOOL: individual (4 partidos de hoy) -->
-    <div class="tool-section" id="toolIndividual">
-      <div class="tool-header">
-        <h2>Partidos de hoy</h2>
-        <p id="todayDateLabel">Elige el partido del día y calcula los picks con tu herramienta.</p>
+    <div class="models">
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">⚾</span>
+          <span class="mc-chip" id="chipMlb">Sin acceso</span>
+        </div>
+        <h2>Modelo MLB</h2>
+        <p>Cada juego simulado 10,000 veces, turno al bate por turno al bate. Picks BET / MAYBE / SKIP todos los días.</p>
+        <a class="mc-cta" id="ctaMlb" href="/mlb.html">Abrir modelo →</a>
       </div>
-      <div class="tool-grid">
-        <div class="tool-inputs">
-          <div class="tool-block">
-            <div class="tool-label">1 · Partido</div>
-            <label class="tlab">Selecciona el partido</label>
-            <select id="fixtureSel"></select>
-            <input type="hidden" id="iHome">
-            <input type="hidden" id="iAway">
-            <label class="tool-toggle"><input type="checkbox" id="iNeutral" checked> Sede neutral</label>
-          </div>
-          <div class="tool-block">
-            <div class="tool-label">2 · Cuotas de tu casa <span style="font-weight:400;color:var(--muted)">(para un resultado más personalizado)</span></div>
-            <div class="odds-mode" id="iOddsMode">
-              <div class="om active" data-mode="american">Americano (-110)</div>
-              <div class="om" data-mode="decimal">Decimal (1.91)</div>
-            </div>
-            <label class="tlab">Resultado 1X2</label>
-            <div class="odds3">
-              <div><label class="tlab2">Local (1)</label><input id="i_h" placeholder="-150"></div>
-              <div><label class="tlab2">Empate (X)</label><input id="i_d" placeholder="+260"></div>
-              <div><label class="tlab2">Visitante (2)</label><input id="i_a" placeholder="+420"></div>
-            </div>
-            <label class="tlab" style="margin-top:10px">Goles y BTTS</label>
-            <div class="odds3">
-              <div><label class="tlab2">Over 2.5</label><input id="i_ov" placeholder="-105"></div>
-              <div><label class="tlab2">Under 2.5</label><input id="i_un" placeholder="-115"></div>
-              <div><label class="tlab2">BTTS Sí</label><input id="i_bt" placeholder="+100"></div>
-            </div>
-            <button class="tool-run" id="iRun">Calcular picks</button>
-          </div>
+
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">⚽</span>
+          <span class="mc-chip" id="chipMx">Sin acceso</span>
         </div>
-        <div class="result-area" id="iResult">
-          <div class="result-placeholder">Selecciona el partido y presiona <strong>Calcular picks</strong> para ver el análisis completo.</div>
-        </div>
+        <h2>Modelo Liga MX</h2>
+        <p>Calcula la probabilidad exacta de cada marcador posible y corrige por la altitud real de la sede. Apertura 2026.</p>
+        <a class="mc-cta" id="ctaMx" href="/mx.html">Abrir modelo →</a>
       </div>
     </div>
 
-    <!-- TOOL: torneo (todos los partidos) -->
-    <div class="tool-section" id="toolTorneo">
-      <div class="tool-header">
-        <h2>Todos los partidos del Mundial</h2>
-        <p>Elige cualquier fixture del torneo o arma el cruce que quieras con cualquier selección.</p>
-      </div>
-      <div class="tool-grid">
-        <div class="tool-inputs">
-          <div class="tool-block">
-            <div class="tool-label">1 · Partido</div>
-            <label class="tlab">Fixture del calendario</label>
-            <select id="tFixture"></select>
-            <div class="tool-row" style="margin-top:12px">
-              <div><label class="tlab">Local</label><select id="tHome"></select></div>
-              <div><label class="tlab">Visitante</label><select id="tAway"></select></div>
-            </div>
-            <label class="tool-toggle"><input type="checkbox" id="tNeutral" checked> Sede neutral</label>
-          </div>
-          <div class="tool-block">
-            <div class="tool-label">2 · Cuotas de tu casa <span style="font-weight:400;color:var(--muted)">(para un resultado más personalizado)</span></div>
-            <div class="odds-mode" id="tOddsMode">
-              <div class="om active" data-mode="american">Americano (-110)</div>
-              <div class="om" data-mode="decimal">Decimal (1.91)</div>
-            </div>
-            <label class="tlab">Resultado 1X2</label>
-            <div class="odds3">
-              <div><label class="tlab2">Local (1)</label><input id="t_h" placeholder="-150"></div>
-              <div><label class="tlab2">Empate (X)</label><input id="t_d" placeholder="+260"></div>
-              <div><label class="tlab2">Visitante (2)</label><input id="t_a" placeholder="+420"></div>
-            </div>
-            <label class="tlab" style="margin-top:10px">Goles y BTTS</label>
-            <div class="odds3">
-              <div><label class="tlab2">Over 2.5</label><input id="t_ov" placeholder="-105"></div>
-              <div><label class="tlab2">Under 2.5</label><input id="t_un" placeholder="-115"></div>
-              <div><label class="tlab2">BTTS Sí</label><input id="t_bt" placeholder="+100"></div>
-            </div>
-            <button class="tool-run" id="tRun">Calcular picks</button>
-          </div>
-        </div>
-        <div class="result-area" id="tResult">
-          <div class="result-placeholder">Selecciona un partido del calendario o elige las selecciones y presiona <strong>Calcular picks</strong>.</div>
-        </div>
-      </div>
+    <div class="closed-note">
+      <strong>El Mundial 2026 ya terminó.</strong> El modelo cerró el torneo con 71.8% de efectividad y su herramienta quedó fuera de línea. Gracias a todos los que lo siguieron partido por partido.
     </div>
-
-    <div style="height:60px"></div>
   </div>
 </div>
 
@@ -357,371 +158,59 @@ function initSb(){
   return false;
 }
 
-let CONFIG = null;
-async function loadConfig(){
-  if(CONFIG) return CONFIG;
-  const res = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
-  if(!res.ok) throw new Error('config');
-  CONFIG = await res.json();
-  return CONFIG;
-}
-
-function teamLabel(name){
-  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
-  return t ? (t[0] + ' ' + t[1]) : name;
-}
-function teamShort(name){
-  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
-  return t ? t[1] : name;
-}
-
-/* ---- model math helpers ---- */
-function implied(dec){ return dec ? 1/dec : null; }
-function devig(probs){ const s = probs.reduce((x,y)=>x+(y||0),0); return s>0?probs.map(p=>p?p/s:null):probs; }
-function pct(p){ return (p*100).toFixed(1)+'%'; }
-let oddsModeI = 'american', oddsModeT = 'american';
-
-function parseOdds(raw, mode){
-  if(!raw) return null; raw=(''+raw).trim().replace(',','.'); if(!raw) return null;
-  let dec;
-  if(mode==='american'){ let n=parseFloat(raw); if(isNaN(n))return null; dec=n>0?1+n/100:1+100/Math.abs(n); }
-  else{ dec=parseFloat(raw); if(isNaN(dec)||dec<=1) return null; }
-  return dec;
-}
-function mkPick(edge){
-  if(edge===null) return '<span class="mk skip">—</span>';
-  if(edge>=0.04) return '<span class="mk bet">bet</span>';
-  if(edge<=-0.06) return '<span class="mk fade">fade</span>';
-  return '<span class="mk skip">skip</span>';
-}
-function rowHTML(name, mp, dec){
-  const imp = dec ? implied(dec) : null;
-  let edge = imp!==null ? mp-imp : null;
-  let edgeTxt = edge!==null ? (edge>=0?'+':'')+(edge*100).toFixed(1)+'%' : '—';
-  let edgeCls = edge!==null ? (edge>=0.04?'edge-pos':'edge-neg') : 'edge-neg';
-  return `<tr><td>${name}</td><td class="num">${pct(mp)}</td><td class="${edgeCls}">${edgeTxt}</td><td>${mkPick(edge)}</td></tr>`;
-}
-
-let _accessToken = null;
-
-/* Marca el lado MLB del toggle como desbloqueado (sin candado). */
-function unlockMlbToggle(){
-  const lock = document.getElementById('mtMlbLock');
-  if(lock) lock.style.display = 'none';
-  const mtMlb = document.getElementById('mtMlb');
-  if(mtMlb){ mtMlb.href = '/mlb.html'; mtMlb.title = 'Ir al Modelo MLB'; }
-}
-
-/* Si el usuario también tiene acceso activo al modelo MLB, quita el
-   candado del toggle (el link a /mlb.html funciona siempre: esa página
-   tiene su propio candado y muestra el pick gratis a quien no tiene plan).
-   Regresa true/false para que loadAndShow decida si debe redirigir
-   a un cliente que SOLO tiene MLB (no debe ver "sin plan" aquí). */
-async function checkMlbSwitch(){
-  if(!_accessToken) return false;
-  try{
-    const res = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _accessToken } });
-    if(!res.ok) return false;
-    const data = await res.json();
-    const hasMlb = !!(data && data.mlb);
-    if(hasMlb) unlockMlbToggle();
-    return hasMlb;
-  }catch(e){ return false; /* si falla, el candado simplemente se queda */ }
-}
-
-async function fetchMarkets(home, away, neutral){
-  const headers = { 'Content-Type': 'application/json' };
-  if(_accessToken) headers['Authorization'] = 'Bearer ' + _accessToken;
-  const res = await fetch('/api/picks', { method:'POST', headers, body: JSON.stringify({home,away,neutral}) });
-  let data = {};
-  try{ data = await res.json(); }catch(e){}
-  if(!res.ok) throw new Error(data.error || 'No se pudo calcular.');
-  return data.markets;
-}
-
-function buildAnalysis(m, home, away, neutral, mode){
-  const dH=parseOdds(document.getElementById(mode==='i'?'i_h':'t_h').value, mode==='i'?oddsModeI:oddsModeT);
-  const dD=parseOdds(document.getElementById(mode==='i'?'i_d':'t_d').value, mode==='i'?oddsModeI:oddsModeT);
-  const dA=parseOdds(document.getElementById(mode==='i'?'i_a':'t_a').value, mode==='i'?oddsModeI:oddsModeT);
-  let impH=implied(dH),impD=implied(dD),impA=implied(dA);
-  if(impH!==null&&impD!==null&&impA!==null){ [impH,impD,impA]=devig([impH,impD,impA]); }
-  const favProb=Math.max(m.home_win,m.away_win);
-  let conf='alta',confTxt='Confianza alta',cmsg='Partido parejo: el modelo es comparativamente fiable aquí.';
-  if(favProb>0.78){ conf='baja';confTxt='Confianza baja';cmsg='Partido disparejo: el modelo subestima la brecha. Confía en el mercado, no en el edge del underdog.'; }
-  else if(favProb>0.65){ conf='media';confTxt='Confianza media';cmsg='Favorito claro: trata cualquier edge sobre el underdog con escepticismo.'; }
-  const lowConf=(conf==='baja');
-  function rowV(name,mp,imp2){
-    if(imp2!==null){ let html=rowHTML(name,mp,1/imp2); if(lowConf) html=html.replace('mk bet">bet','mk skip">ver línea'); return html; }
-    return rowHTML(name,mp,null);
-  }
-  const odv=parseOdds(document.getElementById(mode==='i'?'i_ov':'t_ov').value, mode==='i'?oddsModeI:oddsModeT);
-  const oun=parseOdds(document.getElementById(mode==='i'?'i_un':'t_un').value, mode==='i'?oddsModeI:oddsModeT);
-  const obt=parseOdds(document.getElementById(mode==='i'?'i_bt':'t_bt').value, mode==='i'?oddsModeI:oddsModeT);
-  let rows='';
-  rows+=rowV(`Gana ${teamLabel(home)} (1)`, m.home_win, impH);
-  rows+=rowV('Empate (X)', m.draw, impD);
-  rows+=rowV(`Gana ${teamLabel(away)} (2)`, m.away_win, impA);
-  rows+=rowHTML('Over 2.5 goles', m.over25, odv);
-  rows+=rowHTML('Under 2.5 goles', m.under25, oun);
-  rows+=rowHTML('Ambos anotan (Sí)', m.btts_yes, obt);
-  const totXg=m.xg_home+m.xg_away;
-  const corners=(8.6+totXg*0.95), cornH=corners*(m.xg_home/totXg), cornA=corners-cornH;
-  const tight=1-Math.abs(m.home_win-m.away_win), cards=3.6+tight*1.6;
-  const sotH=m.xg_home*3.1, sotA=m.xg_away*3.1;
-  const nh=teamShort(home), na=teamShort(away);
-  const sec=[
-    ['Córners totales',corners.toFixed(1),'~9.5',corners>9.5?'Over':'Under'],
-    [`Córners ${nh}/${na}`,`${cornH.toFixed(1)} / ${cornA.toFixed(1)}`,'—',cornH>cornA?nh:na],
-    ['Tarjetas amarillas',cards.toFixed(1),'~4.5',cards>4.5?'Over':'Under'],
-    ['Tiros a puerta '+nh,sotH.toFixed(1),'—','—'],
-    ['Tiros a puerta '+na,sotA.toFixed(1),'—','—'],
-  ];
-  const secRows=sec.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="mut">${r[2]}</td><td class="mut">${r[3]}</td></tr>`).join('');
-  return `<div class="analysis">
-    <div class="an-head">
-      <div class="an-match">${teamLabel(home)} vs ${teamLabel(away)}</div>
-      <span class="an-conf ${conf}">${confTxt}</span>
-    </div>
-    <div class="an-xg">xG modelo ${m.xg_home.toFixed(2)} – ${m.xg_away.toFixed(2)} · ${neutral?'sede neutral':'con ventaja local'}</div>
-    ${(()=>{
-      if(!m.top_scores||!m.top_scores.length) return '';
-      const top3=m.top_scores.slice(0,3);
-      const cards=top3.map((s,i)=>`
-        <div class="score-card${i===0?' top1':''}">
-          <div class="sc-rank">${i===0?'Más probable':`#${i+1}`}</div>
-          <div class="sc-score">${s.h} – ${s.a}</div>
-          <div class="sc-pct">${(s.p*100).toFixed(1)}%</div>
-        </div>`).join('');
-      return `<div class="an-subhead" style="margin-top:14px">Marcadores exactos más probables</div>
-        <div class="scores-wrap">${cards}</div>
-        <div class="an-note" style="margin-bottom:14px">Probabilidades del modelo Dixon-Coles. El marcador más probable sigue siendo correcto &lt;25% de las veces — usar como contexto, no como apuesta directa.</div>`;
-    })()}
-    <div class="an-note" style="margin:0 0 14px">${cmsg}</div>
-    <table class="antab"><thead><tr><th>Mercado</th><th>Probabilidad</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="an-subhead">Mercados secundarios · heurístico</div>
-    <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
-    <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). BET aparece con edge ≥ 4%. Los secundarios son orientativos.</div>
-  </div>`;
-}
-
-/* ---- wiring para plan individual ---- */
-function wireIndividual(){
-  const cfg = CONFIG;
-  const fixtures = (cfg && cfg.today_fixtures) || [];
-  const sel = document.getElementById('fixtureSel');
-  sel.innerHTML = fixtures.map((f,i) => `<option value="${i}">${teamLabel(f.home)} vs ${teamLabel(f.away)}</option>`).join('');
-  const LS_KEY = 'rp_individual_fixture';
-  const saved = localStorage.getItem(LS_KEY);
-  if(saved !== null && fixtures[saved]) sel.value = saved;
-  function updateFixed(){
-    const f = fixtures[sel.value];
-    if(!f) return;
-    localStorage.setItem(LS_KEY, sel.value);
-    document.getElementById('iHome').value = f.home;
-    document.getElementById('iAway').value = f.away;
-    const isHost = (cfg.hosts||[]).includes(f.home);
-    const neutralEl = document.getElementById('iNeutral');
-    neutralEl.checked = !isHost;
-    neutralEl.closest('.tool-toggle').style.display = isHost ? 'none' : '';
-  }
-  sel.addEventListener('change', () => { updateFixed(); });
-  updateFixed();
-  if(!wireIndividual._vis){
-    wireIndividual._vis = true;
-    document.addEventListener('visibilitychange', () => {
-      if(document.visibilityState !== 'visible') return;
-      const cur = localStorage.getItem(LS_KEY);
-      const s = document.getElementById('fixtureSel');
-      if(cur !== null && s && s.value !== cur){ s.value = cur; updateFixed(); }
-    });
-  }
-  document.querySelectorAll('#iOddsMode .om').forEach(b => b.onclick = () => {
-    document.querySelectorAll('#iOddsMode .om').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); oddsModeI = b.dataset.mode;
-  });
-  document.getElementById('todayDateLabel').textContent = `${cfg.today_date} · Elige el partido y calcula los picks.`;
-  document.getElementById('iRun').onclick = async () => {
-    const home = document.getElementById('iHome').value;
-    const away = document.getElementById('iAway').value;
-    const neutral = document.getElementById('iNeutral').checked;
-    const out = document.getElementById('iResult');
-    const btn = document.getElementById('iRun');
-    btn.disabled=true; btn.textContent='Calculando…';
-    out.innerHTML='<div class="tool-loading"><span class="spinner"></span> Corriendo el modelo…</div>';
-    try{
-      const m = await fetchMarkets(home, away, neutral);
-      out.innerHTML = buildAnalysis(m, home, away, neutral, 'i');
-    }catch(e){
-      out.innerHTML=`<div class="result-placeholder">${e.message}</div>`;
-    }
-    btn.disabled=false; btn.textContent='Calcular picks';
-  };
-  document.getElementById('iRun').click();
-}
-
-/* ---- wiring para plan torneo ---- */
-function wireTorneo(plan){
-  const cfg = CONFIG;
-  const allFixtures = (cfg && cfg.fixtures) || [];
-  const todayIso = (cfg && cfg.today_iso) || '2026-06-17';
-  // Plan "final" ($99 / código): SOLO la gran final, sin importar la
-  // fecha del día (así no se rompe si today_iso queda atrás).
-  const isFinalPlan = plan === 'final';
-  const FINAL = { home: 'Argentina', away: 'Spain' };
-  const fixtures = isFinalPlan
-    ? allFixtures.filter(f =>
-        (f.home_team === FINAL.home && f.away_team === FINAL.away) ||
-        (f.home_team === FINAL.away && f.away_team === FINAL.home))
-    : allFixtures.filter(f => f.date >= todayIso); // resto: de hoy en adelante
-  const teams = (cfg && cfg.wc_teams) || [];
-  const fxSel = document.getElementById('tFixture');
-  fxSel.innerHTML = ['<option value="">— Elegir fixture —</option>']
-    .concat(fixtures.map((x,i)=>`<option value="${i}">${(x.date||'').slice(5)} · ${teamLabel(x.home_team)} vs ${teamLabel(x.away_team)}</option>`))
-    .concat(['<option value="" disabled>— Siguientes partidos a confirmar —</option>'])
-    .join('');
-  const teamOpts = teams.map(t=>`<option value="${t}">${teamLabel(t)}</option>`).join('');
-  document.getElementById('tHome').innerHTML = teamOpts;
-  document.getElementById('tAway').innerHTML = teamOpts;
-  fxSel.addEventListener('change', () => {
-    const i = fxSel.value;
-    if(i==='') return;
-    const x = fixtures[i]; // fixtures ya está filtrado, índice correcto
-    document.getElementById('tHome').value = x.home_team;
-    document.getElementById('tAway').value = x.away_team;
-    const isHost = (cfg.hosts||[]).includes(x.home_team);
-    document.getElementById('tNeutral').checked = !isHost;
-    document.getElementById('tRun').click();
-  });
-  document.querySelectorAll('#tOddsMode .om').forEach(b => b.onclick = () => {
-    document.querySelectorAll('#tOddsMode .om').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); oddsModeT = b.dataset.mode;
-  });
-  document.getElementById('tRun').onclick = async () => {
-    const home = document.getElementById('tHome').value;
-    const away = document.getElementById('tAway').value;
-    const neutral = document.getElementById('tNeutral').checked;
-    const out = document.getElementById('tResult');
-    const btn = document.getElementById('tRun');
-    if(home === away){ out.innerHTML='<div class="result-placeholder">Elige dos selecciones distintas.</div>'; return; }
-    btn.disabled=true; btn.textContent='Calculando…';
-    out.innerHTML='<div class="tool-loading"><span class="spinner"></span> Corriendo el modelo…</div>';
-    try{
-      const m = await fetchMarkets(home, away, neutral);
-      out.innerHTML = buildAnalysis(m, home, away, neutral, 't');
-    }catch(e){
-      out.innerHTML=`<div class="result-placeholder">${e.message}</div>`;
-    }
-    btn.disabled=false; btn.textContent='Calcular picks';
-  };
-  /* auto-seleccionar: la final (plan final) o el primer partido de hoy */
-  const autoIdx = isFinalPlan ? 0 : fixtures.findIndex(f => f.date === todayIso);
-  if(autoIdx >= 0){ fxSel.value = String(autoIdx); fxSel.dispatchEvent(new Event('change')); }
-}
-
-/* ---- estados ---- */
 function showState(id){
-  ['stateLoading','stateNoAuth','stateNoPlan','stateExpired','stateVerifying'].forEach(s => {
-    document.getElementById(s).classList.toggle('active', s===id);
-  });
+  document.querySelectorAll('.page-state').forEach(s => s.classList.remove('active'));
   document.getElementById('mainContent').style.display = 'none';
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
 }
-function showMain(plan){
-  ['stateLoading','stateNoAuth','stateNoPlan','stateExpired','stateVerifying'].forEach(s => {
-    document.getElementById(s).classList.remove('active');
-  });
+function showMain(){
+  document.querySelectorAll('.page-state').forEach(s => s.classList.remove('active'));
   document.getElementById('mainContent').style.display = 'block';
-  document.getElementById('toolIndividual').classList.toggle('active', plan==='individual');
-  document.getElementById('toolTorneo').classList.toggle('active', plan==='torneo' || plan==='final');
-  document.getElementById('navPlanBadge').textContent = plan==='torneo' ? 'Torneo completo' : plan==='final' ? 'La final' : 'Partidos del día';
-  document.getElementById('navPlanBadge').style.display = 'inline-flex';
 }
 
-const ADMIN_EMAILS = ['rickybh17@gmail.com'];
+/* Marca una tarjeta como activa o como "ver planes" según el acceso. */
+function paint(has, chipId, ctaId, plansHref){
+  const chip = document.getElementById(chipId);
+  const cta  = document.getElementById(ctaId);
+  if(has){
+    chip.textContent = 'Activo';
+    chip.classList.add('on');
+  } else {
+    chip.textContent = 'Sin acceso';
+    chip.classList.remove('on');
+    /* Sin plan igual puede entrar: cada modelo muestra su pick gratis
+       y su propio candado. Pero el botón lleva primero a los planes. */
+    cta.textContent = 'Ver planes →';
+    cta.classList.add('ghost');
+    cta.href = plansHref;
+  }
+}
 
-/* ---- arranque ---- */
 async function boot(){
-  if(!initSb()){ setTimeout(boot, 200); return; }
-
-  // Mostrar "sin plan" por defecto — se sobreescribe si hay sesión+acceso
-  showState('stateNoPlan');
-
-  // Supabase dispara el callback inmediatamente con la sesión cacheada
-  sb.auth.onAuthStateChange(async (_event, session) => {
-    _accessToken = session ? session.access_token : null;
-    if(!session){ showState('stateNoAuth'); return; }
-    showState('stateLoading');
-    try { await loadAndShow(session); } catch(e) { console.error(e); showState('stateNoPlan'); }
-  });
-}
-
-async function loadAndShow(session){
-  const userEmail = session.user.email;
-  const params = new URLSearchParams(window.location.search);
-  const pago = params.get('pago');
-
-  /* admin: acceso torneo automático — sin esperar nada */
-  if(ADMIN_EMAILS.includes(userEmail)){
-    if(pago) history.replaceState(null,'','/mis-modelos.html');
-    showMain('torneo');
-    unlockMlbToggle();
-    loadConfig().then(() => { if(CONFIG) wireTorneo('torneo'); }).catch(()=>{});
+  if(!initSb()){
+    setTimeout(boot, 150);
     return;
   }
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){ showState('stateNoAuth'); return; }
+  showState('stateLoading');
 
-  /* verificar acceso: MLB vive en su propia fila (plan que empieza con
-     "mlb_") y no debe mezclarse aquí. El producto se deriva del `plan`
-     en JS, no de una columna — así funciona haya corrido o no la
-     migración de Supabase que agrega `product`. */
-  let ent = null;
-  try {
-    const timeout = new Promise(r => setTimeout(() => r({data:null,error:'timeout'}), 3000));
-    const query = sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
-    const result = await Promise.race([query, timeout]);
-    const rows = (result.data || []).filter(r => r.active && !(r.plan || '').startsWith('mlb_'));
-    if(rows.length) ent = rows[0];
-  } catch(e) { /* si falla el query, ent queda null */ }
+  /* El acceso se pinta con /api/my-access; si falla, igual mostramos
+     las tarjetas (cada modelo valida por su cuenta). */
+  let acc = null;
+  try{
+    const res = await fetch('/api/my-access', {
+      headers: { Authorization: 'Bearer ' + session.access_token },
+    });
+    if(res.ok) acc = await res.json();
+  }catch(e){}
 
-  /* ¿tiene también acceso al modelo MLB? corre en paralelo: solo
-     desbloquea el toggle, NUNCA retrasa mostrar la herramienta. */
-  const mlbCheck = checkMlbSwitch();
-
-  if(!ent){
-    /* Solo tiene MLB (no Mundial): si llegó navegando por su cuenta,
-       mándalo a su modelo. Pero si vino del toggle de mlb.html
-       (from=mlb), quiere ver el Mundial a propósito: muéstrale el
-       estado "sin plan" para comprarlo — jamás rebotarlo de regreso. */
-    const fromMlb = params.get('from') === 'mlb';
-    let hasMlb = false;
-    try { hasMlb = await mlbCheck; } catch(e) {}
-    if(hasMlb && !fromMlb){ window.location.href = '/mlb.html'; return; }
-    showState('stateNoPlan');
-    return;
+  if(acc){
+    paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/#precios');
+    paint(!!acc.mx,  'chipMx',  'ctaMx',  '/#precios-mx');
   }
-
-  /* plan individual: verificar que se compró hoy */
-  if(ent.plan === 'individual' && ent.updated_at) {
-    const purchasedDate = ent.updated_at.slice(0, 10); // "2026-06-17"
-    const todayIso = new Date().toISOString().slice(0, 10);
-    if(purchasedDate !== todayIso) {
-      showState('stateExpired');
-      return;
-    }
-  }
-
-  /* tiene acceso: mostrar modelo PRIMERO, luego cargar config en background */
-  if(pago) history.replaceState(null,'','/mis-modelos.html');
-  showMain(ent.plan);
-  /* si viene de un pago, confirmar visualmente */
-  if(pago === 'pendiente'){
-    document.getElementById('pendingBanner').style.display = 'flex';
-  } else if(pago){
-    document.getElementById('successBanner').style.display = 'flex';
-  }
-  loadConfig().then(() => {
-    if(!CONFIG) return;
-    if(ent.plan==='individual') wireIndividual();
-    else wireTorneo(ent.plan);
-  }).catch(()=>{});
+  showMain();
 }
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {

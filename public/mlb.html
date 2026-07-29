@@ -52,7 +52,7 @@
   .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.8rem, 6vw, 2.8rem); text-wrap: balance; }
   .head .lede { color: var(--muted); font-size: 0.98rem; font-weight: 450; margin-top: 12px; max-width: 52ch; }
 
-  /* ---- TOGGLE DE MODELO (MLB | Mundial) ---- */
+  /* ---- TOGGLE DE MODELO (MLB | Liga MX) ---- */
   .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
   .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
   .model-toggle .mt-opt:hover { color: var(--text); }
@@ -198,7 +198,6 @@
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <span class="mt-opt active" role="tab" aria-selected="true">⚾ MLB</span>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
-      <a class="mt-opt" role="tab" aria-selected="false" id="mundialSwitchBtn" href="/mis-modelos.html?from=mlb">🌍 Mundial 2026</a>
     </div>
     <p class="lede">El modelo ya jugó cada partido 10,000 veces. El juego destacado es gratis todos los días; el resto se desbloquea con tu plan.</p>
   </div>
@@ -295,13 +294,6 @@ async function authHeader() {
     return t ? { Authorization: 'Bearer ' + t } : {};
   } catch (e) { return {}; }
 }
-
-/* Toggle "Mundial 2026": link directo, sin verificaciones asíncronas
-   (en móvil fallaban/perdían la carrera contra el tap). La página de
-   mis-modelos valida el acceso por sí misma: con Mundial muestra la
-   herramienta; sin él muestra el CTA de compra. El parámetro from=mlb
-   le indica que NO rebote de regreso aquí a usuarios solo-MLB. */
-function checkMundialSwitch() { /* ya no hace falta: el link es directo */ }
 
 async function load(date, refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>';
@@ -478,7 +470,7 @@ $('lkGo').addEventListener('click', async () => {
     });
     if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
     $('loginOverlay').classList.remove('open');
-    load(currentDate); checkMundialSwitch();
+    load(currentDate);
   } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
 });
 
@@ -555,7 +547,6 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
 })();
 
 load(null);
-checkMundialSwitch();
 </script>
 </body>
 </html>
