@@ -286,6 +286,17 @@
   #faq details p { color: var(--muted); font-size: 0.94rem; font-weight: 450; padding-bottom: 20px; max-width: 64ch; }
 
   /* ---- FOOTER ---- */
+  /* Asterisco que ancla un claim a los términos (obligación de divulgación) */
+  .tc-ref { color: var(--blue); text-decoration: none; font-weight: 700; padding-left: 1px; }
+  .tc-ref:hover { text-decoration: underline; }
+  /* TÉRMINOS */
+  #terminos { padding: 56px 0 0; scroll-margin-top: 70px; }
+  #terminos .tc-box { border: 1px solid var(--line); border-radius: 14px; padding: 24px 26px; background: var(--g1); }
+  #terminos h3 { font-size: 0.96rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 12px; }
+  #terminos dl { font-size: 0.84rem; color: var(--muted); line-height: 1.62; }
+  #terminos dt { font-weight: 650; color: var(--text); margin-top: 14px; }
+  #terminos dt:first-child { margin-top: 0; }
+  #terminos dd { margin-left: 0; }
   footer { border-top: 1px solid var(--line); padding: 50px 0 64px; color: var(--faint); font-size: 0.82rem; font-weight: 450; }
   footer .wrap { display: flex; justify-content: space-between; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
   footer .logo { color: var(--text); }
@@ -642,7 +653,7 @@
         <div class="per">7 días de acceso completo</div>
         <ul>
           <li>Todos los juegos, todos los días</li>
-          <li><strong>Gana tu Semana</strong>: si tus primeros 7 días cierran con más BET perdidos que ganados, tus $149 se acreditan a tu primer mes de Fundador</li>
+          <li><strong>Gana tu Semana</strong>: si tus primeros 7 días cierran con más BET perdidos que ganados, <strong>recuperas tus $149</strong><a href="#terminos" class="tc-ref">*</a></li>
           <li><strong>Acceso fundador</strong>: entras con el precio de lanzamiento</li>
         </ul>
         <a href="/checkout.html?plan=mlb_semana" class="btn btn-dim">Probar 7 días sin riesgo</a>
@@ -677,8 +688,8 @@
     <div class="guarantee reveal">
       <div class="g-ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
       <div>
-        <h3>El riesgo lo carga el modelo, no tú.</h3>
-        <p><strong>Gana tu Semana</strong> — ¿probaste los 7 días y los picks <strong>BET</strong> cerraron con más perdidos que ganados? Escríbenos dentro de los 7 días siguientes y tus $149 se acreditan a tu primer mes de Fundador. El récord es público: se verifica contra el marcador real de cada juego.</p>
+        <h3>Semana perdedora, te devolvemos tus $149.<a href="#terminos" class="tc-ref">*</a></h3>
+        <p><strong>Gana tu Semana</strong> — ¿probaste los 7 días y los picks <strong>BET</strong> cerraron con más perdidos que ganados? Escríbenos dentro de los 7 días siguientes y recuperas tu dinero. El récord es público: se verifica contra el marcador real de cada juego.</p>
         <p style="margin-top:10px"><strong>Ya de fundador</strong> — si una semana cierra con récord BET perdedor, tu siguiente semana no se cobra. Semana perdedora = semana gratis.</p>
       </div>
     </div>
@@ -748,7 +759,7 @@
       </details>
       <details>
         <summary>¿Qué pasa si el modelo tiene una mala semana?</summary>
-        <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si los picks BET cierran la semana con récord perdedor, tu siguiente semana va gratis. El récord completo, con perdidos incluidos, está publicado arriba.</p>
+        <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si estás probando los 7 días y cierran con récord BET perdedor, <strong>recuperas tus $149</strong>; y si ya eres fundador, tu siguiente semana va gratis. El récord completo, con perdidos incluidos, está publicado arriba. <a href="#terminos">Ver términos</a>.</p>
       </details>
       <details>
         <summary>¿Cómo recibo los picks?</summary>
@@ -758,6 +769,23 @@
         <summary>¿Por qué "Fundador"?</summary>
         <p>Porque estás entrando antes que nadie. El precio de $399 se congela para ti mientras sigas activo. Los que se unan después pagarán más.</p>
       </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TÉRMINOS ============ -->
+<section id="terminos">
+  <div class="wrap">
+    <div class="tc-box">
+      <h3>Términos de las garantías</h3>
+      <dl>
+        <dt>* Gana tu Semana (Semana de prueba, $149 MXN)</dt>
+        <dd>Aplica a la primera Semana de prueba de cada cuenta. Se activa si, durante tus 7 días de acceso, los picks marcados <strong>BET</strong> del modelo MLB cierran con más resultados perdidos que ganados, verificado contra el marcador oficial de cada juego. Para reclamarla escríbenos dentro de los 7 días naturales siguientes al término de tu acceso. La devolución se entrega como <strong>crédito por $149 MXN aplicable a tu primer mes del plan Mensual Fundador</strong> (pagas $250 en lugar de $399); las renovaciones siguientes se cobran al precio normal del plan. El crédito no es transferible ni canjeable por efectivo y se usa en un solo pago. Disponible pagando con tarjeta.</dd>
+        <dt>Semana perdedora = semana gratis (Mensual Fundador)</dt>
+        <dd>Para suscriptores activos: si una semana calendario cierra con récord perdedor en los picks <strong>BET</strong>, no se cobra la semana siguiente de tu suscripción. Se aplica sobre tu ciclo de facturación vigente.</dd>
+        <dt>General</dt>
+        <dd>Las predicciones son análisis estadístico y no garantizan resultados de ninguna apuesta. Estas garantías cubren el costo de tu acceso al modelo, nunca el dinero que apuestes por tu cuenta. Puedes cancelar tu suscripción cuando quieras desde <em>Administrar suscripción</em>.</dd>
+      </dl>
     </div>
   </div>
 </section>
