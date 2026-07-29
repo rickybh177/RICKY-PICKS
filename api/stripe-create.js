@@ -3,7 +3,7 @@
 const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
-const { paseCreditFor } = require('../lib/pase-credit');
+const { upgradeCreditFor } = require('../lib/pase-credit');
 const { isSubscription, PLANS: SERVER_PLANS } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -19,6 +19,7 @@ const PLANS = {
   mx_fundador:    { name: 'Modelo Liga MX — Mensual Fundador',         price: 39900, currency: 'mxn' },
   combo_fundador: { name: 'Combo MLB + Liga MX',                       price: 49900, currency: 'mxn' },
   mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
+  circulo_fundador: { name: 'Círculo Fundador — todo + línea directa', price: 199900, currency: 'mxn' },
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
@@ -94,13 +95,15 @@ module.exports = async function handler(req, res) {
         });
         sessionParams.discounts = [{ coupon: coupon.id }];
       } else {
+        /* Rollover: lo pagado por el Pase (24 h) o la Semana (48 h)
+           se descuenta del primer mes del plan mensual con MLB. */
         const includesMlb = plan === 'mlb_fundador' || plan === 'combo_fundador';
         const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
-        const credit = paseCreditFor(ent); // MXN (99) o 0
+        const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
         if (credit > 0) {
           const coupon = await stripe.coupons.create({
             amount_off: credit * 100, currency: p.currency,
-            duration: 'once', name: 'Crédito Pase del día',
+            duration: 'once', name: `Crédito de tu compra anterior ($${credit})`,
           });
           sessionParams.discounts = [{ coupon: coupon.id }];
         }

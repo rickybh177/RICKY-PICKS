@@ -314,6 +314,18 @@ const PLANS = {
       'Todos los picks y análisis, sin límite',
     ],
   },
+  circulo_fundador: {
+    name: 'Círculo Fundador',
+    price: '$1,999',
+    currency: 'MXN',
+    period: 'Suscripción mensual · atención directa, cupo limitado',
+    features: [
+      'TODOS los modelos incluidos: MLB + Liga MX + los que lancemos',
+      'Línea directa con Ricky por WhatsApp/Telegram: dudas sobre los picks del día, respuesta el mismo día',
+      'Precio congelado de por vida mientras sigas activo',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
 };
 
 /* leer plan de la URL */
@@ -325,7 +337,7 @@ const payoErr = params.get('pago');
 // mlb_ -> /mlb.html · mx_ y combo_ -> /mx.html · resto -> Mundial
 const modelUrl = p => {
   p = p || '';
-  if(p.startsWith('mlb_')) return '/mlb.html';
+  if(p.startsWith('mlb_') || p === 'circulo_fundador') return '/mlb.html';
   if(p.startsWith('mx_') || p.startsWith('combo_')) return '/mx.html';
   return '/mis-modelos.html';
 };
@@ -436,7 +448,7 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
    combo_* -> mlb+mx, resto -> mundial. */
 function productsOf(p){
   p = p || '';
-  if(p.startsWith('combo_')) return ['mlb','mx'];
+  if(p.startsWith('combo_') || p === 'circulo_fundador') return ['mlb','mx'];
   if(p.startsWith('mlb_')) return ['mlb'];
   if(p.startsWith('mx_')) return ['mx'];
   return ['mundial'];
@@ -480,8 +492,9 @@ async function renderSession(session){
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
      solo una pata SÍ se permite (es el upgrade). */
-  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador'] };
-  const buyingCombo = (planId||'').startsWith('combo_');
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador','circulo_fundador'] };
+  /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
+  const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
   const covered = ent && !buyingCombo &&
     productsOf(planId).every(p => (TOP[p]||[]).includes(ent.plan));
   if(ent && (ent.plan === planId || covered)){
@@ -491,15 +504,23 @@ async function renderSession(session){
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
 
-  /* LEGACY: el Pase del día ya no se vende. Esto sigue aquí para
-     honrar a quien lo compró antes de retirarlo — si su pase sigue
-     vigente, ve el crédito de $99 reflejado ANTES de pagar.
-     (El cobro real ya lo descuenta el servidor en ambas pasarelas.) */
-  if(planId === 'mlb_fundador' && ent && ent.plan === 'mlb_pase' && ent.updated_at &&
-     (Date.now() - Date.parse(ent.updated_at)) <= 86400e3){
+  /* Rollover: lo pagado por la Semana (48 h) o el Pase legacy (24 h)
+     se refleja en el precio ANTES de pagar. El cobro real ya lo
+     descuenta el servidor (cupón de una vez, solo con tarjeta). */
+  const upgradeCredit = (target, e) => {
+    if(!e || !e.updated_at || (target !== 'mlb_fundador' && target !== 'combo_fundador')) return 0;
+    const age = Date.now() - Date.parse(e.updated_at);
+    if(e.plan === 'mlb_semana' && age <= 48*3600e3) return 149;
+    if(e.plan === 'mlb_pase'   && age <= 24*3600e3) return 99;
+    return 0;
+  };
+  const credit = upgradeCredit(planId, ent);
+  if(credit > 0){
+    const full = planId === 'combo_fundador' ? 499 : 399;
     document.getElementById('summaryPrice').innerHTML =
-      `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$399</span> $300 MXN`;
-    document.getElementById('summaryName').textContent = plan.name + ' · 1er mes con crédito del Pase (-$99, con tarjeta)';
+      `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$${full}</span> $${full - credit} MXN`;
+    document.getElementById('summaryName').textContent =
+      plan.name + ` · 1er mes con tu crédito de $${credit} (con tarjeta)`;
   }
 }
 

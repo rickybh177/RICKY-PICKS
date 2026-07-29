@@ -71,7 +71,7 @@ module.exports = async function handler(req, res) {
       // descuento" en un preapproval. El código sí funciona con tarjeta.
       return res.status(400).json({ error: 'Ese código de descuento solo aplica pagando con tarjeta.' });
     }
-    const subDest = planId === 'mlb_fundador' ? 'mlb.html' : 'mx.html';
+    const subDest = (planId === 'mlb_fundador' || planId === 'circulo_fundador') ? 'mlb.html' : 'mx.html';
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',

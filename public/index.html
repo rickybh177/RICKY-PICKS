@@ -230,6 +230,18 @@
   .cur-toggle button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--muted); background: none; border: none; padding: 8px 20px; border-radius: 980px; cursor: pointer; transition: color .15s, background .15s; }
   .cur-toggle button:hover { color: var(--text); }
   .cur-toggle button.active { background: var(--g0); color: var(--blue); box-shadow: 0 2px 10px -4px rgba(0,0,0,0.35); }
+  /* Ancla premium (Círculo Fundador): banda oscura, presentada primero */
+  .circulo { margin-top: 28px; background: #12161f; color: #e9edf4; border-radius: 16px; padding: 30px 32px; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
+  .circulo-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8fb0f5; margin-bottom: 10px; }
+  .circulo h3 { font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
+  .circulo p { color: rgba(233,237,244,0.72); font-size: 0.9rem; font-weight: 450; margin-top: 8px; max-width: 56ch; }
+  .circulo p strong { color: #fff; }
+  .circulo-buy { flex-shrink: 0; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .circulo-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.9rem; letter-spacing: -0.03em; }
+  .circulo-price small { font-size: 0.72rem; font-weight: 500; color: rgba(233,237,244,0.6); letter-spacing: 0; }
+  .btn-dark { display: inline-block; background: #fff; color: #12161f; text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 13px 26px; border-radius: 11px; transition: transform .15s ease; }
+  .btn-dark:hover { transform: translateY(-2px); }
+  .circulo-mini { font-size: 0.7rem; color: rgba(233,237,244,0.55); }
   .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; align-items: stretch; }
   .tiers.tiers-3 { grid-template-columns: repeat(3, 1fr); max-width: 940px; }
   .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
@@ -403,6 +415,8 @@
     .hero-cta { padding: 12px 20px; font-size: 0.88rem; }
     .hero-copy { bottom: 10vh; }
     .tiers, .tiers.tiers-3 { grid-template-columns: 1fr; }
+    .circulo { flex-direction: column; align-items: stretch; text-align: left; padding: 24px 20px; }
+    .circulo-buy { align-items: stretch; text-align: center; }
     .nav-link, .nav-ghost { display: none; }
     .pc-shell { padding: 16px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
@@ -645,6 +659,23 @@
       <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
       <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
     </div>
+
+    <!-- Ancla premium (Anchor Upsell): se presenta PRIMERO a propósito.
+         Es real y se entrega de verdad; las pocas ventas son utilidad
+         desproporcionada y hace ver al resto de precios como ganga. -->
+    <div class="circulo reveal">
+      <div class="circulo-info">
+        <div class="circulo-tag">Premium · cupo limitado</div>
+        <h3>Círculo Fundador</h3>
+        <p>Todos los modelos incluidos — MLB, Liga MX y cada modelo que lancemos — más <strong>línea directa con Ricky por WhatsApp</strong>: tus dudas sobre los picks del día, respondidas el mismo día. Es atención directa, no un grupo masivo; por eso el cupo es limitado.</p>
+      </div>
+      <div class="circulo-buy">
+        <div class="circulo-price" data-mxn="$1,999<small> MXN/mes</small>" data-usd="$109.99<small> USD/mes</small>">$1,999<small> MXN/mes</small></div>
+        <a href="/checkout.html?plan=circulo_fundador" class="btn btn-dark">Solicitar mi lugar</a>
+        <span class="circulo-mini">Cancela cuando quieras</span>
+      </div>
+    </div>
+
     <div class="tiers tiers-3">
       <div class="tier reveal">
         <h3>Semana de prueba</h3>
@@ -652,6 +683,7 @@
         <div class="amt" data-mxn="$149<small>MXN</small>" data-usd="$8.99<small>USD</small>">$149<small>MXN</small></div>
         <div class="per">7 días de acceso completo</div>
         <ul>
+          <li><strong>¿Primera vez con el modelo?</strong> Empieza aquí — no necesitas la Temporada todavía</li>
           <li>Todos los juegos, todos los días</li>
           <li><strong>Gana tu Semana</strong>: si tus primeros 7 días cierran con más BET perdidos que ganados, <strong>recuperas tus $149</strong><a href="#terminos" class="tc-ref">*</a></li>
           <li><strong>Acceso fundador</strong>: entras con el precio de lanzamiento</li>
@@ -781,8 +813,12 @@
       <dl>
         <dt>* Gana tu Semana (Semana de prueba, $149 MXN)</dt>
         <dd>Aplica a la primera Semana de prueba de cada cuenta. Se activa si, durante tus 7 días de acceso, los picks marcados <strong>BET</strong> del modelo MLB cierran con más resultados perdidos que ganados, verificado contra el marcador oficial de cada juego. Para reclamarla escríbenos dentro de los 7 días naturales siguientes al término de tu acceso. La devolución se entrega como <strong>crédito por $149 MXN aplicable a tu primer mes del plan Mensual Fundador</strong> (pagas $250 en lugar de $399); las renovaciones siguientes se cobran al precio normal del plan. El crédito no es transferible ni canjeable por efectivo y se usa en un solo pago. Disponible pagando con tarjeta.</dd>
+        <dt>Crédito de la Semana al subir de plan (48 horas)</dt>
+        <dd>Si compraste la Semana de prueba, durante las 48 horas siguientes a tu compra tus $149 MXN se descuentan completos del <strong>primer mes</strong> del plan Mensual Fundador (pagas $250) o del Combo MLB + Liga MX (pagas $350). Aplica pagando con tarjeta; las renovaciones siguientes se cobran al precio normal del plan. Este crédito y el de "Gana tu Semana" son el mismo beneficio por dos vías distintas: nunca se acumulan entre sí.</dd>
         <dt>Semana perdedora = semana gratis (Mensual Fundador)</dt>
         <dd>Para suscriptores activos: si una semana calendario cierra con récord perdedor en los picks <strong>BET</strong>, no se cobra la semana siguiente de tu suscripción. Se aplica sobre tu ciclo de facturación vigente.</dd>
+        <dt>Círculo Fundador</dt>
+        <dd>Incluye acceso a todos los modelos activos de RICKY·PICKS (hoy MLB y Liga MX, más los que se lancen mientras tu suscripción siga activa) y línea directa con Ricky por WhatsApp o Telegram para dudas sobre los picks del día, con respuesta el mismo día en días con juegos. El cupo se limita para mantener la atención directa; si no hay lugares disponibles te lo diremos antes de cobrar.</dd>
         <dt>General</dt>
         <dd>Las predicciones son análisis estadístico y no garantizan resultados de ninguna apuesta. Estas garantías cubren el costo de tu acceso al modelo, nunca el dinero que apuestes por tu cuenta. Puedes cancelar tu suscripción cuando quieras desde <em>Administrar suscripción</em>.</dd>
       </dl>
