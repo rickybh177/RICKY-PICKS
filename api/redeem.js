@@ -30,6 +30,7 @@ const CODES = {
   'LORDI': 'final', // acceso solo a la gran final del Mundial (Argentina vs España)
   'MLBFULL': 'mlb_temporada', // código de acceso completo MLB (temporada 2026)
   'COMBOMES': 'combo_fundador', // pago por transferencia: MLB + Liga MX por 30 días (sin suscripción; expira solo)
+  'SAUTOP': 'combo_permanente', // acceso permanente MLB + Liga MX (código de soporte)
 };
 
 function bearer(req) {
