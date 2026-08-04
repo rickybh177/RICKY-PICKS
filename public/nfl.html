@@ -194,7 +194,9 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+const PRE_WEEKS = 4, REG_WEEKS = 18;
 let currentWeek = null;
+let currentST = null; // 1 pretemporada · 2 regular
 
 function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
@@ -210,10 +212,11 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-async function load(week, refresh) {
+async function load(week, refresh, st) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando la semana 10,000 veces…</div>';
   const q = new URLSearchParams();
   if (week) q.set('week', week);
+  if (st) q.set('st', st);
   if (refresh) q.set('refresh', '1');
   const headers = await authHeader();
   let res;
@@ -227,10 +230,11 @@ async function load(week, refresh) {
   if (!res.ok) return renderError('El modelo no pudo calcular esta semana. Intenta actualizar.');
   const wk = await res.json();
   currentWeek = wk.week;
+  currentST = wk.seasontype || 2;
   $('lockWrap').style.display = 'none';
   $('appWrap').style.display = 'block';
   $('weeknav').style.display = 'flex';
-  $('curWeek').textContent = 'SEMANA ' + wk.week;
+  $('curWeek').textContent = (currentST === 1 ? 'PRETEMP ' : 'SEMANA ') + wk.week;
   renderMeta(wk);
   renderWeek(wk);
 }
@@ -250,12 +254,18 @@ function renderError(msg) {
 }
 
 function renderMeta(wk) {
+  const pre = wk.seasontype === 1;
   const chips = [
     'Temporada ' + wk.season + '-' + String(wk.season + 1).slice(2),
     wk.sims.toLocaleString() + ' sims/juego',
     'Momios: ' + (wk.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'ESPN BET'),
-    wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings preseason (base 2025, se actualizan solos)',
   ];
+  if (pre) {
+    chips.push('Pretemporada: entorno propio (juegan los suplentes)');
+    chips.push(wk.games_learned > 0 ? wk.games_learned + ' juegos de agosto absorbidos' : 'Entorno base 2024-25');
+  } else {
+    chips.push(wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings de arranque (fit 2024-25 ajustado por rival)');
+  }
   $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
 }
 
@@ -275,6 +285,7 @@ function metaRow(g) {
   const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
   const live = g.state === 'in', final = g.state === 'post';
   let badges = '';
+  if (currentST === 1) badges += '<span class="badge neutral">Pretemporada</span>';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
   if (g.neutral) badges += '<span class="badge neutral">Sede neutral</span>';
@@ -317,8 +328,16 @@ function moreDetails(g) {
   const m = g.markets;
   if (!m) return '';
   const fo = m.fair_odds || {};
+  const mo = m.market_odds;
+  const marketRows = mo
+    ? '<div class="det-h">Momios del mercado (' + esc(mo.source || '') + ')</div>' +
+      det('Spread del mercado', (mo.spread != null ? g.home.abbr + ' ' + (mo.spread > 0 ? '+' : '') + mo.spread : '—') +
+        ' · total ' + (mo.total != null ? mo.total : '—')) +
+      (mo.ml_home != null ? det('Moneyline del mercado', g.home.abbr + ' ' + am(mo.ml_home) + ' · ' + g.away.abbr + ' ' + am(mo.ml_away)) : '')
+    : '';
   const rows =
-    '<div class="det-h">Mercados de equipo</div>' +
+    marketRows +
+    '<div class="det-h">Mercados de equipo (modelo)</div>' +
     det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
     det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)) +
     det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line) +
@@ -327,8 +346,10 @@ function moreDetails(g) {
     det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
     det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
     det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total) +
-    '<div class="det-h">Props del QB (proyección del modelo)</div>' +
-    qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away);
+    (g.qb_props
+      ? '<div class="det-h">Props del QB (proyección del modelo)</div>' +
+        qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away)
+      : '');
   return '<details class="more"><summary>Todos los mercados y props</summary>' +
     '<div class="det-rows">' + rows + '</div>' + distChart(m, g) + '</details>';
 }
@@ -374,9 +395,18 @@ $('lkGo').addEventListener('click', async () => {
 });
 $('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
 
-$('prevWeek').addEventListener('click', () => currentWeek && currentWeek > 1 && load(currentWeek - 1));
-$('nextWeek').addEventListener('click', () => currentWeek && currentWeek < 18 && load(currentWeek + 1));
-$('refreshBtn').addEventListener('click', () => load(currentWeek, true));
+/* navegación lineal: pretemporada 1-4 → regular 1-18 */
+$('prevWeek').addEventListener('click', () => {
+  if (!currentWeek) return;
+  if (currentST === 2 && currentWeek === 1) load(PRE_WEEKS, false, 1);
+  else if (currentWeek > 1) load(currentWeek - 1, false, currentST);
+});
+$('nextWeek').addEventListener('click', () => {
+  if (!currentWeek) return;
+  if (currentST === 1 && currentWeek >= PRE_WEEKS) load(1, false, 2);
+  else if (currentST === 1 || currentWeek < REG_WEEKS) load(currentWeek + 1, false, currentST);
+});
+$('refreshBtn').addEventListener('click', () => load(currentWeek, true, currentST));
 
 load(null);
 </script>

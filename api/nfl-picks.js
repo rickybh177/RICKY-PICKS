@@ -34,8 +34,10 @@ module.exports = async function handler(req, res) {
   if (!isAdmin) return res.status(403).json({ error: 'Beta privada.' });
 
   const week = req.query && req.query.week ? Number(req.query.week) : null;
+  // st: 1 pretemporada · 2 regular · vacío = fase actual del calendario
+  const st = req.query && req.query.st ? Number(req.query.st) : null;
   const refresh = req.query && req.query.refresh === '1';
-  const key = week || 'auto';
+  const key = (st || 'auto') + ':' + (week || 'auto');
 
   try {
     const hit = _cache.get(key);
@@ -43,9 +45,9 @@ module.exports = async function handler(req, res) {
     if (!refresh && hit && Date.now() - hit.at < TTL) {
       value = hit.value;
     } else {
-      value = await buildWeek(week);
+      value = await buildWeek(week, st);
       _cache.set(key, { at: Date.now(), value });
-      if (key === 'auto') _cache.set(value.week, { at: Date.now(), value });
+      if (key === 'auto:auto') _cache.set(value.seasontype + ':' + value.week, { at: Date.now(), value });
     }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json(value);
