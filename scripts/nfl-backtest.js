@@ -18,7 +18,7 @@
    Uso:  node scripts/nfl-backtest.js
    ============================================================ */
 const { getSeasonGames } = require('./nfl-history');
-const { fitRatings, fitPreseason } = require('../lib/nfl/fit');
+const { fitRatings, fitPreseasonRatings } = require('../lib/nfl/fit');
 const { learnRatings } = require('../lib/nfl/model');
 const { simulateGame, marketsFromSims } = require('../lib/nfl/engine');
 
@@ -168,44 +168,49 @@ function metrics(rows) {
     console.log(`    ${b * 10}–${(+b + 1) * 10}%: pred ${(x.sum / x.n * 100).toFixed(1)}% · real ${(x.hits / x.n * 100).toFixed(1)}% (n=${x.n})`);
   }
 
-  /* ---- PRETEMPORADA: ajustar con 2024, probar contra 2025 ---- */
-  console.log('\nPretemporada (parámetros de 2024 → prueba 2025):');
-  const histFor = async year => {
-    const h = [];
-    for (const y of [year - 2, year - 1]) { h.push(...await getSeasonGames(y, 2)); h.push(...await getSeasonGames(y, 3)); }
-    return h;
-  };
-  const f24 = fitRatings(await histFor(2024), { asOf: new Date('2024-08-01T00:00:00Z').getTime() });
-  const R24 = {};
-  for (const t in f24.ratings) R24[t] = { off: f24.ratings[t].off * CARRY, def: f24.ratings[t].def * CARRY };
-  const pre24 = await getSeasonGames(2024, 1);
-  const pre = fitPreseason(pre24, { 2024: R24 });
-  console.log(`  fit 2024: mu=${pre.mu} hfa=${pre.hfa} beta=${pre.beta}`);
-  const f25 = fitRatings(await histFor(2025), { asOf: new Date('2025-08-01T00:00:00Z').getTime() });
-  const R25 = {};
-  for (const t in f25.ratings) R25[t] = { off: f25.ratings[t].off * CARRY, def: f25.ratings[t].def * CARRY };
+  /* ---- PRETEMPORADA: ¿de dónde sale (si sale) la señal? ----
+     Prueba fuera de muestra contra la pretemporada 2025, con todo
+     ajustado únicamente con datos anteriores a agosto de 2025. */
+  console.log('\nPretemporada — prueba fuera de muestra contra agosto 2025:');
+  const preHist = [];
+  for (const y of [2021, 2022, 2023, 2024]) preHist.push(...await getSeasonGames(y, 1));
   const pre25 = await getSeasonGames(2025, 1);
-  for (const beta of [pre.beta, 0.3]) {
-    let brier = 0, nMl2 = 0, biasT = 0, maeT = 0, n = 0, baseB = 0;
-    let homeWins = 0, dec = 0;
-    for (const g of pre25) { const m = g.home.score - g.away.score; if (m !== 0) { dec++; if (m > 0) homeWins++; } }
-    const pBase = homeWins / dec;
+  const asOf25 = new Date('2025-08-01T00:00:00Z').getTime();
+
+  // (a) ratings de TEMPORADA REGULAR — la hipótesis intuitiva
+  const regHist = [];
+  for (const y of [2023, 2024]) { regHist.push(...await getSeasonGames(y, 2)); regHist.push(...await getSeasonGames(y, 3)); }
+  const fReg = fitRatings(regHist, { asOf: asOf25 });
+  // (b) ratings de PRETEMPORADA — lo que sí persiste
+  const fPre = fitPreseasonRatings(preHist, { asOf: asOf25 });
+  console.log(`  fit pretemporada 2021-24: mu=${fPre.mu} hfa=${fPre.hfa} (el fit con decaimiento decía ${fPre.diag.hfa_fit_decayed}) carry=${fPre.carry}`);
+
+  let homeWins = 0, dec = 0;
+  for (const g of pre25) { const m = g.home.score - g.away.score; if (m !== 0) { dec++; if (m > 0) homeWins++; } }
+  const pBase = homeWins / dec;
+
+  const evalPre = (label, ratings, mu, hfa) => {
+    let brier = 0, nMl2 = 0, biasT = 0, maeT = 0, n = 0;
     for (const g of pre25) {
-      const rh = R25[g.home.abbr], ra = R25[g.away.abbr];
-      if (!rh || !ra) continue;
-      const expH = pre.mu + pre.hfa / 2 + beta * (rh.off - ra.def);
-      const expA = pre.mu - pre.hfa / 2 + beta * (ra.off - rh.def);
+      const rh = ratings && ratings[g.home.abbr], ra = ratings && ratings[g.away.abbr];
+      const hfaHalf = g.neutral ? 0 : hfa / 2;
+      const expH = mu + hfaHalf + (rh && ra ? rh.off - ra.def : 0);
+      const expA = mu - hfaHalf + (rh && ra ? ra.off - rh.def : 0);
       const margin = g.home.score - g.away.score;
-      if (margin !== 0) {
-        const pH = normCdf((expH - expA) / 12.5);
-        brier += (pH - (margin > 0 ? 1 : 0)) ** 2;
-        baseB += (pBase - (margin > 0 ? 1 : 0)) ** 2;
-        nMl2++;
-      }
+      if (margin !== 0) { brier += (normCdf((expH - expA) / 12.5) - (margin > 0 ? 1 : 0)) ** 2; nMl2++; }
       biasT += (g.home.score + g.away.score) - (expH + expA);
       maeT += Math.abs((g.home.score + g.away.score) - (expH + expA));
       n++;
     }
-    console.log(`  beta=${beta}: Brier ML=${(brier / nMl2).toFixed(4)} (base localía=${(baseB / nMl2).toFixed(4)}) · sesgo total=${(biasT / n) >= 0 ? '+' : ''}${(biasT / n).toFixed(2)} · MAE total=${(maeT / n).toFixed(2)} (n=${n})`);
-  }
+    console.log(`  ${label}: Brier ML=${(brier / nMl2).toFixed(4)} · sesgo total=${(biasT / n) >= 0 ? '+' : ''}${(biasT / n).toFixed(2)} · MAE total=${(maeT / n).toFixed(2)}`);
+  };
+  let bb = 0, nb = 0;
+  for (const g of pre25) { const m = g.home.score - g.away.score; if (m !== 0) { bb += (pBase - (m > 0 ? 1 : 0)) ** 2; nb++; } }
+  console.log(`  BASE localía pura (p=${pBase.toFixed(3)}): Brier ML=${(bb / nb).toFixed(4)}`);
+  evalPre('todos iguales (sin ratings)   ', null, fPre.mu, fPre.hfa);
+  const rReg = {};
+  for (const t in fReg.ratings) rReg[t] = { off: fReg.ratings[t].off * CARRY, def: fReg.ratings[t].def * CARRY };
+  evalPre('ratings de TEMPORADA REGULAR  ', rReg, fPre.mu, fPre.hfa);
+  evalPre('ratings de PRETEMPORADA       ', fPre.ratings, fPre.mu, fPre.hfa);
+  console.log('  → la señal, la poca que hay, viene de pretemporadas anteriores, no de la temporada regular.');
 })().catch(e => { console.error(e); process.exit(1); });
