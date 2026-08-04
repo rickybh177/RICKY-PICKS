@@ -170,6 +170,7 @@
       <button id="nextWeek" aria-label="Semana siguiente">›</button>
     </div>
     <div class="nav-actions">
+      <button class="refresh" id="manageSubBtn" style="display:none" aria-label="Administrar suscripción" title="Actualiza tu método de pago, revisa tus cobros o cancela">💳 <span>Administrar suscripción</span></button>
       <button class="refresh" id="refreshBtn" title="Recalcular con datos de ahora">⟳ <span>Actualizar</span></button>
     </div>
   </div>
@@ -428,6 +429,39 @@ function distChart(m, g) {
     '<div class="dist-lbl"><span>Cómo cae el margen (' + esc(g.home.abbr) + ' positivo) en 10,000 futuros</span></div>' +
     '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
 }
+
+/* ---- administrar / cancelar suscripción ----
+   Solo se muestra con sesión (un invitado no tiene nada que
+   administrar). Primero intenta el Customer Portal de Stripe; si el
+   cliente pagó por Mercado Pago (sin portal) cae a la cancelación
+   directa, que ya cubre TODOS los planes recurrentes. */
+(async () => {
+  if (!sb) return;
+  try {
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) $('manageSubBtn').style.display = '';
+  } catch (e) {}
+})();
+
+$('manageSubBtn').addEventListener('click', async () => {
+  const headers = await authHeader();
+  if (!headers.Authorization) return;
+  const btn = $('manageSubBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '💳 <span>Abriendo…</span>';
+  try {
+    const res = await fetch('/api/billing-portal', { method: 'POST', headers });
+    const out = await res.json();
+    if (out.url) { window.location.href = out.url; return; }
+  } catch (e) { /* cae al respaldo */ }
+  btn.disabled = false; btn.innerHTML = orig;
+  if (!confirm('¿Cancelar tu suscripción? Conservas el acceso hasta el final del periodo que ya pagaste.')) return;
+  try {
+    const res = await fetch('/api/cancel-subscription', { method: 'POST', headers });
+    const out = await res.json();
+    alert(out.message || 'Listo.');
+  } catch (e) { alert('No se pudo procesar. Escríbenos y lo resolvemos.'); }
+});
 
 /* navegación lineal: pretemporada 1-4 → regular 1-18 */
 $('prevWeek').addEventListener('click', () => {

@@ -4,11 +4,12 @@
 
    Busca las suscripciones del usuario en AMBAS pasarelas:
    - Stripe: clientes por email → suscripciones activas cuyo
-     metadata sea de este usuario/planes mlb_* → se cancelan al
+     metadata sea de este usuario → se cancelan al
      FINAL del periodo pagado (cancel_at_period_end), así el
      cliente conserva lo que ya pagó y no hay reembolsos raros.
    - Mercado Pago: preapprovals por external_reference
-     (userId:mlb_fundador) → status 'cancelled' (MP no cobra más;
+     (userId:planId, TODOS los planes recurrentes) → status
+     'cancelled' (MP no cobra más;
      el entitlement vigente expira solo a sus 30 días).
 
    Responde cuántas se cancelaron. Si no encuentra ninguna, lo
@@ -16,6 +17,7 @@
    ============================================================ */
 const Stripe = require('stripe');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { PLANS, isSubscription } = require('../lib/plans');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -59,15 +61,21 @@ module.exports = async function handler(req, res) {
     }
   } catch (e) { console.error('cancel-subscription stripe:', e); }
 
-  /* ---- Mercado Pago ---- */
+  /* ---- Mercado Pago ----
+     El external_reference es `userId:planId`, así que hay que buscar
+     TODOS los planes recurrentes (antes estaba clavado a mlb_fundador
+     y un suscriptor de NFL, Liga MX, Combo o Círculo no podía
+     cancelar por esta vía). */
   try {
     const token = process.env.MP_ACCESS_TOKEN;
     if (token) {
-      const q = encodeURIComponent(`${user.id}:mlb_fundador`);
-      const r = await fetch(`https://api.mercadopago.com/preapproval/search?external_reference=${q}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (r.ok) {
+      const recurrentes = Object.keys(PLANS).filter(isSubscription);
+      for (const planId of recurrentes) {
+        const q = encodeURIComponent(`${user.id}:${planId}`);
+        const r = await fetch(`https://api.mercadopago.com/preapproval/search?external_reference=${q}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!r.ok) continue;
         const data = await r.json();
         for (const p of (data.results || [])) {
           if (p.status === 'authorized' || p.status === 'pending') {
@@ -79,7 +87,7 @@ module.exports = async function handler(req, res) {
             if (upd.ok) {
               cancelled++;
               notes.push('Conservas tu acceso hasta el final del periodo ya pagado.');
-              console.log('cancel-subscription: mercadopago', user.id, p.id);
+              console.log('cancel-subscription: mercadopago', user.id, planId, p.id);
             }
           }
         }
