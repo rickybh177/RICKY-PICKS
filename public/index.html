@@ -493,7 +493,7 @@
       <div class="pickcard" id="pickcard">
         <div class="pc-piece pc-shell" data-piece="0">
           <div class="pc-piece pc-tag" data-piece="1">
-            <span class="t1">Pick gratis · Liga MX</span>
+            <span class="t1" id="pcTag">Pick gratis · NFL</span>
             <span class="t2" id="pcDate">HOY</span>
           </div>
           <div class="pc-piece" data-piece="2">
@@ -523,7 +523,7 @@
           </div>
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
-          <a href="#precios-mx" id="heroFreeBtn">Acceso fundador</a>
+          <a href="#precios-nfl" id="heroFreeBtn">Acceso fundador</a>
           <span class="mini">Sé de los primeros. Precio fundador congelado de por vida — los que lleguen después pagarán más.</span>
         </div>
       </div>
@@ -1066,41 +1066,46 @@
     .then(d => { const g = d && d.game ? d.game : fallback; applyTo('lc', g); mlbFallbackHero = g; })
     .catch(() => { applyTo('lc', fallback); });
 
-  // HERO: pick gratis de LIGA MX (la gente debe ver desde arriba que
-  // hay Liga MX). Ojo con los ids: los slots se llaman pcAway/pcHome
-  // por herencia del layout MLB, pero aquí la PRIMERA fila (slots
-  // "Away") lleva al LOCAL — convención Liga MX.
+  // HERO: pick gratis de NFL — arranca la temporada, así que es lo
+  // primero que debe ver quien llega al sitio. Toma el juego destacado
+  // de la pretemporada (el mismo que ve un invitado sin plan en
+  // /nfl.html: el resto de la jornada queda bloqueado del lado del
+  // servidor). Si no hay pretemporada corriendo, cae a MLB.
   let mlbFallbackHero = null;
-  function applyMxHero(d) {
-    const g = d.game;
-    set('pcAwayName', g.home.name); set('pcAwayPit', 'Local');
-    set('pcHomeName', g.away.name); set('pcHomePit', 'Visitante');
-    const ml = g.moneyline || {};
-    set('pcAwayProb', pct(ml.home)); set('pcHomeProb', pct(ml.away));
-    // fila azul (fav) = el de mayor probabilidad
+  function applyNflHero(g) {
+    set('pcAwayName', g.away.name); set('pcAwayPit', g.away.city || '');
+    set('pcHomeName', g.home.name); set('pcHomePit', g.home.city || '');
+    const ml = (g.markets && g.markets.moneyline) || {};
+    set('pcAwayProb', pct(ml.away)); set('pcHomeProb', pct(ml.home));
     const r1 = document.getElementById('pcAway'), r2 = document.getElementById('pcHome');
-    if (r1 && r2) { r1.classList.toggle('fav', ml.home >= ml.away); r2.classList.toggle('fav', ml.away > ml.home); }
+    if (r1 && r2) { r1.classList.toggle('fav', ml.away >= ml.home); r2.classList.toggle('fav', ml.home > ml.away); }
     const al = document.getElementById('pcAwayLogo'), hl = document.getElementById('pcHomeLogo');
-    if (al && g.home.logo) al.src = g.home.logo;
-    if (hl && g.away.logo) hl.src = g.away.logo;
+    if (al && g.away.logo) al.src = g.away.logo;
+    if (hl && g.home.logo) hl.src = g.home.logo;
     const ba = document.getElementById('pcBarA'), bh = document.getElementById('pcBarH');
-    if (ba) ba.style.width = (ml.home * 100) + '%';
-    if (bh) bh.style.width = (ml.away * 100) + '%';
-    set('pcDate', 'JORNADA ' + (d.jornada || ''));
-    if (g.pick) {
-      set('pcPickSel', g.pick.label);
-      set('pcPickOdds', pct(g.pick.prob));
+    if (ba) ba.style.width = (ml.away * 100) + '%';
+    if (bh) bh.style.width = (ml.home * 100) + '%';
+    const tag = document.getElementById('pcTag');
+    if (tag) tag.textContent = 'Pick gratis · NFL' + (g.preseason ? ' (pretemporada)' : '');
+    const dt = new Date(g.date);
+    set('pcDate', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
+    const verdicts = g.verdicts || [];
+    const pick = verdicts.find(v => v.verdict === 'bet') || verdicts.find(v => v.verdict === 'maybe') || verdicts[0];
+    if (pick) {
+      set('pcPickSel', pick.label);
+      set('pcPickOdds', pct(pick.prob));
       const chip = document.querySelector('#pickcard .vchip');
-      if (chip) chip.textContent = (g.pick.verdict || 'bet').toUpperCase();
+      if (chip) chip.textContent = (pick.verdict || 'bet').toUpperCase();
     }
-    set('pcSims', 'EMPATE ' + pct(ml.draw) + ' · MATRIZ EXACTA');
+    set('pcSims', '10,000 SIMULACIONES' + (g.neutral ? ' · SEDE NEUTRAL' : ''));
     set('pcVenue', (g.venue || '').toUpperCase());
   }
-  fetch('/api/mx-free')
+  fetch('/api/nfl-picks?st=1&as=guest')
     .then(r => r.ok ? r.json() : null)
     .then(d => {
-      if (d && d.game) applyMxHero(d);
-      else applyTo('pc', mlbFallbackHero || fallback); // sin partido MX: cae a MLB
+      const g = d && d.games && d.games.find(x => x.id === d.featured_id);
+      if (g) applyNflHero(g);
+      else applyTo('pc', mlbFallbackHero || fallback); // sin pretemporada NFL: cae a MLB
     })
     .catch(() => { applyTo('pc', mlbFallbackHero || fallback); });
 })();
