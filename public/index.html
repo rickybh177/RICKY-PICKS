@@ -192,16 +192,9 @@
   .reveal.in { opacity: 1; transform: none; }
 
   /* ---- RÉCORD ---- */
-  #record { padding-top: 70px; }
-  .recgrid { display: grid; grid-template-columns: minmax(0, 320px); gap: 12px; margin-top: 40px; }
-  .rec { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 26px 22px; }
-  .rec .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
-  .rec .n.green { color: var(--bet); }
-  .rec .n.red { color: var(--skip); }
-  .rec .n.blue { color: var(--blue); }
-  .rec .l { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--faint); margin-top: 12px; }
-  .rec-note { font-size: 0.86rem; color: var(--muted); margin-top: 16px; font-weight: 450; max-width: 66ch; }
-  .rec-note strong { color: var(--text); font-weight: 600; }
+  #record { padding-top: 70px; padding-bottom: 70px; }
+  .rec-big { font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; font-size: clamp(2.4rem, 7vw, 4.6rem); text-align: center; text-wrap: balance; }
+  .rec-big em { font-style: normal; color: var(--blue); }
 
   /* ---- MÉTODO ---- */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 44px; }
@@ -401,7 +394,6 @@
     .tiers, .tiers.tiers-3 { grid-template-columns: repeat(2, 1fr); }
     .live-grid { grid-template-columns: 1fr; gap: 28px; }
     #mundial .panel { grid-template-columns: 1fr; }
-    .recgrid { grid-template-columns: 1fr; gap: 10px; }
     .steps { grid-template-columns: 1fr; }
   }
   @media (max-width: 560px) {
@@ -540,13 +532,7 @@
 <!-- ============ RÉCORD ============ -->
 <section id="record">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">Récord verificado</div>
-    <h2 class="sec-title reveal">La efectividad habla por sí sola.</h2>
-    <p class="sec-lede reveal">Cada pick que publico se califica contra el marcador real del juego. Este es el resultado, verificado y a la vista. Sin adornos.</p>
-    <div class="recgrid reveal">
-      <div class="rec"><div class="n blue" id="recP">—</div><div class="l" id="recPL">Efectividad</div></div>
-    </div>
-    <p class="rec-note reveal">El modelo original de RICKY·PICKS cerró el Mundial 2026 con <strong>71.8% de efectividad</strong> — todos los picks publicados antes de cada partido y verificados contra el marcador real.</p>
+    <h2 class="rec-big reveal">El modelo acierta <em>7/10</em> picks.</h2>
   </div>
 </section>
 
@@ -854,7 +840,7 @@
       </details>
       <details>
         <summary>¿Qué pasa si el modelo tiene una mala semana?</summary>
-        <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si estás probando los 7 días y cierran con récord BET perdedor, <strong>recuperas tus $149</strong>; y si ya eres fundador, tu siguiente semana va gratis. El récord completo, con perdidos incluidos, está publicado arriba. <a href="#terminos">Ver términos</a>.</p>
+        <p>Pasa — ningún modelo gana todos los días. Por eso la garantía: si estás probando los 7 días y cierran con récord BET perdedor, <strong>recuperas tus $149</strong>; y si ya eres fundador, tu siguiente semana va gratis. <a href="#terminos">Ver términos</a>.</p>
       </details>
       <details>
         <summary>¿Cómo recibo los picks?</summary>
@@ -1146,20 +1132,9 @@
 })();
 
 /* ============================================================
-   RÉCORD PÚBLICO + REVELADOS
+   REVELADOS AL SCROLL
    ============================================================ */
 (function () {
-  fetch('/api/mlb-record')
-    .then(r => r.ok ? r.json() : null)
-    .then(r => {
-      if (!r) return;
-      document.getElementById('recP').textContent = r.pct !== null ? r.pct + '%' : '—';
-      if (r.period_label) {
-        document.getElementById('recPL').textContent = 'Efectividad · ' + r.period_label;
-      }
-    })
-    .catch(() => {});
-
   const io = new IntersectionObserver(entries => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
