@@ -63,6 +63,26 @@
   .badge.final { background: var(--g2); color: var(--muted); }
   .badge.wx { background: rgba(229,185,74,0.12); color: #b8922e; }
   .badge.neutral { background: var(--blue-tint); color: var(--blue-deep); }
+  .badge.mine { background: var(--bet-bg); color: var(--bet); }
+
+  /* panel de momios manuales (mismo patrón que mx.html) */
+  details.mo { margin-top: 9px; }
+  details.mo summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); background: var(--g0); border: 1px dashed var(--line-2); border-radius: 9px; padding: 9px; user-select: none; }
+  details.mo summary::-webkit-details-marker { display: none; }
+  details.mo summary:hover { color: var(--text); }
+  .mo-body { margin-top: 9px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .mo-h { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin: 8px 0 5px; }
+  .mo-h:first-child { margin-top: 0; }
+  .mo-row { display: flex; gap: 7px; flex-wrap: wrap; }
+  .mo-row label { flex: 1; min-width: 88px; font-size: 0.66rem; color: var(--muted); font-weight: 500; }
+  .mo-row input { width: 100%; margin-top: 3px; background: var(--g1); border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 9px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text); outline: none; box-sizing: border-box; }
+  .mo-row input:focus { border-color: var(--blue); }
+  .mo-actions { display: flex; gap: 7px; margin-top: 11px; }
+  .mo-actions button { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 14px; border-radius: 8px; }
+  .mo-apply { background: var(--blue-deep); color: #fff; flex: 1; }
+  .mo-apply:hover { background: var(--blue); }
+  .mo-clear { background: var(--g2); color: var(--muted); }
+  .mo-note { margin-top: 8px; font-size: 0.66rem; color: var(--faint); font-family: 'JetBrains Mono', monospace; }
 
   .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
   .team-row img { width: 34px; height: 34px; object-fit: contain; }
@@ -270,7 +290,9 @@ function renderMeta(wk) {
   $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
 }
 
+let lastWk = null;
 function renderWeek(wk) {
+  lastWk = wk;
   const games = wk.games || [];
   if (!games.length) {
     $('games').innerHTML = '<div class="state"><h2>Sin juegos esta semana</h2>Muévete de semana con las flechas de arriba.</div>';
@@ -280,12 +302,140 @@ function renderWeek(wk) {
   $('games').innerHTML = sorted.map((g, i) => g.error ? '' : gameCard(g, i)).join('');
 }
 
-function metaRow(g) {
+/* ---- momios manuales ("mete los de tu casa", patrón de mx.html) ----
+   Se guardan por juego en localStorage y los veredictos de ML/spread/
+   total se recalculan aquí, replicando el EV del servidor: devig por
+   par + blend hacia el mercado (0.35 pretemporada / 0.22 regular) +
+   mismas barras. Si cambian las barras del servidor, actualizar aquí. */
+const MO_KEY = 'rp_nfl_odds';
+function moAll() { try { return JSON.parse(localStorage.getItem(MO_KEY)) || {}; } catch (e) { return {}; } }
+function moGet(id) { return moAll()[id] || null; }
+function moSet(id, v) { const a = moAll(); if (v) a[id] = v; else delete a[id]; localStorage.setItem(MO_KEY, JSON.stringify(a)); }
+
+function amToProb(am) {
+  const n = Number(am);
+  if (!isFinite(n) || Math.abs(n) < 100) return null;
+  return n > 0 ? 100 / (n + 100) : -n / (-n + 100);
+}
+function devig2(a, b) { if (a == null || b == null) return [a, b]; const s = a + b; return s > 0 ? [a / s, b / s] : [a, b]; }
+function coverFromDist(dist, homeLine) {
+  if (!dist || homeLine == null) return null;
+  let win = 0, push = 0, tot = 0;
+  for (let i = 0; i < dist.length; i++) {
+    const v = (i - 21) + homeLine;
+    tot += dist[i];
+    if (v > 1e-9) win += dist[i]; else if (Math.abs(v) <= 1e-9) push += dist[i];
+  }
+  const n = tot - push;
+  return n > 0 ? win / n : null;
+}
+function overFromDist(td, line) {
+  if (!td || line == null) return null;
+  let over = 0, push = 0, tot = 0;
+  for (let i = 0; i < td.p.length; i++) {
+    const t = td.from + i;
+    tot += td.p[i];
+    if (t > line + 1e-9) over += td.p[i]; else if (Math.abs(t - line) <= 1e-9) push += td.p[i];
+  }
+  const n = tot - push;
+  return n > 0 ? over / n : null;
+}
+function evVerdict2(p, priceImp, pMkt, bet, maybe) {
+  if (p == null || priceImp == null) return null;
+  const blend = currentST === 1 ? 0.35 : 0.22;
+  const pb = pMkt != null ? (1 - blend) * p + blend * pMkt : p;
+  const ev = pb / priceImp - 1;
+  return { ev, verdict: ev >= bet ? 'bet' : ev >= maybe ? 'maybe' : 'skip' };
+}
+
+/* recalcula los veredictos de un juego con los momios guardados */
+function moVerdicts(g) {
+  const mo = moGet(g.id);
+  if (!mo) return null;
+  const m = g.markets;
+  const out = [];
+  // Moneyline
+  const iA = amToProb(mo.mlA), iH = amToProb(mo.mlH);
+  if (iA != null && iH != null) {
+    const [dH, dA] = devig2(iH, iA);
+    const side = m.moneyline.home >= 0.5 ? ['home', m.moneyline.home, iH, dH] : ['away', m.moneyline.away, iA, dA];
+    const t = side[0] === 'home' ? g.home : g.away;
+    const r = evVerdict2(side[1], side[2], side[3], 0.03, 0.01);
+    if (r) out.push({ market: 'moneyline', label: 'Ganan los ' + t.name, prob: side[1], edge: r.ev, verdict: r.verdict,
+      line_txt: 'ML ' + t.abbr + ' (' + am(side[0] === 'home' ? mo.mlH : mo.mlA) + ') · TUS momios' });
+  }
+  // Spread (línea del LOCAL)
+  const spLine = mo.spLine !== '' && mo.spLine != null ? Number(mo.spLine) : null;
+  if (spLine != null && isFinite(spLine)) {
+    const iSH = amToProb(mo.spH) != null ? amToProb(mo.spH) : 110 / 210;
+    const iSA = amToProb(mo.spA) != null ? amToProb(mo.spA) : 110 / 210;
+    const [dSH, dSA] = devig2(iSH, iSA);
+    const pH = coverFromDist(m.margin_dist, spLine);
+    if (pH != null) {
+      const side = pH >= 0.5 ? ['home', pH, iSH, dSH, spLine] : ['away', 1 - pH, iSA, dSA, -spLine];
+      const t = side[0] === 'home' ? g.home : g.away;
+      const r = evVerdict2(side[1], side[2], side[3], 0.03, 0.01);
+      if (r) out.push({ market: 'spread', label: t.name + ' ' + (side[4] > 0 ? '+' : '') + side[4],
+        prob: side[1], edge: r.ev, verdict: r.verdict,
+        line_txt: t.abbr + ' ' + (side[4] > 0 ? '+' : '') + side[4] + ' · TUS momios' });
+    }
+  }
+  // Total
+  const totLine = mo.totLine !== '' && mo.totLine != null ? Number(mo.totLine) : null;
+  if (totLine != null && isFinite(totLine)) {
+    const iO = amToProb(mo.totO) != null ? amToProb(mo.totO) : 110 / 210;
+    const iU = amToProb(mo.totU) != null ? amToProb(mo.totU) : 110 / 210;
+    const [dO, dU] = devig2(iO, iU);
+    const pO = overFromDist(m.total_dist, totLine);
+    if (pO != null) {
+      const side = pO >= 0.5 ? ['over', pO, iO, dO] : ['under', 1 - pO, iU, dU];
+      const r = evVerdict2(side[1], side[2], side[3], 0.025, 0.01);
+      if (r) out.push({ market: 'total',
+        label: (side[0] === 'over' ? 'Más' : 'Menos') + ' de ' + totLine + ' puntos entre los dos',
+        prob: side[1], edge: r.ev, verdict: r.verdict,
+        line_txt: (side[0] === 'over' ? 'O' : 'U') + ' ' + totLine + ' · modelo espera ' + m.total.model_total + ' · TUS momios' });
+    }
+  }
+  return out.length ? out : null;
+}
+
+function moPanel(g) {
+  const mo = moGet(g.id) || {};
+  const f = (id, lbl, ph, val) =>
+    '<label>' + lbl + '<input id="mo-' + esc(g.id) + '-' + id + '" inputmode="numeric" placeholder="' + ph + '" value="' + esc(val != null ? val : '') + '"></label>';
+  return '<details class="mo"' + (moGet(g.id) ? ' open' : '') + '><summary>🎯 Meter los momios de mi casa</summary>' +
+    '<div class="mo-body">' +
+    '<div class="mo-h">Ganador (moneyline)</div><div class="mo-row">' +
+    f('mlA', esc(g.away.abbr) + ' (visita)', '-125', mo.mlA) + f('mlH', esc(g.home.abbr) + ' (local)', '-105', mo.mlH) + '</div>' +
+    '<div class="mo-h">Hándicap — línea de ' + esc(g.home.abbr) + ' (local)</div><div class="mo-row">' +
+    f('spLine', 'Línea', '+1.5', mo.spLine) + f('spH', 'Momio ' + esc(g.home.abbr), '-120', mo.spH) + f('spA', 'Momio ' + esc(g.away.abbr), '-110', mo.spA) + '</div>' +
+    '<div class="mo-h">Total de puntos</div><div class="mo-row">' +
+    f('totLine', 'Línea', '35.5', mo.totLine) + f('totO', 'Más (over)', '-115', mo.totO) + f('totU', 'Menos (under)', '-115', mo.totU) + '</div>' +
+    '<div class="mo-actions">' +
+    '<button class="mo-apply" onclick="moApply(\'' + esc(g.id) + '\')">Aplicar a los veredictos</button>' +
+    '<button class="mo-clear" onclick="moClear(\'' + esc(g.id) + '\')">Quitar</button></div>' +
+    '<div class="mo-note">Momios americanos (ej. -115, +120). Se guardan en este navegador y el veredicto se recalcula con EV real contra TU precio.</div>' +
+    '</div></details>';
+}
+function moApply(id) {
+  const v = {};
+  for (const k of ['mlA', 'mlH', 'spLine', 'spH', 'spA', 'totLine', 'totO', 'totU']) {
+    const el = document.getElementById('mo-' + id + '-' + k);
+    v[k] = el && el.value.trim() !== '' ? el.value.trim() : null;
+  }
+  if (Object.values(v).every(x => x == null)) return;
+  moSet(id, v);
+  if (lastWk) renderWeek(lastWk);
+}
+function moClear(id) { moSet(id, null); if (lastWk) renderWeek(lastWk); }
+
+function metaRow(g, mine) {
   const d = new Date(g.date);
   const day = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
   const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
   const live = g.state === 'in', final = g.state === 'post';
   let badges = '';
+  if (mine) badges += '<span class="badge mine">Veredictos con TUS momios</span>';
   if (currentST === 1) badges += '<span class="badge neutral">Pretemporada</span>';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
@@ -308,7 +458,15 @@ function teamRows(g) {
 }
 
 function gameCard(g, i) {
-  const verdicts = (g.verdicts || []).map(v =>
+  /* momios manuales: si hay guardados, sus veredictos SUSTITUYEN a
+     los del servidor en ML/spread/total (la 1ª mitad queda igual) */
+  const custom = moVerdicts(g);
+  let list = g.verdicts || [];
+  if (custom) {
+    const replaced = new Set(custom.map(v => v.market));
+    list = [...custom, ...list.filter(v => !replaced.has(v.market))];
+  }
+  const verdicts = list.map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
     '<span class="vl">' + esc(v.label) +
     '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · edge ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
@@ -318,9 +476,10 @@ function gameCard(g, i) {
   const analysis = g.analysis
     ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
     : '';
-  return '<div class="card" style="--i:' + i + '">' +
-    metaRow(g) + teamRows(g) +
+  return '<div class="card" style="--i:' + i + '"' + (custom ? ' data-mine="1"' : '') + '>' +
+    metaRow(g, !!custom) + teamRows(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
+    (g.state === 'pre' ? moPanel(g) : '') +
     analysis + moreDetails(g) +
   '</div>';
 }
