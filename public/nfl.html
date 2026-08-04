@@ -513,17 +513,30 @@ function moreDetails(g) {
         ? det('Total', 'O ' + mo.total + px(mo.total_over) + ' · U ' + mo.total + px(mo.total_under)) : '') +
       (mo.ml_home != null ? det('Moneyline', g.home.abbr + ' ' + am(mo.ml_home) + ' · ' + g.away.abbr + ' ' + am(mo.ml_away)) : '')
     : '';
+  /* Si la casa solo abre ciertos mercados, lo apostable va arriba y
+     lo demás baja a "proyecciones" — sin mezclar lo que se puede
+     colocar con lo que solo es lectura del modelo. */
+  const avail = g.available_markets ? new Set(g.available_markets) : null;
+  const has = k => !avail || avail.has(k);
+
+  const R = {
+    moneyline: det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
+      det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)),
+    spread: det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line),
+    total: det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total),
+    team_totals: det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
+      det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean),
+    h1_total: det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
+      det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total),
+  };
+  const ORDER = ['moneyline', 'spread', 'total', 'team_totals', 'h1_total'];
+  const open = ORDER.filter(has).map(k => R[k]).join('');
+  const closed = ORDER.filter(k => !has(k)).map(k => R[k]).join('');
+
   const rows =
     marketRows +
-    '<div class="det-h">Mercados de equipo (modelo)</div>' +
-    det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
-    det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)) +
-    det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line) +
-    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total) +
-    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
-    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
-    det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
-    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total) +
+    (open ? '<div class="det-h">Mercados de equipo (modelo)</div>' + open : '') +
+    (closed ? '<div class="det-h">Proyecciones — ' + (mo ? esc(mo.source) : 'tu casa') + ' no abre estos mercados</div>' + closed : '') +
     (g.qb_props
       ? '<div class="det-h">Props del QB (proyección del modelo)</div>' +
         qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away)
