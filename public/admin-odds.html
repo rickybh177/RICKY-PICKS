@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momios manuales — RICKY·PICKS (admin)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ER·P%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --blue: #2f7bff; --blue-deep: #1d4ed8;
+    --ok: #16a34a; --ok-bg: rgba(22,163,74,0.1);
+    --bad: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--g0); color: var(--text); font-family: 'Inter Tight', -apple-system, sans-serif; font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 18px 80px; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.86); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; padding-bottom: 0; }
+  .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; color: var(--text); font-size: 0.95rem; }
+  .logo .mark { width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.54rem; font-weight: 700; }
+  h1 { font-weight: 800; letter-spacing: -0.03em; font-size: 1.5rem; margin: 28px 0 6px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; max-width: 58ch; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tabs button { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 9px 16px; border-radius: 9px; background: var(--g1); border: 1px solid var(--line); color: var(--muted); }
+  .tabs button.on { background: var(--blue-deep); border-color: var(--blue-deep); color: #fff; }
+  .card { background: var(--g1); border: 1px solid var(--line); border-radius: 13px; padding: 15px 16px; margin-bottom: 12px; }
+  .gh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .gh .t { font-weight: 700; font-size: 0.98rem; }
+  .gh .d { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); }
+  .gh .saved { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; color: var(--ok); background: var(--ok-bg); border-radius: 6px; padding: 3px 8px; }
+  .fh { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin: 9px 0 5px; }
+  .row { display: flex; gap: 7px; flex-wrap: wrap; }
+  .row label { flex: 1; min-width: 86px; font-size: 0.66rem; color: var(--muted); font-weight: 500; }
+  .row input { width: 100%; margin-top: 3px; background: var(--g0); border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 9px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text); outline: none; }
+  .row input:focus { border-color: var(--blue); }
+  .acts { display: flex; gap: 7px; margin-top: 12px; align-items: center; }
+  .save { background: var(--blue-deep); color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 16px; border-radius: 8px; flex: 1; }
+  .save:hover { background: var(--blue); }
+  .del { background: var(--g2); color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 700; padding: 10px 14px; border-radius: 8px; }
+  .msg { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; }
+  .msg.ok { color: var(--ok); } .msg.bad { color: var(--bad); }
+  .state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .lockwrap { max-width: 380px; margin: 70px auto; padding: 0 18px; }
+  .lockbox { background: var(--g1); border: 1px solid var(--line-2); border-radius: 16px; padding: 30px 28px; text-align: center; }
+  .lockbox h2 { font-weight: 800; margin-bottom: 6px; }
+  .lockbox p { color: var(--muted); font-size: 0.86rem; margin-bottom: 18px; }
+  .lockbox input { width: 100%; background: var(--g0); border: 1px solid var(--line-2); border-radius: 10px; padding: 12px 14px; font: inherit; margin-bottom: 10px; outline: none; }
+  .lockbox .go { width: 100%; background: var(--blue-deep); color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; }
+  .lockbox .err { color: var(--bad); font-size: 0.78rem; margin-top: 10px; min-height: 1.2em; }
+  .note { background: var(--g1); border: 1px dashed var(--line-2); border-radius: 11px; padding: 12px 14px; font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="/"><span class="mark">R·P</span>Momios manuales</a>
+  <button class="del" id="reloadBtn">⟳ Recargar</button>
+</div></nav>
+
+<div class="lockwrap" id="lockWrap" style="display:none">
+  <div class="lockbox">
+    <h2>Solo administración</h2>
+    <p>Captura de momios de tu casa (Playdoit) para los modelos.</p>
+    <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
+    <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="go" id="lkGo">Entrar</button>
+    <div class="err" id="lkErr"></div>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <h1>Momios de mi casa</h1>
+  <p class="sub">Captura los momios tal como los ves en Playdoit. Se guardan en el servidor y <b>todos los usuarios</b> ven los veredictos recalculados contra estos precios al instante (los modelos los revisan cada 60 segundos). Lo que dejes vacío se rellena con la fuente automática.</p>
+  <div class="tabs">
+    <button data-s="nfl" class="on">NFL</button>
+    <button data-s="mx">Liga MX</button>
+    <button data-s="mlb">MLB</button>
+  </div>
+  <div class="note">Momios americanos tal cual (−125, +150). La línea del hándicap es la del <b>equipo local</b> (si Playdoit muestra "CAR −1.5" y CAR es visita, aquí va <b>+1.5</b>).</div>
+  <div id="list"><div class="state">Cargando…</div></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+let sb = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const MX_TZ = 'America/Mexico_City';
+let sport = 'nfl';
+let stored = {};   // game_key -> entry
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function authHeader() {
+  try {
+    const { data } = await sb.auth.getSession();
+    const t = data && data.session && data.session.access_token;
+    return t ? { Authorization: 'Bearer ' + t } : {};
+  } catch (e) { return {}; }
+}
+
+function gameKey(dateISO, awayAbbr, homeAbbr) {
+  const day = new Date(dateISO).toLocaleDateString('en-CA', { timeZone: MX_TZ });
+  return day + ':' + awayAbbr + '@' + homeAbbr;
+}
+
+/* juegos por deporte, normalizados a {key, date, away, home, label} */
+async function fetchGames(headers) {
+  if (sport === 'nfl') {
+    const r = await fetch('/api/nfl-picks', { headers });
+    if (!r.ok) throw new Error('nfl-picks ' + r.status);
+    const wk = await r.json();
+    return (wk.games || []).filter(g => !g.error && g.state === 'pre').map(g => ({
+      key: gameKey(g.date, g.away.abbr, g.home.abbr), date: g.date,
+      away: g.away, home: g.home,
+      label: g.away.name + ' @ ' + g.home.name,
+      tag: (wk.phase === 'pretemporada' ? 'PRETEMP ' : 'SEM ') + wk.week,
+    }));
+  }
+  if (sport === 'mx') {
+    const r = await fetch('/api/mx-picks', { headers });
+    if (!r.ok) throw new Error('mx-picks ' + r.status);
+    const b = await r.json();
+    return (b.games || []).filter(g => !g.error && g.state === 'pre').map(g => ({
+      key: gameKey(g.date, g.away.abbr, g.home.abbr), date: g.date,
+      away: g.away, home: g.home,
+      label: g.away.name + ' vs ' + g.home.name + ' (local)',
+      tag: 'J' + (b.jornada || ''),
+    }));
+  }
+  const r = await fetch('/api/mlb-picks', { headers });
+  if (!r.ok) throw new Error('mlb-picks ' + r.status);
+  const d = await r.json();
+  return (d.games || []).filter(g => g && g.home && g.away && g.home.abbr && g.away.abbr).map(g => ({
+    key: gameKey(g.game_date || g.date, g.away.abbr, g.home.abbr), date: g.game_date || g.date,
+    away: g.away, home: g.home,
+    label: (g.away.name || g.away.abbr) + ' @ ' + (g.home.name || g.home.abbr),
+    tag: 'HOY',
+  }));
+}
+
+const FIELDS = {
+  nfl: [
+    ['h', 'Ganador (moneyline)'],
+    ['ml_away', 'ML visita'], ['ml_home', 'ML local'],
+    ['h', 'Hándicap (línea del local)'],
+    ['spread', 'Línea local'], ['spread_home', 'Momio local'], ['spread_away', 'Momio visita'],
+    ['h', 'Total de puntos'],
+    ['total', 'Línea'], ['total_over', 'Más'], ['total_under', 'Menos'],
+  ],
+  mx: [
+    ['h', '1X2'],
+    ['ml_home', 'Gana local'], ['ml_draw', 'Empate'], ['ml_away', 'Gana visita'],
+    ['h', 'Total de goles'],
+    ['total', 'Línea'], ['total_over', 'Más'], ['total_under', 'Menos'],
+  ],
+  mlb: [
+    ['h', 'Ganador (moneyline)'],
+    ['ml_away', 'ML visita'], ['ml_home', 'ML local'],
+    ['h', 'Total de carreras'],
+    ['total', 'Línea'],
+  ],
+};
+
+function fieldRows(g, entry) {
+  let html = '', open = false;
+  for (const [k, lbl] of FIELDS[sport]) {
+    if (k === 'h') {
+      if (open) html += '</div>';
+      html += '<div class="fh">' + lbl + '</div><div class="row">';
+      open = true;
+    } else {
+      const v = entry && entry.odds && entry.odds[k] != null ? entry.odds[k] : '';
+      html += '<label>' + lbl + '<input data-k="' + k + '" value="' + esc(v) + '" inputmode="text" placeholder="—"></label>';
+    }
+  }
+  if (open) html += '</div>';
+  return html;
+}
+
+function render(games) {
+  if (!games.length) {
+    $('list').innerHTML = '<div class="state">No hay juegos próximos en este deporte ahora.</div>';
+    return;
+  }
+  $('list').innerHTML = games.map(g => {
+    const entry = stored[g.key];
+    const d = new Date(g.date);
+    const when = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }) +
+      ' · ' + d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
+    return '<div class="card" data-key="' + esc(g.key) + '">' +
+      '<div class="gh"><span class="t">' + esc(g.label) + '</span>' +
+      '<span class="d">' + esc(when.toUpperCase()) + ' · ' + esc(g.key) + '</span>' +
+      (entry ? '<span class="saved">GUARDADO ' + esc(new Date(entry.updated_at).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ })) + '</span>' : '') +
+      '</div>' +
+      fieldRows(g, entry) +
+      '<div class="acts"><button class="save">Guardar y aplicar a todos</button>' +
+      (entry ? '<button class="del">Quitar</button>' : '') +
+      '<span class="msg"></span></div>' +
+      '</div>';
+  }).join('');
+
+  document.querySelectorAll('.card .save').forEach(btn => btn.addEventListener('click', () => saveCard(btn.closest('.card'))));
+  document.querySelectorAll('.card .del').forEach(btn => btn.addEventListener('click', () => delCard(btn.closest('.card'))));
+}
+
+async function saveCard(card) {
+  const msg = card.querySelector('.msg');
+  const odds = {};
+  card.querySelectorAll('input[data-k]').forEach(inp => {
+    const raw = inp.value.trim();
+    if (raw === '') return;
+    const n = Number(raw.replace('+', ''));
+    if (isFinite(n)) odds[inp.dataset.k] = n;
+  });
+  if (!Object.keys(odds).length) { msg.textContent = 'Nada que guardar'; msg.className = 'msg bad'; return; }
+  msg.textContent = 'Guardando…'; msg.className = 'msg';
+  const headers = { 'Content-Type': 'application/json', ...(await authHeader()) };
+  const r = await fetch('/api/odds-ingest', {
+    method: 'POST', headers,
+    body: JSON.stringify({ sport, entries: [{ game_key: card.dataset.key, source: 'Playdoit', odds }] }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (r.ok) { msg.textContent = '✓ Aplicado a todos los usuarios'; msg.className = 'msg ok'; load(); }
+  else { msg.textContent = j.error || ('Error ' + r.status); msg.className = 'msg bad'; }
+}
+
+async function delCard(card) {
+  const headers = { 'Content-Type': 'application/json', ...(await authHeader()) };
+  await fetch('/api/odds-ingest', { method: 'DELETE', headers, body: JSON.stringify({ sport, game_key: card.dataset.key }) });
+  load();
+}
+
+async function load() {
+  $('list').innerHTML = '<div class="state">Cargando…</div>';
+  const headers = await authHeader();
+  try {
+    const sr = await fetch('/api/odds-ingest?sport=' + sport, { headers });
+    if (sr.status === 403) return showLock(headers.Authorization ? 'Esta cuenta no es admin.' : '');
+    stored = {};
+    if (sr.ok) for (const e of ((await sr.json()).entries || [])) stored[e.game_key] = e;
+    const games = await fetchGames(headers);
+    $('lockWrap').style.display = 'none';
+    $('app').style.display = 'block';
+    render(games);
+  } catch (e) {
+    $('app').style.display = 'block';
+    $('list').innerHTML = '<div class="state">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+function showLock(m) {
+  $('app').style.display = 'none';
+  $('lockWrap').style.display = 'block';
+  $('lkErr').textContent = m || '';
+}
+
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  sport = b.dataset.s;
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  load();
+}));
+$('reloadBtn').addEventListener('click', load);
+$('lkGo').addEventListener('click', async () => {
+  $('lkErr').textContent = '';
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email: $('lkEmail').value.trim(), password: $('lkPass').value });
+    if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
+    load();
+  } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
+});
+$('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
+
+load();
+</script>
+</body>
+</html>
