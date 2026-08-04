@@ -562,6 +562,100 @@
   </div>
 </section>
 
+<!-- ============ NFL (pick gratis de la jornada) ============ -->
+<section id="vivo-nfl">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · NFL 26-27</div>
+        <h2 class="sec-title reveal">La NFL, resuelta antes del kickoff.</h2>
+        <p class="sec-lede reveal">El mismo modelo, ahora en fútbol americano: 10,000 simulaciones por juego, spread, total, moneyline y props del QB. Este es el pick gratis de la jornada — la cartelera completa vive en tu plan.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="#precios-nfl">Ver planes NFL</a>
+          <a class="btn-ghost" href="/nfl.html">Abrir el tablero gratis</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="nflCardHolder">
+        <div class="pickcard" style="pointer-events:auto">
+          <div class="pc-shell" style="opacity:1">
+            <div class="pc-tag">
+              <span class="t1">Pick gratis · NFL</span>
+              <span class="t2" id="ncTag">PRETEMP</span>
+            </div>
+            <div class="pc-team" id="ncAwayRow">
+              <img id="ncAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="ncAwayName">Visitante</span><small id="ncAwaySub"></small></div>
+              <div class="pr" id="ncAwayProb">—</div>
+            </div>
+            <div class="pc-team" id="ncHomeRow">
+              <img id="ncHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="ncHomeName">Local</span><small id="ncHomeSub"></small></div>
+              <div class="pr" id="ncHomeProb">—</div>
+            </div>
+            <div class="pc-bar"><div class="a" id="ncBarA" style="width:50%"></div><div class="h" id="ncBarH" style="width:50%"></div></div>
+            <div class="pc-pick">
+              <span class="vchip" id="ncChip">BET</span>
+              <span class="sel" id="ncPickSel">Pick del modelo</span>
+              <span class="odds" id="ncPickOdds"></span>
+            </div>
+            <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="ncVenue"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============ PRECIOS NFL ============ -->
+<section id="precios-nfl">
+  <div class="wrap">
+    <div class="sec-eyebrow reveal">Nuevo · Temporada 26-27</div>
+    <h2 class="sec-title reveal">La NFL, jugada 10,000 veces antes del kickoff.</h2>
+    <p class="sec-lede reveal">Ratings que aprenden solos de cada resultado, descanso entre juegos, clima real del estadio y los momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. <strong>El juego destacado de cada jornada es gratis.</strong></p>
+    <div class="tiers tiers-3">
+      <div class="tier reveal">
+        <h3>Semana de prueba</h3>
+        <div class="was"></div>
+        <div class="amt" data-mxn="$149<small>MXN</small>" data-usd="$8.99<small>USD</small>">$149<small>MXN</small></div>
+        <div class="per">7 días · la jornada completa</div>
+        <ul>
+          <li><strong>¿Primera vez con el modelo?</strong> Empieza aquí</li>
+          <li>Los 16 juegos de la jornada, no solo el destacado</li>
+          <li><strong>Gana tu Semana</strong>: si cierra con más BET perdidos que ganados, <strong>recuperas tus $149</strong><a href="#terminos" class="tc-ref">*</a></li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_semana" class="btn btn-dim">Probar 7 días</a>
+      </div>
+      <div class="tier featured reveal">
+        <span class="flag">Fundador</span>
+        <h3>Mensual Fundador</h3>
+        <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
+        <div class="amt" data-mxn="$399<small>MXN</small>" data-usd="$21.99<small>USD</small>">$399<small>MXN</small></div>
+        <div class="per">Suscripción mensual · precio congelado de por vida</div>
+        <ul>
+          <li>Todas las jornadas, cada semana</li>
+          <li>Spread, total, moneyline y props de QB</li>
+          <li>Precio fundador mientras sigas activo</li>
+          <li>Se renueva solo · cancela cuando quieras</li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_fundador" class="btn btn-blue">Ser fundador</a>
+      </div>
+      <div class="tier reveal">
+        <h3>Temporada 26-27</h3>
+        <div class="was" data-mxn="$2,999 MXN" data-usd="$164.99 USD">$2,999 MXN</div>
+        <div class="amt" data-mxn="$999<small>MXN</small>" data-usd="$54.99<small>USD</small>">$999<small>MXN</small></div>
+        <div class="per">Hasta el Super Bowl · pago único</div>
+        <ul>
+          <li><strong>Precio exclusivo del acceso fundador</strong></li>
+          <li>Temporada regular + playoffs + Super Bowl</li>
+          <li>Sin renovaciones: pagas una vez y listo</li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_temporada" class="btn btn-dim">Toda la temporada</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ EN VIVO ============ -->
 <section id="vivo">
   <div class="wrap">
@@ -599,49 +693,6 @@
               <span class="odds" id="lcPickOdds"></span>
             </div>
             <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="lcVenue"></span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ LIGA MX (pick gratis de la jornada) ============ -->
-<section id="vivo-mx">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
-        <h2 class="sec-title reveal">El modelo ahora también ve la Liga MX.</h2>
-        <p class="sec-lede reveal">El mismo cerebro, ahora en el Apertura 2026: el modelo resuelve cada partido marcador por marcador, pesa la altitud real de la sede y mide sus picks contra los momios del mercado. Este es el pick gratis de la jornada — la cartelera completa vive en el combo.</p>
-        <div class="live-cta reveal">
-          <a class="btn-primary" href="#precios-mx">Ver planes Liga MX</a>
-          <a class="btn-ghost" href="/mx.html">Abrir el tablero gratis</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="mxCardHolder">
-        <div class="pickcard" style="pointer-events:auto">
-          <div class="pc-shell" style="opacity:1">
-            <div class="pc-tag">
-              <span class="t1">Pick gratis · Liga MX</span>
-              <span class="t2" id="mcTag">JORNADA</span>
-            </div>
-            <div class="pc-team" id="mcHomeRow">
-              <img id="mcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="mcHomeName">Local</span><small>Local</small></div>
-              <div class="pr" id="mcHomeProb">—</div>
-            </div>
-            <div class="pc-team" id="mcAwayRow">
-              <img id="mcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="mcAwayName">Visitante</span><small>Visitante</small></div>
-              <div class="pr" id="mcAwayProb">—</div>
-            </div>
-            <div class="pc-bar"><div class="h" id="mcBarH" style="width:40%"></div><div id="mcBarD" style="width:27%;background:#5b6474"></div><div class="a" id="mcBarA" style="width:33%"></div></div>
-            <div class="pc-pick">
-              <span class="vchip" id="mcChip">BET</span>
-              <span class="sel" id="mcPickSel">Pick del modelo</span>
-            </div>
-            <div class="pc-foot"><span id="mcDraw">EMPATE —</span><span id="mcVenue"></span></div>
           </div>
         </div>
       </div>
@@ -729,6 +780,49 @@
   </div>
 </section>
 
+<!-- ============ LIGA MX (pick gratis de la jornada) ============ -->
+<section id="vivo-mx">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
+        <h2 class="sec-title reveal">El modelo ahora también ve la Liga MX.</h2>
+        <p class="sec-lede reveal">El mismo cerebro, ahora en el Apertura 2026: el modelo resuelve cada partido marcador por marcador, pesa la altitud real de la sede y mide sus picks contra los momios del mercado. Este es el pick gratis de la jornada — la cartelera completa vive en el combo.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="#precios-mx">Ver planes Liga MX</a>
+          <a class="btn-ghost" href="/mx.html">Abrir el tablero gratis</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="mxCardHolder">
+        <div class="pickcard" style="pointer-events:auto">
+          <div class="pc-shell" style="opacity:1">
+            <div class="pc-tag">
+              <span class="t1">Pick gratis · Liga MX</span>
+              <span class="t2" id="mcTag">JORNADA</span>
+            </div>
+            <div class="pc-team" id="mcHomeRow">
+              <img id="mcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="mcHomeName">Local</span><small>Local</small></div>
+              <div class="pr" id="mcHomeProb">—</div>
+            </div>
+            <div class="pc-team" id="mcAwayRow">
+              <img id="mcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+              <div class="tn"><span id="mcAwayName">Visitante</span><small>Visitante</small></div>
+              <div class="pr" id="mcAwayProb">—</div>
+            </div>
+            <div class="pc-bar"><div class="h" id="mcBarH" style="width:40%"></div><div id="mcBarD" style="width:27%;background:#5b6474"></div><div class="a" id="mcBarA" style="width:33%"></div></div>
+            <div class="pc-pick">
+              <span class="vchip" id="mcChip">BET</span>
+              <span class="sel" id="mcPickSel">Pick del modelo</span>
+            </div>
+            <div class="pc-foot"><span id="mcDraw">EMPATE —</span><span id="mcVenue"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ PRECIOS LIGA MX / COMBO ============ -->
 <section id="precios-mx">
   <div class="wrap">
@@ -777,55 +871,6 @@
       </div>
     </div>
     <p class="launch-note reveal">La garantía es la misma de la casa: <strong>jornada perdedora = semana gratis.</strong> El riesgo lo carga el modelo, no tú.</p>
-  </div>
-</section>
-
-<!-- ============ PRECIOS NFL ============ -->
-<section id="precios-nfl">
-  <div class="wrap">
-    <div class="sec-eyebrow reveal">Nuevo · Temporada 26-27</div>
-    <h2 class="sec-title reveal">La NFL, jugada 10,000 veces antes del kickoff.</h2>
-    <p class="sec-lede reveal">Ratings que aprenden solos de cada resultado, descanso entre juegos, clima real del estadio y los momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. <strong>El juego destacado de cada jornada es gratis.</strong></p>
-    <div class="tiers tiers-3">
-      <div class="tier reveal">
-        <h3>Semana de prueba</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$149<small>MXN</small>" data-usd="$8.99<small>USD</small>">$149<small>MXN</small></div>
-        <div class="per">7 días · la jornada completa</div>
-        <ul>
-          <li><strong>¿Primera vez con el modelo?</strong> Empieza aquí</li>
-          <li>Los 16 juegos de la jornada, no solo el destacado</li>
-          <li><strong>Gana tu Semana</strong>: si cierra con más BET perdidos que ganados, <strong>recuperas tus $149</strong><a href="#terminos" class="tc-ref">*</a></li>
-        </ul>
-        <a href="/checkout.html?plan=nfl_semana" class="btn btn-dim">Probar 7 días</a>
-      </div>
-      <div class="tier featured reveal">
-        <span class="flag">Fundador</span>
-        <h3>Mensual Fundador</h3>
-        <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
-        <div class="amt" data-mxn="$399<small>MXN</small>" data-usd="$21.99<small>USD</small>">$399<small>MXN</small></div>
-        <div class="per">Suscripción mensual · precio congelado de por vida</div>
-        <ul>
-          <li>Todas las jornadas, cada semana</li>
-          <li>Spread, total, moneyline y props de QB</li>
-          <li>Precio fundador mientras sigas activo</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=nfl_fundador" class="btn btn-blue">Ser fundador</a>
-      </div>
-      <div class="tier reveal">
-        <h3>Temporada 26-27</h3>
-        <div class="was" data-mxn="$2,999 MXN" data-usd="$164.99 USD">$2,999 MXN</div>
-        <div class="amt" data-mxn="$999<small>MXN</small>" data-usd="$54.99<small>USD</small>">$999<small>MXN</small></div>
-        <div class="per">Hasta el Super Bowl · pago único</div>
-        <ul>
-          <li><strong>Precio exclusivo del acceso fundador</strong></li>
-          <li>Temporada regular + playoffs + Super Bowl</li>
-          <li>Sin renovaciones: pagas una vez y listo</li>
-        </ul>
-        <a href="/checkout.html?plan=nfl_temporada" class="btn btn-dim">Toda la temporada</a>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -1094,6 +1139,44 @@
       else applyTo('pc', mlbFallbackHero || fallback); // sin pretemporada NFL: cae a MLB
     })
     .catch(() => { applyTo('pc', mlbFallbackHero || fallback); });
+})();
+
+/* ============================================================
+   PICK GRATIS NFL (card de la sección #vivo-nfl)
+   ============================================================ */
+(function () {
+  const $ = id => document.getElementById(id);
+  const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
+  fetch('/api/nfl-picks?st=1&as=guest')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const g = d && d.games && d.games.find(x => x.id === d.featured_id);
+      if (!g) { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; return; }
+      $('ncTag').textContent = g.preseason ? 'PRETEMPORADA' : ('SEMANA ' + (d.week || ''));
+      $('ncAwayName').textContent = g.away.name;
+      $('ncHomeName').textContent = g.home.name;
+      $('ncAwaySub').textContent = g.away.city || '';
+      $('ncHomeSub').textContent = g.home.city || '';
+      if (g.away.logo) $('ncAwayLogo').src = g.away.logo;
+      if (g.home.logo) $('ncHomeLogo').src = g.home.logo;
+      const ml = (g.markets && g.markets.moneyline) || {};
+      $('ncAwayProb').textContent = pct(ml.away);
+      $('ncHomeProb').textContent = pct(ml.home);
+      if (ml.away != null) {
+        $('ncBarA').style.width = (ml.away * 100) + '%';
+        $('ncBarH').style.width = (ml.home * 100) + '%';
+        $(ml.away >= ml.home ? 'ncAwayRow' : 'ncHomeRow').classList.add('fav');
+      }
+      const verdicts = g.verdicts || [];
+      const pick = verdicts.find(v => v.verdict === 'bet') || verdicts.find(v => v.verdict === 'maybe') || verdicts[0];
+      if (pick) {
+        $('ncChip').textContent = (pick.verdict || 'bet').toUpperCase();
+        $('ncPickSel').textContent = pick.label;
+        $('ncPickOdds').textContent = pct(pick.prob);
+      }
+      $('ncVenue').textContent = (g.venue || '').toUpperCase();
+    })
+    .catch(() => { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; });
 })();
 
 /* ============================================================
