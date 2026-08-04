@@ -279,7 +279,10 @@ function renderMeta(wk) {
   const chips = [
     'Temporada ' + wk.season + '-' + String(wk.season + 1).slice(2),
     wk.sims.toLocaleString() + ' sims/juego',
-    'Momios: ' + (wk.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'ESPN BET'),
+    'Momios: ' + (wk.manual_odds
+      ? wk.manual_odds.source + ' en ' + wk.manual_odds.games + ' juego' + (wk.manual_odds.games === 1 ? '' : 's') +
+        (wk.manual_odds.games < (wk.games || []).length ? ' · resto ' + (wk.odds_source === 'the-odds-api' ? 'consenso' : 'ESPN BET') : '')
+      : (wk.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'ESPN BET')),
   ];
   if (pre) {
     chips.push('Ratings de pretemporada (ajustados con agostos 2021-25)');
@@ -400,7 +403,16 @@ function moVerdicts(g) {
 }
 
 function moPanel(g) {
-  const mo = moGet(g.id) || {};
+  /* precarga: momios guardados por el usuario > los que ya trae el
+     servidor (manuales o del sportsbook) > vacío */
+  const saved = moGet(g.id);
+  const s = (g.markets && g.markets.market_odds) || {};
+  const mo = saved || {
+    mlA: s.ml_away, mlH: s.ml_home,
+    spLine: s.spread != null ? (s.spread > 0 ? '+' + s.spread : s.spread) : null,
+    spH: s.spread_home, spA: s.spread_away,
+    totLine: s.total, totO: s.total_over, totU: s.total_under,
+  };
   const f = (id, lbl, ph, val) =>
     '<label>' + lbl + '<input id="mo-' + esc(g.id) + '-' + id + '" inputmode="numeric" placeholder="' + ph + '" value="' + esc(val != null ? val : '') + '"></label>';
   return '<details class="mo"' + (moGet(g.id) ? ' open' : '') + '><summary>🎯 Meter los momios de mi casa</summary>' +
@@ -434,8 +446,10 @@ function metaRow(g, mine) {
   const day = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
   const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
   const live = g.state === 'in', final = g.state === 'post';
+  const mkt = g.markets && g.markets.market_odds;
   let badges = '';
   if (mine) badges += '<span class="badge mine">Veredictos con TUS momios</span>';
+  else if (mkt && mkt.manual) badges += '<span class="badge mine">Momios de ' + esc(mkt.source) + '</span>';
   if (currentST === 1) badges += '<span class="badge neutral">Pretemporada</span>';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
@@ -489,11 +503,15 @@ function moreDetails(g) {
   if (!m) return '';
   const fo = m.fair_odds || {};
   const mo = m.market_odds;
+  const px = v => (v != null ? ' (' + am(v) + ')' : '');
   const marketRows = mo
-    ? '<div class="det-h">Momios del mercado (' + esc(mo.source || '') + ')</div>' +
-      det('Spread del mercado', (mo.spread != null ? g.home.abbr + ' ' + (mo.spread > 0 ? '+' : '') + mo.spread : '—') +
-        ' · total ' + (mo.total != null ? mo.total : '—')) +
-      (mo.ml_home != null ? det('Moneyline del mercado', g.home.abbr + ' ' + am(mo.ml_home) + ' · ' + g.away.abbr + ' ' + am(mo.ml_away)) : '')
+    ? '<div class="det-h">Momios ' + (mo.manual ? 'de ' + esc(mo.source) : 'del mercado (' + esc(mo.source || '') + ')') + '</div>' +
+      (mo.spread != null
+        ? det('Hándicap', g.home.abbr + ' ' + (mo.spread > 0 ? '+' : '') + mo.spread + px(mo.spread_home) +
+            ' · ' + g.away.abbr + ' ' + (-mo.spread > 0 ? '+' : '') + (-mo.spread) + px(mo.spread_away)) : '') +
+      (mo.total != null
+        ? det('Total', 'O ' + mo.total + px(mo.total_over) + ' · U ' + mo.total + px(mo.total_under)) : '') +
+      (mo.ml_home != null ? det('Moneyline', g.home.abbr + ' ' + am(mo.ml_home) + ' · ' + g.away.abbr + ' ' + am(mo.ml_away)) : '')
     : '';
   const rows =
     marketRows +
