@@ -111,14 +111,11 @@
   /* Ajuste fino del encuadre de cada panel */
   .hero-third.mx img  { left: -100%; }
   .hero-third.mlb img { left: -92%; }
-  /* Panel NFL sin foto: campo dibujado con CSS (yardas + gradiente de
-     estadio). Sustituir por <img> cuando haya una foto con licencia. */
-  .hero-third.nfl { background:
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 46px),
-      radial-gradient(120% 80% at 50% 12%, #2a3550 0%, #141b2b 55%, #0a0d13 100%); }
-  .nfl-mark { position: absolute; left: 50%; top: 23%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-  .nfl-mark .nm-word { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2.4rem, 6vw, 5rem); letter-spacing: 0.06em; color: rgba(255,255,255,0.92); line-height: 1; text-shadow: 0 8px 40px rgba(0,0,0,0.6); }
-  .nfl-mark .nm-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-top: 12px; }
+  /* Panel NFL: la imagen es vertical con el escudo centrado, así que
+     usa contain (no cover como los otros dos) sobre un fondo que
+     combina con el degradado azul de la imagen misma. */
+  .hero-third.nfl { background: radial-gradient(120% 80% at 50% 20%, #0d2f6b 0%, #0a1c3f 55%, #060f24 100%); }
+  .hero-third.nfl img { position: absolute; inset: 0; top: 0; left: 0; width: 100%; height: 100%; max-width: 100%; object-fit: cover; object-position: 50% 22%; }
   .third-line { position: absolute; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
   .third-line.l1 { left: 33.333%; }
   .third-line.l2 { left: 66.666%; }
@@ -417,8 +414,7 @@
     /* Los tres paneles se apilan: Liga MX arriba, NFL en medio, MLB abajo */
     .hero-thirds { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
     .hero-third img, .hero-third.mx img, .hero-third.mlb img { left: 0; width: 100%; height: 100%; }
-    .nfl-mark .nm-word { font-size: 2rem; }
-    .nfl-mark .nm-sub { font-size: 0.54rem; margin-top: 8px; }
+    .hero-third.nfl img { object-position: 50% 18%; }
     .third-line { left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
     .third-line.l1 { top: 33.333%; }
     .third-line.l2 { top: 66.666%; }
@@ -471,12 +467,7 @@
     <!-- Fondo en tres paneles: Liga MX · NFL · MLB -->
     <div class="hero-thirds">
       <div class="hero-third mx"><img id="vid1" src="/img/ligamx.jpg" alt=""></div>
-      <div class="hero-third nfl">
-        <div class="nfl-mark">
-          <div class="nm-word">NFL</div>
-          <div class="nm-sub">Temporada 2026</div>
-        </div>
-      </div>
+      <div class="hero-third nfl"><img id="vid3" src="/img/nfl.jpg" alt=""></div>
       <div class="hero-third mlb"><img id="vid2" src="/video/hero-swing.jpg" alt=""></div>
     </div>
     <div class="half-tag tag-mx">Liga MX</div>
