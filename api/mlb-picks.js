@@ -14,7 +14,7 @@
    ============================================================ */
 const { buildDay } = require('../lib/mlb/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
-const { PLANS } = require('../lib/plans');
+const { entitlementGrants } = require('../lib/plans');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -27,17 +27,6 @@ function todayET() {
     timeZone: 'America/New_York',
     year: 'numeric', month: '2-digit', day: '2-digit',
   }).format(new Date());
-}
-
-/* ¿El entitlement da acceso Doctor MLB vigente? (mlb_* o combo_*) */
-function mlbAccessValid(ent) {
-  if (!ent || !ent.active || !ent.plan) return false;
-  if (!ent.plan.startsWith('mlb_') && !ent.plan.startsWith('combo_')) return false;
-  const plan = PLANS[ent.plan];
-  if (!plan) return false;
-  const days = plan.days || 30;
-  const since = ent.updated_at ? Date.parse(ent.updated_at) : 0;
-  return Number.isFinite(since) && (Date.now() - since) <= days * 86400e3;
 }
 
 /* El juego destacado del día = el del pick con más convicción
@@ -85,7 +74,7 @@ module.exports = async function handler(req, res) {
       if (ADMIN_EMAILS.includes(user.email)) access = 'full';
       else {
         const ent = await getEntitlement(user.id, user.email, 'mlb');
-        if (mlbAccessValid(ent)) access = 'full';
+        if (entitlementGrants(ent, 'mlb')) access = 'full';
       }
     }
   }

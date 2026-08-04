@@ -26,6 +26,7 @@ module.exports = async function handler(req, res) {
     const mundial = ents.find(e => e.product === 'mundial' && e.active);
     const mlb = ents.find(e => e.product === 'mlb' && e.active);
     const mx = ents.find(e => e.product === 'mx' && e.active);
+    const nfl = ents.find(e => e.product === 'nfl' && e.active);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       mundial: !!mundial,
@@ -34,6 +35,8 @@ module.exports = async function handler(req, res) {
       mlb_plan: mlb ? mlb.plan : null,
       mx: !!mx,
       mx_plan: mx ? mx.plan : null,
+      nfl: !!nfl,
+      nfl_plan: nfl ? nfl.plan : null,
     });
   } catch (e) {
     console.error('my-access:', e);

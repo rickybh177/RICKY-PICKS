@@ -56,7 +56,7 @@
   .lede { color: var(--muted); margin-top: 12px; max-width: 54ch; }
 
   /* TARJETAS DE MODELO */
-  .models { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 32px 0 40px; }
+  .models { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin: 32px 0 40px; }
   .model-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; background: #fff; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
   .model-card:hover { transform: translateY(-2px); box-shadow: 0 18px 46px -26px rgba(22,24,29,0.4); border-color: #d5deea; }
   .mc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -137,6 +137,16 @@
         <p>Calcula la probabilidad exacta de cada marcador posible y corrige por la altitud real de la sede. Apertura 2026.</p>
         <a class="mc-cta" id="ctaMx" href="/mx.html">Abrir modelo →</a>
       </div>
+
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">🏈</span>
+          <span class="mc-chip" id="chipNfl">Sin acceso</span>
+        </div>
+        <h2>Modelo NFL</h2>
+        <p>Cada jornada simulada 10,000 veces: spread, total, moneyline y props de QB, contra los momios reales del mercado. Temporada 26-27.</p>
+        <a class="mc-cta" id="ctaNfl" href="/nfl.html">Abrir modelo →</a>
+      </div>
     </div>
 
     <div class="closed-note">
@@ -209,6 +219,7 @@ async function boot(){
   if(acc){
     paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/#precios');
     paint(!!acc.mx,  'chipMx',  'ctaMx',  '/#precios-mx');
+    paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/#precios-nfl');
   }
   showMain();
 }

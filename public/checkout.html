@@ -314,6 +314,41 @@ const PLANS = {
       'Todos los picks y análisis, sin límite',
     ],
   },
+  nfl_semana: {
+    name: 'Modelo NFL — Semana de prueba',
+    price: '$149',
+    currency: 'MXN',
+    period: '7 días · cubre la jornada completa',
+    features: [
+      'Los 16 juegos de la jornada, no solo el destacado',
+      'Spread, total y moneyline con los momios reales del mercado',
+      'Props de QB y análisis del modelo por partido',
+      'Acceso fundador: entras con el precio de lanzamiento',
+    ],
+  },
+  nfl_fundador: {
+    name: 'Modelo NFL — Mensual Fundador',
+    price: '$399',
+    currency: 'MXN',
+    period: 'Suscripción mensual · precio congelado de por vida',
+    features: [
+      'Todas las jornadas de la NFL, cada semana',
+      'Spread, total, moneyline y props de QB',
+      'Precio fundador: se respeta mientras sigas activo (sube a $499)',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  nfl_temporada: {
+    name: 'Modelo NFL — Temporada 26-27 completa',
+    price: '$999',
+    currency: 'MXN',
+    period: 'Hasta el Super Bowl · pago único',
+    features: [
+      'Precio exclusivo del acceso fundador (regular: $2,999)',
+      'Toda la temporada regular + playoffs + Super Bowl',
+      'Sin renovaciones: pagas una vez y listo',
+    ],
+  },
   circulo_fundador: {
     name: 'Círculo Fundador',
     price: '$1,999',
@@ -338,6 +373,7 @@ const payoErr = params.get('pago');
 const modelUrl = p => {
   p = p || '';
   if(p.startsWith('mlb_') || p === 'circulo_fundador') return '/mlb.html';
+  if(p.startsWith('nfl_')) return '/nfl.html';
   if(p.startsWith('mx_') || p.startsWith('combo_')) return '/mx.html';
   return '/mis-modelos.html';
 };
@@ -448,9 +484,11 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
    combo_* -> mlb+mx, resto -> mundial. */
 function productsOf(p){
   p = p || '';
-  if(p.startsWith('combo_') || p === 'circulo_fundador') return ['mlb','mx'];
+  if(p === 'circulo_fundador') return ['mlb','mx','nfl'];
+  if(p.startsWith('combo_')) return ['mlb','mx'];
   if(p.startsWith('mlb_')) return ['mlb'];
   if(p.startsWith('mx_')) return ['mx'];
+  if(p.startsWith('nfl_')) return ['nfl'];
   return ['mundial'];
 }
 
@@ -492,7 +530,7 @@ async function renderSession(session){
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
      solo una pata SÍ se permite (es el upgrade). */
-  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador','circulo_fundador'] };
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','circulo_fundador'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
   const covered = ent && !buyingCombo &&

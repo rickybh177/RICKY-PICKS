@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MODELO NFL 26-27 — RICKY·PICKS (beta privada)</title>
+<title>MODELO NFL 26-27 — RICKY·PICKS</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,6 +103,33 @@
 
   .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
   .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
+  /* ---- candado por juego (invitado) ---- */
+  .locked-zone { position: relative; margin-top: 12px; }
+  .locked-rows { filter: blur(7px); opacity: 0.55; pointer-events: none; user-select: none; }
+  .lock-cta { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 10px; }
+  .lock-cta .lk { width: 34px; height: 34px; border-radius: 9px; background: var(--g2); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .lock-cta .t { font-weight: 700; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .lock-cta a { display: inline-block; background: var(--beta); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 10px 20px; border-radius: 9px; }
+  .freeflag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--bet); color: #fff; padding: 3px 9px; border-radius: 6px; margin-bottom: 8px; }
+
+  /* ---- BANNER DE PLANES (invitado) ---- */
+  .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
+  .plans-banner.on { display: block; }
+  .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
+  .plans-banner .txt small { display: block; font-weight: 450; color: var(--muted); font-size: 0.74rem; }
+  .plans-banner .txt small a { color: inherit; text-decoration: underline; }
+  .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; }
+  .plans-banner .acts a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
+  .plans-banner a.day { background: var(--g2); color: var(--text); border: 1px solid var(--line-2); }
+  .plans-banner a.founder { background: var(--beta); color: #fff; }
+  @media (max-width: 620px) {
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 9px; }
+    .plans-banner .txt { font-size: 0.82rem; text-align: center; }
+    .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .plans-banner .acts a { text-align: center; padding: 12px 8px; }
+  }
+
   .spinner { width: 26px; height: 26px; border: 2.5px solid var(--line-2); border-top-color: var(--beta); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -135,7 +162,7 @@
   <div class="wrap">
     <a class="logo" href="/">
       <span class="mark">R·P</span>
-      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">NFL · BETA</span>
+      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">NFL 26-27</span>
     </a>
     <div class="weeknav" id="weeknav" style="display:none">
       <button id="prevWeek" aria-label="Semana anterior">‹</button>
@@ -148,25 +175,12 @@
   </div>
 </nav>
 
-<!-- candado admin -->
-<div class="lockwrap" id="lockWrap" style="display:none">
-  <div class="lockbox">
-    <div class="ic">🔒</div>
-    <h2>Beta privada</h2>
-    <p>El modelo NFL 26-27 está en pruebas. Entra con la cuenta autorizada.</p>
-    <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
-    <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
-    <button class="go" id="lkGo">Entrar</button>
-    <div class="err" id="lkErr"></div>
-  </div>
-</div>
-
-<div id="appWrap" style="display:none">
+<div id="appWrap">
 <header class="head">
   <div class="wrap">
-    <div class="eyebrow">Modelo NFL 26-27 · beta privada · 10,000 simulaciones por juego</div>
+    <div class="eyebrow">Modelo NFL 26-27 · 10,000 simulaciones por juego</div>
     <h1>Cada juego, jugado 10,000 veces antes del kickoff.</h1>
-    <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado.</p>
+    <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. El juego destacado de la jornada es gratis; el resto se desbloquea con tu plan.</p>
     <div class="meta-band" id="metaBand"></div>
     <div id="disclose"></div>
   </div>
@@ -179,9 +193,19 @@
 </main>
 </div>
 
+<div class="plans-banner" id="plansBanner">
+  <div class="wrap">
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>7 días por $149 — semana perdedora, te devolvemos tus $149. <a href="/#terminos">Ver términos</a></small></div>
+    <div class="acts">
+      <a class="day" href="/checkout.html?plan=nfl_semana">Semana $149</a>
+      <a class="founder" href="/checkout.html?plan=nfl_fundador">Fundador $399</a>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
-    <div>Beta privada — solo administración. Análisis estadístico con fines informativos.</div>
+    <div>Análisis estadístico con fines informativos. No garantiza resultados.</div>
     <div>Juega responsable. +18.</div>
   </div>
 </footer>
@@ -193,6 +217,7 @@ let sb = null;
 try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
 
 const $ = id => document.getElementById(id);
+const AS_GUEST = new URLSearchParams(location.search).get('as') === 'guest'; // probar vista de invitado en dev
 const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
 const PRE_WEEKS = 4, REG_WEEKS = 18;
@@ -219,38 +244,23 @@ async function load(week, refresh, st) {
   if (week) q.set('week', week);
   if (st) q.set('st', st);
   if (refresh) q.set('refresh', '1');
+  if (AS_GUEST) q.set('as', 'guest');
   const headers = await authHeader();
   let res;
   try {
     res = await fetch('/api/nfl-picks?' + q.toString(), { headers });
   } catch (e) { return renderError('Sin conexión con el servidor.'); }
-  if (res.status === 403) {
-    showLock(headers.Authorization ? 'Esta cuenta no tiene acceso a la beta privada.' : '');
-    return;
-  }
   if (!res.ok) return renderError('El modelo no pudo calcular esta semana. Intenta actualizar.');
   const wk = await res.json();
   currentWeek = wk.week;
   currentST = wk.seasontype || 2;
-  $('lockWrap').style.display = 'none';
-  $('appWrap').style.display = 'block';
   $('weeknav').style.display = 'flex';
   $('curWeek').textContent = (currentST === 1 ? 'PRETEMP ' : 'SEMANA ') + wk.week;
   renderMeta(wk);
   renderWeek(wk);
 }
 
-function showLock(msg) {
-  $('appWrap').style.display = 'none';
-  $('weeknav').style.display = 'none';
-  $('lockWrap').style.display = 'block';
-  $('lkErr').textContent = msg || '';
-}
-
 function renderError(msg) {
-  // destapar el contenedor: en la primera carga #appWrap sigue oculto
-  $('lockWrap').style.display = 'none';
-  $('appWrap').style.display = 'block';
   $('games').innerHTML = '<div class="state"><h2>Algo salió mal</h2>' + esc(msg) + '</div>';
 }
 
@@ -274,12 +284,40 @@ let lastWk = null;
 function renderWeek(wk) {
   lastWk = wk;
   const games = wk.games || [];
+  const guest = wk.access === 'guest';
+  $('plansBanner').classList.toggle('on', guest);
   if (!games.length) {
     $('games').innerHTML = '<div class="state"><h2>Sin juegos esta semana</h2>Muévete de semana con las flechas de arriba.</div>';
     return;
   }
-  const sorted = [...games].sort((a, b) => (b.strength || 0) - (a.strength || 0));
-  $('games').innerHTML = sorted.map((g, i) => g.error ? '' : gameCard(g, i)).join('');
+  /* invitado: el destacado primero (es el gratis), luego los bloqueados */
+  const sorted = [...games].sort((a, b) => {
+    if (guest) {
+      const fa = a.id === wk.featured_id ? 1 : 0, fb = b.id === wk.featured_id ? 1 : 0;
+      if (fa !== fb) return fb - fa;
+    }
+    return (b.strength || 0) - (a.strength || 0);
+  });
+  $('games').innerHTML = sorted.map((g, i) =>
+    g.error ? '' : (g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === wk.featured_id))
+  ).join('');
+}
+
+/* Tarjeta censurada: se ve el partido y la hora, nunca los veredictos. */
+function lockedCard(g, i) {
+  const fake = ['Spread', 'Total', 'Ganador', 'Props del QB']
+    .map(l => '<div class="vrow"><span class="vl">' + l + '</span><span class="vchip maybe">····</span></div>').join('');
+  return '<div class="card" style="--i:' + i + '">' +
+    metaRow(g) + teamRows(g) +
+    '<div class="locked-zone">' +
+      '<div class="verdicts locked-rows">' + fake + '</div>' +
+      '<div class="lock-cta">' +
+        '<div class="lk">🔒</div>' +
+        '<div class="t">Los veredictos de este juego están en tu plan</div>' +
+        '<a href="/checkout.html?plan=nfl_fundador">Desbloquear la jornada — Fundador $399</a>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
 }
 
 function metaRow(g) {
@@ -306,10 +344,11 @@ function teamRows(g) {
     (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') + '</div>' +
     '<div class="team-score">' + (final && score != null ? score : '') + '</div>' +
     '</div>';
-  return row(g.away, final ? g.score.away : null, g.rest.away) + row(g.home, final ? g.score.home : null, g.rest.home);
+  const rest = g.rest || {};
+  return row(g.away, final ? g.score.away : null, rest.away) + row(g.home, final ? g.score.home : null, rest.home);
 }
 
-function gameCard(g, i) {
+function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
     '<span class="vl">' + esc(v.label) +
@@ -321,6 +360,7 @@ function gameCard(g, i) {
     ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
     : '';
   return '<div class="card" style="--i:' + i + '">' +
+    (isFree ? '<span class="freeflag">Pick gratis de la jornada</span>' : '') +
     metaRow(g) + teamRows(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
     analysis + moreDetails(g) +
@@ -388,19 +428,6 @@ function distChart(m, g) {
     '<div class="dist-lbl"><span>Cómo cae el margen (' + esc(g.home.abbr) + ' positivo) en 10,000 futuros</span></div>' +
     '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
 }
-
-/* ---- login (candado) ---- */
-$('lkGo').addEventListener('click', async () => {
-  $('lkErr').textContent = '';
-  try {
-    const { error } = await sb.auth.signInWithPassword({
-      email: $('lkEmail').value.trim(), password: $('lkPass').value,
-    });
-    if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
-    load(currentWeek);
-  } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
-});
-$('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
 
 /* navegación lineal: pretemporada 1-4 → regular 1-18 */
 $('prevWeek').addEventListener('click', () => {

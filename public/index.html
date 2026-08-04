@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY·PICKS — Modelos Liga MX y MLB: picks con valor real</title>
+<title>RICKY·PICKS — Modelos Liga MX, NFL y MLB: picks con valor real</title>
 <meta name="description" content="El modelo simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,24 +102,33 @@
   .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
   .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
   .vid.v1 { opacity: 1; }
-  /* Hero dividido: mitad Liga MX, mitad MLB.
-     Cada mitad recorta una imagen renderizada al ancho COMPLETO del hero,
-     así ninguna se ve más "acercada" que la otra — el sujeto de cada una
-     queda centrado en su propia mitad y no se desborda al otro lado. */
-  .hero-half { position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden; }
-  .hero-half.left { left: 0; }
-  .hero-half.right { right: 0; }
-  .hero-half img { position: absolute; top: 0; width: 200%; height: 100%; max-width: none; object-fit: cover; }
-  /* Cada sujeto queda centrado en su propia mitad */
-  .hero-half.left img { left: -50%; }
-  .hero-half.right img { left: -44%; }
-  .split-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
-  .half-tag { position: absolute; top: 96px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(255,255,255,0.85); background: rgba(10,13,19,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 16px; pointer-events: none; z-index: 1; }
-  .half-tag.left-tag { left: 24px; }
-  .half-tag.right-tag { right: 24px; }
-  /* Dos columnas del mismo ancho: el hueco central cae justo sobre la
-     línea divisoria, así cada botón vive dentro de su propia mitad. */
-  .hero-ctas { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); justify-content: center; gap: 24px; margin-top: 26px; }
+  /* Hero en TRES paneles: Liga MX · NFL · MLB.
+     Cada panel recorta una imagen renderizada a ~3x su ancho, así el
+     sujeto de cada una queda centrado en su tercio sin desbordarse. */
+  .hero-thirds { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .hero-third { position: relative; overflow: hidden; }
+  .hero-third img { position: absolute; top: 0; left: -100%; width: 300%; height: 100%; max-width: none; object-fit: cover; }
+  /* Ajuste fino del encuadre de cada panel */
+  .hero-third.mx img  { left: -100%; }
+  .hero-third.mlb img { left: -92%; }
+  /* Panel NFL sin foto: campo dibujado con CSS (yardas + gradiente de
+     estadio). Sustituir por <img> cuando haya una foto con licencia. */
+  .hero-third.nfl { background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 46px),
+      radial-gradient(120% 80% at 50% 12%, #2a3550 0%, #141b2b 55%, #0a0d13 100%); }
+  .nfl-mark { position: absolute; left: 50%; top: 23%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+  .nfl-mark .nm-word { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2.4rem, 6vw, 5rem); letter-spacing: 0.06em; color: rgba(255,255,255,0.92); line-height: 1; text-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+  .nfl-mark .nm-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-top: 12px; }
+  .third-line { position: absolute; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
+  .third-line.l1 { left: 33.333%; }
+  .third-line.l2 { left: 66.666%; }
+  .half-tag { position: absolute; top: 96px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(255,255,255,0.85); background: rgba(10,13,19,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 16px; pointer-events: none; z-index: 1; white-space: nowrap; }
+  /* Cada píldora centrada en su propio tercio */
+  .half-tag.tag-mx  { left: 16.666%; transform: translateX(-50%); }
+  .half-tag.tag-nfl { left: 50%;     transform: translateX(-50%); }
+  .half-tag.tag-mlb { left: 83.333%; transform: translateX(-50%); }
+  /* Tres columnas del mismo ancho, alineadas con los paneles */
+  .hero-ctas { display: grid; grid-template-columns: repeat(3, minmax(0, 190px)); justify-content: center; gap: 16px; margin-top: 26px; }
   .hero-cta { display: block; text-align: center; background: rgba(14,19,28,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.22); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; padding: 13px 18px; border-radius: 12px; white-space: nowrap; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
   .hero-cta:hover { transform: translateY(-2px); background: var(--blue-deep); border-color: var(--blue-deep); }
   .veil { position: absolute; inset: 0; pointer-events: none;
@@ -405,14 +414,17 @@
     .stage { height: 460vh; }
     .vid { object-position: 50% 68%; }
     /* Hero dividido en vertical: Liga MX arriba, MLB abajo */
-    .hero-half { width: 100%; height: 50%; top: auto; bottom: auto; }
-    .hero-half.left { top: 0; left: 0; }
-    .hero-half.right { bottom: 0; right: 0; }
-    .hero-half.left img, .hero-half.right img { left: 0; width: 100%; height: 100%; }
-    .split-line { left: 0; right: 0; top: 50%; bottom: auto; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
-    .half-tag { display: none; } /* en móvil el copy ya nombra ambas ligas */
-    .hero-ctas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .hero-cta { padding: 12px 20px; font-size: 0.88rem; }
+    /* Los tres paneles se apilan: Liga MX arriba, NFL en medio, MLB abajo */
+    .hero-thirds { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
+    .hero-third img, .hero-third.mx img, .hero-third.mlb img { left: 0; width: 100%; height: 100%; }
+    .nfl-mark .nm-word { font-size: 2rem; }
+    .nfl-mark .nm-sub { font-size: 0.54rem; margin-top: 8px; }
+    .third-line { left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
+    .third-line.l1 { top: 33.333%; }
+    .third-line.l2 { top: 66.666%; }
+    .half-tag { display: none; } /* en móvil el copy ya nombra las tres ligas */
+    .hero-ctas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .hero-cta { padding: 11px 6px; font-size: 0.76rem; }
     .hero-copy { bottom: 10vh; }
     .tiers, .tiers.tiers-3 { grid-template-columns: 1fr; }
     .circulo { flex-direction: column; align-items: stretch; text-align: left; padding: 24px 20px; }
@@ -442,7 +454,7 @@
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
       <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
-      <a href="/nfl.html" class="nav-link" id="nflNavBtn" style="display:none">NFL</a>
+      <a href="/nfl.html" class="nav-link" id="nflNavBtn">NFL</a>
       <button class="nav-link soon" id="mlbNavBtn">MLB</button>
       <a href="#record" class="nav-link">Récord</a>
       <a href="#precios" class="nav-link">Precios</a>
@@ -456,22 +468,33 @@
 <!-- ============ HERO ============ -->
 <div class="stage" id="stage">
   <div class="stage-sticky">
-    <!-- Fondo dividido: mitad Liga MX, mitad MLB -->
-    <div class="hero-half left"><img id="vid1" src="/img/ligamx.jpg" alt=""></div>
-    <div class="hero-half right"><img id="vid2" src="/video/hero-swing.jpg" alt=""></div>
-    <div class="half-tag left-tag">Liga MX</div>
-    <div class="half-tag right-tag">MLB</div>
-    <div class="split-line"></div>
+    <!-- Fondo en tres paneles: Liga MX · NFL · MLB -->
+    <div class="hero-thirds">
+      <div class="hero-third mx"><img id="vid1" src="/img/ligamx.jpg" alt=""></div>
+      <div class="hero-third nfl">
+        <div class="nfl-mark">
+          <div class="nm-word">NFL</div>
+          <div class="nm-sub">Temporada 2026</div>
+        </div>
+      </div>
+      <div class="hero-third mlb"><img id="vid2" src="/video/hero-swing.jpg" alt=""></div>
+    </div>
+    <div class="half-tag tag-mx">Liga MX</div>
+    <div class="half-tag tag-nfl">NFL</div>
+    <div class="half-tag tag-mlb">MLB</div>
+    <div class="third-line l1"></div>
+    <div class="third-line l2"></div>
     <div class="veil"></div>
     <div class="stage-dim" id="stageDim"></div>
 
     <div class="hero-copy" id="heroCopy">
-      <div class="hero-eyebrow">Dos modelos · Liga MX + MLB</div>
-      <h1 class="mega">Dos ligas, resueltas <em>número por número.</em></h1>
-      <div class="hero-sub">Un modelo simula la Liga MX marcador por marcador. Otro simula cada juego de MLB turno por turno. Los dos te dicen a qué entrarle. Y a qué no.</div>
+      <div class="hero-eyebrow">Tres modelos · Liga MX + NFL + MLB</div>
+      <h1 class="mega">Tres ligas, resueltas <em>número por número.</em></h1>
+      <div class="hero-sub">Un modelo para la Liga MX, otro para la NFL y otro para MLB. Cada uno simula el partido antes de que empiece y te dice a qué entrarle. Y a qué no.</div>
       <div class="hero-ctas">
-        <a href="#precios-mx" class="hero-cta">⚽ Modelo Liga MX</a>
-        <a href="#precios" class="hero-cta">⚾ Modelo MLB</a>
+        <a href="#precios-mx" class="hero-cta">⚽ Ver Liga MX</a>
+        <a href="/nfl.html" class="hero-cta">🏈 Ver NFL</a>
+        <a href="#precios" class="hero-cta">⚾ Ver MLB</a>
       </div>
     </div>
 
@@ -780,6 +803,55 @@
   </div>
 </section>
 
+<!-- ============ PRECIOS NFL ============ -->
+<section id="precios-nfl">
+  <div class="wrap">
+    <div class="sec-eyebrow reveal">Nuevo · Temporada 26-27</div>
+    <h2 class="sec-title reveal">La NFL, jugada 10,000 veces antes del kickoff.</h2>
+    <p class="sec-lede reveal">Ratings que aprenden solos de cada resultado, descanso entre juegos, clima real del estadio y los momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. <strong>El juego destacado de cada jornada es gratis.</strong></p>
+    <div class="tiers tiers-3">
+      <div class="tier reveal">
+        <h3>Semana de prueba</h3>
+        <div class="was"></div>
+        <div class="amt" data-mxn="$149<small>MXN</small>" data-usd="$8.99<small>USD</small>">$149<small>MXN</small></div>
+        <div class="per">7 días · la jornada completa</div>
+        <ul>
+          <li><strong>¿Primera vez con el modelo?</strong> Empieza aquí</li>
+          <li>Los 16 juegos de la jornada, no solo el destacado</li>
+          <li><strong>Gana tu Semana</strong>: si cierra con más BET perdidos que ganados, <strong>recuperas tus $149</strong><a href="#terminos" class="tc-ref">*</a></li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_semana" class="btn btn-dim">Probar 7 días</a>
+      </div>
+      <div class="tier featured reveal">
+        <span class="flag">Fundador</span>
+        <h3>Mensual Fundador</h3>
+        <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
+        <div class="amt" data-mxn="$399<small>MXN</small>" data-usd="$21.99<small>USD</small>">$399<small>MXN</small></div>
+        <div class="per">Suscripción mensual · precio congelado de por vida</div>
+        <ul>
+          <li>Todas las jornadas, cada semana</li>
+          <li>Spread, total, moneyline y props de QB</li>
+          <li>Precio fundador mientras sigas activo</li>
+          <li>Se renueva solo · cancela cuando quieras</li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_fundador" class="btn btn-blue">Ser fundador</a>
+      </div>
+      <div class="tier reveal">
+        <h3>Temporada 26-27</h3>
+        <div class="was" data-mxn="$2,999 MXN" data-usd="$164.99 USD">$2,999 MXN</div>
+        <div class="amt" data-mxn="$999<small>MXN</small>" data-usd="$54.99<small>USD</small>">$999<small>MXN</small></div>
+        <div class="per">Hasta el Super Bowl · pago único</div>
+        <ul>
+          <li><strong>Precio exclusivo del acceso fundador</strong></li>
+          <li>Temporada regular + playoffs + Super Bowl</li>
+          <li>Sin renovaciones: pagas una vez y listo</li>
+        </ul>
+        <a href="/checkout.html?plan=nfl_temporada" class="btn btn-dim">Toda la temporada</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ FAQ ============ -->
 <section id="faq" style="padding-top:20px">
   <div class="wrap" style="max-width:760px">
@@ -815,10 +887,12 @@
         <dd>Aplica a la primera Semana de prueba de cada cuenta. Se activa si, durante tus 7 días de acceso, los picks marcados <strong>BET</strong> del modelo MLB cierran con más resultados perdidos que ganados, verificado contra el marcador oficial de cada juego. Para reclamarla escríbenos dentro de los 7 días naturales siguientes al término de tu acceso. La devolución se entrega como <strong>crédito por $149 MXN aplicable a tu primer mes del plan Mensual Fundador</strong> (pagas $250 en lugar de $399); las renovaciones siguientes se cobran al precio normal del plan. El crédito no es transferible ni canjeable por efectivo y se usa en un solo pago. Disponible pagando con tarjeta.</dd>
         <dt>Crédito de la Semana al subir de plan (48 horas)</dt>
         <dd>Si compraste la Semana de prueba, durante las 48 horas siguientes a tu compra tus $149 MXN se descuentan completos del <strong>primer mes</strong> del plan Mensual Fundador (pagas $250) o del Combo MLB + Liga MX (pagas $350). Aplica pagando con tarjeta; las renovaciones siguientes se cobran al precio normal del plan. Este crédito y el de "Gana tu Semana" son el mismo beneficio por dos vías distintas: nunca se acumulan entre sí.</dd>
+        <dt>Modelo NFL (temporada 26-27)</dt>
+        <dd>Los planes de NFL (Semana $149, Mensual Fundador $399, Temporada $999) cubren únicamente el modelo NFL. El juego destacado de cada jornada es gratuito y no requiere plan. "Gana tu Semana" aplica igual que en MLB: si tus 7 días cierran con más picks BET perdidos que ganados, escríbenos dentro de los 7 días naturales siguientes y recuperas tus $149 como crédito hacia tu primer mes del Mensual Fundador.</dd>
         <dt>Semana perdedora = semana gratis (Mensual Fundador)</dt>
         <dd>Para suscriptores activos: si una semana calendario cierra con récord perdedor en los picks <strong>BET</strong>, no se cobra la semana siguiente de tu suscripción. Se aplica sobre tu ciclo de facturación vigente.</dd>
         <dt>Círculo Fundador</dt>
-        <dd>Incluye acceso a todos los modelos activos de RICKY·PICKS (hoy MLB y Liga MX, más los que se lancen mientras tu suscripción siga activa) y línea directa con Ricky por Telegram para dudas sobre los picks del día, con respuesta el mismo día en días con juegos. El cupo se limita para mantener la atención directa; si no hay lugares disponibles te lo diremos antes de cobrar.</dd>
+        <dd>Incluye acceso a todos los modelos activos de RICKY·PICKS (hoy MLB, Liga MX y NFL, más los que se lancen mientras tu suscripción siga activa) y línea directa con Ricky por Telegram para dudas sobre los picks del día, con respuesta el mismo día en días con juegos. El cupo se limita para mantener la atención directa; si no hay lugares disponibles te lo diremos antes de cobrar.</dd>
         <dt>General</dt>
         <dd>Las predicciones son análisis estadístico y no garantizan resultados de ninguna apuesta. Estas garantías cubren el costo de tu acceso al modelo, nunca el dinero que apuestes por tu cuenta. Puedes cancelar tu suscripción cuando quieras desde <em>Administrar suscripción</em>.</dd>
       </dl>
@@ -1512,16 +1586,11 @@ authSubmit.addEventListener('click', async () => {
 
 let _session = null;
 
-const NFL_ADMIN_EMAILS = ['rickybh17@gmail.com'];
 
 async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
   checkMlbNavAccess();
-  // NFL: beta privada — el botón solo existe para la cuenta admin.
-  // (Liga MX ya es pública: su botón siempre está visible.)
-  document.getElementById('nflNavBtn').style.display =
-    (u && NFL_ADMIN_EMAILS.includes(u.email)) ? 'inline-flex' : 'none';
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';

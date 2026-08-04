@@ -71,7 +71,9 @@ module.exports = async function handler(req, res) {
       // descuento" en un preapproval. El código sí funciona con tarjeta.
       return res.status(400).json({ error: 'Ese código de descuento solo aplica pagando con tarjeta.' });
     }
-    const subDest = (planId === 'mlb_fundador' || planId === 'circulo_fundador') ? 'mlb.html' : 'mx.html';
+    const subDest = planId.startsWith('nfl_') ? 'nfl.html'
+      : (planId === 'mlb_fundador' || planId === 'circulo_fundador') ? 'mlb.html'
+      : 'mx.html';
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',
@@ -102,8 +104,10 @@ module.exports = async function handler(req, res) {
     }
   }
   // Al volver del pago, cada producto regresa a SU modelo:
-  // mlb_* -> /mlb.html, mx_*/combo_* -> /mx.html, Mundial -> /mis-modelos.html
+  // mlb_* -> /mlb.html, nfl_* -> /nfl.html, mx_*/combo_* -> /mx.html,
+  // Mundial -> /mis-modelos.html
   const dest = plan.id.startsWith('mlb_') ? 'mlb.html'
+    : plan.id.startsWith('nfl_') ? 'nfl.html'
     : (plan.id.startsWith('mx_') || plan.id.startsWith('combo_')) ? 'mx.html'
     : 'mis-modelos.html';
   const preference = {
