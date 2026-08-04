@@ -101,12 +101,6 @@
   .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
   .dist svg { width: 100%; height: 54px; display: block; }
 
-  .disclose { background: var(--beta-bg); border: 1px solid rgba(124,58,237,0.28); border-radius: 13px; padding: 16px 18px; margin-top: 18px; }
-  .disclose .d-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--beta); margin-bottom: 7px; }
-  .disclose h3 { font-size: 0.98rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 7px; }
-  .disclose p { color: var(--muted); font-size: 0.85rem; font-weight: 450; line-height: 1.6; }
-  .disclose .d-foot { margin-top: 9px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); }
-
   .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
   .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
   .spinner { width: 26px; height: 26px; border: 2.5px solid var(--line-2); border-top-color: var(--beta); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
@@ -274,13 +268,6 @@ function renderMeta(wk) {
     chips.push(wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings de arranque (fit 2024-25 ajustado por rival)');
   }
   $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
-
-  const d = wk.disclosure;
-  $('disclose').innerHTML = d
-    ? '<div class="disclose"><div class="d-lbl">Lee esto antes de apostar</div>' +
-      '<h3>' + esc(d.headline) + '</h3><p>' + esc(d.detail) + '</p>' +
-      '<div class="d-foot">Momios publicados: ' + d.games_with_odds + ' de ' + d.games_total + ' juegos de esta semana.</div></div>'
-    : '';
 }
 
 function renderWeek(wk) {
