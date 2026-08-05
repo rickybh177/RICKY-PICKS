@@ -232,20 +232,23 @@
   .cur-toggle button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--muted); background: none; border: none; padding: 8px 20px; border-radius: 980px; cursor: pointer; transition: color .15s, background .15s; }
   .cur-toggle button:hover { color: var(--text); }
   .cur-toggle button.active { background: var(--g0); color: var(--blue); box-shadow: 0 2px 10px -4px rgba(0,0,0,0.35); }
-  /* Ancla premium (Círculo Fundador): banda oscura, presentada primero */
-  .circulo { margin-top: 28px; background: #12161f; color: #e9edf4; border-radius: 16px; padding: 30px 32px; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
-  .circulo-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8fb0f5; margin-bottom: 10px; }
-  .circulo h3 { font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
-  .circulo p { color: rgba(233,237,244,0.72); font-size: 0.9rem; font-weight: 450; margin-top: 8px; max-width: 56ch; }
-  .circulo p strong { color: #fff; }
-  .circulo-buy { flex-shrink: 0; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-  .circulo-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.9rem; letter-spacing: -0.03em; }
-  .circulo-price small { font-size: 0.72rem; font-weight: 500; color: rgba(233,237,244,0.6); letter-spacing: 0; }
-  .btn-dark { display: inline-block; background: #fff; color: #12161f; text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 13px 26px; border-radius: 11px; transition: transform .15s ease; }
-  .btn-dark:hover { transform: translateY(-2px); }
-  .circulo-mini { font-size: 0.7rem; color: rgba(233,237,244,0.55); }
+  /* Banda del combo de 3 modelos: aparece al final de CADA sección de
+     precios, así el visitante la ve venga por donde venga. */
+  .combo3 { margin-top: 18px; background: linear-gradient(135deg, #12203f 0%, #0e1729 100%); color: #e9edf4; border: 1px solid rgba(120,160,255,0.25); border-radius: 16px; padding: 26px 30px; display: flex; gap: 26px; align-items: center; justify-content: space-between; }
+  .combo3-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8fb0f5; margin-bottom: 9px; }
+  .combo3 h3 { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
+  .combo3 p { color: rgba(233,237,244,0.74); font-size: 0.9rem; font-weight: 450; margin-top: 7px; max-width: 54ch; }
+  .combo3 p strong { color: #fff; }
+  .combo3-buy { flex-shrink: 0; text-align: center; display: flex; flex-direction: column; gap: 9px; align-items: center; }
+  .combo3-was { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: rgba(233,237,244,0.45); text-decoration: line-through; }
+  .combo3-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.95rem; letter-spacing: -0.03em; line-height: 1; }
+  .combo3-price small { font-size: 0.7rem; font-weight: 500; color: rgba(233,237,244,0.6); letter-spacing: 0; }
+  .combo3-btn { display: inline-block; background: #fff; color: #12203f; text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 13px 26px; border-radius: 11px; transition: transform .15s ease; white-space: nowrap; }
+  .combo3-btn:hover { transform: translateY(-2px); }
+  .combo3-mini { font-size: 0.68rem; color: rgba(233,237,244,0.5); }
   .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; align-items: stretch; }
   .tiers.tiers-3 { grid-template-columns: repeat(3, 1fr); max-width: 940px; }
+  .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); max-width: 640px; }
   .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
   .tier:hover { border-color: var(--line-2); transform: translateY(-3px); }
   .tier.featured { border: 1.5px solid var(--blue); background: linear-gradient(180deg, rgba(47,123,255,0.08), var(--g1) 40%); }
@@ -397,7 +400,7 @@
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 900px) {
-    .tiers, .tiers.tiers-3 { grid-template-columns: repeat(2, 1fr); }
+    .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); }
     .live-grid { grid-template-columns: 1fr; gap: 28px; }
     #mundial .panel { grid-template-columns: 1fr; }
     .steps { grid-template-columns: 1fr; }
@@ -420,9 +423,9 @@
     .hero-ctas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
     .hero-cta { padding: 11px 6px; font-size: 0.76rem; }
     .hero-copy { bottom: 10vh; }
-    .tiers, .tiers.tiers-3 { grid-template-columns: 1fr; }
-    .circulo { flex-direction: column; align-items: stretch; text-align: left; padding: 24px 20px; }
-    .circulo-buy { align-items: stretch; text-align: center; }
+    .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: 1fr; }
+    .combo3 { flex-direction: column; align-items: stretch; padding: 22px 20px; gap: 18px; }
+    .combo3-buy { align-items: stretch; }
     .nav-link, .nav-ghost { display: none; }
     .pc-shell { padding: 16px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
@@ -667,6 +670,20 @@
         <a href="/checkout.html?plan=nfl_temporada" class="btn btn-dim">Toda la temporada</a>
       </div>
     </div>
+    <div class="combo3 reveal">
+      <div>
+        <div class="combo3-tag">Los 3 modelos · 1 sola suscripción</div>
+        <h3>MLB + Liga MX + NFL</h3>
+        <p>Beisbol todos los días, la jornada de Liga MX cada semana y la NFL completa cada domingo. <strong>Todo el año hay picks.</strong> Un solo pago al mes, cancela cuando quieras.</p>
+      </div>
+      <div class="combo3-buy">
+        <span class="combo3-was" data-mxn="$1,397 MXN" data-usd="$76.99 USD">$1,397 MXN</span>
+        <div class="combo3-price" data-mxn="$799<small> MXN/mes</small>" data-usd="$43.99<small> USD/mes</small>">$799<small> MXN/mes</small></div>
+        <a href="/checkout.html?plan=combo_fundador" class="combo3-btn">Quiero los 3</a>
+        <span class="combo3-mini">Ahorras $598 cada mes</span>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -725,22 +742,6 @@
       <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
     </div>
 
-    <!-- Ancla premium (Anchor Upsell): se presenta PRIMERO a propósito.
-         Es real y se entrega de verdad; las pocas ventas son utilidad
-         desproporcionada y hace ver al resto de precios como ganga. -->
-    <div class="circulo reveal">
-      <div class="circulo-info">
-        <div class="circulo-tag">Premium · cupo limitado</div>
-        <h3>Círculo Fundador</h3>
-        <p>Todos los modelos incluidos — MLB, Liga MX y cada modelo que lancemos — más <strong>línea directa con Ricky por Telegram</strong>: tus dudas sobre los picks del día, respondidas el mismo día. Es atención directa, no un grupo masivo; por eso el cupo es limitado.</p>
-      </div>
-      <div class="circulo-buy">
-        <div class="circulo-price" data-mxn="$1,999<small> MXN/mes</small>" data-usd="$109.99<small> USD/mes</small>">$1,999<small> MXN/mes</small></div>
-        <a href="/checkout.html?plan=circulo_fundador" class="btn btn-dark">Solicitar mi lugar</a>
-        <span class="circulo-mini">Cancela cuando quieras</span>
-      </div>
-    </div>
-
     <div class="tiers tiers-3">
       <div class="tier reveal">
         <h3>Semana de prueba</h3>
@@ -782,6 +783,20 @@
         <a href="/checkout.html?plan=mlb_temporada" class="btn btn-dim">Toda la temporada</a>
       </div>
     </div>
+    <div class="combo3 reveal">
+      <div>
+        <div class="combo3-tag">Los 3 modelos · 1 sola suscripción</div>
+        <h3>MLB + Liga MX + NFL</h3>
+        <p>Beisbol todos los días, la jornada de Liga MX cada semana y la NFL completa cada domingo. <strong>Todo el año hay picks.</strong> Un solo pago al mes, cancela cuando quieras.</p>
+      </div>
+      <div class="combo3-buy">
+        <span class="combo3-was" data-mxn="$1,397 MXN" data-usd="$76.99 USD">$1,397 MXN</span>
+        <div class="combo3-price" data-mxn="$799<small> MXN/mes</small>" data-usd="$43.99<small> USD/mes</small>">$799<small> MXN/mes</small></div>
+        <a href="/checkout.html?plan=combo_fundador" class="combo3-btn">Quiero los 3</a>
+        <span class="combo3-mini">Ahorras $598 cada mes</span>
+      </div>
+    </div>
+
     <div class="guarantee reveal">
       <div class="g-ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
       <div>
@@ -847,7 +862,7 @@
       <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
       <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
     </div>
-    <div class="tiers tiers-3">
+    <div class="tiers tiers-2">
       <div class="tier reveal">
         <h3>Liga MX Fundador</h3>
         <div class="was" data-mxn="$499 MXN" data-usd="$27.99 USD">$499 MXN</div>
@@ -860,20 +875,6 @@
           <li>Se renueva solo · cancela cuando quieras</li>
         </ul>
         <a href="/checkout.html?plan=mx_fundador" class="btn btn-dim">Solo Liga MX</a>
-      </div>
-      <div class="tier featured reveal">
-        <span class="flag">Combo · 2 modelos</span>
-        <h3>MLB + Liga MX</h3>
-        <div class="was" data-mxn="$900 MXN" data-usd="$49.99 USD">$900 MXN</div>
-        <div class="amt" data-mxn="$499<small>MXN</small>" data-usd="$27.99<small>USD</small>">$499<small>MXN</small></div>
-        <div class="per">Suscripción mensual · ahorras $401 cada mes</div>
-        <ul>
-          <li><strong>Modelo MLB completo</strong>: todos los juegos, todos los días</li>
-          <li><strong>Modelo Liga MX completo</strong>: toda la jornada, cada semana</li>
-          <li>Precio regular $900 al mes — hoy, $499 de lanzamiento</li>
-          <li>Precio fundador congelado de por vida · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=combo_fundador" class="btn btn-blue">Quiero el combo</a>
       </div>
       <div class="tier reveal">
         <h3>Apertura completo</h3>
@@ -888,6 +889,20 @@
         <a href="/checkout.html?plan=mx_apertura" class="btn btn-dim">Todo el torneo</a>
       </div>
     </div>
+    <div class="combo3 reveal">
+      <div>
+        <div class="combo3-tag">Los 3 modelos · 1 sola suscripción</div>
+        <h3>MLB + Liga MX + NFL</h3>
+        <p>Beisbol todos los días, la jornada de Liga MX cada semana y la NFL completa cada domingo. <strong>Todo el año hay picks.</strong> Un solo pago al mes, cancela cuando quieras.</p>
+      </div>
+      <div class="combo3-buy">
+        <span class="combo3-was" data-mxn="$1,397 MXN" data-usd="$76.99 USD">$1,397 MXN</span>
+        <div class="combo3-price" data-mxn="$799<small> MXN/mes</small>" data-usd="$43.99<small> USD/mes</small>">$799<small> MXN/mes</small></div>
+        <a href="/checkout.html?plan=combo_fundador" class="combo3-btn">Quiero los 3</a>
+        <span class="combo3-mini">Ahorras $598 cada mes</span>
+      </div>
+    </div>
+
     <p class="launch-note reveal">La garantía es la misma de la casa: <strong>jornada perdedora = semana gratis.</strong> El riesgo lo carga el modelo, no tú.</p>
   </div>
 </section>
