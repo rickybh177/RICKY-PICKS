@@ -2,6 +2,7 @@
    Verifica la sesión de Stripe y otorga el plan al usuario. */
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
+const { cancelOtherRecurring } = require('../lib/cancel-recurring');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -23,6 +24,12 @@ module.exports = async function handler(req, res) {
     if (!userId || !plan) return res.status(400).json({ error: 'Metadatos inválidos.' });
 
     await grantEntitlement(userId, plan);
+    /* Upgrade al Combo Total: cancelar la suscripción anterior
+       (combo legado o mensual individual) para no cobrar doble. */
+    if (plan === 'combo_total') {
+      const email = (session.customer_details && session.customer_details.email) || session.customer_email;
+      await cancelOtherRecurring(userId, email, 'combo_total');
+    }
     return res.status(200).json({ ok: true, plan });
   } catch (e) {
     console.error('stripe-capture:', e);

@@ -214,6 +214,14 @@
       <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
     </div>
     <div class="meta-band" id="metaBand"></div>
+    <!-- Upgrade para el combo legado (MLB+Liga MX): agregar NFL -->
+    <div id="comboUpgrade" style="display:none;position:relative;margin:14px 0 0;background:linear-gradient(135deg,#12203f,#0e1729);color:#e9edf4;border:1px solid rgba(120,160,255,0.3);border-radius:14px;padding:18px 20px">
+      <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem;background:none;border:none;cursor:pointer">✕</button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8fb0f5;margin-bottom:8px">Tu combo puede crecer</div>
+      <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Agrega la NFL a tu combo 🏈</div>
+      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> por <strong style="color:#fff">$300 más al mes</strong> ($799 en total) y llévate también la NFL completa. Tu suscripción actual se cancela sola: nunca pagas doble.</div>
+      <a href="/checkout.html?plan=combo_total" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Subir al Combo Total — $799/mes</a>
+    </div>
     <div class="guest-bar" id="guestBar" style="display:none">
       <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
       <a class="gb-cta" href="/#precios-mx">Desbloquear la jornada</a>
@@ -643,6 +651,24 @@ $('lkGo').addEventListener('click', async () => {
 $('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
 
 $('refreshBtn').addEventListener('click', () => load(true));
+
+/* Combo legado (MLB+MX): ofrecer el upgrade al Combo Total. */
+(async () => {
+  if (!sb) return;
+  try {
+    const { data } = await sb.auth.getSession();
+    if (!data || !data.session) return;
+    if (sessionStorage.getItem('comboUpgradeDismissed')) return;
+    const q = await sb.from('entitlements').select('plan,active').eq('active', true);
+    if ((q.data || []).some(r => r.active && r.plan === 'combo_fundador')) {
+      $('comboUpgrade').style.display = 'block';
+      $('comboUpgradeClose').addEventListener('click', () => {
+        sessionStorage.setItem('comboUpgradeDismissed', '1');
+        $('comboUpgrade').style.display = 'none';
+      });
+    }
+  } catch (e) {}
+})();
 $('guestLogin').addEventListener('click', e => { e.preventDefault(); showLock(''); });
 
 /* Al volver del pago (?pago=ok): el webhook puede tardar unos

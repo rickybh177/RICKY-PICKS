@@ -8,6 +8,7 @@
 const crypto = require('crypto');
 const { PLANS } = require('../lib/plans');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
+const { cancelOtherRecurring } = require('../lib/cancel-recurring');
 
 // Validación opcional de firma (recomendada). Si configuras
 // MP_WEBHOOK_SECRET, se rechazan las notificaciones sin firma válida.
@@ -88,6 +89,10 @@ module.exports = async function handler(req, res) {
       }
       await grantEntitlement(userId, planId);
       console.log(`mp-webhook: suscripción ${type === 'subscription_preapproval' ? 'alta' : 'renovación'} — user_id=${userId} plan=${planId} preapproval=${preapprovalId}`);
+      /* Upgrade al Combo Total: apagar la suscripción anterior. */
+      if (planId === 'combo_total') {
+        await cancelOtherRecurring(userId, pre.payer_email || null, 'combo_total');
+      }
       return res.status(200).end();
     } catch (e) {
       console.error('mp-webhook (suscripción):', e);

@@ -292,7 +292,17 @@ const PLANS = {
     ],
   },
   combo_fundador: {
-    name: 'Combo 3 modelos — MLB + Liga MX + NFL',
+    name: 'Combo MLB + Liga MX (legado)',
+    price: '$499',
+    currency: 'MXN',
+    period: 'Este plan ya no se vende — mira el Combo Total',
+    features: [
+      'Modelo MLB completo + Modelo Liga MX completo',
+      'Si ya lo tienes, tu precio se respeta',
+    ],
+  },
+  combo_total: {
+    name: 'Combo Total — MLB + Liga MX + NFL',
     price: '$799',
     currency: 'MXN',
     period: 'Suscripción mensual · los TRES modelos completos',
@@ -301,6 +311,7 @@ const PLANS = {
       'Modelo Liga MX completo: toda la jornada, cada semana',
       'Modelo NFL completo: los 16 juegos de cada jornada',
       'Por separado costarían $1,397 al mes — ahorras $598',
+      'Si vienes del combo anterior, tu suscripción vieja se cancela sola: nunca pagas doble',
       'Se renueva solo · cancela cuando quieras',
     ],
   },
@@ -475,7 +486,7 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
    combo_* -> mlb+mx, resto -> mundial. */
 function productsOf(p){
   p = p || '';
-  if(p === 'circulo_fundador') return ['mlb','mx','nfl'];
+  if(p === 'circulo_fundador' || p === 'combo_total') return ['mlb','mx','nfl'];
   if(p.startsWith('combo_')) return ['mlb','mx'];
   if(p.startsWith('mlb_')) return ['mlb'];
   if(p.startsWith('mx_')) return ['mx'];
@@ -521,7 +532,7 @@ async function renderSession(session){
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
      solo una pata SÍ se permite (es el upgrade). */
-  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_fundador','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_fundador','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','circulo_fundador'] };
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_total','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','combo_total','circulo_fundador'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
   const covered = ent && !buyingCombo &&
@@ -537,7 +548,7 @@ async function renderSession(session){
      se refleja en el precio ANTES de pagar. El cobro real ya lo
      descuenta el servidor (cupón de una vez, solo con tarjeta). */
   const upgradeCredit = (target, e) => {
-    if(!e || !e.updated_at || (target !== 'mlb_fundador' && target !== 'combo_fundador')) return 0;
+    if(!e || !e.updated_at || (target !== 'mlb_fundador' && target !== 'combo_total')) return 0;
     const age = Date.now() - Date.parse(e.updated_at);
     if(e.plan === 'mlb_semana' && age <= 48*3600e3) return 149;
     if(e.plan === 'mlb_pase'   && age <= 24*3600e3) return 99;
@@ -545,7 +556,7 @@ async function renderSession(session){
   };
   const credit = upgradeCredit(planId, ent);
   if(credit > 0){
-    const full = planId === 'combo_fundador' ? 499 : 399;
+    const full = planId === 'combo_total' ? 799 : 399;
     document.getElementById('summaryPrice').innerHTML =
       `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$${full}</span> $${full - credit} MXN`;
     document.getElementById('summaryName').textContent =

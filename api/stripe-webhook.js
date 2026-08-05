@@ -19,6 +19,7 @@
    ============================================================ */
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
+const { cancelOtherRecurring } = require('../lib/cancel-recurring');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -51,6 +52,10 @@ module.exports = async function handler(req, res) {
       if (meta.user_id && meta.plan && (s.payment_status === 'paid' || s.status === 'complete')) {
         await grantEntitlement(meta.user_id, meta.plan);
         console.log('stripe-webhook: alta inicial', meta.user_id, meta.plan);
+        if (meta.plan === 'combo_total') {
+          const email = (s.customer_details && s.customer_details.email) || s.customer_email;
+          await cancelOtherRecurring(meta.user_id, email, 'combo_total');
+        }
       }
     } else if (event.type === 'invoice.paid') {
       // Renovación mensual: la metadata vive en la suscripción.
