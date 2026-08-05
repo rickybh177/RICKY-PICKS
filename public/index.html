@@ -174,8 +174,11 @@
   .pc-pick .odds { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.74rem; color: var(--muted); }
   .pc-foot { display: flex; justify-content: space-between; margin-top: 13px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); letter-spacing: 0.04em; }
   .pc-cta { margin-top: 16px; text-align: center; }
+  .pc-cta .pc-cta-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
   .pc-cta a { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.98rem; padding: 15px 32px; border-radius: 12px; box-shadow: 0 16px 44px -14px rgba(76,125,240,0.6); transition: transform .15s ease, background .15s ease; }
   .pc-cta a:hover { transform: translateY(-2px); background: var(--blue); }
+  .pc-cta a.pc-cta-ghost { background: rgba(255,255,255,0.06); color: var(--text, #fff); border: 1px solid rgba(255,255,255,0.22); box-shadow: none; }
+  .pc-cta a.pc-cta-ghost:hover { background: rgba(255,255,255,0.12); }
   .pc-cta .mini { display: block; margin-top: 10px; color: var(--faint); font-size: 0.74rem; font-weight: 500; }
 
   /* ============ SECCIONES ============
@@ -479,7 +482,7 @@
       <div class="hero-sub">Un modelo para la Liga MX, otro para la NFL y otro para MLB. Cada uno simula el partido antes de que empiece y te dice a qué entrarle. Y a qué no.</div>
       <div class="hero-ctas">
         <a href="#precios-mx" class="hero-cta">⚽ Ver Liga MX</a>
-        <a href="/nfl.html" class="hero-cta">🏈 Ver NFL</a>
+        <a href="#precios-nfl" class="hero-cta">🏈 Ver NFL</a>
         <a href="#precios" class="hero-cta">⚾ Ver MLB</a>
       </div>
     </div>
@@ -518,7 +521,10 @@
           </div>
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
-          <a href="#precios-nfl" id="heroFreeBtn">Preseason gratis</a>
+          <div class="pc-cta-row">
+            <a href="#precios-nfl" id="heroFreeBtn">Preseason gratis</a>
+            <a href="/nfl.html" class="pc-cta-ghost">Ver pick completo</a>
+          </div>
           <span class="mini">Sé de los primeros. Precio fundador congelado de por vida — los que lleguen después pagarán más.</span>
         </div>
       </div>
