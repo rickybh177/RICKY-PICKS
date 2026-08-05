@@ -100,8 +100,6 @@
   /* ============ HERO (director de scroll, videos reutilizados) ============ */
   .stage { height: 420vh; position: relative; background: var(--g0); }
   .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
-  .vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: opacity; }
-  .vid.v1 { opacity: 1; }
   /* Hero en TRES paneles: Liga MX · NFL · MLB.
      Cada panel recorta una imagen renderizada a ~3x su ancho, así el
      sujeto de cada una queda centrado en su tercio sin desbordarse. */
@@ -410,12 +408,11 @@
     .wrap { padding: 0 16px; }
     section { padding: 68px 0; }
     .stage { height: 460vh; }
-    .vid { object-position: 50% 68%; }
     /* Hero dividido en vertical: Liga MX arriba, MLB abajo */
     /* Los tres paneles se apilan: Liga MX arriba, NFL en medio, MLB abajo */
     .hero-thirds { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
     .hero-third img, .hero-third.mx img, .hero-third.mlb img { left: 0; width: 100%; height: 100%; }
-    .hero-third.nfl img { object-position: 50% 18%; }
+    .hero-third.nfl img { object-position: 50% 47%; } /* centra el escudo: mide 31%-66% de la imagen */
     .third-line { left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
     .third-line.l1 { top: 33.333%; }
     .third-line.l2 { top: 66.666%; }
