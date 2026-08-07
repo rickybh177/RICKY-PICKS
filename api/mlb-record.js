@@ -65,8 +65,13 @@ function gradePick(pick, ctx) {
     case 'ML':
       return (pick.sel === 'home') === (hs > as) ? 1 : 0;
     case 'RL': {
+      // sel: "home -1.5" / "away +2.5" — cualquier línea del mercado
       const margin = pick.sel.startsWith('home') ? hs - as : as - hs;
-      return pick.sel.includes('-1.5') ? (margin >= 2 ? 1 : 0) : (margin >= -1 ? 1 : 0);
+      const mt = pick.sel.match(/[-+]\d+(\.\d+)?/);
+      const point = mt ? parseFloat(mt[0]) : -1.5;
+      const adj = margin + point;
+      if (adj === 0) return null; // push en línea entera
+      return adj > 0 ? 1 : 0;
     }
     case 'TOTAL': {
       const line = parseFloat(pick.sel.split(' ')[1]);

@@ -386,11 +386,14 @@ function metaRow(g) {
 
 function teamRows(g) {
   const live = g.abstract_state === 'Live', final = g.abstract_state === 'Final';
+  // Antes de que el equipo confirme su lineup, el abridor es el PROBABLE
+  // oficial de MLB (statsapi.mlb.com) y puede cambiar — se etiqueta claro.
+  const confirmed = g.lineups_confirmed || live || final;
   const row = (t, p, score) =>
     '<div class="team-row">' +
     '<img src="' + logoUrl(t.id) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
     '<div class="team-name">' + esc(t.name) + '<span class="rec2">' + esc(t.record || '') + '</span>' +
-    '<span class="pit">' + (p ? 'Abre ' + esc(p.name) : 'Pitcher por anunciar') + '</span></div>' +
+    '<span class="pit">' + (p ? (confirmed ? 'Abre ' : 'Probable: ') + esc(p.name) : 'Pitcher por anunciar') + '</span></div>' +
     '<div class="team-score">' + (score != null && (live || final) ? score : '') + '</div>' +
     '</div>';
   return row(g.away, g.pitchers && g.pitchers.away, g.away.score) + row(g.home, g.pitchers && g.pitchers.home, g.home.score);
@@ -430,7 +433,7 @@ function gameCard(g, i, isFree) {
 /* card bloqueada: los "veredictos" de abajo son DECORATIVOS
    (el servidor nunca mandó los reales) */
 function lockedCard(g, i, day) {
-  const fake = ['Ganador del juego', 'Carreras totales', 'Primeras 5 entradas', '1ª entrada']
+  const fake = ['Ganador del juego', 'Hándicap del juego', 'Carreras totales', 'Primeras 5 entradas', '1ª entrada']
     .map(l => '<div class="vrow"><span class="vl">' + l + '</span><span class="vchip maybe">····</span></div>').join('');
   return '<div class="card" style="--i:' + i + '">' +
     metaRow(g) + teamRows(g) +
@@ -452,11 +455,22 @@ function moreDetails(g) {
     '<div class="det-row"><span class="dl">' + esc(v.label) + '</span>' +
     '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
   ).join('');
-  const rlFavHome = m.run_line.home_minus_1_5 >= m.run_line.away_minus_1_5;
-  const rlProb = Math.max(m.run_line.home_minus_1_5, m.run_line.away_minus_1_5);
-  const extra =
-    '<div class="det-row"><span class="dl">' + esc(rlFavHome ? g.home.name : g.away.name) + ' ganan por 2 o más</span>' +
-    '<span class="dv">' + pct(rlProb) + ' · MOMIO JUSTO ' + amOdds(rlProb) + '</span></div>' +
+  /* Handicap: con línea REAL del mercado se muestran los dos lados en
+     esa línea exacta; sin mercado, el resumen ±1.5 del modelo. */
+  let rlRows;
+  const rlm = m.run_line_market;
+  if (rlm && rlm.point != null) {
+    const fmtPt = p => (p > 0 ? '+' + p : '' + p);
+    rlRows =
+      '<div class="det-row"><span class="dl">' + esc(g.home.name) + ' ' + fmtPt(rlm.point) + '</span>' +
+      '<span class="dv">' + pct(rlm.home_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.home_cover) + '</span></div>' +
+      '<div class="det-row"><span class="dl">' + esc(g.away.name) + ' ' + fmtPt(-rlm.point) + '</span>' +
+      '<span class="dv">' + pct(rlm.away_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.away_cover) + '</span></div>';
+  } else {
+    // sin mercado el veredicto RL de arriba ya muestra el ±1.5 del modelo
+    rlRows = '';
+  }
+  const extra = rlRows +
     '<div class="det-row"><span class="dl">Carreras esperadas</span>' +
     '<span class="dv">' + esc(g.away.abbr) + ' ' + m.expected.away_runs + ' — ' + esc(g.home.abbr) + ' ' + m.expected.home_runs + '</span></div>';
   return '<details class="more"><summary>Detalle y momios</summary>' +

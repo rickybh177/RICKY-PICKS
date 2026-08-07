@@ -22,7 +22,7 @@
 
 const { fetchJson, BASE } = require('../lib/mlb/statsapi');
 const { parkFor, weatherMods } = require('../lib/mlb/parks');
-const { FALLBACK_LEAGUE, precomputeSide, simulateGame, marketsFromAgg } = require('../lib/mlb/engine');
+const { FALLBACK_LEAGUE, precomputeSide, simulateGame, marketsFromAgg, setCalibration } = require('../lib/mlb/engine');
 const { ratesFromHitting, ratesFromPitching, shrink } = require('../lib/mlb/model');
 const fs = require('fs');
 
@@ -191,6 +191,7 @@ function firstInningRuns(g) {
   const odds = loadOdds(args.odds);
   const cacheBullpen = new Map();
   const rows = [];
+  const sweepInputs = [];
   let skipped = 0;
 
   for (const date of dateRange(START, END)) {
@@ -214,6 +215,9 @@ function firstInningRuns(g) {
         away: { grid: precomputeSide(awaySide, data.lg, mods), starterAvgBF: awaySide.starterAvgBF },
       };
       const m = marketsFromAgg(simulateGame(pre, N_SIMS, g.gamePk));
+
+      // insumos crudos para el sweep de calibración (re-simular sin re-bajar datos)
+      sweepInputs.push({ homeSide, awaySide, lg: data.lg, mods, gamePk: g.gamePk });
 
       rows.push({
         date, gamePk: g.gamePk,
@@ -324,4 +328,44 @@ function firstInningRuns(g) {
   const outFile = args.out || 'mlb-backtest-results.json';
   fs.writeFileSync(outFile, JSON.stringify(rows, null, 1));
   console.log(`\nDetalle por juego: ${outFile}`);
+
+  /* ---- SWEEP de calibración: re-simula los mismos juegos con
+     distintos CAL_EVENT (y opcionalmente INN1_MULT) sin volver a
+     bajar datos. Uso: --sweep "1.026,1.0,0.98,0.96" [--inn1 1.0] ---- */
+  if (args.sweep) {
+    const inn1 = args.inn1 != null ? Number(args.inn1) : undefined;
+    console.log(`\n════════ SWEEP CAL_EVENT ${inn1 != null ? `(INN1_MULT=${inn1})` : '(INN1_MULT default)'} ════════`);
+    console.log('cal     expTot  realTot  O/U@línea  Brier ML  NRFI mod/real');
+    const realTotAvg = rows.reduce((a, r) => a + r.actualTotal, 0) / rows.length;
+    for (const calStr of String(args.sweep).split(',')) {
+      const cal = Number(calStr);
+      if (!Number.isFinite(cal)) continue;
+      setCalibration({ event: cal, inn1 });
+      let expSum = 0, brier = 0, ouBets = 0, ouWins = 0, noRunSum = 0, nrN = 0, realNoRun = 0;
+      rows.forEach((r, i) => {
+        const si = sweepInputs[i];
+        const pre = {
+          home: { grid: precomputeSide(si.homeSide, si.lg, si.mods), starterAvgBF: si.homeSide.starterAvgBF },
+          away: { grid: precomputeSide(si.awaySide, si.lg, si.mods), starterAvgBF: si.awaySide.starterAvgBF },
+        };
+        const m = marketsFromAgg(simulateGame(pre, N_SIMS, si.gamePk));
+        expSum += m.expected.total;
+        brier += (m.moneyline.home - r.homeWon) ** 2;
+        if (r.actualTotal !== m.total.line) {
+          ouBets++;
+          const betOver = m.total.over >= 0.5;
+          if ((betOver && r.actualTotal > m.total.line) || (!betOver && r.actualTotal < m.total.line)) ouWins++;
+        }
+        if (r.inn1 !== null) {
+          noRunSum += m.nrfi.no_run; nrN++;
+          if (r.inn1 === 0) realNoRun++;
+        }
+      });
+      console.log(
+        `${cal.toFixed(3)}   ${(expSum / rows.length).toFixed(2)}   ${realTotAvg.toFixed(2)}     ` +
+        `${(100 * ouWins / (ouBets || 1)).toFixed(1)}%     ${(brier / rows.length).toFixed(4)}    ` +
+        `${(100 * noRunSum / (nrN || 1)).toFixed(1)}%/${(100 * realNoRun / (nrN || 1)).toFixed(1)}%`
+      );
+    }
+  }
 })().catch(e => { console.error(e); process.exit(1); });
