@@ -619,8 +619,8 @@
 <section id="precios-nfl">
   <div class="wrap">
     <div class="sec-eyebrow reveal">Nuevo · Temporada 26-27</div>
-    <h2 class="sec-title reveal">La pretemporada va gratis con el Mensual o la Temporada completa.</h2>
-    <p class="sec-lede reveal">Entra ahora y los picks de toda la pretemporada no te cuestan: tu plan empieza a correr cuando arranca la temporada regular.</p>
+    <h2 class="sec-title reveal">Toda la temporada de la NFL, jornada por jornada.</h2>
+    <p class="sec-lede reveal">Tu plan cubre la <strong>temporada 26-27 completa</strong>: los 16 juegos de cada jornada con spread, total, moneyline y props de QB. Y como extra por entrar ahora, la pretemporada va de regalo — tu plan no empieza a correr hasta el kickoff de la temporada regular.</p>
     <div class="cur-toggle reveal" role="tablist" aria-label="Moneda">
       <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
       <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
@@ -630,7 +630,7 @@
         <h3>Semana de prueba</h3>
         <div class="was"></div>
         <div class="amt" data-mxn="$199<small>MXN</small>" data-usd="$10.99<small>USD</small>">$199<small>MXN</small></div>
-        <div class="per">7 días · la jornada completa</div>
+        <div class="per">7 días · una jornada, para probar el modelo</div>
         <ul>
           <li><strong>¿Primera vez con el modelo?</strong> Empieza aquí</li>
           <li>Los 16 juegos de la jornada, no solo el destacado</li>
@@ -639,28 +639,28 @@
         <a href="/checkout.html?plan=nfl_semana" class="btn btn-dim">Probar 7 días</a>
       </div>
       <div class="tier featured reveal">
-        <span class="flag">Pretemporada gratis</span>
+        <span class="flag">Fundador</span>
         <h3>Mensual Fundador</h3>
         <div class="was" data-mxn="$799 MXN" data-usd="$43.99 USD">$799 MXN</div>
         <div class="amt" data-mxn="$599<small>MXN</small>" data-usd="$32.99<small>USD</small>">$599<small>MXN</small></div>
-        <div class="per">Suscripción mensual · precio congelado de por vida</div>
+        <div class="per">La temporada completa, mes a mes</div>
         <ul>
-          <li><strong>Toda la pretemporada, gratis</strong></li>
-          <li>Todas las jornadas, cada semana</li>
-          <li>Spread, total, moneyline y props de QB</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
+          <li><strong>Todas las jornadas de la temporada regular</strong>, cada semana</li>
+          <li>Los 16 juegos: spread, total, moneyline y props de QB</li>
+          <li><strong>Extra por entrar ahora:</strong> la pretemporada completa, gratis</li>
+          <li>Precio fundador congelado · cancela cuando quieras</li>
         </ul>
         <a href="/checkout.html?plan=nfl_fundador" class="btn btn-blue">Ser fundador</a>
       </div>
       <div class="tier reveal">
-        <span class="flag flag-alt">Pretemporada gratis</span>
+        <span class="flag flag-alt">Todo incluido</span>
         <h3>Temporada 26-27</h3>
         <div class="was" data-mxn="$2,999 MXN" data-usd="$164.99 USD">$2,999 MXN</div>
         <div class="amt" data-mxn="$1,699<small>MXN</small>" data-usd="$93.99<small>USD</small>">$1,699<small>MXN</small></div>
-        <div class="per">Hasta el Super Bowl · pago único</div>
+        <div class="per">De la jornada 1 al Super Bowl · pago único</div>
         <ul>
-          <li><strong>Toda la pretemporada, gratis</strong></li>
-          <li>Temporada regular + playoffs + Super Bowl</li>
+          <li><strong>Temporada regular completa + playoffs + Super Bowl</strong></li>
+          <li><strong>Extra por entrar ahora:</strong> la pretemporada completa, gratis</li>
           <li>Sin renovaciones: pagas una vez y listo</li>
         </ul>
         <a href="/checkout.html?plan=nfl_temporada" class="btn btn-dim">Toda la temporada</a>
@@ -1128,11 +1128,12 @@
 
   // HERO: pick gratis de NFL — arranca la temporada, así que es lo
   // primero que debe ver quien llega al sitio. Toma el juego destacado
-  // de la pretemporada (el mismo que ve un invitado sin plan en
-  // /nfl.html: el resto de la jornada queda bloqueado del lado del
-  // servidor). Si no hay pretemporada corriendo, cae a MLB.
+  // de la SEMANA EN CURSO (sin st fijo: el API sigue el calendario
+  // solo — pretemporada hoy, temporada regular después; el pick
+  // gratis rota semana con semana). Si el pick de la semana ya se
+  // jugó, se dice de frente. Sin NFL corriendo, cae a MLB.
   let mlbFallbackHero = null;
-  function applyNflHero(g) {
+  function applyNflHero(g, wk) {
     set('pcAwayName', g.away.name); set('pcAwayPit', g.away.city || '');
     set('pcHomeName', g.home.name); set('pcHomePit', g.home.city || '');
     const ml = (g.markets && g.markets.moneyline) || {};
@@ -1145,10 +1146,12 @@
     const ba = document.getElementById('pcBarA'), bh = document.getElementById('pcBarH');
     if (ba) ba.style.width = (ml.away * 100) + '%';
     if (bh) bh.style.width = (ml.home * 100) + '%';
+    const played = g.state === 'post';
+    const weekTxt = wk ? (wk.phase === 'pretemporada' ? 'pretemp ' + wk.week : 'semana ' + wk.week) : '';
     const tag = document.getElementById('pcTag');
-    if (tag) tag.textContent = 'Pick gratis · NFL' + (g.preseason ? ' (pretemporada)' : '');
+    if (tag) tag.textContent = 'Pick gratis · NFL' + (weekTxt ? ' · ' + weekTxt : '') + (played ? ' · ya se jugó' : '');
     const dt = new Date(g.date);
-    set('pcDate', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
+    set('pcDate', played ? 'FINAL' : dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
     const verdicts = g.verdicts || [];
     const pick = verdicts.find(v => v.verdict === 'bet') || verdicts.find(v => v.verdict === 'maybe') || verdicts[0];
     if (pick) {
@@ -1157,15 +1160,19 @@
       const chip = document.querySelector('#pickcard .vchip');
       if (chip) chip.textContent = (pick.verdict || 'bet').toUpperCase();
     }
-    set('pcSims', '10,000 SIMULACIONES' + (g.neutral ? ' · SEDE NEUTRAL' : ''));
+    if (played && g.score) {
+      set('pcSims', 'MARCADOR FINAL ' + g.score.away + '-' + g.score.home + ' · LA SEMANA COMPLETA VIVE EN EL MODELO');
+    } else {
+      set('pcSims', '10,000 SIMULACIONES' + (g.neutral ? ' · SEDE NEUTRAL' : ''));
+    }
     set('pcVenue', (g.venue || '').toUpperCase());
   }
-  fetch('/api/nfl-picks?st=1&as=guest')
+  fetch('/api/nfl-picks?as=guest')
     .then(r => r.ok ? r.json() : null)
     .then(d => {
       const g = d && d.games && d.games.find(x => x.id === d.featured_id);
-      if (g) applyNflHero(g);
-      else applyTo('pc', mlbFallbackHero || fallback); // sin pretemporada NFL: cae a MLB
+      if (g) applyNflHero(g, d);
+      else applyTo('pc', mlbFallbackHero || fallback); // sin NFL corriendo: cae a MLB
     })
     .catch(() => { applyTo('pc', mlbFallbackHero || fallback); });
 })();
@@ -1176,12 +1183,14 @@
 (function () {
   const $ = id => document.getElementById(id);
   const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
-  fetch('/api/nfl-picks?st=1&as=guest')
+  fetch('/api/nfl-picks?as=guest')
     .then(r => r.ok ? r.json() : null)
     .then(d => {
       const g = d && d.games && d.games.find(x => x.id === d.featured_id);
       if (!g) { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; return; }
-      $('ncTag').textContent = g.preseason ? 'PRETEMPORADA' : ('SEMANA ' + (d.week || ''));
+      const played = g.state === 'post';
+      $('ncTag').textContent = (g.preseason ? 'PRETEMPORADA ' : 'SEMANA ') + (d.week || '') +
+        (played ? ' · PICK YA JUGADO' : '');
       $('ncAwayName').textContent = g.away.name;
       $('ncHomeName').textContent = g.home.name;
       $('ncAwaySub').textContent = g.away.city || '';
@@ -1203,7 +1212,9 @@
         $('ncPickSel').textContent = pick.label;
         $('ncPickOdds').textContent = pct(pick.prob);
       }
-      $('ncVenue').textContent = (g.venue || '').toUpperCase();
+      $('ncVenue').textContent = played && g.score
+        ? 'FINAL ' + g.score.away + '-' + g.score.home + ' · LOS DEMÁS PARTIDOS SIGUEN EN EL MODELO COMPLETO'
+        : (g.venue || '').toUpperCase();
     })
     .catch(() => { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; });
 })();

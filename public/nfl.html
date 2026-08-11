@@ -196,7 +196,7 @@
 
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Mensual $599 con <strong>toda la pretemporada gratis</strong>. <a href="/#terminos">Ver términos</a></small></div>
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Mensual $599: <strong>toda la temporada</strong>, y la pretemporada de regalo. <a href="/#terminos">Ver términos</a></small></div>
     <div class="acts">
       <a class="day" href="/checkout.html?plan=nfl_semana">Semana $199</a>
       <a class="founder" href="/checkout.html?plan=nfl_fundador">Fundador $599</a>
@@ -284,11 +284,24 @@ function renderMeta(wk) {
 let lastWk = null;
 function renderWeek(wk) {
   lastWk = wk;
-  const games = wk.games || [];
+  const all = (wk.games || []).filter(g => !g.error);
   const guest = wk.access === 'guest';
   $('plansBanner').classList.toggle('on', guest);
+
+  /* la página siempre al día: los partidos ya jugados no se muestran.
+     Única excepción: el pick gratis de la semana para el invitado —
+     ese sí aparece aunque ya se haya jugado, con su aviso, porque es
+     SU pick de la semana (uno solo, no se re-elige). */
+  const games = all.filter(g =>
+    g.state !== 'post' || (guest && g.id === wk.featured_id));
+
   if (!games.length) {
-    $('games').innerHTML = '<div class="state"><h2>Sin juegos esta semana</h2>Muévete de semana con las flechas de arriba.</div>';
+    const played = all.length > 0; // había juegos, pero ya pasaron todos
+    $('games').innerHTML = '<div class="state"><h2>' +
+      (played ? 'Esta semana ya se jugó' : 'Sin juegos esta semana') +
+      '</h2>' +
+      (played ? 'Pasa a la semana siguiente con la flecha › de arriba.' : 'Muévete de semana con las flechas de arriba.') +
+      '</div>';
     return;
   }
   /* invitado: el destacado primero (es el gratis), luego los bloqueados */
@@ -300,7 +313,7 @@ function renderWeek(wk) {
     return (b.strength || 0) - (a.strength || 0);
   });
   $('games').innerHTML = sorted.map((g, i) =>
-    g.error ? '' : (g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === wk.featured_id))
+    g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === wk.featured_id)
   ).join('');
 }
 
@@ -360,11 +373,20 @@ function gameCard(g, i, isFree) {
   const analysis = g.analysis
     ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
     : '';
+  /* el pick gratis ya se jugó: decirlo de frente y mandar al modelo
+     completo, donde vive el resto de la semana */
+  const playedNote = (isFree && g.state === 'post')
+    ? '<div class="lock-cta" style="margin-top:12px">' +
+        '<div class="lk">✅</div>' +
+        '<div class="t">El pick gratis de esta semana ya se jugó. Los demás partidos de la semana siguen vivos en el modelo completo.</div>' +
+        '<a href="/checkout.html?plan=nfl_fundador">Desbloquear la semana — Fundador $599</a>' +
+      '</div>'
+    : '';
   return '<div class="card" style="--i:' + i + '">' +
-    (isFree ? '<span class="freeflag">Pick gratis de la jornada</span>' : '') +
+    (isFree ? '<span class="freeflag">Pick gratis de la ' + (currentST === 1 ? 'pretemporada' : 'semana') + (g.state === 'post' ? ' · ya se jugó' : '') + '</span>' : '') +
     metaRow(g) + teamRows(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
-    analysis + moreDetails(g) +
+    playedNote + analysis + moreDetails(g) +
   '</div>';
 }
 

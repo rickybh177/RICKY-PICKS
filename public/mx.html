@@ -338,7 +338,11 @@ function renderBoard(bd) {
   featuredId = bd.featured_id || null;
   gamesById = {};
   (bd.games || []).forEach(g => { if (!g.error) gamesById[g.id] = g; });
-  const games = (bd.games || []).filter(g => !g.error);
+  /* la página siempre al día: los partidos ya jugados no se muestran
+     (el destacado gratis sí, aunque haya terminado — es el pick de
+     la jornada del invitado) */
+  const games = (bd.games || []).filter(g =>
+    !g.error && (g.state !== 'post' || g.id === featuredId));
   if (!games.length) {
     $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La Liga MX descansa. Vuelve cerca de la próxima jornada.</div>';
     return;

@@ -15,6 +15,7 @@
 const { buildWeek } = require('../lib/nfl/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
+const { kvGet, kvPut } = require('../lib/odds/theoddsapi');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -22,13 +23,39 @@ const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 const _cache = new Map(); // week -> { at, value }
 const TTL = 5 * 60 * 1000;
 
-/* El juego destacado de la jornada = el del pick con más
-   convicción entre los que aún no empiezan. */
-function featuredId(games) {
-  const pool = (games || []).filter(g => g.state === 'pre');
-  const list = pool.length ? pool : (games || []);
+/* ---- pick gratis: UNO por semana ----
+   Regla: mientras el destacado NO haya arrancado, es el juego con
+   el pick más probable estadísticamente (los BET mandan) y puede
+   re-elegirse si llegan momios que revelan uno mejor. En cuanto
+   patea, queda CONGELADO toda la semana (persistido en el bucket
+   de Supabase Storage): si ya se jugó, el frontend lo dice y manda
+   al modelo completo. Antes se re-elegía entre los juegos por
+   empezar y cada juego jugado regalaba un pick nuevo — el pick
+   gratis debe rotar semana con semana, no día con día. */
+function pickBest(list) {
   if (!list.length) return null;
-  return list.reduce((a, b) => ((b.strength || 0) > (a.strength || 0) ? b : a)).id;
+  const score = g => {
+    const vs = g.verdicts || [];
+    const bestBet = Math.max(0, ...vs.filter(v => v.verdict === 'bet').map(v => v.prob || 0));
+    const bestAny = Math.max(0, ...vs.map(v => v.prob || 0));
+    return bestBet * 10 + bestAny; // los BET mandan; desempate por probabilidad
+  };
+  return list.reduce((a, b) => (score(b) > score(a) ? b : a)).id;
+}
+
+async function resolveFeatured(value) {
+  const games = (value.games || []).filter(g => !g.error);
+  if (!games.length) return null;
+  const kvKey = `nfl-free-${value.season}-st${value.seasontype}-w${value.week}`;
+  const saved = await kvGet(kvKey);
+  const savedGame = saved && saved.id ? games.find(g => g.id === saved.id) : null;
+  // ya arrancó o terminó: fijo, aunque sus momios hayan desaparecido
+  if (savedGame && savedGame.state !== 'pre') return savedGame.id;
+  // aún no arranca: elegir el más probable entre los POR JUGAR
+  const pool = games.filter(g => g.state === 'pre');
+  const id = pickBest(pool.length ? pool : games);
+  if (id && (!savedGame || savedGame.id !== id)) await kvPut(kvKey, { id });
+  return id || (savedGame ? savedGame.id : null);
 }
 
 /* Versión censurada de un juego para invitados: se queda lo que
@@ -87,7 +114,7 @@ module.exports = async function handler(req, res) {
       value = hit.value;
     } else {
       value = await buildWeek(week, st);
-      value.featured_id = featuredId(value.games || []);
+      value.featured_id = await resolveFeatured(value);
       _cache.set(key, { at: Date.now(), value });
       if (key === 'auto:auto') _cache.set(value.seasontype + ':' + value.week, { at: Date.now(), value });
     }
