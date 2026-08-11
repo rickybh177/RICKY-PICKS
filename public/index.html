@@ -449,7 +449,7 @@
     <div class="nav-right">
       <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
       <a href="/nfl.html" class="nav-link" id="nflNavBtn">NFL</a>
-      <button class="nav-link soon" id="mlbNavBtn">MLB</button>
+      <a href="/mlb.html" class="nav-link" id="mlbNavBtn">MLB</a>
       <a href="#precios" class="nav-link">Precios</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
       <button id="authBtn" class="nav-ghost">Entrar</button>
@@ -480,9 +480,9 @@
       <h1 class="mega">Tres ligas, resueltas <em>número por número.</em></h1>
       <div class="hero-sub">Un modelo para la Liga MX, otro para la NFL y otro para MLB. Cada uno simula el partido antes de que empiece y te dice a qué entrarle. Y a qué no.</div>
       <div class="hero-ctas">
-        <a href="#precios-mx" class="hero-cta">⚽ Ver Liga MX</a>
-        <a href="#precios-nfl" class="hero-cta">🏈 Ver NFL</a>
-        <a href="#precios" class="hero-cta">⚾ Ver MLB</a>
+        <a href="/mx.html" class="hero-cta">⚽ Ver Liga MX</a>
+        <a href="/nfl.html" class="hero-cta">🏈 Ver NFL</a>
+        <a href="/mlb.html" class="hero-cta">⚾ Ver MLB</a>
       </div>
     </div>
 
@@ -521,8 +521,8 @@
         </div>
         <div class="pc-piece pc-cta" data-piece="6">
           <div class="pc-cta-row">
-            <a href="#precios-nfl" id="heroFreeBtn">Preseason gratis</a>
-            <a href="/nfl.html" class="pc-cta-ghost">Ver pick completo</a>
+            <a href="/nfl.html" id="heroFreeBtn">Ver este pick gratis</a>
+            <a href="#precios-nfl" class="pc-cta-ghost">Ver planes</a>
           </div>
           <span class="mini">Sé de los primeros. Precio fundador congelado de por vida — los que lleguen después pagarán más.</span>
         </div>
@@ -579,8 +579,8 @@
         <h2 class="sec-title reveal">La NFL, resuelta antes del kickoff.</h2>
         <p class="sec-lede reveal">El mismo modelo, ahora en fútbol americano: 10,000 simulaciones por juego, spread, total, moneyline y props del QB. Este es el pick gratis de la jornada — la cartelera completa vive en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="#precios-nfl">Ver planes NFL</a>
-          <a class="btn-ghost" href="/nfl.html">Abrir el tablero gratis</a>
+          <a class="btn-primary" href="/nfl.html">Ver el pick gratis</a>
+          <a class="btn-ghost" href="#precios-nfl">Ver planes NFL</a>
         </div>
       </div>
       <div class="live-card-holder reveal" id="nflCardHolder">
@@ -692,8 +692,8 @@
         <h2 class="sec-title reveal">Free pick MLB.</h2>
         <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. El panel completo — todos los juegos, todos los picks — ya está en vivo. Entra hoy con precio fundador.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="#precios">Acceso fundador</a>
-          <a class="btn-ghost" href="#precios">Ver precios</a>
+          <a class="btn-primary" href="/mlb.html">Ver el pick gratis</a>
+          <a class="btn-ghost" href="#precios">Ver planes MLB</a>
         </div>
       </div>
       <div class="live-card-holder reveal">
@@ -814,8 +814,8 @@
         <h2 class="sec-title reveal">Free pick Liga MX.</h2>
         <p class="sec-lede reveal">El mismo cerebro, ahora en el Apertura 2026: el modelo resuelve cada partido marcador por marcador, pesa la altitud real de la sede y mide sus picks contra los momios del mercado. Este es el pick gratis de la jornada — la cartelera completa vive en el combo.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="#precios-mx">Ver planes Liga MX</a>
-          <a class="btn-ghost" href="/mx.html">Abrir el tablero gratis</a>
+          <a class="btn-primary" href="/mx.html">Ver el pick gratis</a>
+          <a class="btn-ghost" href="#precios-mx">Ver planes Liga MX</a>
         </div>
       </div>
       <div class="live-card-holder reveal" id="mxCardHolder">
@@ -1584,23 +1584,10 @@ document.getElementById('navFreeBtn').addEventListener('click', e => {
   e.preventDefault();
   window.location.href = '/mlb.html';
 });
-/* Nav "MLB": si ya tiene el modelo activo lo manda a /mlb.html;
-   si no, lo manda directo a comprarlo (sin avisos de "no lo tienes"
-   — menos fricción, más conversión). */
-let _hasMlbAccess = false;
-document.getElementById('mlbNavBtn').addEventListener('click', () => {
-  if (_hasMlbAccess) { window.location.href = '/mlb.html'; return; }
-  window.location.hash = 'precios';
-});
-async function checkMlbNavAccess(){
-  if (!_session) { _hasMlbAccess = false; return; }
-  try {
-    const res = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
-    if (!res.ok) { _hasMlbAccess = false; return; }
-    const data = await res.json();
-    _hasMlbAccess = !!(data && data.mlb);
-  } catch (e) { _hasMlbAccess = false; }
-}
+/* Nav "MLB": va directo a /mlb.html, igual que Liga MX y NFL. Antes
+   mandaba a #precios a quien no tuviera plan; ahora todos entran al
+   pick gratis y el candado del resto vive en la propia página —
+   primero el producto, después el precio. */
 document.querySelectorAll('[data-scroll]').forEach(b => {
   b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
@@ -1688,7 +1675,6 @@ let _session = null;
 async function refreshUI(){
   const u = _session ? _session.user : null;
   const misModelosLink = document.getElementById('misModelosLink');
-  checkMlbNavAccess();
   if(u){
     authBtn.textContent = 'Salir';
     misModelosLink.style.display = 'inline-flex';
