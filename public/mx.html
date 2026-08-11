@@ -200,6 +200,7 @@
     <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="go" id="lkGo">Entrar</button>
     <div class="err" id="lkErr"></div>
+    <button id="lkGuest" style="margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.82rem;text-decoration:underline;cursor:pointer">Continuar como invitado — ver el pick gratis</button>
   </div>
 </div>
 
@@ -670,6 +671,13 @@ $('refreshBtn').addEventListener('click', () => load(true));
   } catch (e) {}
 })();
 $('guestLogin').addEventListener('click', e => { e.preventDefault(); showLock(''); });
+/* Volver al pick gratis sin registrarse: el candado no debe ser
+   una calle sin salida. */
+$('lkGuest').addEventListener('click', () => {
+  $('lockWrap').style.display = 'none';
+  $('appWrap').style.display = 'block';
+  $('jornChip').style.display = '';
+});
 
 /* Al volver del pago (?pago=ok): el webhook puede tardar unos
    segundos en otorgar el acceso — reintentamos hasta verlo. */

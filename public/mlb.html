@@ -282,6 +282,7 @@
     <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="go" id="lkGo">Entrar</button>
     <div class="err" id="lkErr"></div>
+    <button id="lkGuest" style="margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.82rem;text-decoration:underline;cursor:pointer">Continuar como invitado — ver el pick gratis</button>
   </div>
 </div>
 
@@ -506,6 +507,8 @@ function distChart(m) {
 /* ---- login ---- */
 $('enterBtn').addEventListener('click', () => $('loginOverlay').classList.add('open'));
 $('loginClose').addEventListener('click', () => $('loginOverlay').classList.remove('open'));
+/* El pick gratis no necesita cuenta: salida sin registro. */
+$('lkGuest').addEventListener('click', () => $('loginOverlay').classList.remove('open'));
 $('loginOverlay').addEventListener('click', e => { if (e.target === $('loginOverlay')) $('loginOverlay').classList.remove('open'); });
 $('lkGo').addEventListener('click', async () => {
   $('lkErr').textContent = '';

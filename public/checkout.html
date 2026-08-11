@@ -152,6 +152,13 @@
           </button>
           <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
           <div class="msg" id="authMsg"></div>
+          <!-- Salida sin registro: el pick gratis no necesita cuenta.
+               Solo comprar la necesita. -->
+          <div id="guestOut" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);text-align:center">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">¿Solo quieres ver el pick gratis?</div>
+            <a id="guestOutLink" href="/mlb.html" style="display:inline-block;text-decoration:none;font-weight:600;font-size:0.9rem;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 20px">Continuar como invitado →</a>
+            <div style="font-size:0.74rem;color:var(--muted);margin-top:8px">No necesitas cuenta para el pick gratis de cada día.</div>
+          </div>
         </div>
       </div>
 
@@ -379,6 +386,14 @@ const modelUrl = p => {
   if(p.startsWith('mx_') || p.startsWith('combo_')) return '/mx.html';
   return '/mis-modelos.html';
 };
+
+/* "Continuar como invitado": manda al modelo del plan que estaba
+   viendo, donde el pick gratis se ve sin cuenta. */
+(function(){
+  const link = document.getElementById('guestOutLink');
+  if(!link) return;
+  link.href = modelUrl(planId);
+})();
 
 /* el botón de "Ya tienes acceso" lleva al modelo del plan que se ve */
 (function(){
