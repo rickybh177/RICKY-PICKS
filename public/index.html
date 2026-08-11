@@ -480,9 +480,9 @@
       <h1 class="mega">Cada juego simulado <em>10,000 veces.</em></h1>
       <div class="hero-sub">Un modelo para la Liga MX, otro para la NFL y otro para MLB. Cada uno simula el partido antes de que empiece y te dice a qué entrarle. Y a qué no.</div>
       <div class="hero-ctas">
-        <a href="/mx.html" class="hero-cta">⚽ Ver Liga MX</a>
-        <a href="/nfl.html" class="hero-cta">🏈 Ver NFL</a>
-        <a href="/mlb.html" class="hero-cta">⚾ Ver MLB</a>
+        <a href="#vivo-mx" class="hero-cta">⚽ Ver Liga MX</a>
+        <a href="#vivo-nfl" class="hero-cta">🏈 Ver NFL</a>
+        <a href="#vivo" class="hero-cta">⚾ Ver MLB</a>
       </div>
     </div>
 
@@ -1594,6 +1594,65 @@ document.querySelectorAll('[data-scroll]').forEach(b => {
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
+
+/* Anclas internas (#vivo-nfl, #precios, …) resueltas por JS y NO por
+   el salto nativo: el hero es un escenario pineado de varias
+   pantallas y las secciones aparecen con reveal, así que la altura
+   del documento cambia mientras el navegador anima — el salto nativo
+   aterrizaba corto y se quedaba ahí (medido: "Ver NFL" dejaba el
+   scroll en 170px de 3878). Por eso se corrige la posición una vez
+   que el layout se asienta, salvo que el usuario ya tomara el
+   control del scroll. */
+/* OJO: se usa scrollIntoView, NO window.scrollTo — en esta página
+   window.scrollTo(...) no mueve nada (medido: se queda en 0 con
+   'auto' y con número plano), mientras que scrollIntoView llega
+   exacto. Si se cambia, volver a medirlo. */
+function goToSection(target) {
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* El scroll suave se CORTA a media animación: al bajar, las
+     imágenes lazy de las secciones entran en vista, cargan y cambian
+     la altura del documento — Chrome aborta la animación y el scroll
+     se queda corto (medido: quedaba a 854px del destino). Por eso se
+     reajusta hasta que el layout se asienta, y se abandona en cuanto
+     el usuario toma el control. */
+  let cancelled = false, tries = 0;
+  const cancel = () => { cancelled = true; };
+  const stop = () => {
+    window.removeEventListener('wheel', cancel);
+    window.removeEventListener('touchstart', cancel);
+  };
+  window.addEventListener('wheel', cancel, { passive: true });
+  window.addEventListener('touchstart', cancel, { passive: true });
+  const settle = () => {
+    if (cancelled || ++tries > 12) return stop();
+    if (Math.abs(target.getBoundingClientRect().top) > 6) {
+      // 'instant', NO 'auto': 'auto' hereda el scroll-behavior:smooth
+      // del CSS, así que la corrección se animaba y se cortaba igual
+      target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+    setTimeout(settle, 140);
+  };
+  setTimeout(settle, 650);
+}
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1);
+    const target = id && document.getElementById(id);
+    if (!target) return;
+    e.preventDefault();
+    history.replaceState(null, '', '#' + id);
+    goToSection(target);
+  });
+});
+
+/* Llegar con hash en la URL (enlace compartido, o volver desde otra
+   página): reposicionar cuando el layout ya se asentó. */
+if (location.hash.length > 1) {
+  window.addEventListener('load', () => setTimeout(() => {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }, 80));
+}
 
 /* ============================================================
    AUTH
