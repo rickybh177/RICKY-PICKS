@@ -71,8 +71,27 @@
   .mc-cta.ghost:hover { background: var(--soft-2); }
 
   /* NOTA DE CIERRE DEL MUNDIAL */
-  .closed-note { border: 1px solid var(--line); background: var(--soft); border-radius: 14px; padding: 18px 20px; font-size: 0.88rem; color: var(--muted); margin-bottom: 56px; }
-  .closed-note strong { color: var(--ink); font-weight: 650; }
+  /* GESTIÓN DE SUSCRIPCIÓN */
+  .sub-box { border: 1px solid var(--line); background: var(--soft); border-radius: 14px; padding: 20px 22px; margin-bottom: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .sub-box .sb-txt { font-size: 0.88rem; color: var(--muted); max-width: 52ch; }
+  .sub-box .sb-txt strong { color: var(--ink); font-weight: 650; }
+  .sub-box .sb-acts { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sub-box button { font: inherit; font-size: 0.85rem; font-weight: 600; padding: 10px 18px; border-radius: 980px; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--ink); transition: border-color .15s, color .15s; }
+  .sub-box button:hover { border-color: #c9d3e2; }
+  .sub-box button.danger { color: #b42323; border-color: rgba(220,38,38,0.35); }
+  .sub-box button.danger:hover { border-color: #dc2626; background: rgba(220,38,38,0.04); }
+  .sub-box button:disabled { opacity: 0.6; cursor: default; }
+  .sub-msg { display: none; margin: -40px 0 56px; padding: 14px 18px; border-radius: 12px; font-size: 0.88rem; line-height: 1.55; }
+  .sub-msg.ok { display: block; background: rgba(22,163,74,0.08); color: var(--win); }
+  .sub-msg.bad { display: block; background: rgba(220,38,38,0.06); color: #b42323; }
+  /* confirmación inline (dos pasos: nada de cancelar con un solo clic) */
+  .sub-confirm { display: none; border: 1px solid rgba(220,38,38,0.3); background: rgba(220,38,38,0.04); border-radius: 14px; padding: 18px 20px; margin: -40px 0 56px; }
+  .sub-confirm.open { display: block; }
+  .sub-confirm p { font-size: 0.88rem; color: var(--ink); margin-bottom: 14px; }
+  .sub-confirm .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sub-confirm button { font: inherit; font-size: 0.85rem; font-weight: 600; padding: 10px 18px; border-radius: 980px; cursor: pointer; border: none; }
+  .sub-confirm .yes { background: #dc2626; color: #fff; }
+  .sub-confirm .no { background: #fff; color: var(--ink); border: 1px solid var(--line); }
 
   @media (max-width: 700px) {
     .models { grid-template-columns: 1fr; }
@@ -149,9 +168,21 @@
       </div>
     </div>
 
-    <div class="closed-note">
-      <strong>El Mundial 2026 ya terminó.</strong> El modelo cerró el torneo con 71.8% de efectividad y su herramienta quedó fuera de línea. Gracias a todos los que lo siguieron partido por partido.
+    <div class="sub-box">
+      <div class="sb-txt"><strong>Tu suscripción.</strong> Actualiza tu método de pago, revisa tus cobros o cancela cuando quieras — sin llamadas ni correos.</div>
+      <div class="sb-acts">
+        <button id="manageBtn">Administrar pagos</button>
+        <button id="cancelBtn" class="danger">Cancelar suscripción</button>
+      </div>
     </div>
+    <div class="sub-confirm" id="subConfirm">
+      <p><strong>¿Seguro que quieres cancelar?</strong> No se te volverá a cobrar y conservas tu acceso hasta el final del periodo que ya pagaste.</p>
+      <div class="row">
+        <button class="yes" id="confirmCancel">Sí, cancelar mi suscripción</button>
+        <button class="no" id="keepSub">Conservar mi plan</button>
+      </div>
+    </div>
+    <div class="sub-msg" id="subMsg"></div>
   </div>
 </div>
 
@@ -223,6 +254,60 @@ async function boot(){
   }
   showMain();
 }
+
+/* ---- gestión de suscripción ----
+   "Administrar pagos" abre el Customer Portal de Stripe (actualizar
+   tarjeta, ver cobros); si el cliente pagó por Mercado Pago no hay
+   portal y lo mandamos directo a la confirmación de cancelación.
+   "Cancelar" pega a /api/cancel-subscription, que cancela TODOS los
+   planes recurrentes del usuario en ambas pasarelas. */
+async function authHeaders(){
+  try{
+    const { data } = await sb.auth.getSession();
+    const t = data && data.session && data.session.access_token;
+    return t ? { Authorization: 'Bearer ' + t } : null;
+  }catch(e){ return null; }
+}
+document.getElementById('manageBtn').addEventListener('click', async () => {
+  const h = await authHeaders();
+  if(!h){ showState('stateNoAuth'); return; }
+  const btn = document.getElementById('manageBtn');
+  btn.disabled = true; btn.textContent = 'Abriendo…';
+  try{
+    const res = await fetch('/api/billing-portal', { method: 'POST', headers: h });
+    const out = await res.json();
+    if(out.url){ window.location.href = out.url; return; }
+  }catch(e){}
+  btn.disabled = false; btn.textContent = 'Administrar pagos';
+  document.getElementById('subConfirm').classList.add('open');
+});
+document.getElementById('cancelBtn').addEventListener('click', async () => {
+  const h = await authHeaders();
+  if(!h){ showState('stateNoAuth'); return; }
+  document.getElementById('subConfirm').classList.add('open');
+  document.getElementById('subConfirm').scrollIntoView({ block: 'center', behavior: 'smooth' });
+});
+document.getElementById('keepSub').addEventListener('click', () => {
+  document.getElementById('subConfirm').classList.remove('open');
+});
+document.getElementById('confirmCancel').addEventListener('click', async () => {
+  const btn = document.getElementById('confirmCancel');
+  const msg = document.getElementById('subMsg');
+  btn.disabled = true; btn.textContent = 'Cancelando…';
+  msg.className = 'sub-msg';
+  try{
+    const res = await fetch('/api/cancel-subscription', { method: 'POST', headers: await authHeaders() });
+    const out = await res.json();
+    if(!res.ok) throw new Error(out.error || 'error');
+    msg.textContent = out.message || 'Listo.';
+    msg.className = 'sub-msg ' + (out.ok ? 'ok' : 'bad');
+    document.getElementById('subConfirm').classList.remove('open');
+  }catch(e){
+    msg.textContent = 'No se pudo procesar la cancelación. Intenta de nuevo o escríbenos y lo resolvemos.';
+    msg.className = 'sub-msg bad';
+  }
+  btn.disabled = false; btn.textContent = 'Sí, cancelar mi suscripción';
+});
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if(sb) await sb.auth.signOut();
