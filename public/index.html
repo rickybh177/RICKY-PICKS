@@ -318,6 +318,10 @@
   footer { border-top: 1px solid var(--line); padding: 50px 0 64px; color: var(--faint); font-size: 0.82rem; font-weight: 450; }
   footer .wrap { display: flex; justify-content: space-between; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
   footer .logo { color: var(--text); }
+  footer .brand-col { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  footer .social { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 0.84rem; font-weight: 500; transition: color .15s; }
+  footer .social:hover { color: var(--text); }
+  footer .social svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
   footer .resp { max-width: 48ch; line-height: 1.6; }
   footer .resp strong { color: var(--muted); }
 
@@ -953,7 +957,13 @@
 
 <footer>
   <div class="wrap">
-    <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
+    <div class="brand-col">
+      <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
+      <a class="social" href="https://www.instagram.com/ricky__picks/" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>
+        @ricky__picks
+      </a>
+    </div>
     <div class="resp">
       <strong>Juega con responsabilidad. Solo +18.</strong><br>
       Las predicciones son análisis estadístico basado en datos históricos; no constituyen consejo financiero ni garantía de resultado. Apuesta solo lo que puedas permitirte perder.
