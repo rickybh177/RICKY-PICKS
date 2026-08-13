@@ -103,6 +103,16 @@
 
   .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
   .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
+  /* ---- TOGGLE DE MODELO (NFL | MLB | Liga MX) ---- */
+  .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle .mt-opt:hover { color: var(--text); }
+  .model-toggle .mt-opt.active { background: var(--g0); color: var(--beta); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; width: 100%; max-width: 380px; }
+    .model-toggle .mt-opt { flex: 1; padding: 10px 6px; font-size: 0.8rem; }
+  }
+
   /* ---- candado por juego (invitado) ---- */
   .locked-zone { position: relative; margin-top: 12px; }
   .locked-rows { filter: blur(7px); opacity: 0.55; pointer-events: none; user-select: none; }
@@ -181,6 +191,11 @@
   <div class="wrap">
     <div class="eyebrow">Modelo NFL 26-27 · 10,000 simulaciones por juego</div>
     <h1>Cada juego, jugado 10,000 veces antes del kickoff.</h1>
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+      <span class="mt-opt active" role="tab" aria-selected="true">🏈 NFL</span>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
+    </div>
     <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. El juego destacado de la jornada es gratis; el resto se desbloquea con tu plan.</p>
     <div class="meta-band" id="metaBand"></div>
     <div id="disclose"></div>
