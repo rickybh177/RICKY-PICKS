@@ -309,28 +309,46 @@ const PLANS = {
     ],
   },
   combo_total: {
-    name: 'Combo Total — MLB + Liga MX + NFL',
+    name: 'Combo Total — MLB + Liga MX + NFL (mensual, legado)',
     price: '$799',
     currency: 'MXN',
-    period: 'Suscripción mensual · los TRES modelos completos',
+    period: 'Este plan ya no se vende — mira el Combo Total de pago único',
     features: [
-      'Modelo MLB completo: todos los juegos, todos los días',
-      'Modelo Liga MX completo: toda la jornada, cada semana',
-      'Modelo NFL completo: los 16 juegos de cada jornada',
-      'Por separado costarían $1,397 al mes — ahorras $598',
-      'Si vienes del combo anterior, tu suscripción vieja se cancela sola: nunca pagas doble',
-      'Se renueva solo · cancela cuando quieras',
+      'Los tres modelos completos',
+      'Si ya lo tienes, tu precio se respeta',
+    ],
+  },
+  combo_2026: {
+    name: 'Combo Total — MLB + Liga MX + NFL',
+    price: '$1,599',
+    currency: 'MXN',
+    period: 'Pago único · las tres temporadas completas',
+    features: [
+      'MLB, Liga MX y NFL completos, hasta el final de cada temporada',
+      'Por separado: $3,397 — ahorras $1,798',
+      'Un solo pago. Sin suscripción, sin renovaciones',
+    ],
+  },
+  mx_semana: {
+    name: 'Modelo Liga MX — Semana de prueba',
+    price: '$199',
+    currency: 'MXN',
+    period: '7 días de acceso completo',
+    features: [
+      'Toda la jornada: todos los partidos y mercados',
+      'Veredictos BET / MAYBE / SKIP con momios reales',
+      'Pago único, sin suscripción',
     ],
   },
   mx_apertura: {
     name: 'Modelo Liga MX — Apertura 2026 completo',
-    price: '$899',
+    price: '$699',
     currency: 'MXN',
-    period: 'Las 17 jornadas + liguilla, sin renovar nada',
+    period: 'Las 17 jornadas + liguilla · pago único',
     features: [
-      'Precio exclusivo de lanzamiento (precio regular: $1,999)',
-      'Acceso total hasta la final de la liguilla',
-      'Todos los picks y análisis, sin límite',
+      'Todo el torneo, hasta la final de la liguilla',
+      'Todos los partidos, mercados y análisis',
+      'Un solo pago. Sin suscripción, sin renovaciones',
     ],
   },
   nfl_semana: {
@@ -470,6 +488,19 @@ function setAuthMode(mode){
   clearMsg(authMsg);
 }
 
+/* Errores de Supabase (en inglés) traducidos a algo accionable. */
+function authErrMsg(e){
+  const m = (e && e.message) || '';
+  const t = m.toLowerCase();
+  if(t.includes('already registered') || t.includes('already been registered')) return 'Ese correo ya tiene cuenta. Inicia sesión.';
+  if(t.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.';
+  if(t.includes('email not confirmed')) return 'Falta confirmar tu correo. Revisa tu bandeja y abre el enlace que te mandamos.';
+  if(t.includes('password should be at least') || t.includes('at least 6')) return 'Tu contraseña debe tener al menos 6 caracteres.';
+  if(t.includes('unable to validate email') || t.includes('invalid email')) return 'Ese correo no parece válido. Revísalo.';
+  if(t.includes('rate limit') || t.includes('too many')) return 'Demasiados intentos seguidos. Espera un minuto y vuelve a intentar.';
+  return m || 'No se pudo completar. Intenta de nuevo.';
+}
+
 document.getElementById('authToggle').addEventListener('click', () => { setAuthMode(authMode==='signup'?'login':'signup'); });
 
 document.getElementById('authSubmit').addEventListener('click', async () => {
@@ -482,15 +513,28 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
   clearMsg(authMsg);
   try{
     if(authMode === 'signup'){
+      if(pass.length < 6) throw new Error('Tu contraseña debe tener al menos 6 caracteres.');
       const {data,error} = await sb.auth.signUp({email,password:pass});
       if(error) throw error;
+      /* Correo ya registrado: Supabase no da error (no filtra qué
+         correos existen) pero manda identities vacío. */
+      if(data && data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+        setAuthMode('login');
+        throw new Error('Ese correo ya tiene cuenta. Escribe tu contraseña para entrar.');
+      }
+      /* El alta normalmente ya deja sesión; si no, entramos con la
+         contraseña recién creada. Nunca pedimos un código. */
+      if(!(data && data.session)){
+        const {error:e2} = await sb.auth.signInWithPassword({email,password:pass});
+        if(e2) throw e2;
+      }
     } else {
       const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
       if(error) throw error;
     }
     /* onAuthStateChange actualiza _currentSession y llama renderSession */
   }catch(e){
-    showMsg(authMsg,'bad', e.message || 'No se pudo completar. Intenta de nuevo.');
+    showMsg(authMsg,'bad', authErrMsg(e));
     btn.disabled = false; document.getElementById('authBtnText').textContent = authMode==='signup'?'Crear cuenta':'Entrar';
   }
 });
@@ -501,7 +545,7 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
    combo_* -> mlb+mx, resto -> mundial. */
 function productsOf(p){
   p = p || '';
-  if(p === 'circulo_fundador' || p === 'combo_total') return ['mlb','mx','nfl'];
+  if(p === 'circulo_fundador' || p === 'combo_total' || p === 'combo_2026') return ['mlb','mx','nfl'];
   if(p.startsWith('combo_')) return ['mlb','mx'];
   if(p.startsWith('mlb_')) return ['mlb'];
   if(p.startsWith('mx_')) return ['mx'];
@@ -547,7 +591,7 @@ async function renderSession(session){
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
      solo una pata SÍ se permite (es el upgrade). */
-  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_total','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','combo_total','circulo_fundador'] };
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','combo_2026','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_total','combo_2026','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','combo_total','combo_2026','circulo_fundador'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
   const covered = ent && !buyingCombo &&

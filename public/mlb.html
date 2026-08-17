@@ -222,20 +222,20 @@
     <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem">✕</button>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8fb0f5;margin-bottom:8px">Tu combo puede crecer</div>
     <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Agrega la NFL a tu combo 🏈</div>
-    <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> por <strong style="color:#fff">$300 más al mes</strong> ($799 en total) y llévate también la NFL completa. Tu suscripción actual se cancela sola: nunca pagas doble.</div>
-    <a href="/checkout.html?plan=combo_total" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Subir al Combo Total — $799/mes</a>
+    <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Llévate también la NFL con el <strong style="color:#fff">Combo Total de pago único</strong>: las tres temporadas completas por <strong style="color:#fff">$1,599, una sola vez</strong>. Después cancela tu suscripción actual desde <em>Administrar suscripción</em> y no vuelves a pagar mensualidad.</div>
+    <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — $1,599 pago único</a>
   </div>
 
   <div id="upsellCard" style="display:none;position:relative;margin:14px 0 0;background:var(--blue-tint);border:1px solid rgba(47,123,255,0.35);border-radius:14px;padding:18px 20px">
     <button id="upsellClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:var(--faint);font-size:1rem">✕</button>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--blue-deep);margin-bottom:8px">Oferta única · <span id="upsellLeft">—</span> restantes</div>
     <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Tus $149 ya están pagados. ¿Los usamos?</div>
-    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Solo mientras dure tu ventana: tus $149 de la Semana cuentan <strong>completos</strong> hacia tu primer mes. Después, precio normal.</div>
+    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Solo mientras dure tu ventana: tus $149 de la Semana cuentan <strong>completos</strong> hacia el pase de temporada. Un solo pago, sin suscripción.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px">
-      <a href="/checkout.html?plan=mlb_fundador" style="text-decoration:none;text-align:center;background:var(--blue-deep);color:#fff;font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾ Fundador<br><span style="font-weight:500;font-size:0.78rem"><s style="opacity:0.6">$399</s> 1er mes $250</span></a>
-      <a href="/checkout.html?plan=combo_total" style="text-decoration:none;text-align:center;background:var(--g0);color:var(--text);border:1px solid var(--line-2);font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾⚽🏈 Combo Total<br><span style="font-weight:500;font-size:0.78rem;color:var(--muted)"><s style="opacity:0.6">$799</s> 1er mes $650</span></a>
+      <a href="/checkout.html?plan=mlb_temporada" style="text-decoration:none;text-align:center;background:var(--blue-deep);color:#fff;font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾ Temporada 2026<br><span style="font-weight:500;font-size:0.78rem"><s style="opacity:0.6">$999</s> pagas $850</span></a>
+      <a href="/checkout.html?plan=combo_2026" style="text-decoration:none;text-align:center;background:var(--g0);color:var(--text);border:1px solid var(--line-2);font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾⚽🏈 Combo Total<br><span style="font-weight:500;font-size:0.78rem;color:var(--muted)"><s style="opacity:0.6">$1,599</s> pagas $1,450</span></a>
     </div>
-    <div style="font-size:0.7rem;color:var(--faint);margin-top:10px">Con tarjeta · las renovaciones van a precio normal · <a href="/#terminos" style="color:inherit">ver términos</a></div>
+    <div style="font-size:0.7rem;color:var(--faint);margin-top:10px">Con tarjeta · <a href="/#terminos" style="color:inherit">ver términos</a></div>
   </div>
   <div class="games" id="games">
     <div class="state" id="loading"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>
@@ -247,7 +247,7 @@
     <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>7 días por $149 — semana perdedora, te devolvemos tus $149. <a href="/#terminos">Ver términos</a></small></div>
     <div class="acts">
       <a class="day" href="/checkout.html?plan=mlb_semana">Semana $149</a>
-      <a class="founder" href="/checkout.html?plan=mlb_fundador">Fundador $399</a>
+      <a class="founder" href="/checkout.html?plan=mlb_temporada">Temporada $999</a>
     </div>
   </div>
 </div>
@@ -444,7 +444,7 @@ function lockedCard(g, i, day) {
       '<div class="lock-cta">' +
         '<div class="lk"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>' +
         '<div class="t">Los veredictos de este juego están en tu plan</div>' +
-        '<a href="/checkout.html?plan=mlb_fundador">Desbloquear todo — Fundador $399</a>' +
+        '<a href="/checkout.html?plan=mlb_semana">Desbloquear todo — Semana $149</a>' +
       '</div>' +
     '</div>' +
   '</div>';

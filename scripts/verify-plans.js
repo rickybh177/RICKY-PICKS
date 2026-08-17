@@ -41,20 +41,18 @@ try {
   });
 } catch (e) {}
 
-const { PLANS, isSubscription } = require('../lib/plans');
+const { PLANS, isSubscription, planCoversProduct } = require('../lib/plans');
 const { getAdmin, grantEntitlement, productsForPlan } = require('../lib/supabaseAdmin');
 
 const TEST_EMAIL = 'test-entitlements@rickypicks.internal';
-const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx'];
+const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx', 'nfl'];
 
 /* ¿El validador de acceso del modelo acepta este plan?
-   (réplica de las reglas de api/mlb-picks.js, api/mx-picks.js y
-   lib/model.js matchAllowed — si cambias esas reglas, cambia esto) */
+   Usa planCoversProduct de lib/plans.js — la MISMA regla que usan
+   los gates reales (entitlementGrants). */
 function accessRuleAccepts(product, planId) {
-  if (product === 'mlb') return planId.startsWith('mlb_') || planId.startsWith('combo_');
-  if (product === 'mx') return planId.startsWith('mx_') || planId.startsWith('combo_');
   if (product === 'mundial') return ['torneo', 'individual', 'final'].includes(planId);
-  return false;
+  return planCoversProduct(planId, product);
 }
 
 let failures = 0, warnings = 0;
@@ -81,8 +79,8 @@ const ok = msg => console.log('  ✓ ' + msg);
     }
     if (checkoutHtml.includes(`${id}:`) || checkoutHtml.includes(`'${id}'`) || checkoutHtml.includes(`"${id}"`)) {
       ok('aparece en checkout.html');
-    } else if (id === 'mexico') {
-      warn('no está en checkout.html (legado, no se vende)');
+    } else if (id === 'mexico' || !plan.price) {
+      warn('no está en checkout.html (legado o solo por código, no se vende)');
     } else {
       fail('NO está en checkout.html → /checkout.html?plan=' + id + ' diría "Plan no válido"');
     }

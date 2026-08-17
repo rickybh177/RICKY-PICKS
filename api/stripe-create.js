@@ -17,9 +17,11 @@ const PLANS = {
   mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',             price: 39900, currency: 'mxn' },
   mlb_temporada: { name: 'Modelo MLB — Temporada 2026 (fundador)',    price: 99900, currency: 'mxn' },
   mx_fundador:    { name: 'Modelo Liga MX — Mensual Fundador',         price: 39900, currency: 'mxn' },
+  mx_semana:      { name: 'Modelo Liga MX — Semana de prueba',         price: 19900, currency: 'mxn' },
   combo_fundador: { name: 'Combo MLB + Liga MX (legado)',              price: 49900, currency: 'mxn' },
   combo_total:    { name: 'Combo Total — MLB + Liga MX + NFL',          price: 79900, currency: 'mxn' },
-  mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 89900, currency: 'mxn' },
+  combo_2026:     { name: 'Combo Total — MLB + Liga MX + NFL (pago único)', price: 159900, currency: 'mxn' },
+  mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 69900, currency: 'mxn' },
   nfl_semana:     { name: 'Modelo NFL — Semana de prueba',             price: 19900, currency: 'mxn' },
   nfl_fundador:   { name: 'Modelo NFL — Mensual Fundador',             price: 59900, currency: 'mxn' },
   nfl_temporada:  { name: 'Modelo NFL — Temporada 26-27 completa',     price: 169900, currency: 'mxn' },
@@ -119,6 +121,17 @@ module.exports = async function handler(req, res) {
     /* ---- resto de planes: pago único ---- */
     let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
     let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
+
+    /* Crédito de la Semana MLB (48 h) hacia los pases completos:
+       antes apuntaba a los mensuales (retirados 27-jul). */
+    if (plan === 'mlb_temporada' || plan === 'combo_2026') {
+      const ent = await getEntitlement(user.id, user.email, 'mlb');
+      const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
+      if (credit > 0) {
+        finalPrice = Math.max(0, finalPrice - credit * 100);
+        productName += ` (crédito de tu Semana: -$${credit})`;
+      }
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
