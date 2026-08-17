@@ -20,7 +20,7 @@ const PLANS = {
   mx_semana:      { name: 'Modelo Liga MX — Semana de prueba',         price: 24900, currency: 'mxn' },
   combo_fundador: { name: 'Combo MLB + Liga MX (legado)',              price: 49900, currency: 'mxn' },
   combo_total:    { name: 'Combo Total — MLB + Liga MX + NFL',          price: 79900, currency: 'mxn' },
-  combo_2026:     { name: 'Combo Total — MLB + Liga MX + NFL (pago único)', price: 159900, currency: 'mxn' },
+  combo_2026:     { name: 'Combo Total — MLB + Liga MX + NFL (pago único)', price: 119900, currency: 'mxn' },
   mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 69900, currency: 'mxn' },
   nfl_semana:     { name: 'Modelo NFL — Semana de prueba',             price: 19900, currency: 'mxn' },
   nfl_fundador:   { name: 'Modelo NFL — Mensual Fundador',             price: 59900, currency: 'mxn' },
