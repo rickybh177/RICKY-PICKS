@@ -60,7 +60,29 @@ module.exports = async function handler(req, res) {
     } else if (event.type === 'invoice.paid') {
       // Renovación mensual: la metadata vive en la suscripción.
       const inv = event.data.object;
-      const subId = typeof inv.subscription === 'string' ? inv.subscription : inv.subscription && inv.subscription.id;
+      /* El id de la suscripción cambió de lugar según la versión del API:
+         hasta 2025 venía en inv.subscription; desde 2026 (p.ej.
+         2026-05-27.dahlia) vive en inv.parent.subscription_details y en
+         cada línea. Se buscan TODAS las rutas — si ninguna existe y la
+         factura es de suscripción, se responde 500 para que Stripe
+         reintente en vez de perder la renovación en silencio (eso dejó
+         sin acceso a un cliente que sí pagó el 17-ago-2026). */
+      const line = inv.lines && inv.lines.data && inv.lines.data[0];
+      const candidates = [
+        inv.subscription,
+        inv.parent && inv.parent.subscription_details && inv.parent.subscription_details.subscription,
+        line && line.subscription,
+        line && line.parent && line.parent.subscription_item_details && line.parent.subscription_item_details.subscription,
+      ];
+      let subId = null;
+      for (const c of candidates) {
+        if (typeof c === 'string' && /^sub_/.test(c)) { subId = c; break; }
+        if (c && typeof c === 'object' && c.id) { subId = c.id; break; }
+      }
+      if (!subId && inv.billing_reason && inv.billing_reason.startsWith('subscription')) {
+        console.error('stripe-webhook: factura de suscripción SIN subId', inv.id, 'api:', event.api_version);
+        return res.status(500).json({ error: 'No se encontró la suscripción en la factura.' });
+      }
       if (subId) {
         const sub = await stripe.subscriptions.retrieve(subId);
         const meta = sub.metadata || {};
