@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
     const permDisc = comboPermanentDiscount(ents);
     if (permDisc) {
       finalPrice = permDisc.price;
-      finalTitle = `RICKY·PICKS — ${plan.title} (precio especial por tu modelo permanente)`;
+      finalTitle = `RICKY·PICKS — ${plan.title} (precio especial: ya tienes uno de los modelos)`;
     }
   }
 

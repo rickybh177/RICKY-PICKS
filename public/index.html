@@ -1801,7 +1801,7 @@ async function paintComboPrice(){
       amt.dataset.usd = conDescuento ? `${usd}<small>USD</small>` : amt.dataset.origUsd;
       amt.innerHTML = cur === 'usd' ? amt.dataset.usd : amt.dataset.mxn;
     }
-    if(per) per.textContent = conDescuento ? 'Precio especial: ya tienes un modelo permanente' : per.dataset.orig;
+    if(per) per.textContent = conDescuento ? 'Precio especial: ya tienes uno de los modelos' : per.dataset.orig;
 
     tier.querySelectorAll('ul li').forEach(li => {
       if(!li.dataset.orig && /Ahorras/.test(li.textContent)) li.dataset.orig = li.innerHTML;
@@ -1818,7 +1818,7 @@ async function paintComboPrice(){
       link.parentNode.insertBefore(hint, link.nextSibling);
     }
     if(!_session){
-      hint.innerHTML = '¿Ya tienes un modelo permanente? <a href="#" class="combo-hint-login" style="color:var(--blue,#2f7bff);font-weight:600">Inicia sesión</a> y tu combo baja a $799.';
+      hint.innerHTML = '¿Ya pagaste uno de los modelos completos? <a href="#" class="combo-hint-login" style="color:var(--blue,#2f7bff);font-weight:600">Inicia sesión</a> y tu combo baja a $799.';
       hint.style.display = '';
     } else {
       hint.style.display = 'none';

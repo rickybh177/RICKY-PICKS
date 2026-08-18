@@ -140,7 +140,7 @@ module.exports = async function handler(req, res) {
       permDisc = comboPermanentDiscount(ents);
       if (permDisc) {
         finalPrice = permDisc.price * 100;
-        productName = `${p.name} — precio especial por tu modelo permanente ($${permDisc.price})`;
+        productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.price})`;
       }
     }
 
