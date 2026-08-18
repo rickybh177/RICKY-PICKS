@@ -1,31 +1,36 @@
 /* POST /api/stripe-create  { plan }
    Crea una sesión de Stripe Checkout y devuelve la URL de pago. */
 const Stripe = require('stripe');
-const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
+const { getUserFromToken, getEntitlement, getEntitlements } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, PLANS: SERVER_PLANS } = require('../lib/plans');
+const { isSubscription, PLANS: SERVER_PLANS, comboPermanentDiscount } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-const PLANS = {
-  mexico:        { name: 'RICKY-PICKS — Partido de México',           price: 19900, currency: 'mxn' },
-  torneo:        { name: 'RICKY-PICKS — Partidos finales del Mundial', price: 29900, currency: 'mxn' },
-  final:         { name: 'RICKY-PICKS — La final: Argentina vs España', price: 9900, currency: 'mxn' },
-  mlb_pase:      { name: 'Modelo MLB — Pase del día',                 price: 9900,  currency: 'mxn' },
-  mlb_semana:    { name: 'Modelo MLB — Semana de prueba',             price: 19900, currency: 'mxn' },
-  mlb_fundador:  { name: 'Modelo MLB — Mensual Fundador',             price: 39900, currency: 'mxn' },
-  mlb_temporada: { name: 'Modelo MLB — Temporada 2026',               price: 54900, currency: 'mxn' },
-  mx_fundador:    { name: 'Modelo Liga MX — Mensual Fundador',         price: 39900, currency: 'mxn' },
-  mx_semana:      { name: 'Modelo Liga MX — Semana de prueba',         price: 24900, currency: 'mxn' },
-  combo_fundador: { name: 'Combo MLB + Liga MX (legado)',              price: 49900, currency: 'mxn' },
-  combo_total:    { name: 'Combo Total — MLB + Liga MX + NFL',          price: 79900, currency: 'mxn' },
-  combo_2026:     { name: 'Combo Total — MLB + Liga MX + NFL (pago único)', price: 119900, currency: 'mxn' },
-  mx_apertura:    { name: 'Modelo Liga MX — Apertura 2026 completo',   price: 69900, currency: 'mxn' },
-  nfl_semana:     { name: 'Modelo NFL — Semana de prueba',             price: 24900, currency: 'mxn' },
-  nfl_fundador:   { name: 'Modelo NFL — Mensual Fundador',             price: 59900, currency: 'mxn' },
-  nfl_temporada:  { name: 'Modelo NFL — Temporada 26-27 completa',     price: 79900, currency: 'mxn' },
-  circulo_fundador: { name: 'Círculo Fundador — todo + línea directa', price: 199900, currency: 'mxn' },
+/* Nombres para el checkout de Stripe. El PRECIO ya no vive aquí: sale
+   SIEMPRE de lib/plans.js (única fuente de verdad). Lección del
+   18-ago-2026: este archivo tenía un espejo de precios en centavos que
+   se desincronizó (mlb_temporada subió a $599 en plans.js y aquí quedó
+   en $549) — Stripe cobraba distinto de lo publicado. */
+const PLAN_NAMES = {
+  mexico:        'RICKY-PICKS — Partido de México',
+  torneo:        'RICKY-PICKS — Partidos finales del Mundial',
+  final:         'RICKY-PICKS — La final: Argentina vs España',
+  mlb_pase:      'Modelo MLB — Pase del día',
+  mlb_semana:    'Modelo MLB — Semana de prueba',
+  mlb_fundador:  'Modelo MLB — Mensual Fundador',
+  mlb_temporada: 'Modelo MLB — Temporada 2026',
+  mx_fundador:    'Modelo Liga MX — Mensual Fundador',
+  mx_semana:      'Modelo Liga MX — Semana de prueba',
+  combo_fundador: 'Combo MLB + Liga MX (legado)',
+  combo_total:    'Combo Total — MLB + Liga MX + NFL',
+  combo_2026:     'Combo Total — MLB + Liga MX + NFL (pago único)',
+  mx_apertura:    'Modelo Liga MX — Apertura 2026 completo',
+  nfl_semana:     'Modelo NFL — Semana de prueba',
+  nfl_fundador:   'Modelo NFL — Mensual Fundador',
+  nfl_temporada:  'Modelo NFL — Temporada 26-27 completa',
+  circulo_fundador: 'Círculo Fundador — todo + línea directa',
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
@@ -53,15 +58,19 @@ module.exports = async function handler(req, res) {
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
 
     const plan = (body && body.plan) || 'torneo';
-    const retired = SERVER_PLANS[plan] && SERVER_PLANS[plan].retired;
-    if (!PLANS[plan] || retired) return res.status(400).json({ error: 'Plan inválido.' });
+    const def = SERVER_PLANS[plan];
+    /* price > 0 también excluye los planes permanentes (price 0): esos
+       solo se otorgan por código/soporte, jamás se venden. */
+    if (!def || def.retired || !PLAN_NAMES[plan] || !(def.price > 0)) {
+      return res.status(400).json({ error: 'Plan inválido.' });
+    }
     const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
     const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
 
-    const p = PLANS[plan];
+    const p = { name: PLAN_NAMES[plan], price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase() };
     const SITE_URL = siteUrl(req);
 
     /* ---- Mensuales (MLB, Liga MX, Combo): SUSCRIPCIÓN real ----
@@ -122,9 +131,23 @@ module.exports = async function handler(req, res) {
     let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
     let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
 
+    /* Precio especial del Combo 2026: quien ya tiene EXACTAMENTE UN
+       modelo permanente paga $799 (ver comboPermanentDiscount). Manda
+       sobre cualquier otro descuento — es el más fuerte. */
+    let permDisc = null;
+    if (plan === 'combo_2026') {
+      const ents = await getEntitlements(user.id, user.email);
+      permDisc = comboPermanentDiscount(ents);
+      if (permDisc) {
+        finalPrice = permDisc.price * 100;
+        productName = `${p.name} — precio especial por tu modelo permanente ($${permDisc.price})`;
+      }
+    }
+
     /* Crédito de la Semana MLB (48 h) hacia los pases completos:
-       antes apuntaba a los mensuales (retirados 27-jul). */
-    if (plan === 'mlb_temporada' || plan === 'combo_2026') {
+       antes apuntaba a los mensuales (retirados 27-jul). No se
+       encima con el precio especial del permanente. */
+    if (!permDisc && (plan === 'mlb_temporada' || plan === 'combo_2026')) {
       const ent = await getEntitlement(user.id, user.email, 'mlb');
       const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
       if (credit > 0) {

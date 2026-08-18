@@ -5,6 +5,7 @@
    modelos" (Mundial) y "Modelo MLB" cuando tiene ambos.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
+const { PLANS, comboPermanentDiscount } = require('../lib/plans');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -37,6 +38,11 @@ module.exports = async function handler(req, res) {
       mx_plan: mx ? mx.plan : null,
       nfl: !!nfl,
       nfl_plan: nfl ? nfl.plan : null,
+      /* Precio del Combo 2026 para ESTE usuario: $799 si tiene
+         exactamente un modelo permanente; el de lista si no. El front
+         solo lo pinta — el cobro real lo decide el servidor de nuevo. */
+      combo_2026_price: (comboPermanentDiscount(ents) || PLANS.combo_2026).price,
+      combo_2026_discount: !!comboPermanentDiscount(ents),
     });
   } catch (e) {
     console.error('my-access:', e);

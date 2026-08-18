@@ -4,8 +4,8 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription } = require('../lib/plans');
-const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { PLANS, isSubscription, comboPermanentDiscount } = require('../lib/plans');
+const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 
 function bearer(req) {
@@ -48,13 +48,27 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   const planId = body && body.plan;
   const plan = PLANS[planId];
-  if (!plan || plan.retired) {
+  /* price > 0 también excluye los planes permanentes (price 0): esos
+     solo se otorgan por código/soporte, jamás se venden. */
+  if (!plan || plan.retired || !(plan.price > 0)) {
     return res.status(400).json({ error: 'Plan no válido.' });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
-  const finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
-  const finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
+  let finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
+  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
+
+  /* Precio especial del Combo 2026: quien ya tiene EXACTAMENTE UN
+     modelo permanente paga $799 (ver comboPermanentDiscount en
+     lib/plans.js). Manda sobre cualquier código de descuento. */
+  if (planId === 'combo_2026') {
+    const ents = await getEntitlements(user.id, user.email);
+    const permDisc = comboPermanentDiscount(ents);
+    if (permDisc) {
+      finalPrice = permDisc.price;
+      finalTitle = `RICKY·PICKS — ${plan.title} (precio especial por tu modelo permanente)`;
+    }
+  }
 
   const base = siteUrl(req);
 

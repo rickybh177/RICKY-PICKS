@@ -1752,6 +1752,42 @@ async function refreshUI(){
     misModelosLink.style.display = 'none';
     misModelosLink.classList.remove('nav-models-active');
   }
+  paintComboPrice();
+}
+
+/* Combo 2026 con UN modelo permanente: las tarjetas del combo muestran
+   el precio especial ($799) que el servidor le va a cobrar de verdad.
+   Solo se pinta una vez por sesión; sin sesión (o sin descuento) las
+   tarjetas quedan con el precio de lista. */
+let _comboPainted = false;
+async function paintComboPrice(){
+  if(_comboPainted || !_session) return;
+  let a = null;
+  try{
+    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+    if(r.ok) a = await r.json();
+  }catch(e){}
+  if(!a || !a.combo_2026_discount) return;
+  _comboPainted = true;
+  const px = Number(a.combo_2026_price); // 799
+  const usd = '$' + (Math.ceil(px * 0.05504 * 100) / 100).toFixed(2);
+  const activeBtn = document.querySelector('.cur-toggle button.active');
+  const cur = activeBtn && activeBtn.dataset.cur === 'usd' ? 'usd' : 'mxn';
+  document.querySelectorAll('a[href="/checkout.html?plan=combo_2026"]').forEach(link => {
+    const tier = link.closest('.tier');
+    if(!tier) return;
+    const amt = tier.querySelector('.amt');
+    if(amt){
+      amt.dataset.mxn = `$${px.toLocaleString('en-US')}<small>MXN</small>`;
+      amt.dataset.usd = `${usd}<small>USD</small>`;
+      amt.innerHTML = cur === 'usd' ? amt.dataset.usd : amt.dataset.mxn;
+    }
+    const per = tier.querySelector('.per');
+    if(per) per.textContent = 'Precio especial: ya tienes un modelo permanente';
+    tier.querySelectorAll('ul li').forEach(li => {
+      if(/Ahorras/.test(li.textContent)) li.innerHTML = 'Ahorras $1,298 vs. comprarlos por separado';
+    });
+  });
 }
 
 function startAuth(){

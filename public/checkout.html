@@ -603,6 +603,25 @@ async function renderSession(session){
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
 
+  /* Combo 2026 con modelo permanente: el servidor cobra $799 (ver
+     stripe-create / create-payment); aquí solo se refleja el precio. */
+  if(planId === 'combo_2026'){
+    try{
+      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
+      if(r.ok){
+        const a = await r.json();
+        if(a.combo_2026_discount){
+          const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US');
+          document.getElementById('planPrice').innerHTML =
+            `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">$1,199</span> ${px} <span class="cur">MXN</span>`;
+          document.getElementById('planPeriod').textContent = 'Precio especial: ya tienes un modelo permanente';
+          document.getElementById('summaryPrice').innerHTML =
+            `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$1,199</span> ${px} MXN`;
+        }
+      }
+    }catch(e){}
+  }
+
   /* Rollover: lo pagado por la Semana (48 h) o el Pase legacy (24 h)
      se refleja en el precio ANTES de pagar. El cobro real ya lo
      descuenta el servidor (cupón de una vez, solo con tarjeta). */
