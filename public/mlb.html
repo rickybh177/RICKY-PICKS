@@ -348,35 +348,6 @@ async function syncComboPrice() {
 syncComboPrice();
 if (sb) sb.auth.onAuthStateChange(() => { syncComboPrice(); });
 
-/* Oferta a los MENSUALES: su pase completo por $199, un solo pago.
-   Al pagar, su suscripción se cancela sola (lo hace el servidor). */
-async function offerMonthlyUpgrade() {
-  const headers = await authHeader();
-  if (!headers.Authorization || document.getElementById('monthlyUpgrade')) return;
-  try {
-    const res = await fetch('/api/my-access', { headers });
-    if (!res.ok) return;
-    const up = (await res.json()).monthly_upgrade;
-    if (!up) return;
-    const NOMBRES = {
-      mlb_temporada: 'la Temporada MLB 2026 completa',
-      mx_apertura: 'el Apertura 2026 completo',
-      nfl_temporada: 'la Temporada NFL 26-27 completa',
-      combo_2026: 'el Combo Total — los 3 modelos',
-    };
-    const div = document.createElement('div');
-    div.id = 'monthlyUpgrade';
-    div.style.cssText = 'position:relative;margin:14px 0 0;background:linear-gradient(135deg,#0e2a1a,#0b1f14);color:#e9f4ec;border:1px solid rgba(110,220,150,0.35);border-radius:14px;padding:18px 20px';
-    div.innerHTML =
-      '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#7fd8a0;margin-bottom:8px">Adiós mensualidad</div>' +
-      '<div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Un solo pago de $199 y no vuelves a pagar</div>' +
-      '<div style="font-size:0.86rem;color:rgba(233,244,236,0.72);margin-bottom:14px">Por ser mensual activo, llévate ' + (NOMBRES[up.target] || 'tu pase completo') + ' por <strong style="color:#fff">$199 en un solo pago</strong>. Tu suscripción mensual se cancela sola en cuanto pagues.</div>' +
-      '<a href="/checkout.html?plan=' + up.target + '" style="display:inline-block;text-decoration:none;background:#fff;color:#0e2a1a;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Hacer el upgrade — $199 único</a>';
-    (document.querySelector('.head .wrap') || document.body).appendChild(div);
-  } catch (e) {}
-}
-offerMonthlyUpgrade();
-if (sb) sb.auth.onAuthStateChange(() => { offerMonthlyUpgrade(); });
 
 async function load(date, refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está jugando los partidos 10,000 veces…</div>';
