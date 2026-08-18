@@ -1801,7 +1801,11 @@ async function paintComboPrice(){
       amt.dataset.usd = conDescuento ? `${usd}<small>USD</small>` : amt.dataset.origUsd;
       amt.innerHTML = cur === 'usd' ? amt.dataset.usd : amt.dataset.mxn;
     }
-    if(per) per.textContent = conDescuento ? 'Precio especial: ya tienes uno de los modelos' : per.dataset.orig;
+    if(per) per.textContent = conDescuento
+      ? ((a && a.monthly_upgrade && a.monthly_upgrade.target === 'combo_2026')
+        ? 'Upgrade de tu plan mensual: un pago y adiós mensualidad'
+        : 'Precio especial: ya tienes uno de los modelos')
+      : per.dataset.orig;
 
     tier.querySelectorAll('ul li').forEach(li => {
       if(!li.dataset.orig && /Ahorras/.test(li.textContent)) li.dataset.orig = li.innerHTML;

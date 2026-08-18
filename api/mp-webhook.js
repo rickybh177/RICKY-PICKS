@@ -6,9 +6,18 @@
    procese (MP reintenta ante errores).
    ============================================================ */
 const crypto = require('crypto');
-const { PLANS } = require('../lib/plans');
-const { grantEntitlement } = require('../lib/supabaseAdmin');
-const { cancelOtherRecurring } = require('../lib/cancel-recurring');
+const { PLANS, FULL_PASS_PLANS } = require('../lib/plans');
+const { grantEntitlement, getAdmin } = require('../lib/supabaseAdmin');
+const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
+
+/* Correo del usuario (para poder cancelar sus suscripciones de
+   Stripe cuando el pase lo compró por Mercado Pago). Best-effort. */
+async function emailOf(userId) {
+  try {
+    const { data } = await getAdmin().auth.admin.getUserById(userId);
+    return (data && data.user && data.user.email) || null;
+  } catch (e) { return null; }
+}
 
 // Validación opcional de firma (recomendada). Si configuras
 // MP_WEBHOOK_SECRET, se rechazan las notificaciones sin firma válida.
@@ -133,6 +142,11 @@ module.exports = async function handler(req, res) {
 
     await grantEntitlement(userId, planId);
     console.log('mp-webhook: acceso otorgado — user_id=' + userId + ' plan=' + planId + ' payment_id=' + dataId);
+    /* Pase completo: las mensualidades que cubre se cancelan solas
+       (upgrade mensual → pase por $199). */
+    if (FULL_PASS_PLANS.includes(planId)) {
+      await cancelCoveredRecurring(userId, await emailOf(userId), planId);
+    }
     return res.status(200).end();
   } catch (e) {
     console.error('mp-webhook: error al otorgar acceso — ref=' + ref + ' payment_id=' + dataId, e);

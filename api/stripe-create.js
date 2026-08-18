@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, PLANS: SERVER_PLANS, comboPermanentDiscount } = require('../lib/plans');
+const { isSubscription, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, FULL_PASS_PLANS } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -131,23 +131,33 @@ module.exports = async function handler(req, res) {
     let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
     let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
 
-    /* Precio especial del Combo 2026: quien ya tiene EXACTAMENTE UN
-       modelo permanente paga $799 (ver comboPermanentDiscount). Manda
-       sobre cualquier otro descuento — es el más fuerte. */
+    /* Precios especiales de los pases completos (manda el más fuerte):
+       1) Upgrade del MENSUAL: con cualquier mensualidad vigente, el
+          pase que le corresponde cuesta $199 y su suscripción se
+          cancela sola al pagar (ver monthlyUpgradeFor).
+       2) Combo con UN modelo completo pagado: $799. */
     let permDisc = null;
-    if (plan === 'combo_2026') {
+    let upgrade = null;
+    if (FULL_PASS_PLANS.includes(plan)) {
       const ents = await getEntitlements(user.id, user.email);
-      permDisc = comboPermanentDiscount(ents);
-      if (permDisc) {
-        finalPrice = permDisc.price * 100;
-        productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.price})`;
+      const up = monthlyUpgradeFor(ents);
+      if (up && up.target === plan) {
+        upgrade = up;
+        finalPrice = up.price * 100;
+        productName = `${p.name} — upgrade de tu plan mensual ($${up.price}; tu mensualidad se cancela sola)`;
+      } else if (plan === 'combo_2026') {
+        permDisc = comboPermanentDiscount(ents);
+        if (permDisc) {
+          finalPrice = permDisc.price * 100;
+          productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.price})`;
+        }
       }
     }
 
     /* Crédito de la Semana MLB (48 h) hacia los pases completos:
        antes apuntaba a los mensuales (retirados 27-jul). No se
-       encima con el precio especial del permanente. */
-    if (!permDisc && (plan === 'mlb_temporada' || plan === 'combo_2026')) {
+       encima con los precios especiales de arriba. */
+    if (!permDisc && !upgrade && (plan === 'mlb_temporada' || plan === 'combo_2026')) {
       const ent = await getEntitlement(user.id, user.email, 'mlb');
       const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
       if (credit > 0) {

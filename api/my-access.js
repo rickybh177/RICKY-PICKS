@@ -5,7 +5,7 @@
    modelos" (Mundial) y "Modelo MLB" cuando tiene ambos.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor } = require('../lib/plans');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -28,6 +28,8 @@ module.exports = async function handler(req, res) {
     const mlb = ents.find(e => e.product === 'mlb' && e.active);
     const mx = ents.find(e => e.product === 'mx' && e.active);
     const nfl = ents.find(e => e.product === 'nfl' && e.active);
+    const upgrade = monthlyUpgradeFor(ents);
+    const permDisc = comboPermanentDiscount(ents);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       mundial: !!mundial,
@@ -38,11 +40,15 @@ module.exports = async function handler(req, res) {
       mx_plan: mx ? mx.plan : null,
       nfl: !!nfl,
       nfl_plan: nfl ? nfl.plan : null,
-      /* Precio del Combo 2026 para ESTE usuario: $799 si tiene
-         exactamente un modelo permanente; el de lista si no. El front
-         solo lo pinta — el cobro real lo decide el servidor de nuevo. */
-      combo_2026_price: (comboPermanentDiscount(ents) || PLANS.combo_2026).price,
-      combo_2026_discount: !!comboPermanentDiscount(ents),
+      /* Precio del Combo 2026 para ESTE usuario (el front solo lo
+         pinta — el cobro real lo decide el servidor de nuevo):
+         $199 si su mensualidad hace upgrade al combo, $799 con un
+         modelo completo pagado, el de lista si no. */
+      combo_2026_price: (upgrade && upgrade.target === 'combo_2026') ? upgrade.price
+        : (permDisc || PLANS.combo_2026).price,
+      combo_2026_discount: !!(permDisc || (upgrade && upgrade.target === 'combo_2026')),
+      /* Upgrade del plan mensual: { target, price, from } o null. */
+      monthly_upgrade: upgrade,
     });
   } catch (e) {
     console.error('my-access:', e);

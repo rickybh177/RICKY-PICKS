@@ -19,7 +19,8 @@
    ============================================================ */
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
-const { cancelOtherRecurring } = require('../lib/cancel-recurring');
+const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
+const { FULL_PASS_PLANS } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -52,9 +53,13 @@ module.exports = async function handler(req, res) {
       if (meta.user_id && meta.plan && (s.payment_status === 'paid' || s.status === 'complete')) {
         await grantEntitlement(meta.user_id, meta.plan);
         console.log('stripe-webhook: alta inicial', meta.user_id, meta.plan);
+        const email = (s.customer_details && s.customer_details.email) || s.customer_email;
         if (meta.plan === 'combo_total') {
-          const email = (s.customer_details && s.customer_details.email) || s.customer_email;
           await cancelOtherRecurring(meta.user_id, email, 'combo_total');
+        }
+        /* Pase completo: las mensualidades que cubre se cancelan solas. */
+        if (FULL_PASS_PLANS.includes(meta.plan)) {
+          await cancelCoveredRecurring(meta.user_id, email, meta.plan);
         }
       }
     } else if (event.type === 'invoice.paid') {

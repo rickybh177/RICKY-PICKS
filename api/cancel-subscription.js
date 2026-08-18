@@ -78,6 +78,11 @@ module.exports = async function handler(req, res) {
         if (!r.ok) continue;
         const data = await r.json();
         for (const p of (data.results || [])) {
+          /* OJO (18-ago-2026): el search de MP puede IGNORAR el filtro
+             external_reference y devolver preapprovals de OTROS
+             usuarios. Sin esta verificación exacta, un solo clic de
+             cancelar tumbaría suscripciones ajenas. */
+          if (p.external_reference !== `${user.id}:${planId}`) continue;
           if (p.status === 'authorized' || p.status === 'pending') {
             const upd = await fetch(`https://api.mercadopago.com/preapproval/${p.id}`, {
               method: 'PUT',

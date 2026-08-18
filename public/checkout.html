@@ -588,38 +588,54 @@ async function renderSession(session){
     return;
   }
   const ent = await checkEntitlement();
+
+  /* Precios especiales de los pases completos (los cobra el servidor
+     en stripe-create / create-payment; aquí solo se reflejan):
+     - Mensualero: su pase a $199 y su mensualidad se cancela sola.
+     - Combo con un modelo completo pagado: $799. */
+  let acceso = null;
+  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026'].includes(planId)){
+    try{
+      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
+      if(r.ok) acceso = await r.json();
+    }catch(e){}
+  }
+  const up = acceso && acceso.monthly_upgrade;
+  const esUpgradeMensual = !!(up && up.target === planId);
+
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
-     solo una pata SÍ se permite (es el upgrade). */
+     solo una pata SÍ se permite (es el upgrade). El upgrade del
+     mensual al pase por $199 TAMBIÉN se permite siempre — antes el
+     mensual contaba como "ya tienes acceso" y bloqueaba la compra. */
   const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','combo_2026','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_total','combo_2026','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','combo_total','combo_2026','circulo_fundador'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
-  const covered = ent && !buyingCombo &&
+  const covered = ent && !buyingCombo && !esUpgradeMensual &&
     productsOf(planId).every(p => (TOP[p]||[]).includes(ent.plan));
-  if(ent && (ent.plan === planId || covered)){
+  if(ent && !esUpgradeMensual && (ent.plan === planId || covered)){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
 
-  /* Combo 2026 con modelo permanente: el servidor cobra $799 (ver
-     stripe-create / create-payment); aquí solo se refleja el precio. */
-  if(planId === 'combo_2026'){
-    try{
-      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
-      if(r.ok){
-        const a = await r.json();
-        if(a.combo_2026_discount){
-          const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US');
-          document.getElementById('planPrice').innerHTML =
-            `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">$1,199</span> ${px} <span class="cur">MXN</span>`;
-          document.getElementById('planPeriod').textContent = 'Precio especial: ya tienes uno de los modelos';
-          document.getElementById('summaryPrice').innerHTML =
-            `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">$1,199</span> ${px} MXN`;
-        }
-      }
-    }catch(e){}
+  if(acceso){
+    const original = plan.price; // p.ej. '$1,199'
+    const pinta = (px, nota) => {
+      document.getElementById('planPrice').innerHTML =
+        `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">${original}</span> ${px} <span class="cur">MXN</span>`;
+      document.getElementById('planPeriod').textContent = nota;
+      document.getElementById('summaryPrice').innerHTML =
+        `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">${original}</span> ${px} MXN`;
+    };
+    if(esUpgradeMensual){
+      pinta('$' + Number(up.price).toLocaleString('en-US'),
+        'Upgrade de tu plan mensual — al pagar, tu mensualidad se cancela sola');
+    } else if(planId === 'combo_2026' && acceso.combo_2026_discount){
+      pinta('$' + Number(acceso.combo_2026_price).toLocaleString('en-US'),
+        'Precio especial: ya tienes uno de los modelos');
+    }
   }
 
   /* Rollover: lo pagado por la Semana (48 h) o el Pase legacy (24 h)

@@ -4,7 +4,7 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, comboPermanentDiscount } = require('../lib/plans');
+const { PLANS, isSubscription, comboPermanentDiscount, monthlyUpgradeFor, FULL_PASS_PLANS } = require('../lib/plans');
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 
@@ -58,15 +58,23 @@ module.exports = async function handler(req, res) {
   let finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
   let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
 
-  /* Precio especial del Combo 2026: quien ya tiene EXACTAMENTE UN
-     modelo permanente paga $799 (ver comboPermanentDiscount en
-     lib/plans.js). Manda sobre cualquier código de descuento. */
-  if (planId === 'combo_2026') {
+  /* Precios especiales de los pases completos (manda el más fuerte):
+     1) Upgrade del MENSUAL: con cualquier mensualidad vigente, el pase
+        que le corresponde cuesta $199 y su suscripción se cancela sola
+        al pagar (monthlyUpgradeFor).
+     2) Combo con UN modelo completo pagado: $799. */
+  if (FULL_PASS_PLANS.includes(planId)) {
     const ents = await getEntitlements(user.id, user.email);
-    const permDisc = comboPermanentDiscount(ents);
-    if (permDisc) {
-      finalPrice = permDisc.price;
-      finalTitle = `RICKY·PICKS — ${plan.title} (precio especial: ya tienes uno de los modelos)`;
+    const up = monthlyUpgradeFor(ents);
+    if (up && up.target === planId) {
+      finalPrice = up.price;
+      finalTitle = `RICKY·PICKS — ${plan.title} (upgrade de tu plan mensual; tu mensualidad se cancela sola)`;
+    } else if (planId === 'combo_2026') {
+      const permDisc = comboPermanentDiscount(ents);
+      if (permDisc) {
+        finalPrice = permDisc.price;
+        finalTitle = `RICKY·PICKS — ${plan.title} (precio especial: ya tienes uno de los modelos)`;
+      }
     }
   }
 
