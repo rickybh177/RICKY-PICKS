@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <radialGradient id="bgmx" cx="50%" cy="18%" r="85%">
+      <stop offset="0%" stop-color="#0d2f6b"/>
+      <stop offset="55%" stop-color="#0a1c3f"/>
+      <stop offset="100%" stop-color="#060f24"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bgmx)"/>
+
+  <!-- cancha, vista en perspectiva ligera -->
+  <g fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2.5">
+    <!-- contorno de la cancha -->
+    <path d="M120 260 L880 260 L940 900 L60 900 Z"/>
+    <!-- línea media -->
+    <path d="M150 560 L850 560"/>
+    <!-- círculo central -->
+    <ellipse cx="500" cy="560" rx="150" ry="70"/>
+    <circle cx="500" cy="560" r="4" fill="rgba(255,255,255,0.35)" stroke="none"/>
+    <!-- área grande inferior -->
+    <path d="M300 900 L280 720 L720 720 L700 900"/>
+    <!-- área chica inferior -->
+    <path d="M400 900 L392 815 L608 815 L600 900"/>
+    <!-- área grande superior (recortada) -->
+    <path d="M340 260 L328 190 L672 190 L660 260"/>
+  </g>
+
+  <!-- nube de simulación: 10,000 futuros -->
+  <g opacity="0.55">
+    <circle cx="560" cy="470" r="3" fill="#4c7df0"/>
+    <circle cx="612" cy="500" r="3" fill="#4c7df0"/>
+    <circle cx="588" cy="540" r="2.5" fill="#4c7df0"/>
+    <circle cx="640" cy="460" r="2.5" fill="#4c7df0"/>
+    <circle cx="520" cy="510" r="2.5" fill="#4c7df0"/>
+    <circle cx="670" cy="510" r="3" fill="#4c7df0"/>
+    <circle cx="600" cy="420" r="2.5" fill="#4c7df0"/>
+    <circle cx="540" cy="440" r="2" fill="#4c7df0"/>
+  </g>
+  <!-- el pick: el futuro que el modelo elige -->
+  <circle cx="628" cy="480" r="6" fill="#2fd57b"/>
+  <circle cx="628" cy="480" r="14" fill="none" stroke="#2fd57b" stroke-width="1.5" opacity="0.5"/>
+</svg>

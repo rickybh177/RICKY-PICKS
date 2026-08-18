@@ -101,19 +101,13 @@
   .stage { height: 420vh; position: relative; background: var(--g0); }
   .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
   /* Hero en TRES paneles: Liga MX · NFL · MLB.
-     Cada panel recorta una imagen renderizada a ~3x su ancho, así el
-     sujeto de cada una queda centrado en su tercio sin desbordarse. */
+     Cada panel es un diagrama SVG propio (cancha/campo/diamante +
+     nube de puntos "10,000 simulaciones" con el pick en verde) — sin
+     fotos, cero riesgo de derechos de imagen, mismo azul de marca en
+     los tres. object-fit:cover centra cada diagrama en su tercio. */
   .hero-thirds { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
-  .hero-third { position: relative; overflow: hidden; }
-  .hero-third img { position: absolute; top: 0; left: -100%; width: 300%; height: 100%; max-width: none; object-fit: cover; }
-  /* Ajuste fino del encuadre de cada panel */
-  .hero-third.mx img  { left: -100%; }
-  .hero-third.mlb img { left: -92%; }
-  /* Panel NFL: la imagen es vertical con el escudo centrado, así que
-     usa contain (no cover como los otros dos) sobre un fondo que
-     combina con el degradado azul de la imagen misma. */
-  .hero-third.nfl { background: radial-gradient(120% 80% at 50% 20%, #0d2f6b 0%, #0a1c3f 55%, #060f24 100%); }
-  .hero-third.nfl img { position: absolute; inset: 0; top: 0; left: 0; width: 100%; height: 100%; max-width: 100%; object-fit: cover; object-position: 50% 22%; }
+  .hero-third { position: relative; overflow: hidden; background: #060f24; }
+  .hero-third img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
   .third-line { position: absolute; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
   .third-line.l1 { left: 33.333%; }
   .third-line.l2 { left: 66.666%; }
@@ -415,8 +409,6 @@
     /* Hero dividido en vertical: Liga MX arriba, MLB abajo */
     /* Los tres paneles se apilan: Liga MX arriba, NFL en medio, MLB abajo */
     .hero-thirds { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
-    .hero-third img, .hero-third.mx img, .hero-third.mlb img { left: 0; width: 100%; height: 100%; }
-    .hero-third.nfl img { object-position: 50% 47%; } /* centra el escudo: mide 31%-66% de la imagen */
     .third-line { left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
     .third-line.l1 { top: 33.333%; }
     .third-line.l2 { top: 66.666%; }
@@ -467,9 +459,9 @@
   <div class="stage-sticky">
     <!-- Fondo en tres paneles: Liga MX · NFL · MLB -->
     <div class="hero-thirds">
-      <div class="hero-third mx"><img id="vid1" src="/img/ligamx.jpg" alt=""></div>
-      <div class="hero-third nfl"><img id="vid3" src="/img/nfl.jpg" alt=""></div>
-      <div class="hero-third mlb"><img id="vid2" src="/video/hero-swing.jpg" alt=""></div>
+      <div class="hero-third mx"><img id="vid1" src="/img/hero-mx.svg" alt=""></div>
+      <div class="hero-third nfl"><img id="vid3" src="/img/hero-nfl.svg" alt=""></div>
+      <div class="hero-third mlb"><img id="vid2" src="/img/hero-mlb.svg" alt=""></div>
     </div>
     <div class="half-tag tag-mx">Liga MX</div>
     <div class="half-tag tag-nfl">NFL</div>

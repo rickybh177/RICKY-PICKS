@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <radialGradient id="bgmlb" cx="50%" cy="18%" r="85%">
+      <stop offset="0%" stop-color="#0d2f6b"/>
+      <stop offset="55%" stop-color="#0a1c3f"/>
+      <stop offset="100%" stop-color="#060f24"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bgmlb)"/>
+
+  <!-- diamante -->
+  <g fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2.5">
+    <!-- líneas de foul -->
+    <path d="M500 880 L220 560"/>
+    <path d="M500 880 L780 560"/>
+    <!-- cuadro interior (home-1B-2B-3B) -->
+    <path d="M500 880 L650 720 L500 560 L350 720 Z"/>
+    <!-- montículo -->
+    <circle cx="500" cy="720" r="34"/>
+    <!-- home plate -->
+    <path d="M488 878 L512 878 L512 864 L500 854 L488 864 Z" fill="rgba(255,255,255,0.16)" stroke="none"/>
+  </g>
+
+  <!-- rociada de simulación: dónde caen los batazos -->
+  <g opacity="0.55">
+    <circle cx="430" cy="480" r="2.5" fill="#4c7df0"/>
+    <circle cx="470" cy="420" r="3" fill="#4c7df0"/>
+    <circle cx="540" cy="410" r="2.5" fill="#4c7df0"/>
+    <circle cx="590" cy="450" r="2.5" fill="#4c7df0"/>
+    <circle cx="380" cy="530" r="2" fill="#4c7df0"/>
+    <circle cx="620" cy="500" r="3" fill="#4c7df0"/>
+    <circle cx="500" cy="380" r="2.5" fill="#4c7df0"/>
+  </g>
+  <!-- el pick: el resultado que el modelo favorece -->
+  <circle cx="505" cy="415" r="6" fill="#2fd57b"/>
+  <circle cx="505" cy="415" r="14" fill="none" stroke="#2fd57b" stroke-width="1.5" opacity="0.5"/>
+</svg>

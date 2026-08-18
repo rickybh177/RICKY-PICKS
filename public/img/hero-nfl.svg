@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <radialGradient id="bgnfl" cx="50%" cy="18%" r="85%">
+      <stop offset="0%" stop-color="#0d2f6b"/>
+      <stop offset="55%" stop-color="#0a1c3f"/>
+      <stop offset="100%" stop-color="#060f24"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bgnfl)"/>
+
+  <!-- campo con yardas -->
+  <g stroke="rgba(255,255,255,0.14)" stroke-width="2">
+    <line x1="120" y1="220" x2="120" y2="960"/>
+    <line x1="880" y1="220" x2="880" y2="960"/>
+    <!-- líneas de yarda cada 74px -->
+    <line x1="120" y1="294" x2="880" y2="294"/>
+    <line x1="120" y1="368" x2="880" y2="368"/>
+    <line x1="120" y1="442" x2="880" y2="442"/>
+    <line x1="120" y1="516" x2="880" y2="516" stroke-width="3" stroke="rgba(255,255,255,0.24)"/>
+    <line x1="120" y1="590" x2="880" y2="590"/>
+    <line x1="120" y1="664" x2="880" y2="664"/>
+    <line x1="120" y1="738" x2="880" y2="738"/>
+    <!-- zona de anotación -->
+    <line x1="120" y1="220" x2="880" y2="220" stroke-width="3"/>
+  </g>
+  <!-- marcas de yarda (hash marks) -->
+  <g stroke="rgba(255,255,255,0.14)" stroke-width="2">
+    <line x1="380" y1="220" x2="380" y2="960"/>
+    <line x1="620" y1="220" x2="620" y2="960"/>
+  </g>
+
+  <!-- trayectoria simulada del pase -->
+  <path d="M420 780 C 460 660, 560 560, 660 460" fill="none" stroke="#4c7df0" stroke-width="2" stroke-dasharray="6 8" opacity="0.55"/>
+  <g opacity="0.55">
+    <circle cx="450" cy="720" r="3" fill="#4c7df0"/>
+    <circle cx="500" cy="650" r="2.5" fill="#4c7df0"/>
+    <circle cx="560" cy="590" r="3" fill="#4c7df0"/>
+    <circle cx="610" cy="510" r="2.5" fill="#4c7df0"/>
+  </g>
+  <!-- el pick: la jugada que gana -->
+  <circle cx="660" cy="460" r="6" fill="#2fd57b"/>
+  <circle cx="660" cy="460" r="14" fill="none" stroke="#2fd57b" stroke-width="1.5" opacity="0.5"/>
+</svg>
