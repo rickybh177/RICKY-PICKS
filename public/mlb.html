@@ -505,8 +505,32 @@ function distChart(m) {
     '</div>';
 }
 
-/* ---- login ---- */
-$('enterBtn').addEventListener('click', () => $('loginOverlay').classList.add('open'));
+/* ---- login ----
+   El botón del nav refleja la sesión REAL. Antes decía siempre
+   "Entrar→" aunque el cliente ya tuviera sesión y sus picks
+   desbloqueados: un cliente con acceso permanente reportó "no me deja
+   entrar" (18-ago-2026) porque ese botón lo mandaba una y otra vez al
+   formulario de login. Con sesión, el botón dice "Salir". */
+async function refreshEnterBtn() {
+  const btn = $('enterBtn');
+  if (!btn || !sb) return;
+  let session = null;
+  try { const { data } = await sb.auth.getSession(); session = data && data.session; } catch (e) {}
+  btn.dataset.signedIn = session ? '1' : '';
+  btn.innerHTML = session ? '<span>Salir</span>' : '<span>Entrar</span>→';
+  btn.title = session ? (session.user.email + ' — cerrar sesión') : 'Inicia sesión';
+}
+$('enterBtn').addEventListener('click', async () => {
+  if ($('enterBtn').dataset.signedIn) {
+    if (sb) await sb.auth.signOut();
+    await refreshEnterBtn();
+    load(currentDate);
+    return;
+  }
+  $('loginOverlay').classList.add('open');
+});
+refreshEnterBtn();
+if (sb) sb.auth.onAuthStateChange(() => { refreshEnterBtn(); });
 $('loginClose').addEventListener('click', () => $('loginOverlay').classList.remove('open'));
 /* El pick gratis no necesita cuenta: salida sin registro. */
 $('lkGuest').addEventListener('click', () => $('loginOverlay').classList.remove('open'));
