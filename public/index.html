@@ -1757,38 +1757,83 @@ async function refreshUI(){
 
 /* Combo 2026 con UN modelo permanente: las tarjetas del combo muestran
    el precio especial ($799) que el servidor le va a cobrar de verdad.
-   Solo se pinta una vez por sesión; sin sesión (o sin descuento) las
-   tarjetas quedan con el precio de lista. */
-let _comboPainted = false;
+
+   Se ejecuta en cada cambio de sesión Y al cargar la página, y es
+   REVERSIBLE (al cerrar sesión vuelve el precio de lista). Antes se
+   pintaba una sola vez y solo con sesión: quien tenía su sesión
+   caducada — el caso real del 18-ago-2026 — seguía viendo $1,199 sin
+   saber por qué. Por eso, sin sesión se muestra el aviso de que el
+   precio puede bajar al entrar. */
+const COMBO_LIST_PRICE = 1199;
 async function paintComboPrice(){
-  if(_comboPainted || !_session) return;
+  const links = [...document.querySelectorAll('a[href="/checkout.html?plan=combo_2026"]')];
+  if(!links.length) return;
+
   let a = null;
-  try{
-    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
-    if(r.ok) a = await r.json();
-  }catch(e){}
-  if(!a || !a.combo_2026_discount) return;
-  _comboPainted = true;
-  const px = Number(a.combo_2026_price); // 799
+  if(_session){
+    try{
+      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+      if(r.ok) a = await r.json();
+    }catch(e){}
+  }
+  const conDescuento = !!(a && a.combo_2026_discount);
+  const px = conDescuento ? Number(a.combo_2026_price) : COMBO_LIST_PRICE;
   const usd = '$' + (Math.ceil(px * 0.05504 * 100) / 100).toFixed(2);
   const activeBtn = document.querySelector('.cur-toggle button.active');
   const cur = activeBtn && activeBtn.dataset.cur === 'usd' ? 'usd' : 'mxn';
-  document.querySelectorAll('a[href="/checkout.html?plan=combo_2026"]').forEach(link => {
+
+  links.forEach(link => {
     const tier = link.closest('.tier');
     if(!tier) return;
+
+    /* Se guarda el estado original la primera vez para poder volver
+       a él si el cliente cierra sesión. */
     const amt = tier.querySelector('.amt');
+    const per = tier.querySelector('.per');
+    if(amt && !amt.dataset.origMxn){
+      amt.dataset.origMxn = amt.dataset.mxn || '';
+      amt.dataset.origUsd = amt.dataset.usd || '';
+    }
+    if(per && !per.dataset.orig) per.dataset.orig = per.textContent;
+
     if(amt){
-      amt.dataset.mxn = `$${px.toLocaleString('en-US')}<small>MXN</small>`;
-      amt.dataset.usd = `${usd}<small>USD</small>`;
+      amt.dataset.mxn = conDescuento ? `$${px.toLocaleString('en-US')}<small>MXN</small>` : amt.dataset.origMxn;
+      amt.dataset.usd = conDescuento ? `${usd}<small>USD</small>` : amt.dataset.origUsd;
       amt.innerHTML = cur === 'usd' ? amt.dataset.usd : amt.dataset.mxn;
     }
-    const per = tier.querySelector('.per');
-    if(per) per.textContent = 'Precio especial: ya tienes un modelo permanente';
+    if(per) per.textContent = conDescuento ? 'Precio especial: ya tienes un modelo permanente' : per.dataset.orig;
+
     tier.querySelectorAll('ul li').forEach(li => {
-      if(/Ahorras/.test(li.textContent)) li.innerHTML = 'Ahorras $1,298 vs. comprarlos por separado';
+      if(!li.dataset.orig && /Ahorras/.test(li.textContent)) li.dataset.orig = li.innerHTML;
+      if(li.dataset.orig) li.innerHTML = conDescuento ? 'Ahorras $1,298 vs. comprarlos por separado' : li.dataset.orig;
     });
+
+    /* Aviso para quien no ha iniciado sesión: si tiene un modelo
+       permanente, su precio es menor — pero hay que identificarlo. */
+    let hint = tier.querySelector('.combo-hint');
+    if(!hint){
+      hint = document.createElement('p');
+      hint.className = 'combo-hint';
+      hint.style.cssText = 'margin:10px 0 0;font-size:0.78rem;line-height:1.45;color:var(--muted,#6e7787)';
+      link.parentNode.insertBefore(hint, link.nextSibling);
+    }
+    if(!_session){
+      hint.innerHTML = '¿Ya tienes un modelo permanente? <a href="#" class="combo-hint-login" style="color:var(--blue,#2f7bff);font-weight:600">Inicia sesión</a> y tu combo baja a $799.';
+      hint.style.display = '';
+    } else {
+      hint.style.display = 'none';
+    }
   });
 }
+/* Se corre también al cargar, por si el evento de sesión no llega. */
+document.addEventListener('DOMContentLoaded', () => { paintComboPrice(); });
+/* El enlace del aviso abre el mismo modal de acceso. */
+document.addEventListener('click', (ev) => {
+  const l = ev.target.closest('.combo-hint-login');
+  if(!l) return;
+  ev.preventDefault();
+  openAuth('login');
+});
 
 function startAuth(){
   if(!sb && !initSupabase()){ setTimeout(startAuth, 150); return; }

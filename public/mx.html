@@ -221,8 +221,8 @@
       <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem;background:none;border:none;cursor:pointer">✕</button>
       <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8fb0f5;margin-bottom:8px">Tu combo puede crecer</div>
       <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Agrega la NFL a tu combo 🏈</div>
-      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> con <strong style="color:#fff">un solo pago de $1,199</strong> y llévate los 3 modelos, NFL incluida. Si tienes una suscripción mensual, cancélala en «Administrar suscripción» para no pagar doble.</div>
-      <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — $1,199 pago único</a>
+      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> con <strong style="color:#fff">un solo pago de <span class="combo-px">$1,199</span></strong> y llévate los 3 modelos, NFL incluida. Si tienes una suscripción mensual, cancélala en «Administrar suscripción» para no pagar doble.</div>
+      <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — <span class="combo-px">$1,199</span> pago único</a>
     </div>
     <div class="guest-bar" id="guestBar" style="display:none">
       <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
@@ -275,6 +275,26 @@ async function authHeader() {
     return t ? { Authorization: 'Bearer ' + t } : {};
   } catch (e) { return {}; }
 }
+
+/* Precio del Combo Total para ESTE cliente: quien tiene un modelo
+   permanente paga $799 (lo decide el servidor; aquí solo se refleja
+   para que ningún banner anuncie un precio distinto al que se cobra). */
+async function syncComboPrice() {
+  const spots = document.querySelectorAll('.combo-px');
+  if (!spots.length) return;
+  const headers = await authHeader();
+  if (!headers.Authorization) return;
+  try {
+    const res = await fetch('/api/my-access', { headers });
+    if (!res.ok) return;
+    const a = await res.json();
+    if (!a.combo_2026_discount) return;
+    const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US');
+    spots.forEach(el => { el.textContent = px; });
+  } catch (e) { /* si falla, se queda el precio de lista */ }
+}
+syncComboPrice();
+if (sb) sb.auth.onAuthStateChange(() => { syncComboPrice(); });
 
 async function load(refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>';
