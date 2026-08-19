@@ -215,15 +215,6 @@
   .step.v-bet   .vchip { background: var(--bet-bg);   color: var(--bet);        border: 1px solid rgba(22,163,74,0.32); }
   .step.v-maybe .vchip { background: var(--blue-tint); color: var(--blue-deep); border: 1px solid rgba(47,123,255,0.32); }
   .step.v-skip  .vchip { background: var(--skip-bg);  color: var(--skip);       border: 1px solid rgba(220,38,38,0.28); }
-  /* Reserva dos líneas para el título: 'El casino paga menos de lo que
-     debería' salta a dos y, sin esto, el cuerpo de esa tarjeta arrancaba
-     26px más abajo que el de las otras dos. */
-  #metodo .step h3 { min-height: 3.1em; }
-  /* Los umbrales se anclan al fondo: los cuerpos no miden lo mismo
-     (SKIP ocupa 3 líneas y los otros 4) y si no quedaban a distinta
-     altura entre tarjeta y tarjeta. */
-  #metodo .step { display: flex; flex-direction: column; }
-  #metodo .step .vsub { margin-top: auto; padding-top: 14px; }
   .step .vsub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; color: var(--faint); margin-top: 10px; }
   .strange { margin-top: 28px; border-left: 2px solid var(--blue); padding: 4px 0 4px 20px; color: var(--muted); font-size: 1rem; font-weight: 450; max-width: 62ch; }
   .strange strong { color: var(--text); font-weight: 600; }
@@ -544,20 +535,20 @@
     <div class="steps">
       <div class="step v-bet reveal">
         <span class="vchip">BET</span>
-        <h3>El casino paga más de lo que debería</h3>
-        <p>El precio da por menos probable algo que el modelo ve más probable. Esa diferencia a tu favor es la ganancia: aquí sí conviene poner dinero.</p>
+        <h3>Entra</h3>
+        <p>El modelo le da bastante más probabilidad de la que refleja el precio de la casa. Ahí está el valor: son los picks en los que sí conviene poner tu dinero.</p>
         <span class="vsub">Ventaja de 4 puntos o más</span>
       </div>
       <div class="step v-maybe reveal">
         <span class="vchip">MAYBE</span>
-        <h3>El casino paga apenas de más</h3>
-        <p>La diferencia a tu favor existe, pero es chica. Sirve para una combinada o para arriesgar poco — no es donde va tu apuesta fuerte de la jornada.</p>
+        <h3>Tú decides</h3>
+        <p>Hay ventaja, pero es delgada. Sirve si la quieres para una combinada o para arriesgar poco — no es donde va tu apuesta fuerte de la jornada.</p>
         <span class="vsub">Ventaja de 1.5 a 4 puntos</span>
       </div>
       <div class="step v-skip reveal">
         <span class="vchip">SKIP</span>
-        <h3>El casino paga menos de lo que debería</h3>
-        <p>El precio da por más probable algo que el modelo ve menos probable. Entrarle es pagar de más, y a la larga es dinero perdido.</p>
+        <h3>Déjala pasar</h3>
+        <p>La casa ya tiene bien puesto el precio: no hay nada que ganarle. Decirte a qué <em>no</em> entrarle es la mitad del trabajo — es donde se pierde el dinero.</p>
         <span class="vsub">Sin ventaja sobre el mercado</span>
       </div>
     </div>
