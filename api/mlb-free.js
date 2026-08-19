@@ -23,9 +23,14 @@ const ORDEN = { bet: 3, maybe: 2, skip: 1 };
 function mejorVeredicto(verdicts) {
   const list = (verdicts || []).filter(v => v && v.label);
   if (!list.length) return null;
-  const v = list.reduce((a, b) =>
-    ((ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0)) ||
-    ((b.prob || 0) - (a.prob || 0)) > 0 ? b : a);
+  /* Se ordena en vez de reducir: la versión con reduce tenía un error
+     de precedencia (`a || b > 0 ? x : y` agrupa como `(a || (b>0)) ? …`)
+     y devolvía el ÚLTIMO veredicto siempre que el orden difería — por
+     eso la card mostraba un MAYBE teniendo el juego un BET. */
+  const v = list.slice().sort((a, b) => {
+    const d = (ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0);
+    return d !== 0 ? d : (b.prob || 0) - (a.prob || 0);
+  })[0];
   return { verdict: v.verdict, label: v.label, prob: v.prob };
 }
 
