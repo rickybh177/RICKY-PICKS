@@ -18,6 +18,17 @@ function todayET() {
   }).format(new Date());
 }
 
+/* Prioridad de veredictos para la card del landing. */
+const ORDEN = { bet: 3, maybe: 2, skip: 1 };
+function mejorVeredicto(verdicts) {
+  const list = (verdicts || []).filter(v => v && v.label);
+  if (!list.length) return null;
+  const v = list.reduce((a, b) =>
+    ((ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0)) ||
+    ((b.prob || 0) - (a.prob || 0)) > 0 ? b : a);
+  return { verdict: v.verdict, label: v.label, prob: v.prob };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -54,6 +65,13 @@ module.exports = async function handler(req, res) {
             moneyline: m.moneyline,
             expected: m.expected,
             pick: (best.picks && best.picks[0]) || null,
+            /* El mejor VEREDICTO del juego (bet > maybe > skip) con su
+               etiqueta ya escrita. Hace falta porque `picks` solo trae
+               los de alta convicción: si el destacado no tiene ninguno
+               —pasa cuando el pick gratis se fija a mano— la card se
+               quedaba con el texto de relleno y con un chip BET que el
+               juego no tiene. */
+            verdict: mejorVeredicto(best.verdicts),
             sims: 10000,
           },
         };

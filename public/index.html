@@ -172,6 +172,9 @@
   #pickcard .pc-bar .h { background: var(--line-2); }
   .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bet-bg); border: 1px solid rgba(47,213,123,0.35); border-radius: 12px; padding: 12px 14px; }
   .pc-pick .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 6px; background: var(--bet); color: #06251545; color: #052816; }
+  /* el chip toma el color del veredicto real: verde BET, azul MAYBE */
+  .pc-pick .vchip.is-maybe { background: var(--blue); color: #041233; }
+  .pc-pick .vchip.is-skip  { background: var(--skip); color: #2b0606; }
   .pc-pick .sel { font-weight: 700; font-size: 0.96rem; letter-spacing: -0.01em; flex: 1; color: var(--text); }
   .pc-pick .odds { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.74rem; color: var(--muted); }
   .pc-foot { display: flex; justify-content: space-between; margin-top: 13px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); letter-spacing: 0.04em; }
@@ -702,7 +705,7 @@
             </div>
             <div class="pc-bar"><div class="a" id="lcBarA" style="width:50%"></div><div class="h" id="lcBarH" style="width:50%"></div></div>
             <div class="pc-pick">
-              <span class="vchip">BET</span>
+              <span class="vchip" id="lcChip">BET</span>
               <span class="sel" id="lcPickSel">Pick del modelo</span>
               <span class="odds" id="lcPickOdds"></span>
             </div>
@@ -1020,8 +1023,20 @@
     set(prefix + 'AwayPit', g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '');
     set(prefix + 'HomePit', g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '');
     set(prefix + 'Venue', (g.venue || '').toUpperCase());
-    set(prefix + 'PickSel', pickTxt(g.pick, g));
-    set(prefix + 'PickOdds', g.pick ? pct(g.pick.prob) + (amOdds(g.pick.prob) ? ' · ' + amOdds(g.pick.prob) : '') : '');
+    /* Qué apuesta mostrar. `pick` solo existe si el juego tiene un pick
+       de alta convicción; si no (pasa cuando el destacado se fija a
+       mano), se usa el mejor VEREDICTO del juego. Así la card nunca
+       queda con el texto de relleno ni anuncia un BET inexistente. */
+    const v = g.verdict || null;
+    set(prefix + 'PickSel', g.pick ? pickTxt(g.pick, g) : (v ? v.label : pickTxt(null, g)));
+    const prob = g.pick ? g.pick.prob : (v ? v.prob : null);
+    set(prefix + 'PickOdds', prob != null ? pct(prob) + (amOdds(prob) ? ' · ' + amOdds(prob) : '') : '');
+    const chip = document.getElementById(prefix + 'Chip');
+    if (chip) {
+      const tipo = g.pick ? 'bet' : (v ? v.verdict : 'bet');
+      chip.textContent = tipo.toUpperCase();
+      chip.className = 'vchip' + (tipo === 'bet' ? '' : ' is-' + tipo);
+    }
     const dt = new Date(g.game_date);
     set(prefix + 'Date', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
     const al = document.getElementById(prefix + 'AwayLogo'), hl = document.getElementById(prefix + 'HomeLogo');
