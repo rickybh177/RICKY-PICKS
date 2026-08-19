@@ -505,7 +505,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: 1fr; }
     .combo3 { flex-direction: column; align-items: stretch; padding: 22px 20px; gap: 18px; }
     .combo3-buy { align-items: stretch; }
+    /* En vertical solo cabe un botón en el nav. Manda el de SESIÓN:
+       .nav-ghost (que es #authBtn) estaba escondido y no había forma de
+       entrar a tu cuenta desde el celular. Toma el look primario que
+       tenía "Pick gratis"; el pick gratis sigue a un toque desde los
+       tres CTA del hero. */
     .nav-link, .nav-ghost { display: none; }
+    #navFreeBtn { display: none; }
+    #authBtn { display: inline-block; font-size: 0.84rem; font-weight: 600;
+      color: #fff; background: var(--blue-deep); border: none;
+      padding: 9px 16px; border-radius: 10px; }
     .pc-shell { padding: 16px; }
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
     .odds3 { grid-template-columns: 1fr; }
