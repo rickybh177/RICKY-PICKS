@@ -211,10 +211,21 @@
   /* Tarjetas de veredicto: reusan .steps/.step y cambian el icono por
      el MISMO chip que el cliente ve dentro del modelo, con los colores
      semánticos del sitio (verde=BET, azul=MAYBE, rojo=SKIP). */
-  .step .vchip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.16em; padding: 7px 13px; border-radius: 8px; margin-bottom: 18px; }
-  .step.v-bet   .vchip { background: var(--bet-bg);   color: var(--bet);        border: 1px solid rgba(22,163,74,0.32); }
-  .step.v-maybe .vchip { background: var(--blue-tint); color: var(--blue-deep); border: 1px solid rgba(47,123,255,0.32); }
-  .step.v-skip  .vchip { background: var(--skip-bg);  color: var(--skip);       border: 1px solid rgba(220,38,38,0.28); }
+  /* Mismo lenguaje visual que los botones del hero (caja blanca,
+     esquina suave, sombra difusa), pero el color semántico de cada
+     veredicto va en el texto, el borde y el tinte de la sombra. */
+  .step .vchip { display: inline-block; font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 13px 26px; border-radius: 12px; margin-bottom: 20px; background: #ffffff;
+    /* la tarjeta es flex: sin esto el chip se estiraba a todo el ancho
+       y el texto quedaba perdido a la izquierda */
+    align-self: flex-start; }
+  /* Ojo: aquí el chip blanco cae sobre una tarjeta TAMBIÉN blanca (en
+     el hero los botones resaltan porque el fondo es azul claro), así
+     que el borde y la sombra van más marcados para que igual floten. */
+  .step.v-bet   .vchip { color: var(--bet);        border: 1px solid rgba(22,163,74,0.34);  box-shadow: 0 12px 26px -10px rgba(22,163,74,0.42),  0 2px 5px -1px rgba(22,163,74,0.22); }
+  .step.v-maybe .vchip { color: var(--blue-deep);  border: 1px solid rgba(47,123,255,0.34); box-shadow: 0 12px 26px -10px rgba(47,123,255,0.42), 0 2px 5px -1px rgba(47,123,255,0.22); }
+  .step.v-skip  .vchip { color: var(--skip);       border: 1px solid rgba(220,38,38,0.32);  box-shadow: 0 12px 26px -10px rgba(220,38,38,0.40),  0 2px 5px -1px rgba(220,38,38,0.20); }
   /* Los umbrales se anclan al fondo: los cuerpos no miden lo mismo
      (el de BET ocupa 3 líneas y los otros 4) y si no quedaban a
      distinta altura entre tarjeta y tarjeta. */
