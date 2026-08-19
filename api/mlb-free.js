@@ -6,6 +6,7 @@
    sigue gated en /api/mlb-picks.
    ============================================================ */
 const { buildDay } = require('../lib/mlb/model');
+const { featuredGame } = require('../lib/mlb/featured');
 
 const _cache = new Map(); // date -> { at, value }
 const TTL = 10 * 60 * 1000;
@@ -30,17 +31,13 @@ module.exports = async function handler(req, res) {
       value = hit.value;
     } else {
       const day = await buildDay(date);
-      const games = (day.games || []).filter(g => !g.error && g.abstract_state !== 'Final');
-      const pool = games.length ? games : (day.games || []).filter(g => !g.error);
-      if (!pool.length) {
+      // MISMA elección que /api/mlb-picks (incluye overrides manuales):
+      // si divergen, el landing muestra un partido gratis y la página
+      // del modelo otro.
+      const best = featuredGame(day.games || [], date);
+      if (!best) {
         value = { date, game: null };
       } else {
-        // el juego con el pick más fuerte del día
-        const best = pool.reduce((a, b) => {
-          const sa = (a.picks && a.picks[0] && a.picks[0].strength) || 0;
-          const sb = (b.picks && b.picks[0] && b.picks[0].strength) || 0;
-          return sb > sa ? b : a;
-        });
         const m = best.markets;
         value = {
           date,

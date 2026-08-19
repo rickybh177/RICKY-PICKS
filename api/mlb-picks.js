@@ -15,6 +15,7 @@
 const { buildDay } = require('../lib/mlb/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
+const { featuredPk } = require('../lib/mlb/featured');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -27,19 +28,6 @@ function todayET() {
     timeZone: 'America/New_York',
     year: 'numeric', month: '2-digit', day: '2-digit',
   }).format(new Date());
-}
-
-/* El juego destacado del día = el del pick con más convicción
-   (misma regla que /api/mlb-free para que siempre coincidan). */
-function featuredPk(games) {
-  const pool = games.filter(g => !g.error && g.abstract_state !== 'Final');
-  const list = pool.length ? pool : games.filter(g => !g.error);
-  if (!list.length) return null;
-  return list.reduce((a, b) => {
-    const sa = (a.picks && a.picks[0] && a.picks[0].strength) || 0;
-    const sb = (b.picks && b.picks[0] && b.picks[0].strength) || 0;
-    return sb > sa ? b : a;
-  }).gamePk;
 }
 
 /* Versión censurada de un juego para invitados. */
@@ -93,7 +81,7 @@ module.exports = async function handler(req, res) {
       value = hit.value;
     } else {
       value = await buildDay(date);
-      value.featured_pk = featuredPk(value.games || []);
+      value.featured_pk = featuredPk(value.games || [], date);
       _dayCache.set(date, { at: Date.now(), value });
     }
 
