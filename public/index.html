@@ -208,6 +208,14 @@
   .step .ico svg { width: 20px; height: 20px; stroke: var(--blue); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .step h3 { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.015em; margin-bottom: 8px; }
   .step p { color: var(--muted); font-size: 0.9rem; font-weight: 450; }
+  /* Tarjetas de veredicto: reusan .steps/.step y cambian el icono por
+     el MISMO chip que el cliente ve dentro del modelo, con los colores
+     semánticos del sitio (verde=BET, azul=MAYBE, rojo=SKIP). */
+  .step .vchip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.16em; padding: 7px 13px; border-radius: 8px; margin-bottom: 18px; }
+  .step.v-bet   .vchip { background: var(--bet-bg);   color: var(--bet);        border: 1px solid rgba(22,163,74,0.32); }
+  .step.v-maybe .vchip { background: var(--blue-tint); color: var(--blue-deep); border: 1px solid rgba(47,123,255,0.32); }
+  .step.v-skip  .vchip { background: var(--skip-bg);  color: var(--skip);       border: 1px solid rgba(220,38,38,0.28); }
+  .step .vsub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; color: var(--faint); margin-top: 10px; }
   .strange { margin-top: 28px; border-left: 2px solid var(--blue); padding: 4px 0 4px 20px; color: var(--muted); font-size: 1rem; font-weight: 450; max-width: 62ch; }
   .strange strong { color: var(--text); font-weight: 600; }
 
@@ -521,26 +529,30 @@
 <!-- ============ MÉTODO ============ -->
 <section id="metodo">
   <div class="wrap">
-    <div class="sec-eyebrow reveal">El método</div>
-    <h2 class="sec-title reveal">No opina. Simula.</h2>
+    <div class="sec-eyebrow reveal">Los veredictos</div>
+    <h2 class="sec-title reveal">Tres palabras. Cero rodeos.</h2>
+    <p class="sec-lede reveal">El modelo no te entrega una tabla de números para que la interpretes tú. Cada mercado de cada partido sale con una sola palabra: qué tan buena es esa apuesta comparada con lo que te paga la casa.</p>
     <div class="steps">
-      <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg></div>
-        <h3>Lee el juego real</h3>
-        <p>Pitcher contra cada bateador del lineup, el parque, el clima y el bullpen. Datos oficiales de MLB, actualizados solos cada día.</p>
+      <div class="step v-bet reveal">
+        <span class="vchip">BET</span>
+        <h3>Entra</h3>
+        <p>El modelo le da bastante más probabilidad de la que refleja el precio de la casa. Ahí está el valor: son los picks en los que sí conviene poner tu dinero.</p>
+        <span class="vsub">Ventaja de 4 puntos o más</span>
       </div>
-      <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M9 20V4M14 20v-8M19 20V7"/></svg></div>
-        <h3>Juega 10,000 futuros</h3>
-        <p>Simula el partido completo diez mil veces, lanzamiento por lanzamiento, y cuenta en cuántos futuros gana cada apuesta.</p>
+      <div class="step v-maybe reveal">
+        <span class="vchip">MAYBE</span>
+        <h3>Tú decides</h3>
+        <p>Hay ventaja, pero es delgada. Sirve si la quieres para una combinada o para arriesgar poco — no es donde va tu apuesta fuerte de la jornada.</p>
+        <span class="vsub">Ventaja de 1.5 a 4 puntos</span>
       </div>
-      <div class="step reveal">
-        <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
-        <h3>Te da el veredicto</h3>
-        <p>Sin números de adorno: cada mercado sale como BET, MAYBE o SKIP. Sabes a qué entrarle y a qué no, en palabras.</p>
+      <div class="step v-skip reveal">
+        <span class="vchip">SKIP</span>
+        <h3>Déjala pasar</h3>
+        <p>La casa ya tiene bien puesto el precio: no hay nada que ganarle. Decirte a qué <em>no</em> entrarle es la mitad del trabajo — es donde se pierde el dinero.</p>
+        <span class="vsub">Sin ventaja sobre el mercado</span>
       </div>
     </div>
-    <p class="strange reveal">Hay un doctor famoso que revisó 14 millones de futuros para encontrar el único donde ganaban. <strong>El nuestro revisa 10,000 por juego. Todos los días.</strong></p>
+    <p class="strange reveal">Y si la ventaja sale demasiado grande, el modelo la baja solo a MAYBE. Casi siempre significa que hay algo que no vio — una lesión, un cambio de abridor de último minuto. <strong>Preferimos frenarte a que arriesgues por un dato viejo.</strong></p>
   </div>
 </section>
 
