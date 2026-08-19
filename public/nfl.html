@@ -42,7 +42,11 @@
   .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--muted); background: var(--g2); padding: 8px 13px; border-radius: 9px; transition: background .15s; white-space: nowrap; }
   .refresh:hover { background: var(--line); color: var(--text); }
 
-  .head { padding: 36px 0 8px; }
+  /* h1 accesible pero invisible: el dueño quitó la cabecera, pero la
+     página sigue necesitando un encabezado para lectores de pantalla y
+     para Google (mx.html y mlb.html sí se indexan). */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .head { padding: 18px 0 8px; } /* menos aire: la cabecera se quitó */
   .head .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--beta); margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
   .head .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--beta); box-shadow: 0 0 8px var(--beta); animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: 0.35; } }
@@ -189,15 +193,12 @@
 <div id="appWrap">
 <header class="head">
   <div class="wrap">
-    <div class="eyebrow">Modelo NFL 26-27 · 10,000 simulaciones por juego</div>
-    <h1>Cada juego, jugado 10,000 veces antes del kickoff.</h1>
+    <h1 class="sr-only">Cada juego, jugado 10,000 veces antes del kickoff.</h1>
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <span class="mt-opt active" role="tab" aria-selected="true">🏈 NFL</span>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
     </div>
-    <p class="lede">Ratings que aprenden solos de cada resultado, descanso, clima real del estadio y momios del mercado. Spread, total, moneyline, 1ª mitad y props del QB — con veredicto claro en cada mercado. El juego destacado de la jornada es gratis; el resto se desbloquea con tu plan.</p>
-    <div class="meta-band" id="metaBand"></div>
     <div id="disclose"></div>
   </div>
 </header>
@@ -294,7 +295,8 @@ function renderMeta(wk) {
   } else {
     chips.push(wk.games_learned > 0 ? 'Ratings al día con ' + wk.games_learned + ' juegos 26-27' : 'Ratings de arranque (fit 2024-25 ajustado por rival)');
   }
-  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
+  const mb = $('metaBand'); // la cabecera se quitó: el contenedor puede no existir
+  if (mb) mb.innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
 }
 
 let lastWk = null;
