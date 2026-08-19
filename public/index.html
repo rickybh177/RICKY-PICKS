@@ -418,9 +418,14 @@
   @media (max-width: 680px) {
     .hero { height: 100vh; height: 100dvh; min-height: 520px;
       display: flex; flex-direction: column; justify-content: space-between;
-      padding-top: calc(56px + 17vh); padding-bottom: 6vh; }
+      padding-top: calc(56px + 10vh); padding-bottom: 6vh; }
+    /* Titular grande: en vertical hay aire de sobra entre el nav y la
+       curva, así que se aprovecha. A este tamaño "Cada juego simulado"
+       parte en dos líneas y el bloque queda en tres — que es justo lo
+       que llena el hueco. */
     .hero-title { position: static; transform: none; bottom: auto;
-      font-size: clamp(2.05rem, 9.4vw, 3rem); line-height: 1.14; }
+      font-size: clamp(2.5rem, 13vw, 4rem); line-height: 1.08;
+      letter-spacing: -0.045em; }
     .hero-ctas { position: static; transform: none; bottom: auto;
       margin: 0 auto; max-width: 100%; gap: 8px; }
     .hero-cta { font-size: 0.8rem; letter-spacing: 0.04em; padding: 14px 4px; }
