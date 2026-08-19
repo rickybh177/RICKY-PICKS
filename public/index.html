@@ -57,14 +57,16 @@
     background: var(--g0);
     color: var(--text);
   }
-  /* nav sobre fondo blanco: se activa junto con .scrolled */
-  nav.scrolled { background: rgba(255,255,255,0.82); border-bottom-color: #e7ebf1; }
-  nav.scrolled .logo { color: #14181e; }
-  nav.scrolled .logo .mark { border-color: #2f7bff; color: #2f7bff; }
-  nav.scrolled .nav-link { color: #667084; }
-  nav.scrolled .nav-link:hover { color: #14181e; background: #eef2f7; }
-  nav.scrolled .nav-ghost { color: #14181e; border-color: #d8dfe9; }
-  nav.scrolled .nav-ghost:hover { border-color: #2f7bff; }
+  /* El hero pasó a fondo BLANCO, así que el nav ya no arranca oscuro:
+     usa el tema claro desde el inicio y .scrolled solo marca el borde. */
+  nav { background: rgba(255,255,255,0.78) !important; }
+  nav .logo { color: #14181e; }
+  nav .logo .mark { border-color: #2f7bff; color: #2f7bff; }
+  nav .nav-link { color: #667084; }
+  nav .nav-link:hover { color: #14181e; background: #eef2f7; }
+  nav .nav-ghost { color: #14181e; border-color: #d8dfe9; }
+  nav .nav-ghost:hover { border-color: #2f7bff; }
+  nav.scrolled { border-bottom-color: #e7ebf1; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -97,36 +99,44 @@
   .nav-link.soon .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .nav-link.soon .toast::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--line-2); }
 
-  /* ============ HERO (director de scroll, videos reutilizados) ============ */
-  .stage { height: 420vh; position: relative; background: var(--g0); }
-  .stage-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; }
-  /* Hero en TRES paneles: Liga MX · NFL · MLB.
-     Cada panel es un diagrama SVG propio (cancha/campo/diamante +
-     nube de puntos "10,000 simulaciones" con el pick en verde) — sin
-     fotos, cero riesgo de derechos de imagen, mismo azul de marca en
-     los tres. object-fit:cover centra cada diagrama en su tercio. */
-  .hero-thirds { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
-  .hero-third { position: relative; overflow: hidden; background: #060f24; }
-  .hero-third img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-  .third-line { position: absolute; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent); pointer-events: none; z-index: 1; }
-  .third-line.l1 { left: 33.333%; }
-  .third-line.l2 { left: 66.666%; }
-  .half-tag { position: absolute; top: 96px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(255,255,255,0.85); background: rgba(10,13,19,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 16px; pointer-events: none; z-index: 1; white-space: nowrap; }
-  /* Cada píldora centrada en su propio tercio */
-  .half-tag.tag-mx  { left: 16.666%; transform: translateX(-50%); }
-  .half-tag.tag-nfl { left: 50%;     transform: translateX(-50%); }
-  .half-tag.tag-mlb { left: 83.333%; transform: translateX(-50%); }
-  /* Tres columnas del mismo ancho, alineadas con los paneles */
-  .hero-ctas { display: grid; grid-template-columns: repeat(3, minmax(0, 190px)); justify-content: center; gap: 16px; margin-top: 26px; }
-  .hero-cta { display: block; text-align: center; background: rgba(14,19,28,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.22); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; padding: 13px 18px; border-radius: 12px; white-space: nowrap; transition: transform .15s ease, background .15s ease, border-color .15s ease; }
-  .hero-cta:hover { transform: translateY(-2px); background: var(--blue-deep); border-color: var(--blue-deep); }
-  .veil { position: absolute; inset: 0; pointer-events: none;
+  /* ============ HERO — histograma de 10,000 simulaciones ============
+     Fondo: imagen WebP (34 KB) con la distribución en vidrio esmerilado.
+     La composición está CALIBRADA contra la imagen: midiendo el PNG
+     pixel a pixel, la barra más alta tiene su tope en el 43.0% del alto
+     y las barras están centradas en x=49.8%. Con background-size:cover
+     la imagen mapea 1:1 en vertical, así que el titular se ancla al 59%
+     desde abajo = 2 puntos de respiro por encima de la cresta. */
+  .hero { position: relative; height: 100vh; min-height: 560px; overflow: hidden;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 34%, #eef3ff 55%, #e4ecfd 100%); }
+  .hero-art { position: absolute; inset: 0; pointer-events: none; }
+  .hero-art::before { content: ''; position: absolute; inset: 0;
+    background: url('/img/hero-dist.webp') center bottom / cover no-repeat; }
+  /* refuerzo azul sobre la imagen para que los bordes no se laven */
+  .hero-art::after { content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(120% 90% at 50% 8%, transparent 35%, rgba(10,13,19,0.6) 100%),
-      linear-gradient(180deg, rgba(10,13,19,0.6) 0%, rgba(10,13,19,0.08) 30%, rgba(10,13,19,0.15) 60%, rgba(10,13,19,0.85) 100%);
-  }
-  .stage-dim { position: absolute; inset: 0; background: var(--g0); opacity: 0; pointer-events: none; }
-  .to-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30vh; background: linear-gradient(180deg, transparent, var(--g0)); opacity: 0; pointer-events: none; }
+      radial-gradient(95% 62% at 50% 104%, rgba(47,123,255,0.14) 0%, rgba(47,123,255,0.05) 42%, rgba(47,123,255,0) 72%),
+      radial-gradient(130% 90% at 50% 4%, rgba(47,123,255,0) 45%, rgba(29,78,216,0.07) 100%); }
+
+  .hero-title { position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: 59%; width: 100%; max-width: 1180px; padding: 0 24px; text-align: center; z-index: 5;
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 800; letter-spacing: -0.04em; line-height: 1.14;
+    font-size: clamp(2.5rem, 8.4vw, 6.4rem); text-wrap: balance; color: #0b1e3f; }
+  .hero-title em { font-style: normal; color: var(--blue); }
+
+  .hero-ctas { position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: 11%; width: 100%; max-width: 680px; padding: 0 24px; z-index: 5;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .hero-cta { display: block; text-align: center; text-decoration: none;
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 16px 10px; border-radius: 12px;
+    background: #ffffff; color: #14181e; border: 1px solid rgba(11,30,63,0.10);
+    box-shadow: 0 10px 30px -12px rgba(11,30,63,0.28), 0 2px 6px -2px rgba(11,30,63,0.10);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .hero-cta:hover { transform: translateY(-2px); border-color: rgba(47,123,255,0.55);
+    box-shadow: 0 16px 38px -14px rgba(29,78,216,0.45); }
+  .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; z-index: 5; }
 
   .hero-copy { position: absolute; left: 0; right: 0; bottom: 13vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
   /* Píldora sólida: antes se perdía sobre las fotos del hero. */
@@ -394,6 +404,25 @@
   .redeem-msg.ok { display: block; background: var(--bet-bg); color: var(--bet); }
   .redeem-msg.bad { display: block; background: var(--skip-bg); color: var(--skip); }
 
+  /* ---- HERO en vertical (incluye tablet: a menos de 680px 'cover'
+     recortaría la campana y solo se verían 3 barras gigantes) ----
+     La imagen se ancla AL FONDO al 175%: ocupa del 54.9% al 100% y la
+     cresta cae en el 74.3% del alto. El difuminado arranca JUSTO en su
+     borde superior (55%) y llega a opaco en el 72%, antes de la cresta:
+     así el borde nace invisible y la barra más alta se ve íntegra. No
+     se puede igualar el tono del fondo porque la imagen tiene viñeta
+     horizontal fuerte (centro rgb(245,247,251) vs bordes rgb(165,179,206)). */
+  @media (max-width: 680px) {
+    .hero-art::before { background-size: 175% auto; background-position: center 100%;
+      -webkit-mask-image: linear-gradient(180deg, transparent 55%, #000 72%);
+      mask-image: linear-gradient(180deg, transparent 55%, #000 72%); }
+    .hero-title { bottom: 27.7%; font-size: clamp(2.05rem, 10vw, 3rem); line-height: 1.12; }
+    .hero-ctas { bottom: 7%; max-width: 100%; gap: 8px; }
+    .hero-cta { font-size: 0.8rem; letter-spacing: 0.04em; padding: 14px 4px; }
+    /* en vertical no cabe bajo los CTA: se encimaba con ellos */
+    .scroll-hint { display: none; }
+  }
+
   /* ============ RESPONSIVE ============ */
   @media (max-width: 900px) {
     .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); }
@@ -405,14 +434,6 @@
     body { font-size: 15.5px; }
     .wrap { padding: 0 16px; }
     section { padding: 68px 0; }
-    .stage { height: 460vh; }
-    /* Hero dividido en vertical: Liga MX arriba, MLB abajo */
-    /* Los tres paneles se apilan: Liga MX arriba, NFL en medio, MLB abajo */
-    .hero-thirds { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
-    .third-line { left: 0; right: 0; width: auto; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent); }
-    .third-line.l1 { top: 33.333%; }
-    .third-line.l2 { top: 66.666%; }
-    .half-tag { display: none; } /* en móvil el copy ya nombra las tres ligas */
     .hero-ctas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
     .hero-cta { padding: 11px 6px; font-size: 0.76rem; }
     .hero-copy { bottom: 10vh; }
@@ -455,80 +476,16 @@
 </nav>
 
 <!-- ============ HERO ============ -->
-<div class="stage" id="stage">
-  <div class="stage-sticky">
-    <!-- Fondo en tres paneles: Liga MX · NFL · MLB -->
-    <div class="hero-thirds">
-      <div class="hero-third mx"><img id="vid1" src="/img/hero-mx.svg" alt=""></div>
-      <div class="hero-third nfl"><img id="vid3" src="/img/hero-nfl.svg" alt=""></div>
-      <div class="hero-third mlb"><img id="vid2" src="/img/hero-mlb.svg" alt=""></div>
-    </div>
-    <div class="half-tag tag-mx">Liga MX</div>
-    <div class="half-tag tag-nfl">NFL</div>
-    <div class="half-tag tag-mlb">MLB</div>
-    <div class="third-line l1"></div>
-    <div class="third-line l2"></div>
-    <div class="veil"></div>
-    <div class="stage-dim" id="stageDim"></div>
-
-    <div class="hero-copy" id="heroCopy">
-      <div class="hero-eyebrow">Tres modelos · Liga MX + NFL + MLB</div>
-      <h1 class="mega">Cada juego simulado <em>10,000 veces.</em></h1>
-      <div class="hero-sub">Un modelo para la Liga MX, otro para la NFL y otro para MLB. Cada uno simula el partido antes de que empiece y te dice a qué entrarle. Y a qué no.</div>
-      <div class="hero-ctas">
-        <a href="#vivo-mx" class="hero-cta">⚽ Ver Liga MX</a>
-        <a href="#vivo-nfl" class="hero-cta">🏈 Ver NFL</a>
-        <a href="#vivo" class="hero-cta">⚾ Ver MLB</a>
-      </div>
-    </div>
-
-    <div class="pickstage">
-      <div class="pickcard" id="pickcard">
-        <div class="pc-piece pc-shell" data-piece="0">
-          <div class="pc-piece pc-tag" data-piece="1">
-            <span class="t1" id="pcTag">Pick gratis · NFL</span>
-            <span class="t2" id="pcDate">HOY</span>
-          </div>
-          <div class="pc-piece" data-piece="2">
-            <div class="pc-team" id="pcAway">
-              <img id="pcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="pcAwayName">Visitante</span><small id="pcAwayPit"></small></div>
-              <div class="pr" id="pcAwayProb">—</div>
-            </div>
-          </div>
-          <div class="pc-piece" data-piece="3">
-            <div class="pc-team fav" id="pcHome">
-              <img id="pcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="pcHomeName">Local</span><small id="pcHomePit"></small></div>
-              <div class="pr" id="pcHomeProb">—</div>
-            </div>
-          </div>
-          <div class="pc-piece" data-piece="4">
-            <div class="pc-bar"><div class="a" id="pcBarA" style="width:50%"></div><div class="h" id="pcBarH" style="width:50%"></div></div>
-          </div>
-          <div class="pc-piece" data-piece="5">
-            <div class="pc-pick">
-              <span class="vchip">BET</span>
-              <span class="sel" id="pcPickSel">Pick del modelo</span>
-              <span class="odds" id="pcPickOdds"></span>
-            </div>
-            <div class="pc-foot"><span id="pcSims">10,000 SIMULACIONES</span><span id="pcVenue"></span></div>
-          </div>
-        </div>
-        <div class="pc-piece pc-cta" data-piece="6">
-          <div class="pc-cta-row">
-            <a href="/nfl.html" id="heroFreeBtn">Ver este pick gratis</a>
-            <a href="#precios-nfl" class="pc-cta-ghost">Ver planes</a>
-          </div>
-          <span class="mini">Sé de los primeros. Precio fundador congelado de por vida — los que lleguen después pagarán más.</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="scroll-hint" id="scrollHint">Scroll</div>
-    <div class="to-ground" id="toGround"></div>
+<section class="hero">
+  <div class="hero-art"></div>
+  <h1 class="hero-title">Cada juego simulado <em>10,000 veces.</em></h1>
+  <div class="hero-ctas">
+    <a href="#vivo-mx" class="hero-cta">Liga MX</a>
+    <a href="#vivo-nfl" class="hero-cta">NFL</a>
+    <a href="#vivo" class="hero-cta">MLB</a>
   </div>
-</div>
+  <div class="scroll-hint">Scroll</div>
+</section>
 
 <!-- A partir de aquí, todo el sitio usa el tema claro (ver .light-zone) -->
 <div class="light-zone">
@@ -970,65 +927,17 @@
 
 <script>
 /* ============================================================
-   DIRECTOR DEL HERO — mismos videos, sistema terminal.
-   frame() corre directo en scroll (rAF se congela en tabs de fondo).
+   NAV — marca el borde al hacer scroll.
+   Antes aquí vivía el "director" del hero de 420vh (crossfade de
+   paneles + la card que se ensamblaba). Ese hero se reemplazó por uno
+   estático, así que del director solo queda esto.
    ============================================================ */
 (function () {
-  const stage = document.getElementById('stage');
-  const heroCopy = document.getElementById('heroCopy');
-  const scrollHint = document.getElementById('scrollHint');
-  const stageDim = document.getElementById('stageDim');
-  const toGround = document.getElementById('toGround');
   const nav = document.getElementById('topnav');
-  const pieces = Array.from(document.querySelectorAll('#stage .pc-piece'));
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const clamp01 = x => Math.max(0, Math.min(1, x));
-  const ease = t => 1 - Math.pow(1 - t, 3);
-
-  const windows = [
-    [0.36, 0.50], [0.44, 0.56], [0.50, 0.64], [0.56, 0.70], [0.63, 0.75], [0.69, 0.82], [0.76, 0.88],
-  ];
-  const offsets = [
-    [0, 90, -3], [-40, -30, 0], [-70, 0, -2], [70, 0, 2], [0, 40, 0], [0, 60, 2], [0, 40, 0],
-  ];
-
-  function frame() {
-    const rect = stage.getBoundingClientRect();
-    const total = stage.offsetHeight - window.innerHeight;
-    const p = clamp01(-rect.top / total);
-
-    nav.classList.toggle('scrolled', window.scrollY > 30);
-    if (reduced) return;
-
-    // (el fondo ahora es una imagen fija: ya no hay crossfade de videos)
-    const hFade = clamp01((p - 0.14) / 0.16);
-    heroCopy.style.opacity = String(1 - hFade);
-    heroCopy.style.transform = 'translateY(' + (-60 * ease(hFade)) + 'px) scale(' + (1 - 0.08 * hFade) + ')';
-    heroCopy.style.pointerEvents = hFade > 0.6 ? 'none' : '';
-    scrollHint.style.opacity = String(1 - clamp01(p / 0.08));
-
-    stageDim.style.opacity = String(0.55 * clamp01((p - 0.36) / 0.2) + 0.3 * clamp01((p - 0.88) / 0.12));
-
-    for (let i = 0; i < pieces.length; i++) {
-      const [a, b] = windows[i];
-      const t = ease(clamp01((p - a) / (b - a)));
-      const [ox, oy, rot] = offsets[i];
-      pieces[i].style.opacity = String(t);
-      pieces[i].style.transform =
-        'translate(' + (ox * (1 - t)) + 'px,' + (oy * (1 - t)) + 'px) rotate(' + (rot * (1 - t)) + 'deg)';
-    }
-
-    toGround.style.opacity = String(clamp01((p - 0.84) / 0.16));
-  }
-
-  if (reduced) {
-    pieces.forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
-  }
-
-  window.addEventListener('scroll', frame, { passive: true });
-  window.addEventListener('resize', frame, { passive: true });
-  frame();
+  if (!nav) return;
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 30);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 })();
 
 /* ============================================================
@@ -1090,55 +999,6 @@
     .then(d => { const g = d && d.game ? d.game : fallback; applyTo('lc', g); mlbFallbackHero = g; })
     .catch(() => { applyTo('lc', fallback); });
 
-  // HERO: pick gratis de NFL — arranca la temporada, así que es lo
-  // primero que debe ver quien llega al sitio. Toma el juego destacado
-  // de la SEMANA EN CURSO (sin st fijo: el API sigue el calendario
-  // solo — pretemporada hoy, temporada regular después; el pick
-  // gratis rota semana con semana). Si el pick de la semana ya se
-  // jugó, se dice de frente. Sin NFL corriendo, cae a MLB.
-  let mlbFallbackHero = null;
-  function applyNflHero(g, wk) {
-    set('pcAwayName', g.away.name); set('pcAwayPit', g.away.city || '');
-    set('pcHomeName', g.home.name); set('pcHomePit', g.home.city || '');
-    const ml = (g.markets && g.markets.moneyline) || {};
-    set('pcAwayProb', pct(ml.away)); set('pcHomeProb', pct(ml.home));
-    const r1 = document.getElementById('pcAway'), r2 = document.getElementById('pcHome');
-    if (r1 && r2) { r1.classList.toggle('fav', ml.away >= ml.home); r2.classList.toggle('fav', ml.home > ml.away); }
-    const al = document.getElementById('pcAwayLogo'), hl = document.getElementById('pcHomeLogo');
-    if (al && g.away.logo) al.src = g.away.logo;
-    if (hl && g.home.logo) hl.src = g.home.logo;
-    const ba = document.getElementById('pcBarA'), bh = document.getElementById('pcBarH');
-    if (ba) ba.style.width = (ml.away * 100) + '%';
-    if (bh) bh.style.width = (ml.home * 100) + '%';
-    const played = g.state === 'post';
-    const weekTxt = wk ? (wk.phase === 'pretemporada' ? 'pretemp ' + wk.week : 'semana ' + wk.week) : '';
-    const tag = document.getElementById('pcTag');
-    if (tag) tag.textContent = 'Pick gratis · NFL' + (weekTxt ? ' · ' + weekTxt : '') + (played ? ' · ya se jugó' : '');
-    const dt = new Date(g.date);
-    set('pcDate', played ? 'FINAL' : dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
-    const verdicts = g.verdicts || [];
-    const pick = verdicts.find(v => v.verdict === 'bet') || verdicts.find(v => v.verdict === 'maybe') || verdicts[0];
-    if (pick) {
-      set('pcPickSel', pick.label);
-      set('pcPickOdds', pct(pick.prob));
-      const chip = document.querySelector('#pickcard .vchip');
-      if (chip) chip.textContent = (pick.verdict || 'bet').toUpperCase();
-    }
-    if (played && g.score) {
-      set('pcSims', 'MARCADOR FINAL ' + g.score.away + '-' + g.score.home + ' · LA SEMANA COMPLETA VIVE EN EL MODELO');
-    } else {
-      set('pcSims', '10,000 SIMULACIONES' + (g.neutral ? ' · SEDE NEUTRAL' : ''));
-    }
-    set('pcVenue', (g.venue || '').toUpperCase());
-  }
-  fetch('/api/nfl-picks?as=guest')
-    .then(r => r.ok ? r.json() : null)
-    .then(d => {
-      const g = d && d.games && d.games.find(x => x.id === d.featured_id);
-      if (g) applyNflHero(g, d);
-      else applyTo('pc', mlbFallbackHero || fallback); // sin NFL corriendo: cae a MLB
-    })
-    .catch(() => { applyTo('pc', mlbFallbackHero || fallback); });
 })();
 
 /* ============================================================
