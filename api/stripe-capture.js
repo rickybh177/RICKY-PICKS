@@ -36,7 +36,10 @@ module.exports = async function handler(req, res) {
     if (FULL_PASS_PLANS.includes(plan)) {
       await cancelCoveredRecurring(userId, email, plan);
     }
-    return res.status(200).json({ ok: true, plan });
+    /* `value` = lo realmente cobrado (Stripe da centavos); solo lo usa
+       el Pixel de Meta para reportar la compra. */
+    const value = Number.isFinite(session.amount_total) ? session.amount_total / 100 : null;
+    return res.status(200).json({ ok: true, plan, value });
   } catch (e) {
     console.error('stripe-capture:', e);
     return res.status(500).json({ error: 'Error interno: ' + e.message });

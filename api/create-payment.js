@@ -145,7 +145,9 @@ module.exports = async function handler(req, res) {
     external_reference: `${user.id}:${plan.id}`,
     metadata: { user_id: user.id, plan: plan.id },
     back_urls: {
-      success: `${base}/${dest}?pago=ok`,
+      // `plan` viaja de vuelta para que el Pixel de Meta pueda
+      // reportar la compra (public/meta-purchase.js).
+      success: `${base}/${dest}?pago=ok&plan=${plan.id}&val=${finalPrice}`,
       pending: `${base}/${dest}?pago=pendiente`,
       failure: `${base}/checkout.html?plan=${plan.id}&pago=error`,
     },

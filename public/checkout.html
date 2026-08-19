@@ -831,7 +831,9 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
       });
       const out = await res.json();
       if (out.ok) {
-        const dest = modelUrl(out.plan) + '?pago=' + out.plan;
+        // `val` viaja para que el Pixel reporte el importe real cobrado.
+        const dest = modelUrl(out.plan) + '?pago=' + out.plan
+          + (out.value > 0 ? '&val=' + out.value : '');
         history.replaceState(null, '', dest);
         window.location.href = dest;
         return;
