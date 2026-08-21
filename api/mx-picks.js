@@ -14,6 +14,7 @@
    Vigencia del plan = PLANS[plan].days desde entitlements.updated_at.
    ============================================================ */
 const { buildBoard } = require('../lib/mx/model');
+const { featuredId } = require('../lib/mx/featured');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
 
@@ -25,13 +26,6 @@ const TTL = 5 * 60 * 1000;
 
 /* El partido destacado = el pick con más convicción entre los que
    aún no empiezan (misma regla que /api/mx-free). */
-function featuredId(games) {
-  const pre = games.filter(g => !g.error && g.state === 'pre');
-  const pool = pre.length ? pre : games.filter(g => !g.error);
-  if (!pool.length) return null;
-  return pool.reduce((a, b) => ((b.strength || 0) > (a.strength || 0) ? b : a)).id;
-}
-
 /* Versión censurada de un partido para invitados. */
 function lockGame(g) {
   return {

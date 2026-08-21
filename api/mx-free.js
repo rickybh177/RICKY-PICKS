@@ -6,6 +6,7 @@
    gated en /api/mx-picks.
    ============================================================ */
 const { buildBoard } = require('../lib/mx/model');
+const { featuredGame } = require('../lib/mx/featured');
 
 let _cache = null; // { at, value }
 const TTL = 10 * 60 * 1000;
@@ -22,13 +23,13 @@ module.exports = async function handler(req, res) {
       value = _cache.value;
     } else {
       const board = await buildBoard();
-      const games = (board.games || []).filter(g => !g.error);
-      const pre = games.filter(g => g.state === 'pre');
-      const pool = pre.length ? pre : games;
-      if (!pool.length) {
+      /* MISMA elección que /api/mx-picks (incluye overrides manuales):
+         si divergen, el landing muestra un partido gratis y la página
+         del modelo otro. */
+      const best = featuredGame(board.games || []);
+      if (!best) {
         value = { jornada: board.jornada, game: null };
       } else {
-        const best = pool.reduce((a, b) => ((b.strength || 0) > (a.strength || 0) ? b : a));
         const topPick = (best.verdicts || []).filter(v => v.verdict === 'bet')
           .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0] || (best.verdicts || [])[0] || null;
         value = {
