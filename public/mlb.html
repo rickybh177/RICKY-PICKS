@@ -401,9 +401,14 @@ function renderDay(day) {
     $('games').innerHTML = '<div class="state"><h2>Este día no hay beisbol</h2>Muévete de día con las flechas de arriba.</div>';
     return;
   }
-  // el destacado primero
-  const sorted = [...games].sort((a, b) =>
-    (a.gamePk === day.featured_pk ? -1 : 0) - (b.gamePk === day.featured_pk ? -1 : 0));
+  /* Orden: el pick gratis SIEMPRE primero (aunque tengas plan), y el
+     resto por hora de inicio, del más próximo al más lejano. */
+  const sorted = [...games].sort((a, b) => {
+    const fa = a.gamePk === day.featured_pk ? 1 : 0;
+    const fb = b.gamePk === day.featured_pk ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return new Date(a.game_date) - new Date(b.game_date);
+  });
   $('games').innerHTML = sorted.map((g, i) =>
     g.error ? errCard(g, i) : (g.locked ? lockedCard(g, i, day) : gameCard(g, i, g.gamePk === day.featured_pk && guest))
   ).join('');

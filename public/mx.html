@@ -392,8 +392,18 @@ function renderBoard(bd) {
   // agrupar por día requiere orden cronológico (el API manda los
   // terminados al final)
   games.sort((a, b) => new Date(a.date) - new Date(b.date));
+  /* El pick gratis va SIEMPRE hasta arriba, con su propio encabezado de
+     día: la tarjeta solo muestra la HORA, así que sin encabezado se
+     quedaría sin fecha. El resto sigue agrupado por día, del partido
+     más próximo al más lejano. */
+  const destacado = games.find(g => g.id === featuredId);
+  const resto = destacado ? games.filter(g => g !== destacado) : games;
   let html = '', lastDay = '', i = 0;
-  for (const g of games) {
+  if (destacado) {
+    html += '<div class="day-h">' + esc(dayKey(destacado.date).toUpperCase()) + '</div>';
+    html += gameCard(destacado, i++);
+  }
+  for (const g of resto) {
     const d = dayKey(g.date);
     if (d !== lastDay) { html += '<div class="day-h">' + esc(d.toUpperCase()) + '</div>'; lastDay = d; }
     html += gameCard(g, i++);

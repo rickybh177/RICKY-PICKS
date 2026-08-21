@@ -340,13 +340,14 @@ function renderWeek(wk) {
       '</div>';
     return;
   }
-  /* invitado: el destacado primero (es el gratis), luego los bloqueados */
+  /* Orden: el pick gratis SIEMPRE primero (antes solo para invitados) y
+     el resto por hora de kickoff, del más próximo al más lejano. Antes
+     el resto se ordenaba por convicción del modelo, lo que mezclaba
+     juegos de jueves con los del domingo. */
   const sorted = [...games].sort((a, b) => {
-    if (guest) {
-      const fa = a.id === wk.featured_id ? 1 : 0, fb = b.id === wk.featured_id ? 1 : 0;
-      if (fa !== fb) return fb - fa;
-    }
-    return (b.strength || 0) - (a.strength || 0);
+    const fa = a.id === wk.featured_id ? 1 : 0, fb = b.id === wk.featured_id ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return new Date(a.date) - new Date(b.date);
   });
   $('games').innerHTML = sorted.map((g, i) =>
     g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === wk.featured_id)
