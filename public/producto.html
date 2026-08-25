@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1031713479672830');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RICKY·PICKS — Elige tu plan</title>
+<meta name="description" content="Elige tu plan: una semana de prueba, la temporada completa o el combo con los tres modelos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ER·P%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --ink: #0b1e3f;
+    --blue: #2f7bff; --blue-deep: #1d4ed8; --blue-tint: rgba(47,123,255,0.08);
+    --bet: #16a34a; --bet-bg: rgba(22,163,74,0.1);
+    --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
+    --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--g0); color: var(--text);
+    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.55; -webkit-font-smoothing: antialiased; font-size: 16px; }
+  a { color: var(--blue); }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---- NAV ---- */
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.86);
+    backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
+  .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue);
+    color: var(--blue); display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
+  .nav-actions { display: flex; align-items: center; gap: 8px; }
+  .nav-btn { font-size: 0.82rem; font-weight: 600; color: var(--text); border: 1px solid var(--line-2);
+    padding: 9px 15px; border-radius: 10px; white-space: nowrap; transition: border-color .15s; }
+  .nav-btn:hover { border-color: var(--blue); }
+
+  /* ---- SELECTOR DE MODELO ---- */
+  .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line);
+    border-radius: 980px; padding: 4px; gap: 2px; margin-bottom: 26px; }
+  .model-toggle a, .model-toggle span { display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px;
+    text-decoration: none; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle a:hover { color: var(--text); }
+  .model-toggle .active { background: var(--g0); color: var(--blue-deep);
+    box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
+
+  /* ---- LAYOUT ---- */
+  main { padding: 30px 0 40px; }
+  /* Dos columnas con el encabezado de la oferta en su propia fila: así en
+     vertical se puede intercalar (título → pick → precios) sin duplicarlo. */
+  .cols { display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-areas: "live head" "live buy";
+    column-gap: clamp(26px, 4vw, 60px); row-gap: 0; align-items: start; }
+  .live { grid-area: live; } .buy-head { grid-area: head; } .buy { grid-area: buy; }
+
+  /* ---- IZQUIERDA: el pick gratis en vivo ---- */
+  .live-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bet);
+    box-shadow: 0 0 8px var(--bet); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .live-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--bet); }
+  .live-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600;
+    letter-spacing: 0.06em; color: var(--faint); margin-left: auto; white-space: nowrap; }
+
+  .pk { background: #0e131c; border-radius: 18px; padding: 22px; color: #e9edf4;
+    box-shadow: 0 30px 70px -34px rgba(11,30,63,0.55); }
+  .pk-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #8b96a8; margin-bottom: 16px; }
+  .pk-team { display: grid; grid-template-columns: 38px 1fr auto; gap: 13px; align-items: center; padding: 9px 0; }
+  .pk-team img { width: 38px; height: 38px; object-fit: contain; }
+  .pk-team .tn { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.015em; }
+  .pk-team .tn small { display: block; font-weight: 450; font-size: 0.74rem; color: #8b96a8; }
+  .pk-team .pr { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.2rem;
+    font-variant-numeric: tabular-nums; color: #8b96a8; }
+  .pk-team.fav .pr { color: #6ea2ff; }
+  .pk-bar { display: flex; height: 5px; border-radius: 4px; overflow: hidden; margin: 14px 0 16px; background: #1e2634; }
+  .pk-bar i { display: block; height: 100%; }
+  .pk-bar .a { background: #46536b; } .pk-bar .h { background: var(--blue); }
+  .pk-pick { display: flex; align-items: center; gap: 12px; background: rgba(22,163,74,0.1);
+    border: 1px solid rgba(22,163,74,0.32); border-radius: 12px; padding: 13px 15px; }
+  .pk-pick.is-maybe { background: rgba(47,123,255,0.1); border-color: rgba(47,123,255,0.34); }
+  .pk-pick.is-skip { background: rgba(242,105,92,0.1); border-color: rgba(242,105,92,0.3); }
+  .pk-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.12em; padding: 5px 10px; border-radius: 7px; background: var(--bet); color: #04220f; }
+  .pk-pick.is-maybe .pk-chip { background: var(--blue); color: #04122e; }
+  .pk-pick.is-skip .pk-chip { background: #f2695c; color: #2b0606; }
+  .pk-sel { font-weight: 700; font-size: 0.98rem; letter-spacing: -0.01em; }
+  .pk-odds { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #8b96a8; margin-left: auto; white-space: nowrap; }
+  .pk-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #5f6a7d; }
+  .pk-skeleton { height: 300px; border-radius: 18px; background: linear-gradient(100deg, var(--g1) 30%, var(--g2) 50%, var(--g1) 70%);
+    background-size: 200% 100%; animation: shine 1.3s linear infinite; }
+  @keyframes shine { to { background-position: -200% 0; } }
+  .live-note { margin-top: 14px; font-size: 0.84rem; color: var(--muted); }
+  .live-note a { font-weight: 600; text-decoration: none; }
+  .live-note a:hover { text-decoration: underline; }
+
+  /* ---- DERECHA: la oferta ---- */
+  .buy-head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
+    font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--ink); }
+  .buy-head .lede { color: #3d4759; font-size: 0.98rem; font-weight: 500; margin-top: 12px; max-width: 46ch; }
+
+  .opts { margin-top: 24px; }
+  .sep { display: flex; align-items: center; gap: 12px; margin: 12px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.18em; color: var(--faint); }
+  .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  /* Tarjeta de plan: solo la SELECCIONADA despliega sus bullets
+     (mismo patrón que la referencia de AG1). */
+  .opt { display: block; width: 100%; text-align: left; border: 1.5px solid var(--line-2);
+    border-radius: 16px; background: var(--g0); overflow: hidden; cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease; }
+  .opt:hover { border-color: rgba(47,123,255,0.5); }
+  .opt.on { border-color: var(--blue); box-shadow: 0 14px 34px -18px rgba(47,123,255,0.55); }
+  .opt-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 13px; align-items: center; padding: 17px 18px; }
+  .radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line-2);
+    position: relative; transition: border-color .15s; }
+  .opt.on .radio { border-color: var(--blue); }
+  .opt.on .radio::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--blue); }
+  .opt-name { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.015em; }
+  .opt-name small { display: block; font-weight: 450; font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
+  .opt-price { text-align: right; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em;
+    color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .opt-price small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--muted);
+    letter-spacing: 0; margin-top: 1px; }
+  .opt-body { display: none; padding: 0 18px 17px 53px; background: var(--g1); border-top: 1px solid var(--line); }
+  .opt.on .opt-body { display: block; }
+  .opt-body ul { list-style: none; padding-top: 14px; }
+  .opt-body li { position: relative; padding-left: 22px; font-size: 0.88rem; color: #3d4759;
+    font-weight: 450; margin-bottom: 7px; }
+  .opt-body li::before { content: '✓'; position: absolute; left: 0; color: var(--bet); font-weight: 700; }
+  .flag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem;
+    font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--blue-tint);
+    color: var(--blue-deep); border: 1px solid rgba(47,123,255,0.3); border-radius: 6px;
+    padding: 3px 7px; margin-left: 8px; vertical-align: 2px; }
+
+  .go { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+    margin-top: 22px; background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 1.05rem;
+    padding: 18px 22px; border-radius: 14px; text-decoration: none;
+    box-shadow: 0 16px 36px -16px rgba(29,78,216,0.75); transition: transform .15s ease, background .15s ease; }
+  .go:hover { transform: translateY(-2px); background: var(--blue); }
+  .trust { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; }
+  .trust span { font-size: 0.8rem; color: var(--muted); position: relative; padding-left: 20px; }
+  .trust span::before { content: '✓'; position: absolute; left: 0; color: var(--bet); font-weight: 700; }
+
+  /* ---- BARRA FIJA (móvil) ---- */
+  .sticky { position: sticky; bottom: 0; z-index: 30; display: none;
+    background: rgba(255,255,255,0.94); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--line-2); padding: 11px 0 calc(11px + env(safe-area-inset-bottom)); }
+  .sticky .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .sticky .s-txt { font-weight: 700; font-size: 0.9rem; letter-spacing: -0.01em; }
+  .sticky .s-txt small { display: block; font-weight: 450; font-size: 0.74rem; color: var(--muted); }
+  .sticky a { background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 0.9rem;
+    padding: 13px 22px; border-radius: 11px; text-decoration: none; white-space: nowrap; }
+
+  @media (max-width: 900px) {
+    /* En vertical: primero el título, luego la prueba (el pick real
+       corriendo) y al final los precios, como la referencia de AG1. */
+    .cols { grid-template-columns: 1fr; grid-template-areas: "head" "live" "buy"; row-gap: 28px; }
+    .opts { margin-top: 0; }
+    .sticky { display: block; }
+    .go { display: none; } /* en vertical manda la barra fija */
+    main { padding: 22px 0 30px; }
+  }
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; width: 100%; }
+    .model-toggle a, .model-toggle span { flex: 1; padding: 10px 6px; font-size: 0.82rem; }
+    .opt-row { grid-template-columns: 20px 1fr auto; gap: 10px; padding: 15px 14px; }
+    .opt-body { padding-left: 44px; }
+    .opt-price { font-size: 1.15rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span style="color:var(--blue)">·</span>PICKS</a>
+    <div class="nav-actions">
+      <a class="nav-btn" id="verModelo" href="/mlb.html">Ver el pick gratis</a>
+      <button class="nav-btn" id="authBtn">Entrar</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+      <a href="/producto.html?m=mx"  data-m="mx"  role="tab">⚽ Liga MX</a>
+      <a href="/producto.html?m=nfl" data-m="nfl" role="tab">🏈 NFL</a>
+      <a href="/producto.html?m=mlb" data-m="mlb" role="tab">⚾ MLB</a>
+    </div>
+
+    <div class="cols">
+      <!-- IZQUIERDA: el pick gratis en vivo -->
+      <section class="live">
+        <div class="live-head">
+          <span class="live-dot"></span>
+          <span class="live-lbl">Pick gratis · en vivo</span>
+          <span class="live-sub" id="liveSub"></span>
+        </div>
+        <div id="pickHolder"><div class="pk-skeleton"></div></div>
+        <p class="live-note">Esto sale del modelo real, corriendo ahora mismo. Es gratis y no necesitas cuenta —
+          <a href="/mlb.html" id="verTodos">ver el resto de la cartelera →</a></p>
+      </section>
+
+      <!-- DERECHA: la oferta -->
+      <header class="buy-head">
+        <h1 id="buyTitle">Elige tu plan</h1>
+        <p class="lede" id="buyLede">Todos los partidos, todos los mercados, con veredicto claro en cada uno.</p>
+      </header>
+      <section class="buy">
+        <div class="opts" id="opts"></div>
+        <a class="go" id="goBtn" href="#">Continuar</a>
+        <div class="trust">
+          <span>Pago seguro con tarjeta o Mercado Pago</span>
+          <span>Acceso inmediato</span>
+          <span>Sin suscripción: un solo pago</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="sticky" id="sticky">
+  <div class="wrap">
+    <div class="s-txt" id="sTxt">—</div>
+    <a id="sGo" href="#">Continuar</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+const MX_TZ = 'America/Mexico_City';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
+const money = n => '$' + Number(n).toLocaleString('en-US');
+
+/* ---- qué modelo se está viendo ---- */
+const MODELOS = {
+  mx:  { nombre: 'Liga MX', pagina: '/mx.html',  api: '/api/mx-free',
+         titulo: 'El Apertura completo, jornada por jornada',
+         lede: 'Cada partido resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
+         semana: 'mx_semana', temporada: 'mx_apertura' },
+  nfl: { nombre: 'NFL', pagina: '/nfl.html', api: '/api/nfl-picks?as=guest',
+         titulo: 'La temporada 26-27 completa',
+         lede: 'Los 16 juegos de cada jornada: spread, total, moneyline, 1ª mitad y props del QB. Hasta el Super Bowl.',
+         semana: 'nfl_semana', temporada: 'nfl_temporada' },
+  mlb: { nombre: 'MLB', pagina: '/mlb.html', api: '/api/mlb-free',
+         titulo: 'La temporada 2026 completa',
+         lede: 'Todos los juegos del día, cada día: moneyline, hándicap, totales y más — hasta el último out de la Serie Mundial.',
+         semana: 'mlb_semana', temporada: 'mlb_temporada' },
+};
+const param = new URLSearchParams(location.search).get('m');
+const M = MODELOS[param] ? param : 'mlb';
+const cfg = MODELOS[M];
+
+/* nav + toggle + enlaces al modelo */
+document.title = 'RICKY·PICKS — Plan ' + cfg.nombre;
+$('buyTitle').textContent = cfg.titulo;
+$('buyLede').textContent = cfg.lede;
+$('verModelo').href = cfg.pagina;
+$('verTodos').href = cfg.pagina;
+document.querySelectorAll('.model-toggle a').forEach(a => {
+  if (a.dataset.m === M) {
+    const span = document.createElement('span');
+    span.className = 'active'; span.setAttribute('role', 'tab');
+    span.setAttribute('aria-selected', 'true'); span.innerHTML = a.innerHTML;
+    a.replaceWith(span);
+  }
+});
+
+/* ---- PRECIOS: se leen del servidor, nunca se escriben a mano ----
+   lib/plans.js es la fuente de verdad; /api/plans-public la expone.
+   Escribirlos aquí fue el bug de los banners (anunciaban $999 y un
+   plan retirado de $599). */
+const BULLETS = {
+  semana: m => ([
+    'Todos los partidos y todos los mercados, 7 días',
+    'Veredicto BET / MAYBE / SKIP con momios reales',
+    'Para probar el modelo sin comprometerte',
+  ]),
+  temporada: m => {
+    const base = [
+      'Todo lo de la Semana, hasta el final de la temporada',
+      'Sin renovaciones: pagas una vez y listo',
+    ];
+    if (m === 'nfl') base.splice(1, 0, 'Playoffs y Super Bowl incluidos, más la pretemporada de regalo');
+    if (m === 'mlb') base.splice(1, 0, 'Playoffs y Serie Mundial incluidos');
+    if (m === 'mx')  base.splice(1, 0, 'Las 17 jornadas más la liguilla completa');
+    return base;
+  },
+  combo: () => ([
+    'Los tres modelos: Liga MX, NFL y MLB',
+    'Cada uno hasta el final de su temporada',
+    'Un solo pago. Sin suscripción, sin renovaciones',
+  ]),
+};
+
+let planes = null, elegido = null, comboMio = null; /* comboMio: precio del combo para ESTE usuario */
+
+function tarjeta(id, nombre, sub, precio, nota, bullets, flag) {
+  return '<button class="opt" type="button" data-plan="' + esc(id) + '" aria-pressed="false">' +
+    '<div class="opt-row">' +
+      '<span class="radio"></span>' +
+      '<span class="opt-name">' + esc(nombre) + (flag ? '<span class="flag">' + esc(flag) + '</span>' : '') +
+        '<small>' + esc(sub) + '</small></span>' +
+      '<span class="opt-price">' + esc(precio) + (nota ? '<small>' + esc(nota) + '</small>' : '') + '</span>' +
+    '</div>' +
+    '<div class="opt-body"><ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul></div>' +
+  '</button>';
+}
+
+function pintaOpciones(p) {
+  const sem = p[cfg.semana], tem = p[cfg.temporada], com = p.combo_2026;
+  if (!sem || !tem) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
+  const porDia = (precio, dias) => dias ? '$' + Math.round(precio / dias) + '/día' : '';
+  let html = '';
+  html += tarjeta(sem.id, 'Semana de prueba', sem.days + ' días de acceso completo',
+    money(sem.price), porDia(sem.price, sem.days), BULLETS.semana(M));
+  html += '<div class="sep">O bien</div>';
+  html += tarjeta(tem.id, 'Temporada completa', 'Hasta el final del torneo',
+    money(tem.price), porDia(tem.price, tem.days), BULLETS.temporada(M), 'El más elegido');
+  if (com) {
+    html += '<div class="sep">O bien</div>';
+    const suma = (p.mlb_temporada ? p.mlb_temporada.price : 0) + (p.mx_apertura ? p.mx_apertura.price : 0) + (p.nfl_temporada ? p.nfl_temporada.price : 0);
+    /* Si el usuario ya tiene un modelo (o una mensualidad que hace
+       upgrade), el servidor le cobra menos: hay que pintarlo igual,
+       si no ve $1,199 y paga otra cosa. */
+    const precioCombo = comboMio != null ? comboMio : com.price;
+    const ahorro = suma - precioCombo;
+    html += tarjeta(com.id, 'Combo Total', comboMio != null ? 'Tu precio por los modelos que ya tienes' : 'Los 3 modelos en un solo pago',
+      money(precioCombo), ahorro > 0 ? 'ahorras ' + money(ahorro) : '', BULLETS.combo(), '3 modelos');
+  }
+  $('opts').innerHTML = html;
+  document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
+  elegir(elegido && p[elegido] ? elegido : tem.id); // la temporada viene preseleccionada
+}
+
+function elegir(id) {
+  elegido = id;
+  document.querySelectorAll('.opt').forEach(b => {
+    const on = b.dataset.plan === id;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const p = planes && planes[id];
+  const url = '/checkout.html?plan=' + encodeURIComponent(id);
+  $('goBtn').href = url; $('sGo').href = url;
+  if (p) $('sTxt').innerHTML = esc(p.title.split('—').pop().trim()) + '<small>' + money(p.price) + ' ' + esc(p.currency) + '</small>';
+}
+
+fetch('/api/plans-public')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { planes = (d && d.plans) || null; if (planes) pintaOpciones(planes); })
+  .catch(() => { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; });
+
+/* ---- IZQUIERDA: el pick gratis, con los datos reales de cada modelo ---- */
+function chipClase(v) { return v === 'bet' ? '' : ' is-' + v; }
+
+function cardHTML(o) {
+  const fila = (t, favorito) =>
+    '<div class="pk-team' + (favorito ? ' fav' : '') + '">' +
+      (t.logo ? '<img src="' + esc(t.logo) + '" alt="">' : '<span></span>') +
+      '<span class="tn">' + esc(t.name) + (t.sub ? '<small>' + esc(t.sub) + '</small>' : '') + '</span>' +
+      '<span class="pr">' + esc(t.prob) + '</span>' +
+    '</div>';
+  return '<div class="pk">' +
+    '<div class="pk-meta">' + esc(o.meta) + '</div>' +
+    fila(o.away, o.favAway) + fila(o.home, !o.favAway) +
+    '<div class="pk-bar"><i class="a" style="width:' + o.barA + '%"></i><i class="h" style="width:' + (100 - o.barA) + '%"></i></div>' +
+    '<div class="pk-pick' + chipClase(o.verdict) + '">' +
+      '<span class="pk-chip">' + esc(o.verdict.toUpperCase()) + '</span>' +
+      '<span class="pk-sel">' + esc(o.label) + '</span>' +
+      '<span class="pk-odds">' + esc(o.odds) + '</span>' +
+    '</div>' +
+    '<div class="pk-foot"><span>10,000 simulaciones</span><span>' + esc(o.venue) + '</span></div>' +
+  '</div>';
+}
+
+const ORDEN = { bet: 3, maybe: 2, skip: 1 };
+function mejorVeredicto(vs) {
+  const l = (vs || []).filter(v => v && v.label);
+  if (!l.length) return null;
+  return l.slice().sort((a, b) => {
+    const d = (ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0);
+    return d !== 0 ? d : (b.prob || 0) - (a.prob || 0);
+  })[0];
+}
+
+async function cargaPick() {
+  try {
+    const r = await fetch(cfg.api);
+    if (!r.ok) throw new Error('sin datos');
+    const d = await r.json();
+    let o = null;
+
+    if (M === 'mlb' && d.game) {
+      const g = d.game, v = g.verdict || null;
+      const favH = (g.moneyline.home || 0) >= (g.moneyline.away || 0);
+      o = {
+        meta: new Date(g.game_date).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase(),
+        away: { name: g.away.name, sub: g.pitchers && g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '', prob: pct(g.moneyline.away), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.away.id + '.svg' },
+        home: { name: g.home.name, sub: g.pitchers && g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '', prob: pct(g.moneyline.home), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.home.id + '.svg' },
+        favAway: !favH, barA: Math.round((g.moneyline.away || 0.5) * 100),
+        verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+        odds: v ? pct(v.prob) : '', venue: g.venue || '',
+      };
+      $('liveSub').textContent = 'HOY';
+    } else if (M === 'mx' && d.game) {
+      const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
+      const favH = (ml.home || 0) >= (ml.away || 0);
+      o = {
+        meta: new Date(g.date).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase(),
+        away: { name: g.away.name, sub: 'Visitante', prob: pct(ml.away), logo: g.away.logo },
+        home: { name: g.home.name, sub: 'Local', prob: pct(ml.home), logo: g.home.logo },
+        favAway: !favH, barA: Math.round((ml.away || 0.33) * 100),
+        verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+        odds: v ? pct(v.prob) : '', venue: g.venue || '',
+      };
+      $('liveSub').textContent = d.jornada ? 'JORNADA ' + d.jornada : '';
+    } else if (M === 'nfl') {
+      const g = (d.games || []).find(x => x.id === d.featured_id);
+      if (g) {
+        const v = mejorVeredicto(g.verdicts);
+        const ml = (g.markets && g.markets.moneyline) || {};
+        const favH = (ml.home || 0) >= (ml.away || 0);
+        o = {
+          meta: new Date(g.date).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase(),
+          away: { name: g.away.name, sub: g.away.city || '', prob: pct(ml.away), logo: g.away.logo },
+          home: { name: g.home.name, sub: g.home.city || '', prob: pct(ml.home), logo: g.home.logo },
+          favAway: !favH, barA: Math.round((ml.away || 0.5) * 100),
+          verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+          odds: v ? pct(v.prob) : '', venue: g.venue || '',
+        };
+        $('liveSub').textContent = (g.preseason ? 'PRETEMP ' : 'SEMANA ') + (d.week || '');
+      }
+    }
+
+    $('pickHolder').innerHTML = o ? cardHTML(o)
+      : '<div class="pk"><div class="pk-meta">Sin partidos ahora mismo</div><div class="pk-sel">Vuelve cuando arranque la jornada.</div></div>';
+  } catch (e) {
+    $('pickHolder').innerHTML = '<div class="pk"><div class="pk-meta">Pick gratis</div><div class="pk-sel">No pudimos cargarlo. Míralo en el modelo.</div></div>';
+  }
+}
+cargaPick();
+
+/* ---- sesión (mismo comportamiento que el resto del sitio) ---- */
+let sb = null, _session = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+function pintaSesion() {
+  const b = $('authBtn');
+  b.textContent = _session ? 'Salir' : 'Entrar';
+  b.title = _session ? _session.user.email + ' — cerrar sesión' : 'Inicia sesión';
+}
+/* El precio del combo depende de lo que el usuario ya tenga comprado.
+   Solo se pinta: quien decide el cobro es el servidor otra vez. */
+async function sincronizaCombo() {
+  try {
+    if (!sb) return;
+    const { data } = await sb.auth.getSession();
+    if (!data || !data.session) { if (comboMio != null) { comboMio = null; if (planes) pintaOpciones(planes); } return; }
+    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + data.session.access_token } });
+    if (!r.ok) return;
+    const a = await r.json();
+    const nuevo = a.combo_2026_discount ? Number(a.combo_2026_price) : null;
+    if (nuevo === comboMio) return;
+    comboMio = nuevo;
+    if (planes) pintaOpciones(planes);
+  } catch (e) { /* si falla, se queda el precio de lista */ }
+}
+
+if (sb) {
+  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); sincronizaCombo(); });
+  $('authBtn').addEventListener('click', async () => {
+    if (_session) { await sb.auth.signOut(); return; }
+    /* No hay modal aquí: el checkout ya pide cuenta cuando toca. */
+    location.href = '/checkout.html?plan=' + encodeURIComponent(elegido || cfg.temporada);
+  });
+}
+</script>
+</body>
+</html>
