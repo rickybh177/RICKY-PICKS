@@ -167,10 +167,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     background: url('/img/hero-dist.webp') center bottom / 165% auto no-repeat;
     -webkit-mask-image: linear-gradient(180deg, transparent 7%, #000 24%);
     mask-image: linear-gradient(180deg, transparent 7%, #000 24%); }
-  .hero-panel-label { position: absolute; left: 0; right: 0; top: 6.5%; z-index: 2;
+  .hero-panel-label { position: absolute; left: 0; right: 0; top: 5%; z-index: 2;
     padding: 0 clamp(16px, 3.4vw, 30px); text-align: center;
-    font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
-    font-size: clamp(1.6rem, 3vw, 2.7rem); color: #0b1e3f; }
+    /* El panel se dimensiona por ALTURA (height: min(79vh,700px)), así
+       que el rótulo también va en vh: si fuera en vw dejarían de
+       escalar juntos y el texto se quedaría chico dentro del recuadro. */
+    font-weight: 800; letter-spacing: -0.04em; line-height: 1.02;
+    font-size: clamp(1.85rem, 9.8vh, 5.9rem); color: #0b1e3f; }
   .hero-panel-label em { font-style: normal; color: var(--blue); }
 
   @media (max-width: 900px) {
@@ -181,12 +184,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .hero-ctas { max-width: none; }
     /* En escritorio el panel se dimensiona por ALTURA (height + aspect
        1/1). Aquí hay que devolverlo a ancho completo: si no, esos
-       700px de lado desbordan la pantalla horizontalmente. */
-    .hero-panel { height: auto; width: 100%; aspect-ratio: 5 / 4; }
-    /* en 5/4 la imagen ocupa el 89%: su borde cae en el 11% */
-    .hero-panel::before { background-size: 128% auto; background-position: center bottom;
-      -webkit-mask-image: linear-gradient(180deg, transparent 10%, #000 30%);
-      mask-image: linear-gradient(180deg, transparent 10%, #000 30%); }
+       700px de lado desbordan la pantalla horizontalmente. Se queda
+       CUADRADO —no 5/4— porque con el rótulo grande un panel bajo no
+       daba espacio para el texto y la gráfica a la vez. */
+    .hero-panel { height: auto; width: 100%; aspect-ratio: 1 / 1; }
+    /* en vertical el panel manda por ANCHO: el rótulo vuelve a vw */
+    .hero-panel-label { font-size: clamp(1.9rem, 11vw, 4rem); }
+    /* al 150% sobre panel cuadrado la imagen ocupa el 84%: su borde
+       cae en el 16% y ahí se alinea el difuminado */
+    .hero-panel::before { background-size: 150% auto; background-position: center bottom;
+      -webkit-mask-image: linear-gradient(180deg, transparent 15%, #000 32%);
+      mask-image: linear-gradient(180deg, transparent 15%, #000 32%); }
   }
 
   .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
