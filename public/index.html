@@ -121,53 +121,56 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      simulaciones dentro de un panel, que es la prueba visual de que
      detrás hay un modelo y no una opinión. */
   .hero { position: relative; min-height: 100vh; min-height: 100dvh;
-    display: grid; grid-template-columns: 1.05fr 1fr; align-items: center;
-    gap: clamp(24px, 5vw, 72px); padding: calc(60px + 4vh) clamp(22px, 5vw, 64px) 6vh;
+    /* 'auto' en la 2ª columna: el panel define su ancho a partir de su
+       ALTURA, así llena el alto del hero en vez de quedar limitado por
+       el ancho de la columna (dejaba 23% muerto arriba y 18% abajo). */
+    display: grid; grid-template-columns: 1fr auto; align-items: center;
+    gap: clamp(22px, 3vw, 48px); padding: calc(58px + 1vh) clamp(20px, 3vw, 44px) 2.5vh;
     background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 45%, #eef3ff 100%); }
 
-  .hero-copy { max-width: 620px; }
+  .hero-copy { max-width: 660px; }
   .hero-title { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 800; letter-spacing: -0.04em; line-height: 1.02;
-    font-size: clamp(2.6rem, 5.2vw, 4.6rem); text-wrap: balance; color: #0b1e3f; }
+    font-weight: 800; letter-spacing: -0.042em; line-height: 1.0;
+    font-size: clamp(3rem, 6.4vw, 5.8rem); text-wrap: balance; color: #0b1e3f; }
   /* el acento va subrayado, como en el boceto */
-  .hero-title em { font-style: normal; color: var(--blue);
-    box-shadow: inset 0 -0.09em 0 rgba(47,123,255,0.28); }
-  .hero-sub { color: var(--muted); font-size: clamp(1.02rem, 1.5vw, 1.22rem);
-    font-weight: 450; line-height: 1.5; margin-top: 20px; max-width: 46ch; }
+  .hero-title em { font-style: normal; color: var(--blue); }
+  .hero-sub { color: var(--muted); font-size: clamp(1.12rem, 1.8vw, 1.45rem);
+    font-weight: 450; line-height: 1.45; margin-top: 24px; max-width: 40ch; }
 
   /* CTAs apilados, como en el boceto */
-  .hero-ctas { display: grid; gap: 11px; margin-top: 34px; max-width: 330px; }
+  .hero-ctas { display: grid; gap: 13px; margin-top: 42px; max-width: 420px; }
   .hero-cta { display: flex; align-items: center; justify-content: space-between; gap: 14px;
     text-decoration: none; font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.98rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
-    padding: 15px 20px; border-radius: 12px;
+    font-size: 1.1rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    padding: 20px 26px; border-radius: 14px;
     background: #ffffff; color: #14181e; border: 1px solid rgba(11,30,63,0.10);
     box-shadow: 0 10px 30px -12px rgba(11,30,63,0.28), 0 2px 6px -2px rgba(11,30,63,0.10);
     transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
-  .hero-cta::after { content: '→'; font-size: 1rem; color: var(--blue); transition: transform .15s ease; }
+  .hero-cta::after { content: '→'; font-size: 1.15rem; color: var(--blue); transition: transform .15s ease; }
   .hero-cta:hover { transform: translateY(-2px); border-color: rgba(47,123,255,0.55);
     box-shadow: 0 16px 38px -14px rgba(29,78,216,0.45); }
   .hero-cta:hover::after { transform: translateX(3px); }
 
   /* Panel derecho: el histograma con su rótulo */
   .hero-panel { position: relative; border-radius: 24px; overflow: hidden;
-    aspect-ratio: 5 / 6; max-height: 78vh; justify-self: stretch; align-self: center;
+    aspect-ratio: 1 / 1; height: min(79vh, 700px); align-self: center;
     background: linear-gradient(180deg, #f7f9ff 0%, #e9f0ff 100%);
     border: 1px solid rgba(11,30,63,0.07);
     box-shadow: 0 34px 80px -34px rgba(11,30,63,0.34); }
   /* La imagen es 16:9 y el panel es vertical, así que no lo llena: su
      borde superior se marcaría como una línea. Con el ancho en % y el
-     aspect-ratio fijos, la proporción imagen/panel es CONSTANTE (57%),
-     o sea que ese borde SIEMPRE cae en el 43% — por eso el difuminado
-     puede alinearse ahí y funciona a cualquier tamaño de pantalla. */
+     aspect-ratio fijos, la proporción imagen/panel es CONSTANTE: al
+     165% sobre un panel cuadrado ocupa el 92%, o sea que su borde
+     SIEMPRE cae en el 8% — ahí se alinea el difuminado y funciona a
+     cualquier tamaño de pantalla. */
   .hero-panel::before { content: ''; position: absolute; inset: 0;
-    background: url('/img/hero-dist.webp') center bottom / 122% auto no-repeat;
-    -webkit-mask-image: linear-gradient(180deg, transparent 42%, #000 62%);
-    mask-image: linear-gradient(180deg, transparent 42%, #000 62%); }
-  .hero-panel-label { position: absolute; left: 0; right: 0; top: 8%; z-index: 2;
-    padding: 0 clamp(18px, 4vw, 34px); text-align: center;
-    font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
-    font-size: clamp(1.15rem, 2vw, 1.7rem); color: #0b1e3f; text-wrap: balance; }
+    background: url('/img/hero-dist.webp') center bottom / 165% auto no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, transparent 7%, #000 24%);
+    mask-image: linear-gradient(180deg, transparent 7%, #000 24%); }
+  .hero-panel-label { position: absolute; left: 0; right: 0; top: 6.5%; z-index: 2;
+    padding: 0 clamp(16px, 3.4vw, 30px); text-align: center;
+    font-weight: 800; letter-spacing: -0.035em; line-height: 1.06;
+    font-size: clamp(1.4rem, 2.5vw, 2.15rem); color: #0b1e3f; text-wrap: balance; }
   .hero-panel-label em { font-style: normal; color: var(--blue); }
 
   @media (max-width: 900px) {
@@ -176,7 +179,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       padding: calc(56px + 3vh) 22px 5vh; }
     .hero-copy { max-width: none; }
     .hero-ctas { max-width: none; }
-    .hero-panel { aspect-ratio: 5 / 4; max-height: 44vh; }
+    /* En escritorio el panel se dimensiona por ALTURA (height + aspect
+       1/1). Aquí hay que devolverlo a ancho completo: si no, esos
+       700px de lado desbordan la pantalla horizontalmente. */
+    .hero-panel { height: auto; width: 100%; aspect-ratio: 5 / 4; }
     /* en 5/4 la imagen ocupa el 89%: su borde cae en el 11% */
     .hero-panel::before { background-size: 128% auto; background-position: center bottom;
       -webkit-mask-image: linear-gradient(180deg, transparent 10%, #000 30%);
