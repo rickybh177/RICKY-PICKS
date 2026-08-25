@@ -116,51 +116,73 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .nav-link.soon .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .nav-link.soon .toast::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--line-2); }
 
-  /* ============ HERO — histograma de 10,000 simulaciones ============
-     Fondo: imagen WebP (34 KB) con la distribución en vidrio esmerilado.
-     La composición está CALIBRADA contra la imagen: midiendo el PNG
-     pixel a pixel, la barra más alta tiene su tope en el 43.0% del alto
-     y las barras están centradas en x=49.8%. Con background-size:cover
-     la imagen mapea 1:1 en vertical, así que el titular se ancla al 59%
-     desde abajo = 2 puntos de respiro por encima de la cresta. */
-  .hero { position: relative; height: 100vh; min-height: 560px; overflow: hidden;
-    background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 34%, #eef3ff 55%, #e4ecfd 100%); }
-  .hero-art { position: absolute; inset: 0; pointer-events: none; }
-  .hero-art::before { content: ''; position: absolute; inset: 0;
-    background: url('/img/hero-dist.webp') center bottom / cover no-repeat; }
-  /* refuerzo azul sobre la imagen para que los bordes no se laven */
-  .hero-art::after { content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(95% 62% at 50% 104%, rgba(47,123,255,0.14) 0%, rgba(47,123,255,0.05) 42%, rgba(47,123,255,0) 72%),
-      radial-gradient(130% 90% at 50% 4%, rgba(47,123,255,0) 45%, rgba(29,78,216,0.07) 100%); }
+  /* ============ HERO — dos columnas (referencia: AG1) ============
+     Izquierda: promesa + CTAs. Derecha: el histograma de 10,000
+     simulaciones dentro de un panel, que es la prueba visual de que
+     detrás hay un modelo y no una opinión. */
+  .hero { position: relative; min-height: 100vh; min-height: 100dvh;
+    display: grid; grid-template-columns: 1.05fr 1fr; align-items: center;
+    gap: clamp(24px, 5vw, 72px); padding: calc(60px + 4vh) clamp(22px, 5vw, 64px) 6vh;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 45%, #eef3ff 100%); }
 
-  .hero-title { position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: 59%; width: 100%; max-width: 1180px; padding: 0 24px; text-align: center; z-index: 5;
-    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 800; letter-spacing: -0.04em; line-height: 1.14;
-    font-size: clamp(2.5rem, 8.4vw, 6.4rem); text-wrap: balance; color: #0b1e3f; }
-  .hero-title em { font-style: normal; color: var(--blue); }
+  .hero-copy { max-width: 620px; }
+  .hero-title { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 800; letter-spacing: -0.04em; line-height: 1.02;
+    font-size: clamp(2.6rem, 5.2vw, 4.6rem); text-wrap: balance; color: #0b1e3f; }
+  /* el acento va subrayado, como en el boceto */
+  .hero-title em { font-style: normal; color: var(--blue);
+    box-shadow: inset 0 -0.09em 0 rgba(47,123,255,0.28); }
+  .hero-sub { color: var(--muted); font-size: clamp(1.02rem, 1.5vw, 1.22rem);
+    font-weight: 450; line-height: 1.5; margin-top: 20px; max-width: 46ch; }
 
-  .hero-ctas { position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: 11%; width: 100%; max-width: 680px; padding: 0 24px; z-index: 5;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .hero-cta { display: block; text-align: center; text-decoration: none;
-    font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 16px 10px; border-radius: 12px;
+  /* CTAs apilados, como en el boceto */
+  .hero-ctas { display: grid; gap: 11px; margin-top: 34px; max-width: 330px; }
+  .hero-cta { display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    text-decoration: none; font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.98rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 15px 20px; border-radius: 12px;
     background: #ffffff; color: #14181e; border: 1px solid rgba(11,30,63,0.10);
     box-shadow: 0 10px 30px -12px rgba(11,30,63,0.28), 0 2px 6px -2px rgba(11,30,63,0.10);
     transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .hero-cta::after { content: '→'; font-size: 1rem; color: var(--blue); transition: transform .15s ease; }
   .hero-cta:hover { transform: translateY(-2px); border-color: rgba(47,123,255,0.55);
     box-shadow: 0 16px 38px -14px rgba(29,78,216,0.45); }
-  .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; z-index: 5; }
+  .hero-cta:hover::after { transform: translateX(3px); }
 
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 13vh; text-align: center; padding: 0 22px; will-change: transform, opacity; }
-  /* Píldora sólida: antes se perdía sobre las fotos del hero. */
-  .hero-eyebrow { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; margin-bottom: 18px; background: rgba(10,13,19,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 9px 20px; box-shadow: 0 8px 30px -8px rgba(0,0,0,0.7); }
-  h1.mega { color: #fff; font-weight: 800; letter-spacing: -0.04em; line-height: 0.98; font-size: clamp(2.6rem, 9.5vw, 7.5rem); text-shadow: 0 10px 60px rgba(10,13,19,0.6); text-wrap: balance; }
-  h1.mega em { font-style: normal; color: var(--blue); }
-  .hero-sub { color: rgba(233,237,244,0.78); font-size: clamp(0.98rem, 2vw, 1.18rem); font-weight: 500; margin-top: 18px; max-width: 52ch; margin-left: auto; margin-right: auto; }
+  /* Panel derecho: el histograma con su rótulo */
+  .hero-panel { position: relative; border-radius: 24px; overflow: hidden;
+    aspect-ratio: 5 / 6; max-height: 78vh; justify-self: stretch; align-self: center;
+    background: linear-gradient(180deg, #f7f9ff 0%, #e9f0ff 100%);
+    border: 1px solid rgba(11,30,63,0.07);
+    box-shadow: 0 34px 80px -34px rgba(11,30,63,0.34); }
+  /* La imagen es 16:9 y el panel es vertical, así que no lo llena: su
+     borde superior se marcaría como una línea. Con el ancho en % y el
+     aspect-ratio fijos, la proporción imagen/panel es CONSTANTE (57%),
+     o sea que ese borde SIEMPRE cae en el 43% — por eso el difuminado
+     puede alinearse ahí y funciona a cualquier tamaño de pantalla. */
+  .hero-panel::before { content: ''; position: absolute; inset: 0;
+    background: url('/img/hero-dist.webp') center bottom / 122% auto no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, transparent 42%, #000 62%);
+    mask-image: linear-gradient(180deg, transparent 42%, #000 62%); }
+  .hero-panel-label { position: absolute; left: 0; right: 0; top: 8%; z-index: 2;
+    padding: 0 clamp(18px, 4vw, 34px); text-align: center;
+    font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+    font-size: clamp(1.15rem, 2vw, 1.7rem); color: #0b1e3f; text-wrap: balance; }
+  .hero-panel-label em { font-style: normal; color: var(--blue); }
+
+  @media (max-width: 900px) {
+    /* En vertical se apila: primero la promesa, luego la prueba. */
+    .hero { grid-template-columns: 1fr; align-content: center; gap: 30px;
+      padding: calc(56px + 3vh) 22px 5vh; }
+    .hero-copy { max-width: none; }
+    .hero-ctas { max-width: none; }
+    .hero-panel { aspect-ratio: 5 / 4; max-height: 44vh; }
+    /* en 5/4 la imagen ocupa el 89%: su borde cae en el 11% */
+    .hero-panel::before { background-size: 128% auto; background-position: center bottom;
+      -webkit-mask-image: linear-gradient(180deg, transparent 10%, #000 30%);
+      mask-image: linear-gradient(180deg, transparent 10%, #000 30%); }
+  }
+
   .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .scroll-hint::after { content: ''; width: 1px; height: 32px; background: linear-gradient(180deg, var(--muted), transparent); animation: drip 1.8s ease-in-out infinite; }
   @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: top; } 100% { transform: scaleY(0); transform-origin: bottom; } }
@@ -448,46 +470,6 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .redeem-msg.ok { display: block; background: var(--bet-bg); color: var(--bet); }
   .redeem-msg.bad { display: block; background: var(--skip-bg); color: var(--skip); }
 
-  /* ---- HERO en vertical (incluye tablet: a menos de 680px 'cover'
-     recortaría la campana y solo se verían 3 barras gigantes) ----
-
-     Aquí NO se ancla el titular a la cresta como en escritorio: en un
-     teléfono alto eso lo empuja hasta la mitad baja y deja un hueco
-     blanco enorme arriba. En su lugar el hero es una columna flex que
-     reparte: titular arriba (debajo del nav), curva en medio, CTAs
-     abajo — así se ve distribuido en cualquier alto de pantalla.
-
-     Se usa 100dvh (no 100vh): en móvil el 100vh incluye la franja que
-     tapa la barra del navegador, y por eso la curva salía cortada. */
-  @media (max-width: 680px) {
-    .hero { height: 100vh; height: 100dvh; min-height: 520px;
-      display: flex; flex-direction: column; justify-content: space-between;
-      padding-top: calc(56px + 10vh); padding-bottom: 6vh; }
-    /* Titular grande: en vertical hay aire de sobra entre el nav y la
-       curva, así que se aprovecha. A este tamaño "Cada juego simulado"
-       parte en dos líneas y el bloque queda en tres — que es justo lo
-       que llena el hueco. */
-    .hero-title { position: static; transform: none; bottom: auto;
-      font-size: clamp(2.5rem, 13vw, 4rem); line-height: 1.08;
-      letter-spacing: -0.045em; }
-    .hero-ctas { position: static; transform: none; bottom: auto;
-      margin: 0 auto; max-width: 100%; gap: 8px; }
-    .hero-cta { font-size: 0.8rem; letter-spacing: 0.04em; padding: 14px 4px; }
-    /* La curva se sienta entre el titular y los CTA, sin tocarlos.
-       Se disuelven SUS DOS BORDES (arriba 37%→54%, abajo 78%→86%)
-       porque en vertical la imagen no llena el alto y sus cantos se
-       marcaban como dos líneas horizontales contra el fondo. El tono
-       no se puede igualar: la imagen tiene viñeta horizontal fuerte
-       (centro rgb(245,247,251) vs bordes rgb(165,179,206)). El fundido
-       de arriba termina antes de la cresta para que la barra más alta
-       se vea íntegra. */
-    .hero-art::before { background-size: 210% auto; background-position: center 74%;
-      -webkit-mask-image: linear-gradient(180deg, transparent 34%, #000 50%, #000 80%, transparent 88%);
-      mask-image: linear-gradient(180deg, transparent 34%, #000 50%, #000 80%, transparent 88%); }
-    /* no cabe bajo los CTA: se encimaba con ellos */
-    .scroll-hint { display: none; }
-  }
-
   /* ============ RESPONSIVE ============ */
   @media (max-width: 900px) {
     .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); }
@@ -499,9 +481,6 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     body { font-size: 15.5px; }
     .wrap { padding: 0 16px; }
     section { padding: 68px 0; }
-    .hero-ctas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-    .hero-cta { padding: 11px 6px; font-size: 0.76rem; }
-    .hero-copy { bottom: 10vh; }
     .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: 1fr; }
     .combo3 { flex-direction: column; align-items: stretch; padding: 22px 20px; gap: 18px; }
     .combo3-buy { align-items: stretch; }
@@ -551,14 +530,18 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <!-- ============ HERO ============ -->
 <section class="hero">
-  <div class="hero-art"></div>
-  <h1 class="hero-title">Cada juego simulado <em>10,000 veces.</em></h1>
-  <div class="hero-ctas">
-    <a href="#vivo-mx" class="hero-cta">Liga MX</a>
-    <a href="#vivo-nfl" class="hero-cta">NFL</a>
-    <a href="#vivo" class="hero-cta">MLB</a>
+  <div class="hero-copy">
+    <h1 class="hero-title">La IA que te <em>hará ganar</em>.</h1>
+    <p class="hero-sub">Deja de inventar parlays. Juega con cabeza.</p>
+    <div class="hero-ctas">
+      <a href="#vivo-mx" class="hero-cta">Liga MX</a>
+      <a href="#vivo-nfl" class="hero-cta">NFL</a>
+      <a href="#vivo" class="hero-cta">MLB</a>
+    </div>
   </div>
-  <div class="scroll-hint">Scroll</div>
+  <div class="hero-panel">
+    <div class="hero-panel-label">Cada juego simulado <em>10,000 veces</em></div>
+  </div>
 </section>
 
 <!-- A partir de aquí, todo el sitio usa el tema claro (ver .light-zone) -->
