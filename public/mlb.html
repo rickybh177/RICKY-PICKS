@@ -237,7 +237,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div id="payBanner" style="display:none;margin:14px 0 0;background:rgba(22,163,74,0.08);color:var(--bet);border:1px solid rgba(22,163,74,0.3);border-radius:12px;padding:14px 18px;font-size:0.9rem;font-weight:600"></div>
 
   <!-- Upsell post-compra (Rollover): solo para quien compró la Semana
-       hace <48 h. Sus $149 cuentan completos hacia el plan mensual. -->
+       hace <48 h. Sus $199 cuentan completos hacia el pase de temporada.
+       OJO: los importes de esta tarjeta y del banner de abajo están
+       escritos a mano — la fuente de verdad es lib/plans.js. -->
   <!-- Upgrade para el combo legado (MLB+Liga MX): agregar NFL -->
   <div id="comboUpgrade" style="display:none;position:relative;margin:14px 0 0;background:linear-gradient(135deg,#12203f,#0e1729);color:#e9edf4;border:1px solid rgba(120,160,255,0.3);border-radius:14px;padding:18px 20px">
     <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem">✕</button>
@@ -250,10 +252,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div id="upsellCard" style="display:none;position:relative;margin:14px 0 0;background:var(--blue-tint);border:1px solid rgba(47,123,255,0.35);border-radius:14px;padding:18px 20px">
     <button id="upsellClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:var(--faint);font-size:1rem">✕</button>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--blue-deep);margin-bottom:8px">Oferta única · <span id="upsellLeft">—</span> restantes</div>
-    <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Tus $149 ya están pagados. ¿Los usamos?</div>
-    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Solo mientras dure tu ventana: tus $149 de la Semana cuentan <strong>completos</strong> hacia el pase de temporada. Un solo pago, sin suscripción.</div>
+    <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Tus $199 ya están pagados. ¿Los usamos?</div>
+    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Solo mientras dure tu ventana: tus $199 de la Semana cuentan <strong>completos</strong> hacia el pase de temporada. Un solo pago, sin suscripción.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px">
-      <a href="/checkout.html?plan=mlb_temporada" style="text-decoration:none;text-align:center;background:var(--blue-deep);color:#fff;font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾ Temporada 2026<br><span style="font-weight:500;font-size:0.78rem"><s style="opacity:0.6">$999</s> pagas $850</span></a>
+      <a href="/checkout.html?plan=mlb_temporada" style="text-decoration:none;text-align:center;background:var(--blue-deep);color:#fff;font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾ Temporada 2026<br><span style="font-weight:500;font-size:0.78rem"><s style="opacity:0.6">$599</s> pagas $400</span></a>
       <a href="/checkout.html?plan=combo_2026" style="text-decoration:none;text-align:center;background:var(--g0);color:var(--text);border:1px solid var(--line-2);font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾⚽🏈 Combo Total<br><span style="font-weight:500;font-size:0.78rem;color:var(--muted)"><span class="combo-px">$1,199</span> pago único</span></a>
     </div>
     <div style="font-size:0.7rem;color:var(--faint);margin-top:10px">Con tarjeta · <a href="/#terminos" style="color:inherit">ver términos</a></div>
@@ -268,7 +270,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>7 días por $199 — todos los juegos, todos los picks.</small></div>
     <div class="acts">
       <a class="day" href="/checkout.html?plan=mlb_semana">Semana $199</a>
-      <a class="founder" href="/checkout.html?plan=mlb_temporada">Temporada $999</a>
+      <a class="founder" href="/checkout.html?plan=mlb_temporada">Temporada $599</a>
     </div>
   </div>
 </div>
@@ -667,9 +669,11 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
 })();
 
 /* Upsell post-compra (Rollover, oferta única de 48 h): si el plan MLB
-   vigente del usuario es la Semana comprada hace <48 h, sus $149
-   cuentan completos hacia el primer mes del Fundador o del Combo.
-   El servidor aplica el descuento real; esto solo muestra la oferta. */
+   vigente del usuario es la Semana comprada hace <48 h, sus $199
+   cuentan completos hacia el pase de temporada o el Combo.
+   El servidor aplica el descuento real (upgradeCreditFor en
+   lib/pase-credit.js devuelve el precio de mlb_semana); esto solo
+   muestra la oferta. */
 (async () => {
   if (!sb) return;
   try {

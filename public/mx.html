@@ -170,6 +170,24 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   }
 
   /* barra de invitado (freemium) */
+  /* Banner de planes: el mismo que MLB y NFL. Liga MX no lo tenía —
+     el invitado solo veía la barra de arriba, sin precios ni CTA de
+     compra al pie. Los importes salen de lib/plans.js (mx_semana 249,
+     mx_apertura 699); si cambian allá, hay que actualizarlos aquí. */
+  .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
+  .plans-banner.on { display: block; }
+  .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
+  .plans-banner .txt small { display: block; font-weight: 450; color: var(--muted); font-size: 0.74rem; }
+  .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; }
+  .plans-banner .acts a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
+  .plans-banner a.day { background: var(--g2); color: var(--text); border: 1px solid var(--line-2); }
+  .plans-banner a.founder { background: var(--beta); color: #fff; }
+  @media (max-width: 620px) {
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 9px; }
+    .plans-banner .txt { font-size: 0.82rem; text-align: center; }
+    .plans-banner .acts a { flex: 1; text-align: center; }
+  }
   .guest-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); border-radius: 12px; padding: 13px 16px; margin-top: 16px; font-size: 0.88rem; font-weight: 500; }
   .guest-bar .gb-cta { background: var(--blue-deep); color: #fff; font-weight: 700; font-size: 0.82rem; padding: 9px 16px; border-radius: 9px; text-decoration: none; white-space: nowrap; }
   .guest-bar .gb-cta:hover { background: var(--blue); }
@@ -256,6 +274,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>
   </div>
 </main>
+
+<div class="plans-banner" id="plansBanner">
+  <div class="wrap">
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>7 días por $249 — o el Apertura entero, un solo pago.</small></div>
+    <div class="acts">
+      <a class="day" href="/checkout.html?plan=mx_semana">Semana $249</a>
+      <a class="founder" href="/checkout.html?plan=mx_apertura">Apertura $699</a>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <footer>
@@ -340,6 +369,7 @@ async function load(refresh) {
   $('jornChip').style.display = 'block';
   $('jornChip').textContent = 'JORNADA ' + bd.jornada;
   $('guestBar').style.display = currentAccess === 'guest' ? 'flex' : 'none';
+  $('plansBanner').classList.toggle('on', currentAccess === 'guest');
   renderMeta(bd);
   renderBoard(bd);
   return bd;
