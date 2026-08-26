@@ -79,7 +79,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .cols { display: grid; grid-template-columns: 1fr 1fr;
     grid-template-areas: "live head" "live buy";
     column-gap: clamp(26px, 4vw, 60px); row-gap: 0; align-items: start; }
-  .live { grid-area: live; } .buy-head { grid-area: head; } .buy { grid-area: buy; }
+  /* min-width:0 en los tres: sin eso un item de grid nunca baja del
+     ancho mínimo de su contenido, y la card del pick mantenía su ancho
+     de escritorio en el celular, sacando toda la página de cuadro. */
+  .live { grid-area: live; min-width: 0; }
+  .buy-head { grid-area: head; min-width: 0; }
+  .buy { grid-area: buy; min-width: 0; }
 
   /* ---- IZQUIERDA: el pick gratis en vivo ---- */
   .live-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -119,8 +124,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
     text-transform: uppercase; color: #5f6a7d; }
   /* ---- CARRUSEL: el pick gratis completo, como se ve dentro del modelo ---- */
-  .deck { position: relative; }
-  .viewport { overflow: hidden; }
+  .deck { position: relative; min-width: 0; }
+  /* La altura la fija el JS a la diapositiva visible: sin eso el marco
+     se queda con la más alta (la del histograma) y deja un hueco. */
+  .viewport { overflow: hidden; min-width: 0; transition: height .3s ease; }
   .slides { display: flex; align-items: flex-start; gap: 16px;
     transition: transform .34s cubic-bezier(.22,.61,.36,1); will-change: transform; }
   .slide { flex: 0 0 100%; min-width: 0; }
@@ -258,6 +265,28 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .opt-row { grid-template-columns: 20px 1fr auto; gap: 10px; padding: 15px 14px; }
     .opt-body { padding-left: 44px; }
     .opt-price { font-size: 1.15rem; }
+
+    /* En vertical todo va un punto más compacto: con los tamaños de
+       escritorio la card se comía la pantalla. */
+    .pk { padding: 17px 15px; border-radius: 16px; }
+    .pk-meta { font-size: 0.58rem; margin-bottom: 12px; }
+    .pk-team { grid-template-columns: 32px 1fr auto; gap: 11px; padding: 7px 0; }
+    .pk-team img { width: 32px; height: 32px; }
+    .pk-team .tn { font-size: 0.96rem; }
+    .pk-team .tn small { font-size: 0.7rem; }
+    .pk-team .pr { font-size: 1.05rem; }
+    .pk-bar { margin: 11px 0 13px; }
+    .pk-pick { padding: 11px 12px; gap: 10px; }
+    .pk-chip { font-size: 0.55rem; padding: 4px 8px; }
+    .pk-sel { font-size: 0.89rem; }
+    .pk-odds { font-size: 0.68rem; }
+    .pk-foot { font-size: 0.54rem; margin-top: 12px; }
+    .vrow { padding: 11px 12px; }
+    .vrow .vl { font-size: 0.87rem; }
+    .det-row { padding: 10px 12px; font-size: 0.78rem; }
+    .det-row .dv { font-size: 0.68rem; }
+    .buy-head h1 { font-size: 1.65rem; }
+    .buy-head .lede { font-size: 0.92rem; }
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
@@ -572,8 +601,13 @@ function montaCarrusel(html) {
     ? slides.map((_, k) => '<button type="button" aria-label="Ver ' + (k + 1) + ' de ' + slides.length + '"></button>').join('')
     : '';
 
+  function ajustaAlto() {
+    const v = track.parentElement;
+    if (slides[i]) v.style.height = slides[i].offsetHeight + 'px';
+  }
   function pinta() {
     track.style.transform = 'translateX(calc(' + (-i * 100) + '% - ' + (i * 16) + 'px))';
+    ajustaAlto();
     $('prevBtn').classList.toggle('off', i === 0);
     $('nextBtn').classList.toggle('off', i >= slides.length - 1);
     [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
@@ -614,7 +648,12 @@ function montaCarrusel(html) {
     caja.style.setProperty('--flechaY', Math.round(y) + 'px');
   }
   alineaFlechas();
-  addEventListener('resize', alineaFlechas);
+  addEventListener('resize', () => { alineaFlechas(); ajustaAlto(); });
+  /* Los escudos y el histograma cambian de alto al terminar de cargar. */
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(ajustaAlto);
+    slides.forEach(s => ro.observe(s));
+  }
 
   window.__slide = () => i; // para verificar desde consola
   pinta();
