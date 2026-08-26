@@ -124,13 +124,18 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .slides { display: flex; align-items: flex-start; gap: 16px;
     transition: transform .34s cubic-bezier(.22,.61,.36,1); will-change: transform; }
   .slide { flex: 0 0 100%; min-width: 0; }
-  .navs { display: flex; gap: 6px; margin-left: 12px; }
-  .arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--g0);
-    border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center;
-    color: var(--ink); transition: background .15s ease, opacity .15s ease, color .15s ease; }
+  /* Las flechas van montadas en la orilla de la tarjeta, mitad dentro y
+     mitad fuera, a la altura del segundo equipo (--flechaY lo mide el
+     JS sobre la card real de cada modelo). */
+  .arrow { position: absolute; top: var(--flechaY, 45%); transform: translateY(-50%); z-index: 5;
+    width: 38px; height: 38px; border-radius: 50%; background: #fff;
+    border: 1px solid var(--line-2); box-shadow: 0 12px 28px -10px rgba(11,30,63,0.45);
+    display: flex; align-items: center; justify-content: center; color: var(--ink);
+    transition: opacity .15s ease, background .15s ease, color .15s ease; }
   .arrow:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
-  .arrow.off { opacity: 0.3; pointer-events: none; }
-  .arrow svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.3;
+  .arrow.off { opacity: 0; pointer-events: none; }
+  .arrow.prev { left: -19px; } .arrow.next { right: -19px; }
+  .arrow svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2;
     stroke-linecap: round; stroke-linejoin: round; }
   .dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
   .dots button { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); transition: all .18s; }
@@ -277,14 +282,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
           <span class="live-dot"></span>
           <span class="live-lbl">Pick gratis · en vivo</span>
           <span class="live-sub" id="liveSub"></span>
-          <div class="navs">
-            <button class="arrow off" id="prevBtn" type="button" aria-label="Ver lo anterior">
-              <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <button class="arrow off" id="nextBtn" type="button" aria-label="Ver lo siguiente">
-              <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
         </div>
         <div class="deck">
+          <button class="arrow prev off" id="prevBtn" type="button" aria-label="Ver lo anterior">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="arrow next off" id="nextBtn" type="button" aria-label="Ver lo siguiente">
+            <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
           <div class="viewport"><div class="slides" id="pickHolder"><div class="slide"><div class="pk-skeleton"></div></div></div></div>
         </div>
         <div class="dots" id="dots"></div>
@@ -584,10 +587,24 @@ function montaCarrusel(html) {
   }, { passive: true });
 
   /* Con el teclado, flechas izquierda/derecha. */
-  $('pickHolder').closest('.live').addEventListener('keydown', e => {
+  $('pickHolder').closest('.deck').addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') irA(i + 1);
     if (e.key === 'ArrowLeft') irA(i - 1);
   });
+
+  /* A la altura del segundo equipo, que es donde cae el porcentaje
+     grande: se mide sobre la card ya pintada, no se adivina. */
+  function alineaFlechas() {
+    const filas = track.querySelectorAll('.pk-team');
+    const fila = filas[1] || filas[0];
+    const deck = track.closest('.deck');
+    if (!fila || !deck) return;
+    const y = fila.getBoundingClientRect().top + fila.getBoundingClientRect().height / 2
+      - deck.getBoundingClientRect().top;
+    deck.style.setProperty('--flechaY', Math.round(y) + 'px');
+  }
+  alineaFlechas();
+  addEventListener('resize', alineaFlechas);
 
   window.__slide = () => i; // para verificar desde consola
   pinta();
