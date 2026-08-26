@@ -118,6 +118,52 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .pk-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;
     font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
     text-transform: uppercase; color: #5f6a7d; }
+  /* ---- CARRUSEL: el pick gratis completo, como se ve dentro del modelo ---- */
+  .deck { position: relative; }
+  .viewport { overflow: hidden; }
+  .slides { display: flex; align-items: flex-start; gap: 16px;
+    transition: transform .34s cubic-bezier(.22,.61,.36,1); will-change: transform; }
+  .slide { flex: 0 0 100%; min-width: 0; }
+  .navs { display: flex; gap: 6px; margin-left: 12px; }
+  .arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--g0);
+    border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center;
+    color: var(--ink); transition: background .15s ease, opacity .15s ease, color .15s ease; }
+  .arrow:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .arrow.off { opacity: 0.3; pointer-events: none; }
+  .arrow svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.3;
+    stroke-linecap: round; stroke-linejoin: round; }
+  .dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
+  .dots button { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); transition: all .18s; }
+  .dots button.on { background: var(--blue); width: 20px; border-radius: 4px; }
+  .slide-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+
+  /* Mismos veredictos que la página del modelo. */
+  .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--g0); border: 1px solid var(--line); border-radius: 12px; padding: 12px 15px; margin-bottom: 8px; }
+  .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; min-width: 0; }
+  .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+    font-weight: 500; color: var(--faint); margin-top: 2px; }
+  .vrow.skip .vl { color: var(--faint); font-weight: 500; }
+  .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
+  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
+  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
+  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
+
+  .det-rows { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--g0); }
+  .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 15px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
+  .det-row:last-child { border-bottom: none; }
+  .det-row .dl { font-weight: 500; min-width: 0; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500;
+    white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.74rem; }
+  .dist { margin-top: 14px; }
+  .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px;
+    display: flex; justify-content: space-between; gap: 10px; }
+  .dist svg { width: 100%; height: 52px; display: block; }
+
   .pk-skeleton { height: 300px; border-radius: 18px; background: linear-gradient(100deg, var(--g1) 30%, var(--g2) 50%, var(--g1) 70%);
     background-size: 200% 100%; animation: shine 1.3s linear infinite; }
   @keyframes shine { to { background-position: -200% 0; } }
@@ -210,7 +256,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span style="color:var(--blue)">·</span>PICKS</a>
     <div class="nav-actions">
-      <a class="nav-btn" id="verModelo" href="/mlb.html">Ver el pick gratis</a>
+      <a class="nav-btn" id="verModelo" href="/mlb.html">Mis Modelos</a>
       <button class="nav-btn" id="authBtn">Entrar</button>
     </div>
   </div>
@@ -231,8 +277,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
           <span class="live-dot"></span>
           <span class="live-lbl">Pick gratis · en vivo</span>
           <span class="live-sub" id="liveSub"></span>
+          <div class="navs">
+            <button class="arrow off" id="prevBtn" type="button" aria-label="Ver lo anterior">
+              <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button class="arrow off" id="nextBtn" type="button" aria-label="Ver lo siguiente">
+              <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
         </div>
-        <div id="pickHolder"><div class="pk-skeleton"></div></div>
+        <div class="deck">
+          <div class="viewport"><div class="slides" id="pickHolder"><div class="slide"><div class="pk-skeleton"></div></div></div></div>
+        </div>
+        <div class="dots" id="dots"></div>
         <p class="live-note">Esto sale del modelo real, corriendo ahora mismo. Es gratis y no necesitas cuenta —
           <a href="/mlb.html" id="verTodos">ver el resto de la cartelera →</a></p>
       </section>
@@ -270,6 +325,10 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
 const money = n => '$' + Number(n).toLocaleString('en-US');
+/* Momio justo americano a partir de la probabilidad del modelo:
+   el mismo cálculo que la página del modelo. */
+const amOdds = p => (!p || p <= 0 || p >= 1) ? '—'
+  : (p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p));
 
 /* ---- qué modelo se está viendo ---- */
 const MODELOS = {
@@ -400,7 +459,7 @@ function cardHTML(o) {
       '<span class="tn">' + esc(t.name) + (t.sub ? '<small>' + esc(t.sub) + '</small>' : '') + '</span>' +
       '<span class="pr">' + esc(t.prob) + '</span>' +
     '</div>';
-  return '<div class="pk">' +
+  return '<div class="slide"><div class="pk">' +
     '<div class="pk-meta">' + esc(o.meta) + '</div>' +
     fila(o.away, o.favAway) + fila(o.home, !o.favAway) +
     '<div class="pk-bar"><i class="a" style="width:' + o.barA + '%"></i><i class="h" style="width:' + (100 - o.barA) + '%"></i></div>' +
@@ -410,7 +469,128 @@ function cardHTML(o) {
       '<span class="pk-odds">' + esc(o.odds) + '</span>' +
     '</div>' +
     '<div class="pk-foot"><span>10,000 simulaciones</span><span>' + esc(o.venue) + '</span></div>' +
-  '</div>';
+  '</div></div>';
+}
+
+/* ---- Diapositiva 2: todos los mercados con veredicto ---- */
+function veredictosHTML(vs) {
+  if (!vs || !vs.length) return '';
+  const filas = vs.map(v => {
+    const bits = [];
+    if (v.prob != null) bits.push((v.prob * 100).toFixed(1) + '%');
+    if (v.line_txt) bits.push(esc(v.line_txt));
+    return '<div class="vrow ' + esc(v.verdict) + '">' +
+      '<span class="vl">' + esc(v.label) +
+        (bits.length ? '<small>' + bits.join(' · ') + '</small>' : '') + '</span>' +
+      '<span class="vchip ' + esc(v.verdict) + '">' + esc(String(v.verdict).toUpperCase()) + '</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="slide"><div class="slide-lbl">Todos los mercados de este partido</div>' + filas + '</div>';
+}
+
+/* ---- Diapositiva 3: momio justo de cada mercado + distribución ---- */
+function detalleHTML(vs, extra, dist) {
+  const filas = (vs || []).map(v =>
+    '<div class="det-row"><span class="dl">' + esc(v.label) + '</span>' +
+    '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
+  ).join('');
+  const cola = (extra || []).map(e =>
+    '<div class="det-row"><span class="dl">' + esc(e[0]) + '</span><span class="dv">' + esc(e[1]) + '</span></div>'
+  ).join('');
+  if (!filas && !cola) return '';
+  return '<div class="slide"><div class="slide-lbl">Lo que dice el modelo, mercado por mercado</div>' +
+    '<div class="det-rows">' + filas + cola + '</div>' + distHTML(dist) + '</div>';
+}
+
+/* Histograma de 10,000 simulaciones. Dos formas: 'conteo' (carreras,
+   con la línea del total marcada) y 'margen' (centrado en el empate). */
+function distHTML(d) {
+  if (!d || !d.valores || !d.valores.length) return '';
+  const v = d.valores, n = v.length, W = 720, H = 52;
+  const gap = n > 30 ? 2 : n > 12 ? 3 : 6;
+  const bw = (W - gap * (n - 1)) / n;
+  const max = Math.max.apply(null, v.concat([0.001]));
+  let bars = '';
+  for (let i = 0; i < n; i++) {
+    const h = Math.max(1.5, (v[i] / max) * (H - 16));
+    const x = i * (bw + gap);
+    let color;
+    if (d.tipo === 'margen') {
+      const m = i - d.centro;
+      color = m > 0 ? '#2f7bff' : m < 0 ? '#d8dfe9' : '#b8922e';
+    } else {
+      color = i > d.linea ? '#2f7bff' : '#d8dfe9';
+    }
+    bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h +
+      '" rx="1.5" fill="' + color + '"></rect>';
+    const et = d.tipo === 'margen'
+      ? ((i - d.centro) === 0 ? (d.empate || '0') : ((i - d.centro) > 0 ? '+' + (i - d.centro) : String(i - d.centro)))
+      : (i === n - 1 ? (n - 1) + '+' : String(i));
+    const mostrar = d.tipo === 'margen'
+      ? (n <= 12 || (i - d.centro + 21) % 7 === 0)
+      : (i % 5 === 0 || i === n - 1);
+    if (mostrar) {
+      bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3"' +
+        ' font-family="JetBrains Mono,monospace">' + esc(et) + '</text>';
+    }
+  }
+  if (d.tipo !== 'margen' && d.linea != null) {
+    const lx = (d.linea + 0.5) * (bw + gap) - gap / 2;
+    bars += '<line x1="' + lx + '" y1="0" x2="' + lx + '" y2="' + (H - 12) + '" stroke="#d9b34a" stroke-width="1" stroke-dasharray="3 3"></line>';
+  }
+  return '<div class="dist"><div class="dist-lbl"><span>' + esc(d.etiqueta) + '</span>' +
+    (d.nota ? '<span>' + esc(d.nota) + '</span>' : '') + '</div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución de 10,000 simulaciones">' +
+    bars + '</svg></div>';
+}
+
+/* ---- navegación del carrusel ----
+   La diapositiva visible es una variable, no algo que se deduzca del
+   scroll: así las flechas y los puntos siempre coinciden con lo que se
+   ve, aunque el navegador no alcance a animar. */
+function montaCarrusel(html) {
+  const track = $('pickHolder');
+  track.innerHTML = html;
+  const slides = [...track.querySelectorAll('.slide')];
+  const dots = $('dots');
+  let i = 0;
+
+  dots.innerHTML = slides.length > 1
+    ? slides.map((_, k) => '<button type="button" aria-label="Ver ' + (k + 1) + ' de ' + slides.length + '"></button>').join('')
+    : '';
+
+  function pinta() {
+    track.style.transform = 'translateX(calc(' + (-i * 100) + '% - ' + (i * 16) + 'px))';
+    $('prevBtn').classList.toggle('off', i === 0);
+    $('nextBtn').classList.toggle('off', i >= slides.length - 1);
+    [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
+    /* Lo que está fuera de cuadro no debe recibir foco al tabular. */
+    slides.forEach((s, k) => s.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+  }
+  function irA(k) { i = Math.max(0, Math.min(slides.length - 1, k)); pinta(); }
+
+  $('prevBtn').onclick = () => irA(i - 1);
+  $('nextBtn').onclick = () => irA(i + 1);
+  [...dots.children].forEach((b, k) => b.addEventListener('click', () => irA(k)));
+
+  /* Deslizar con el dedo, que en el celular es como se navega. */
+  let x0 = null;
+  track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 45) irA(i + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  /* Con el teclado, flechas izquierda/derecha. */
+  $('pickHolder').closest('.live').addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') irA(i + 1);
+    if (e.key === 'ArrowLeft') irA(i - 1);
+  });
+
+  window.__slide = () => i; // para verificar desde consola
+  pinta();
 }
 
 const ORDEN = { bet: 3, maybe: 2, skip: 1 };
@@ -428,7 +608,7 @@ async function cargaPick() {
     const r = await fetch(cfg.api);
     if (!r.ok) throw new Error('sin datos');
     const d = await r.json();
-    let o = null;
+    let o = null, vs = [], extra = [], dist = null;
 
     if (M === 'mlb' && d.game) {
       const g = d.game, v = g.verdict || null;
@@ -442,6 +622,11 @@ async function cargaPick() {
         odds: v ? pct(v.prob) : '', venue: g.venue || '',
       };
       $('liveSub').textContent = 'HOY';
+      vs = g.verdicts || [];
+      if (g.expected) extra.push(['Carreras esperadas', g.away.abbr + ' ' + g.expected.away_runs + ' — ' + g.home.abbr + ' ' + g.expected.home_runs]);
+      dist = { tipo: 'conteo', valores: g.total_dist || [], linea: g.total_line,
+        etiqueta: 'Cómo caen las carreras en 10,000 futuros',
+        nota: g.total_line != null ? 'línea ' + g.total_line : '' };
     } else if (M === 'mx' && d.game) {
       const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
       const favH = (ml.home || 0) >= (ml.away || 0);
@@ -454,6 +639,9 @@ async function cargaPick() {
         odds: v ? pct(v.prob) : '', venue: g.venue || '',
       };
       $('liveSub').textContent = d.jornada ? 'JORNADA ' + d.jornada : '';
+      vs = g.verdicts || [];
+      dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
+        etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
     } else if (M === 'nfl') {
       const g = (d.games || []).find(x => x.id === d.featured_id);
       if (g) {
@@ -469,13 +657,26 @@ async function cargaPick() {
           odds: v ? pct(v.prob) : '', venue: g.venue || '',
         };
         $('liveSub').textContent = (g.preseason ? 'PRETEMP ' : 'SEMANA ') + (d.week || '');
+        vs = g.verdicts || [];
+        const mk = g.markets || {};
+        if (mk.total) extra.push(['Puntos esperados', 'el modelo espera ' + mk.total.model_total + ' (línea ' + mk.total.line + ')']);
+        dist = { tipo: 'margen', valores: mk.margin_dist || [], centro: 21,
+          etiqueta: 'Cómo cae el margen (' + g.home.abbr + ' positivo) en 10,000 futuros' };
       }
     }
 
-    $('pickHolder').innerHTML = o ? cardHTML(o)
-      : '<div class="pk"><div class="pk-meta">Sin partidos ahora mismo</div><div class="pk-sel">Vuelve cuando arranque la jornada.</div></div>';
+    if (!o) {
+      montaCarrusel('<div class="slide"><div class="pk"><div class="pk-meta">Sin partidos ahora mismo</div>' +
+        '<div class="pk-sel">Vuelve cuando arranque la jornada.</div></div></div>');
+      return;
+    }
+    /* Tres vistas del MISMO pick gratis, las mismas que vería dentro del
+       modelo: la card, sus mercados con veredicto y el detalle con
+       momios justos y la distribución. */
+    montaCarrusel(cardHTML(o) + veredictosHTML(vs) + detalleHTML(vs, extra, dist));
   } catch (e) {
-    $('pickHolder').innerHTML = '<div class="pk"><div class="pk-meta">Pick gratis</div><div class="pk-sel">No pudimos cargarlo. Míralo en el modelo.</div></div>';
+    montaCarrusel('<div class="slide"><div class="pk"><div class="pk-meta">Pick gratis</div>' +
+      '<div class="pk-sel">No pudimos cargarlo. Míralo en el modelo.</div></div></div>');
   }
 }
 cargaPick();

@@ -77,6 +77,14 @@ module.exports = async function handler(req, res) {
                quedaba con el texto de relleno y con un chip BET que el
                juego no tiene. */
             verdict: mejorVeredicto(best.verdicts),
+            /* La cartelera COMPLETA del pick gratis: todos sus mercados
+               con veredicto y la distribución de carreras. No es nada
+               nuevo — /api/mlb-picks ya sirve este mismo juego entero a
+               invitados; viaja aquí para que la página de compra lo
+               enseñe sin pedir la jornada completa. */
+            verdicts: best.verdicts || [],
+            total_line: m.total ? m.total.line : null,
+            total_dist: m.total_dist || [],
             sims: 10000,
           },
         };

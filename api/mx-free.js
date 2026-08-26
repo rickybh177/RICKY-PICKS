@@ -43,6 +43,11 @@ module.exports = async function handler(req, res) {
             away: { abbr: best.away.abbr, name: best.away.name, logo: best.away.logo, form: best.away.form },
             moneyline: best.markets ? best.markets.moneyline : null,
             pick: topPick ? { label: topPick.label, verdict: topPick.verdict, prob: topPick.prob, line_txt: topPick.line_txt } : null,
+            /* Igual que en MLB: el partido gratis completo (veredictos y
+               distribución del margen). /api/mx-picks ya lo sirve entero
+               a invitados; aquí evita pedir toda la jornada. */
+            verdicts: best.verdicts || [],
+            margin_dist: (best.markets && best.markets.margin_dist) || [],
           },
         };
       }
