@@ -125,7 +125,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
        ALTURA, así llena el alto del hero en vez de quedar limitado por
        el ancho de la columna (dejaba 23% muerto arriba y 18% abajo). */
     display: grid; grid-template-columns: 1fr auto; align-items: center;
-    gap: clamp(22px, 3vw, 48px); padding: calc(58px + 1vh) clamp(20px, 3vw, 44px) 2.5vh;
+    gap: clamp(22px, 3vw, 64px);
+    padding-top: calc(58px + 1vh); padding-bottom: 2.5vh;
+    /* El contenido se centra con un tope de 1480px y el fondo sigue de
+       orilla a orilla. Sin el tope, en un monitor ancho la columna de
+       la izquierda se estiraba y dejaba un hueco muerto en medio,
+       porque el texto no pasa de 660px. */
+    padding-inline: max(clamp(20px, 3vw, 44px), calc((100% - 1480px) / 2));
     background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 45%, #eef3ff 100%); }
 
   .hero-copy { max-width: 660px; }
