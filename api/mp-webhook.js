@@ -102,6 +102,15 @@ module.exports = async function handler(req, res) {
       if (planId === 'combo_total') {
         await cancelOtherRecurring(userId, pre.payer_email || null, 'combo_total');
       }
+      /* Alta de un mensual nuevo: las mensualidades ANTERIORES que
+         cubra se cancelan en ambas pasarelas, conservando la recién
+         autorizada (mlb_mensual → combo_mensual: sin esto pagaría
+         $349 + $549 cada mes). Solo en el alta, no en renovaciones. */
+      if (type === 'subscription_preapproval') {
+        /* emailOf: el correo de la CUENTA del sitio — el payer_email de
+           MP puede ser otro y el lado Stripe busca por correo. */
+        await cancelCoveredRecurring(userId, await emailOf(userId), planId, { preapprovalId: pre.id });
+      }
       return res.status(200).end();
     } catch (e) {
       console.error('mp-webhook (suscripción):', e);

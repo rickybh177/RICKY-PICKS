@@ -3,7 +3,7 @@
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
 const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
-const { FULL_PASS_PLANS } = require('../lib/plans');
+const { FULL_PASS_PLANS, isSubscription } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -35,6 +35,15 @@ module.exports = async function handler(req, res) {
        cancela sola (upgrade mensual → pase por $199). */
     if (FULL_PASS_PLANS.includes(plan)) {
       await cancelCoveredRecurring(userId, email, plan);
+    }
+    /* Mensual nuevo comprado: las mensualidades ANTERIORES que cubra se
+       cancelan solas (mlb_mensual → combo_mensual, o un doble clic que
+       creó dos suscripciones iguales), conservando la recién creada.
+       Sin esto el cliente pagaría $349 + $549 cada mes. */
+    if (isSubscription(plan)) {
+      const nueva = typeof session.subscription === 'string' ? session.subscription
+        : (session.subscription && session.subscription.id) || null;
+      await cancelCoveredRecurring(userId, email, plan, { stripeSubId: nueva });
     }
     /* `value` = lo realmente cobrado (Stripe da centavos); solo lo usa
        el Pixel de Meta para reportar la compra. */

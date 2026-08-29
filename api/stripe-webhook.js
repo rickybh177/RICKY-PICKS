@@ -20,7 +20,7 @@
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
 const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
-const { FULL_PASS_PLANS } = require('../lib/plans');
+const { FULL_PASS_PLANS, isSubscription } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -60,6 +60,13 @@ module.exports = async function handler(req, res) {
         /* Pase completo: las mensualidades que cubre se cancelan solas. */
         if (FULL_PASS_PLANS.includes(meta.plan)) {
           await cancelCoveredRecurring(meta.user_id, email, meta.plan);
+        }
+        /* Mensual nuevo: las mensualidades anteriores cubiertas se
+           cancelan, conservando la recién creada (ver stripe-capture). */
+        if (isSubscription(meta.plan)) {
+          const nueva = typeof s.subscription === 'string' ? s.subscription
+            : (s.subscription && s.subscription.id) || null;
+          await cancelCoveredRecurring(meta.user_id, email, meta.plan, { stripeSubId: nueva });
         }
       }
     } else if (event.type === 'invoice.paid') {
