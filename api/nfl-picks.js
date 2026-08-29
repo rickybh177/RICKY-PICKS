@@ -23,15 +23,23 @@ const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 const _cache = new Map(); // week -> { at, value }
 const TTL = 5 * 60 * 1000;
 
-/* ---- pick gratis: UNO por semana ----
-   Regla: mientras el destacado NO haya arrancado, es el juego con
-   el pick más probable estadísticamente (los BET mandan) y puede
-   re-elegirse si llegan momios que revelan uno mejor. En cuanto
-   patea, queda CONGELADO toda la semana (persistido en el bucket
-   de Supabase Storage): si ya se jugó, el frontend lo dice y manda
-   al modelo completo. Antes se re-elegía entre los juegos por
-   empezar y cada juego jugado regalaba un pick nuevo — el pick
-   gratis debe rotar semana con semana, no día con día. */
+/* ---- pick gratis de la semana ----
+   El destacado es el juego con el pick más probable estadísticamente
+   (los BET mandan) entre los que NO han arrancado, y se persiste en
+   el bucket de Supabase Storage para que no baile entre corridas.
+
+   Estados:
+   - por empezar: puede re-elegirse si llegan momios que revelen uno
+     mejor;
+   - EN JUEGO: congelado (la línea previa ya no se puede tomar, pero
+     el usuario está siguiendo ese partido);
+   - TERMINADO: pasa al siguiente juego sin empezar de la semana.
+     Antes se quedaba congelado hasta el lunes y el landing mostraba
+     un pick ya jugado —y perdido— como si fuera apostable (reportado
+     el 28-ago-2026: Falcons @ Dolphins, perdió 17-12, seguía en
+     portada). Si ya NO queda ningún juego por empezar, se conserva el
+     último: ahí sí la semana terminó y el frontend avisa "ya se jugó"
+     y manda al modelo completo. */
 function pickBest(list) {
   if (!list.length) return null;
   const score = g => {
@@ -49,10 +57,11 @@ async function resolveFeatured(value) {
   const kvKey = `nfl-free-${value.season}-st${value.seasontype}-w${value.week}`;
   const saved = await kvGet(kvKey);
   const savedGame = saved && saved.id ? games.find(g => g.id === saved.id) : null;
-  // ya arrancó o terminó: fijo, aunque sus momios hayan desaparecido
-  if (savedGame && savedGame.state !== 'pre') return savedGame.id;
-  // aún no arranca: elegir el más probable entre los POR JUGAR
+  // en juego: congelado (aunque sus momios ya hayan desaparecido)
+  if (savedGame && savedGame.state === 'in') return savedGame.id;
   const pool = games.filter(g => g.state === 'pre');
+  // terminado y sin nada por empezar: la semana acabó, se conserva
+  if (savedGame && savedGame.state === 'post' && !pool.length) return savedGame.id;
   const id = pickBest(pool.length ? pool : games);
   if (id && (!savedGame || savedGame.id !== id)) await kvPut(kvKey, { id });
   return id || (savedGame ? savedGame.id : null);
