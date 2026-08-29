@@ -15,7 +15,7 @@
 const { buildDay } = require('../lib/mlb/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
-const { featuredPk } = require('../lib/mlb/featured');
+const { featuredPk, activeDay } = require('../lib/mlb/featured');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -69,9 +69,13 @@ module.exports = async function handler(req, res) {
   // dev local: acceso completo, salvo que se pida ver como invitado
   if (IS_DEV && access === 'guest' && req.query.as !== 'guest') access = 'full';
 
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query && req.query.date || ''))
-    ? req.query.date
-    : todayET();
+  // fecha pedida a mano: se respeta tal cual (navegación por día).
+  // Sin fecha: si la cartelera de hoy ya terminó completa, se pasa a
+  // la de mañana — misma regla que /api/mlb-free, para que el pick
+  // gratis del landing y el de la página del modelo coincidan.
+  const pedida = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query && req.query.date || ''))
+    ? req.query.date : null;
+  const date = pedida || todayET();
   const refresh = req.query && req.query.refresh === '1' && access === 'full';
 
   try {
@@ -80,8 +84,14 @@ module.exports = async function handler(req, res) {
     if (!refresh && hit && Date.now() - hit.at < DAY_TTL) {
       value = hit.value;
     } else {
-      value = await buildDay(date);
-      value.featured_pk = featuredPk(value.games || [], date);
+      if (pedida) {
+        value = await buildDay(date);
+        value.featured_pk = featuredPk(value.games || [], date);
+      } else {
+        const activo = await activeDay(buildDay, date);
+        value = activo.day;
+        value.featured_pk = featuredPk(value.games || [], activo.date);
+      }
       _dayCache.set(date, { at: Date.now(), value });
     }
 

@@ -6,7 +6,7 @@
    sigue gated en /api/mlb-picks.
    ============================================================ */
 const { buildDay } = require('../lib/mlb/model');
-const { featuredGame } = require('../lib/mlb/featured');
+const { featuredGame, activeDay } = require('../lib/mlb/featured');
 
 const _cache = new Map(); // date -> { at, value }
 const TTL = 10 * 60 * 1000;
@@ -39,14 +39,19 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Método no permitido.' });
   }
-  const date = todayET();
+  const hoy = todayET();
+  let date = hoy;
   try {
     let value;
-    const hit = _cache.get(date);
+    const hit = _cache.get(hoy);
     if (hit && Date.now() - hit.at < TTL) {
       value = hit.value;
     } else {
-      const day = await buildDay(date);
+      // si la cartelera de hoy ya terminó completa, pasamos a la de
+      // mañana: el pick gratis nunca es un partido ya jugado
+      const activo = await activeDay(buildDay, hoy);
+      date = activo.date;
+      const day = activo.day;
       // MISMA elección que /api/mlb-picks (incluye overrides manuales):
       // si divergen, el landing muestra un partido gratis y la página
       // del modelo otro.
@@ -89,7 +94,7 @@ module.exports = async function handler(req, res) {
           },
         };
       }
-      _cache.set(date, { at: Date.now(), value });
+      _cache.set(hoy, { at: Date.now(), value });
     }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json(value);
