@@ -293,13 +293,13 @@ const PLANS = {
   },
   mlb_temporada: {
     name: 'Modelo MLB — Temporada 2026',
-    price: '$599',
+    price: '$1,399',
     currency: 'MXN',
-    period: 'Toda la temporada + playoffs + Serie Mundial',
+    period: 'Pago único · toda la temporada + playoffs + Serie Mundial',
     features: [
-      'Precio exclusivo del acceso fundador (precio regular: $2,999)',
       'Acceso total hasta el último out de la Serie Mundial',
       'Todos los picks y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
     ],
   },
   mx_fundador: {
@@ -358,13 +358,13 @@ const PLANS = {
   },
   mx_apertura: {
     name: 'Modelo Liga MX — Apertura 2026 completo',
-    price: '$699',
+    price: '$1,399',
     currency: 'MXN',
     period: 'Las 17 jornadas + liguilla · pago único',
     features: [
       'Todo el torneo, hasta la final de la liguilla',
       'Todos los partidos, mercados y análisis',
-      'Un solo pago. Sin suscripción, sin renovaciones',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
     ],
   },
   nfl_semana: {
@@ -393,14 +393,59 @@ const PLANS = {
   },
   nfl_temporada: {
     name: 'Modelo NFL — Temporada 26-27 completa',
-    price: '$799',
+    price: '$1,399',
     currency: 'MXN',
     period: 'De la jornada 1 al Super Bowl · pago único',
     features: [
       'Temporada regular completa + playoffs + Super Bowl',
       'Extra por entrar ahora: la pretemporada completa, gratis',
-      'Precio exclusivo del acceso fundador (regular: $2,999)',
-      'Sin renovaciones: pagas una vez y listo',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+    ],
+  },
+
+  /* ---- Pricing por suscripción (28-ago-2026) ---- */
+  mlb_mensual: {
+    name: 'Modelo MLB — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Todos los juegos de MLB, todos los días',
+      'Picks BET / MAYBE / SKIP + análisis del modelo por partido',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  mx_mensual: {
+    name: 'Modelo Liga MX — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Toda la jornada de Liga MX, cada semana',
+      '1X2, doble oportunidad, goles, ambos anotan y más',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  nfl_mensual: {
+    name: 'Modelo NFL — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Los 16 juegos de cada jornada: spread, total, moneyline y props de QB',
+      'Extra por entrar ahora: la pretemporada completa, gratis',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  combo_mensual: {
+    name: 'Los 3 modelos — Suscripción mensual',
+    price: '$549',
+    currency: 'MXN',
+    period: 'Suscripción mensual · MLB + Liga MX + NFL',
+    features: [
+      'Los tres modelos completos: sale a $183 por modelo',
+      'Beisbol todos los días, Liga MX cada semana, NFL cada jornada',
+      'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
 };

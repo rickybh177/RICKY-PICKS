@@ -50,8 +50,21 @@ module.exports = async function handler(req, res) {
   const plan = PLANS[planId];
   /* price > 0 también excluye los planes permanentes (price 0): esos
      solo se otorgan por código/soporte, jamás se venden. */
-  if (!plan || plan.retired || !(plan.price > 0)) {
+  if (!plan || !(plan.price > 0)) {
     return res.status(400).json({ error: 'Plan no válido.' });
+  }
+  /* Un plan retirado no se vende — con UNA excepción: combo_2026 sigue
+     comprable para quien tiene una oferta prometida vigente (upgrade
+     $199 de los mensuales legado o $799 con un modelo completo pagado).
+     Se verifica contra los entitlements de ESTE usuario. */
+  if (plan.retired) {
+    let permitido = false;
+    if (planId === 'combo_2026') {
+      const entsRet = await getEntitlements(user.id, user.email);
+      const upRet = monthlyUpgradeFor(entsRet);
+      permitido = (upRet && upRet.target === 'combo_2026') || !!comboPermanentDiscount(entsRet);
+    }
+    if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;

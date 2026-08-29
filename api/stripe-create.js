@@ -31,6 +31,11 @@ const PLAN_NAMES = {
   nfl_fundador:   'Modelo NFL — Mensual Fundador',
   nfl_temporada:  'Modelo NFL — Temporada 26-27 completa',
   circulo_fundador: 'Círculo Fundador — todo + línea directa',
+  /* Pricing por suscripción (28-ago-2026) */
+  mlb_mensual:   'Modelo MLB — Suscripción mensual',
+  mx_mensual:    'Modelo Liga MX — Suscripción mensual',
+  nfl_mensual:   'Modelo NFL — Suscripción mensual',
+  combo_mensual: 'Los 3 modelos — Suscripción mensual',
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
@@ -61,7 +66,7 @@ module.exports = async function handler(req, res) {
     const def = SERVER_PLANS[plan];
     /* price > 0 también excluye los planes permanentes (price 0): esos
        solo se otorgan por código/soporte, jamás se venden. */
-    if (!def || def.retired || !PLAN_NAMES[plan] || !(def.price > 0)) {
+    if (!def || !PLAN_NAMES[plan] || !(def.price > 0)) {
       return res.status(400).json({ error: 'Plan inválido.' });
     }
     const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
@@ -69,6 +74,21 @@ module.exports = async function handler(req, res) {
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
+
+    /* Un plan retirado no se vende — con UNA excepción: combo_2026
+       sigue comprable para quien tiene una oferta prometida vigente
+       (el upgrade de $199 de los mensuales legado o el $799 con un
+       modelo completo pagado). Se verifica contra los entitlements de
+       ESTE usuario, nunca contra lo que diga el navegador. */
+    if (def.retired) {
+      let permitido = false;
+      if (plan === 'combo_2026') {
+        const ents = await getEntitlements(user.id, user.email);
+        const up = monthlyUpgradeFor(ents);
+        permitido = (up && up.target === 'combo_2026') || !!comboPermanentDiscount(ents);
+      }
+      if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
+    }
 
     const p = { name: PLAN_NAMES[plan], price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase() };
     const SITE_URL = siteUrl(req);

@@ -345,7 +345,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <div class="trust">
           <span>Pago seguro con tarjeta o Mercado Pago</span>
           <span>Acceso inmediato</span>
-          <span>Sin suscripción: un solo pago</span>
+          <span>Cancela cuando quieras</span>
         </div>
       </section>
     </div>
@@ -377,15 +377,17 @@ const MODELOS = {
   mx:  { nombre: 'Liga MX', pagina: '/mx.html',  api: '/api/mx-free',
          titulo: 'El Apertura completo, jornada por jornada',
          lede: 'Cada partido resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
-         semana: 'mx_semana', temporada: 'mx_apertura' },
+         mensual: 'mx_mensual', temporada: 'mx_apertura' },
   nfl: { nombre: 'NFL', pagina: '/nfl.html', api: '/api/nfl-picks?as=guest',
          titulo: 'La temporada 26-27 completa',
          lede: 'Los 16 juegos de cada jornada: spread, total, moneyline, 1ª mitad y props del QB. Hasta el Super Bowl.',
-         semana: 'nfl_semana', temporada: 'nfl_temporada' },
+         mensual: 'nfl_mensual', temporada: 'nfl_temporada' },
   mlb: { nombre: 'MLB', pagina: '/mlb.html', api: '/api/mlb-free',
-         titulo: 'La temporada 2026 completa',
+         titulo: 'La recta final, al día',
          lede: 'Todos los juegos del día, cada día: moneyline, hándicap, totales y más — hasta el último out de la Serie Mundial.',
-         semana: 'mlb_semana', temporada: 'mlb_temporada' },
+         /* sin `temporada`: quedan ~5 semanas de regular — nadie paga la
+            temporada completa por eso. Vuelve a aparecer con la 2027. */
+         mensual: 'mlb_mensual', temporada: null },
 };
 const param = new URLSearchParams(location.search).get('m');
 const M = MODELOS[param] ? param : 'mlb';
@@ -411,29 +413,32 @@ document.querySelectorAll('.model-toggle a').forEach(a => {
    Escribirlos aquí fue el bug de los banners (anunciaban $999 y un
    plan retirado de $599). */
 const BULLETS = {
-  semana: m => ([
-    'Todos los partidos y todos los mercados, 7 días',
-    'Veredicto BET / MAYBE / SKIP con momios reales',
-    'Para probar el modelo sin comprometerte',
-  ]),
-  temporada: m => {
+  mensual: m => {
     const base = [
-      'Todo lo de la Semana, hasta el final de la temporada',
-      'Sin renovaciones: pagas una vez y listo',
+      'Todos los partidos y todos los mercados del modelo',
+      'Veredicto BET / MAYBE / SKIP con momios reales',
+      'Se renueva solo cada mes · cancela cuando quieras',
     ];
-    if (m === 'nfl') base.splice(1, 0, 'Playoffs y Super Bowl incluidos, más la pretemporada de regalo');
-    if (m === 'mlb') base.splice(1, 0, 'Playoffs y Serie Mundial incluidos');
-    if (m === 'mx')  base.splice(1, 0, 'Las 17 jornadas más la liguilla completa');
+    if (m === 'nfl') base.splice(2, 0, 'Extra por entrar ahora: la pretemporada gratis');
     return base;
   },
   combo: () => ([
-    'Los tres modelos: Liga MX, NFL y MLB',
-    'Cada uno hasta el final de su temporada',
-    'Un solo pago. Sin suscripción, sin renovaciones',
+    'Los tres modelos completos: Liga MX, NFL y MLB',
+    'Beisbol a diario, Liga MX cada semana, NFL cada jornada',
+    'Se renueva solo cada mes · cancela cuando quieras',
   ]),
+  temporada: m => {
+    const base = [
+      'Todo el modelo, hasta el final de la temporada',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+    ];
+    if (m === 'nfl') base.splice(1, 0, 'Playoffs y Super Bowl incluidos, más la pretemporada de regalo');
+    if (m === 'mx')  base.splice(1, 0, 'Las 17 jornadas más la liguilla completa');
+    return base;
+  },
 };
 
-let planes = null, elegido = null, comboMio = null; /* comboMio: precio del combo para ESTE usuario */
+let planes = null, elegido = null;
 
 function tarjeta(id, nombre, sub, precio, nota, bullets, flag) {
   return '<button class="opt" type="button" data-plan="' + esc(id) + '" aria-pressed="false">' +
@@ -448,29 +453,27 @@ function tarjeta(id, nombre, sub, precio, nota, bullets, flag) {
 }
 
 function pintaOpciones(p) {
-  const sem = p[cfg.semana], tem = p[cfg.temporada], com = p.combo_2026;
-  if (!sem || !tem) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
-  const porDia = (precio, dias) => dias ? '$' + Math.round(precio / dias) + '/día' : '';
+  /* Pricing por suscripción (28-ago-2026): mensual del modelo, mensual
+     de los tres (el más elegido) y — cuando queda temporada por
+     delante — el pago único de la temporada completa. */
+  const men = p[cfg.mensual], com = p.combo_mensual;
+  const tem = cfg.temporada ? p[cfg.temporada] : null;
+  if (!men || !com) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
+  const porModelo = Math.round(com.price / 3);
   let html = '';
-  html += tarjeta(sem.id, 'Semana de prueba', sem.days + ' días de acceso completo',
-    money(sem.price), porDia(sem.price, sem.days), BULLETS.semana(M));
+  html += tarjeta(men.id, 'Mensual · Solo ' + cfg.nombre, 'Cancela cuando quieras',
+    money(men.price), 'al mes', BULLETS.mensual(M));
   html += '<div class="sep">O bien</div>';
-  html += tarjeta(tem.id, 'Temporada completa', 'Hasta el final del torneo',
-    money(tem.price), porDia(tem.price, tem.days), BULLETS.temporada(M), 'El más elegido');
-  if (com) {
+  html += tarjeta(com.id, 'Mensual · Los 3 modelos', 'MLB + Liga MX + NFL',
+    money(com.price), 'al mes · ' + money(porModelo) + ' por modelo', BULLETS.combo(), 'El más elegido');
+  if (tem) {
     html += '<div class="sep">O bien</div>';
-    const suma = (p.mlb_temporada ? p.mlb_temporada.price : 0) + (p.mx_apertura ? p.mx_apertura.price : 0) + (p.nfl_temporada ? p.nfl_temporada.price : 0);
-    /* Si el usuario ya tiene un modelo (o una mensualidad que hace
-       upgrade), el servidor le cobra menos: hay que pintarlo igual,
-       si no ve $1,199 y paga otra cosa. */
-    const precioCombo = comboMio != null ? comboMio : com.price;
-    const ahorro = suma - precioCombo;
-    html += tarjeta(com.id, 'Combo Total', comboMio != null ? 'Tu precio por los modelos que ya tienes' : 'Los 3 modelos en un solo pago',
-      money(precioCombo), ahorro > 0 ? 'ahorras ' + money(ahorro) : '', BULLETS.combo(), '3 modelos');
+    html += tarjeta(tem.id, 'Temporada completa', 'Hasta el final del torneo, sin renovaciones',
+      money(tem.price), 'pago único', BULLETS.temporada(M));
   }
   $('opts').innerHTML = html;
   document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
-  elegir(elegido && p[elegido] ? elegido : tem.id); // la temporada viene preseleccionada
+  elegir(elegido && p[elegido] ? elegido : com.id); // los 3 modelos viene preseleccionado
 }
 
 function elegir(id) {
@@ -483,10 +486,13 @@ function elegir(id) {
   const p = planes && planes[id];
   const url = '/checkout.html?plan=' + encodeURIComponent(id);
   $('goBtn').href = url; $('sGo').href = url;
-  if (p) $('sTxt').innerHTML = esc(p.title.split('—').pop().trim()) + '<small>' + money(p.price) + ' ' + esc(p.currency) + '</small>';
+  if (p) $('sTxt').innerHTML = esc(p.title.split('—').pop().trim()) +
+    '<small>' + money(p.price) + ' ' + esc(p.currency) + (p.recurring ? ' al mes' : ' · pago único') + '</small>';
 }
 
-fetch('/api/plans-public')
+/* no-store: tras un cambio de precios, un catálogo cacheado 5 min
+   dejaría la página pintando planes que ya no existen. */
+fetch('/api/plans-public', { cache: 'no-store' })
   .then(r => r.ok ? r.json() : null)
   .then(d => { planes = (d && d.plans) || null; if (planes) pintaOpciones(planes); })
   .catch(() => { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; });
@@ -755,25 +761,8 @@ function pintaSesion() {
   b.textContent = _session ? 'Salir' : 'Entrar';
   b.title = _session ? _session.user.email + ' — cerrar sesión' : 'Inicia sesión';
 }
-/* El precio del combo depende de lo que el usuario ya tenga comprado.
-   Solo se pinta: quien decide el cobro es el servidor otra vez. */
-async function sincronizaCombo() {
-  try {
-    if (!sb) return;
-    const { data } = await sb.auth.getSession();
-    if (!data || !data.session) { if (comboMio != null) { comboMio = null; if (planes) pintaOpciones(planes); } return; }
-    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + data.session.access_token } });
-    if (!r.ok) return;
-    const a = await r.json();
-    const nuevo = a.combo_2026_discount ? Number(a.combo_2026_price) : null;
-    if (nuevo === comboMio) return;
-    comboMio = nuevo;
-    if (planes) pintaOpciones(planes);
-  } catch (e) { /* si falla, se queda el precio de lista */ }
-}
-
 if (sb) {
-  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); sincronizaCombo(); });
+  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); });
   $('authBtn').addEventListener('click', async () => {
     if (_session) { await sb.auth.signOut(); return; }
     /* No hay modal aquí: el checkout ya pide cuenta cuando toca. */
