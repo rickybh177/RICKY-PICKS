@@ -529,6 +529,105 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .pc-piece { opacity: 1 !important; transform: none !important; }
   }
   :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+  /* ============ FREE PICK — carrusel (portado de producto.html) ============
+     Tres vistas del pick gratis: la card, sus mercados con veredicto y
+     el detalle con momio justo + distribución. Todo va scopeado bajo
+     .freepick con la paleta en duro: la landing tiene zonas claras y
+     oscuras y sus variables no coinciden con las de producto.html. */
+  .freepick { min-width: 0; width: 100%; }
+  /* Sin min-width:0 un item de grid/flex nunca baja del ancho mínimo de
+     su contenido — el mismo bug que sacaba de cuadro la card en
+     producto.html. El holder era flex para centrar la card fija vieja;
+     el carrusel debe LLENAR la columna. */
+  .live-grid > * { min-width: 0; }
+  .freepick .deck { position: relative; min-width: 0; }
+  .freepick .viewport { overflow: hidden; min-width: 0; transition: height .3s ease; }
+  .freepick .slides { display: flex; align-items: flex-start; gap: 16px;
+    transition: transform .34s cubic-bezier(.22,.61,.36,1); will-change: transform; }
+  .freepick .slide { flex: 0 0 100%; min-width: 0; }
+  .freepick .dots-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
+  .freepick .arrow { width: 34px; height: 34px; border-radius: 50%; background: #fff;
+    border: 1px solid #d8dfe9; flex: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: #0b1e3f;
+    transition: opacity .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
+  .freepick .arrow:hover { background: #2f7bff; border-color: #2f7bff; color: #fff; }
+  .freepick .arrow.off { opacity: 0.25; pointer-events: none; }
+  .freepick .arrow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2;
+    stroke-linecap: round; stroke-linejoin: round; }
+  .freepick .dots { display: flex; justify-content: center; gap: 7px; }
+  .freepick .dots button { width: 7px; height: 7px; border-radius: 50%; background: #d8dfe9;
+    border: none; padding: 0; cursor: pointer; transition: all .18s; }
+  .freepick .dots button.on { background: #2f7bff; width: 20px; border-radius: 4px; }
+  .freepick .slide-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: #8a93a3; margin-bottom: 10px; }
+  @media (min-width: 901px) {
+    .freepick { position: relative; padding: 0 44px; }
+    .freepick .dots-row .arrow { position: absolute; top: var(--flechaY, 45%); transform: translateY(-50%);
+      z-index: 5; width: 38px; height: 38px; box-shadow: 0 12px 28px -10px rgba(11,30,63,0.35); }
+    .freepick .arrow.off { opacity: 0; }
+    .freepick .arrow.prev { left: 0; } .freepick .arrow.next { right: 0; }
+  }
+
+  /* la card oscura del pick */
+  .freepick .pk { background: #0e131c; border-radius: 18px; padding: 22px; color: #e9edf4;
+    box-shadow: 0 30px 70px -34px rgba(11,30,63,0.55); }
+  .freepick .pk-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #8b96a8; margin-bottom: 16px; }
+  .freepick .pk-team { display: grid; grid-template-columns: 38px 1fr auto; gap: 13px; align-items: center; padding: 9px 0; }
+  .freepick .pk-team img { width: 38px; height: 38px; object-fit: contain; }
+  .freepick .pk-team .tn { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.015em; }
+  .freepick .pk-team .tn small { display: block; font-weight: 450; font-size: 0.74rem; color: #8b96a8; }
+  .freepick .pk-team .pr { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.2rem;
+    font-variant-numeric: tabular-nums; color: #8b96a8; }
+  .freepick .pk-team.fav .pr { color: #6ea2ff; }
+  .freepick .pk-bar { display: flex; height: 5px; border-radius: 4px; overflow: hidden; margin: 14px 0 16px; background: #1e2634; }
+  .freepick .pk-bar i { display: block; height: 100%; }
+  .freepick .pk-bar .a { background: #46536b; } .freepick .pk-bar .h { background: #2f7bff; }
+  .freepick .pk-pick { display: flex; align-items: center; gap: 12px; background: rgba(22,163,74,0.1);
+    border: 1px solid rgba(22,163,74,0.32); border-radius: 12px; padding: 13px 15px; }
+  .freepick .pk-pick.is-maybe { background: rgba(47,123,255,0.1); border-color: rgba(47,123,255,0.34); }
+  .freepick .pk-pick.is-skip { background: rgba(242,105,92,0.1); border-color: rgba(242,105,92,0.3); }
+  .freepick .pk-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.12em; padding: 5px 10px; border-radius: 7px; background: #16a34a; color: #04220f; }
+  .freepick .pk-pick.is-maybe .pk-chip { background: #2f7bff; color: #04122e; }
+  .freepick .pk-pick.is-skip .pk-chip { background: #f2695c; color: #2b0606; }
+  .freepick .pk-sel { font-weight: 700; font-size: 0.98rem; letter-spacing: -0.01em; }
+  .freepick .pk-odds { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #8b96a8; margin-left: auto; white-space: nowrap; }
+  .freepick .pk-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #5f6a7d; }
+  .freepick .fp-skeleton { height: 300px; border-radius: 18px;
+    background: linear-gradient(100deg, #f5f7fa 30%, #eef2f7 50%, #f5f7fa 70%);
+    background-size: 200% 100%; animation: fpshine 1.3s linear infinite; }
+  @keyframes fpshine { to { background-position: -200% 0; } }
+
+  /* mercados con veredicto */
+  .freepick .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #fff; border: 1px solid #e7ebf1; border-radius: 12px; padding: 12px 15px; margin-bottom: 8px; }
+  .freepick .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; min-width: 0; color: #14181e; }
+  .freepick .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+    font-weight: 500; color: #8a93a3; margin-top: 2px; }
+  .freepick .vrow.skip .vl { color: #8a93a3; font-weight: 500; }
+  .freepick .vrow .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
+  .freepick .vrow .vchip.bet { background: rgba(22,163,74,0.1); color: #16a34a; border: 1px solid rgba(22,163,74,0.3); }
+  .freepick .vrow .vchip.maybe { background: rgba(47,123,255,0.08); color: #2f7bff; border: 1px solid rgba(47,123,255,0.3); }
+  .freepick .vrow .vchip.skip { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.25); }
+
+  /* detalle: momio justo + distribución */
+  .freepick .det-rows { border: 1px solid #e7ebf1; border-radius: 12px; overflow: hidden; background: #fff; }
+  .freepick .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 15px; font-size: 0.82rem; border-bottom: 1px solid #e7ebf1; }
+  .freepick .det-row:last-child { border-bottom: none; }
+  .freepick .det-row .dl { font-weight: 500; min-width: 0; color: #14181e; }
+  .freepick .det-row .dv { font-family: 'JetBrains Mono', monospace; color: #667084; font-weight: 500;
+    white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.74rem; }
+  .freepick .dist { margin-top: 14px; }
+  .freepick .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #8a93a3; margin-bottom: 6px;
+    display: flex; justify-content: space-between; gap: 10px; }
+  .freepick .dist svg { width: 100%; height: 52px; display: block; }
 </style>
 </head>
 <body>
@@ -540,7 +639,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
       <a href="/nfl.html" class="nav-link" id="nflNavBtn">NFL</a>
       <a href="/mlb.html" class="nav-link" id="mlbNavBtn">MLB</a>
-      <a href="#precios" class="nav-link">Precios</a>
+      <a href="/producto.html" class="nav-link">Planes</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
       <button id="authBtn" class="nav-ghost">Entrar</button>
       <button id="navFreeBtn" class="nav-cta">Pick gratis</button>
@@ -618,29 +717,14 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         </div>
       </div>
       <div class="live-card-holder reveal" id="nflCardHolder">
-        <div class="pickcard" style="pointer-events:auto">
-          <div class="pc-shell" style="opacity:1">
-            <div class="pc-tag">
-              <span class="t1">Pick gratis · NFL</span>
-              <span class="t2" id="ncTag">PRETEMP</span>
-            </div>
-            <div class="pc-team" id="ncAwayRow">
-              <img id="ncAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="ncAwayName">Visitante</span><small id="ncAwaySub"></small></div>
-              <div class="pr" id="ncAwayProb">—</div>
-            </div>
-            <div class="pc-team" id="ncHomeRow">
-              <img id="ncHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="ncHomeName">Local</span><small id="ncHomeSub"></small></div>
-              <div class="pr" id="ncHomeProb">—</div>
-            </div>
-            <div class="pc-bar"><div class="a" id="ncBarA" style="width:50%"></div><div class="h" id="ncBarH" style="width:50%"></div></div>
-            <div class="pc-pick">
-              <span class="vchip" id="ncChip">BET</span>
-              <span class="sel" id="ncPickSel">Pick del modelo</span>
-              <span class="odds" id="ncPickOdds"></span>
-            </div>
-            <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="ncVenue"></span></div>
+        <div class="freepick" id="fpNfl">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
       </div>
@@ -649,60 +733,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 </section>
 
 
-<!-- ============ PRECIOS NFL ============ -->
-<section id="precios-nfl">
-  <div class="wrap">
-    <div class="sec-eyebrow reveal">Modelo NFL · Temporada 26-27</div>
-    <h2 class="sec-title reveal">NFL, mes a mes o la temporada entera.</h2>
-    <p class="sec-lede reveal">Suscríbete por mes y cancela cuando quieras — o hazte de <strong>toda la temporada en un solo pago</strong>, sin renovaciones. Por entrar ahora, la pretemporada va de regalo.</p>
-    <div class="cur-toggle reveal" role="tablist" aria-label="Moneda">
-      <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
-      <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
-    </div>
-    <div class="tiers tiers-3">
-      <div class="tier reveal">
-        <h3>Mensual</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$349<small>MXN al mes</small>" data-usd="$18.99<small>USD al mes</small>">$349<small>MXN al mes</small></div>
-        <div class="per">Solo este modelo · cancela cuando quieras</div>
-        <ul>
-          <li>Todos los partidos y todos los mercados del modelo</li>
-          <li>Veredictos BET / MAYBE / SKIP con momios reales</li>
-          <li>Extra por entrar ahora: la pretemporada gratis</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=nfl_mensual" class="btn btn-dim">Suscribirme</a>
-      </div>
-      <div class="tier featured reveal">
-        <span class="flag">El más elegido</span>
-        <h3>Los 3 modelos</h3>
-        <div class="was" data-mxn="$1,047 MXN" data-usd="$57.99 USD">$1,047 MXN</div>
-        <div class="amt" data-mxn="$549<small>MXN al mes</small>" data-usd="$29.99<small>USD al mes</small>">$549<small>MXN al mes</small></div>
-        <div class="per">MLB + Liga MX + NFL · sale a $183 por modelo</div>
-        <ul>
-          <li>Beisbol todos los días, Liga MX cada semana, NFL cada jornada</li>
-          <li>Los tres completos por menos que dos sueltos</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=combo_mensual" class="btn btn-blue">Quiero los 3</a>
-      </div>
-      <div class="tier reveal">
-        <span class="flag flag-alt">Pago único</span>
-        <h3>Temporada 26-27</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$1,399<small>MXN</small>" data-usd="$76.99<small>USD</small>">$1,399<small>MXN</small></div>
-        <div class="per">De la jornada 1 al Super Bowl · pago único</div>
-        <ul>
-          <li>Temporada regular completa + playoffs + Super Bowl</li>
-          <li><strong>Extra:</strong> la pretemporada completa, gratis</li>
-          <li>Un solo pago. Sin renovaciones</li>
-        </ul>
-        <a href="/checkout.html?plan=nfl_temporada" class="btn btn-blue">Toda la temporada</a>
-      </div>
-    </div>
 
-  </div>
-</section>
 
 <!-- ============ EN VIVO ============ -->
 <section id="vivo">
@@ -711,36 +742,21 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <div>
         <div class="sec-eyebrow reveal">En vivo ahora</div>
         <h2 class="sec-title reveal">Free pick MLB.</h2>
-        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. El panel completo — todos los juegos, todos los picks — ya está en vivo. Entra hoy con precio fundador.</p>
+        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. Pásalo con las flechas: la card, todos sus mercados con veredicto y el detalle del modelo. La cartelera completa vive en tu plan.</p>
         <div class="live-cta reveal">
           <a class="btn-primary" href="/mlb.html">Ver el pick gratis</a>
           <a class="btn-ghost" href="/producto.html?m=mlb">Ver planes MLB</a>
         </div>
       </div>
-      <div class="live-card-holder reveal">
-        <div class="pickcard" style="pointer-events:auto">
-          <div class="pc-shell" style="opacity:1">
-            <div class="pc-tag">
-              <span class="t1">Pick gratis de hoy</span>
-              <span class="t2" id="lcDate">HOY</span>
-            </div>
-            <div class="pc-team" id="lcAwayRow">
-              <img id="lcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="lcAwayName">Visitante</span><small id="lcAwayPit"></small></div>
-              <div class="pr" id="lcAwayProb">—</div>
-            </div>
-            <div class="pc-team fav" id="lcHomeRow">
-              <img id="lcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="lcHomeName">Local</span><small id="lcHomePit"></small></div>
-              <div class="pr" id="lcHomeProb">—</div>
-            </div>
-            <div class="pc-bar"><div class="a" id="lcBarA" style="width:50%"></div><div class="h" id="lcBarH" style="width:50%"></div></div>
-            <div class="pc-pick">
-              <span class="vchip" id="lcChip">BET</span>
-              <span class="sel" id="lcPickSel">Pick del modelo</span>
-              <span class="odds" id="lcPickOdds"></span>
-            </div>
-            <div class="pc-foot"><span>10,000 SIMULACIONES</span><span id="lcVenue"></span></div>
+      <div class="live-card-holder reveal" id="mlbCardHolder">
+        <div class="freepick" id="fpMlb">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
       </div>
@@ -748,46 +764,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </section>
 
-<!-- ============ PRECIOS ============ -->
-<section id="precios">
-  <div class="wrap">
-    <div class="sec-eyebrow reveal">Modelo MLB · Temporada 2026</div>
-    <h2 class="sec-title reveal">MLB, mes a mes.</h2>
-    <p class="sec-lede reveal">Suscríbete y cancela cuando quieras: la recta final de la temporada, los playoffs y la Serie Mundial, <strong>todos los juegos, todos los días</strong>.</p>
-    <div class="cur-toggle reveal" role="tablist" aria-label="Moneda">
-      <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
-      <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
-    </div>
-    <div class="tiers tiers-2">
-      <div class="tier reveal">
-        <h3>Mensual</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$349<small>MXN al mes</small>" data-usd="$18.99<small>USD al mes</small>">$349<small>MXN al mes</small></div>
-        <div class="per">Solo este modelo · cancela cuando quieras</div>
-        <ul>
-          <li>Todos los partidos y todos los mercados del modelo</li>
-          <li>Veredictos BET / MAYBE / SKIP con momios reales</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=mlb_mensual" class="btn btn-dim">Suscribirme</a>
-      </div>
-      <div class="tier featured reveal">
-        <span class="flag">El más elegido</span>
-        <h3>Los 3 modelos</h3>
-        <div class="was" data-mxn="$1,047 MXN" data-usd="$57.99 USD">$1,047 MXN</div>
-        <div class="amt" data-mxn="$549<small>MXN al mes</small>" data-usd="$29.99<small>USD al mes</small>">$549<small>MXN al mes</small></div>
-        <div class="per">MLB + Liga MX + NFL · sale a $183 por modelo</div>
-        <ul>
-          <li>Beisbol todos los días, Liga MX cada semana, NFL cada jornada</li>
-          <li>Los tres completos por menos que dos sueltos</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=combo_mensual" class="btn btn-blue">Quiero los 3</a>
-      </div>
-    </div>
 
-  </div>
-</section>
 
 <!-- ============ LIGA MX (pick gratis de la jornada) ============ -->
 <section id="vivo-mx">
@@ -802,28 +779,14 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         </div>
       </div>
       <div class="live-card-holder reveal" id="mxCardHolder">
-        <div class="pickcard" style="pointer-events:auto">
-          <div class="pc-shell" style="opacity:1">
-            <div class="pc-tag">
-              <span class="t1">Pick gratis · Liga MX</span>
-              <span class="t2" id="mcTag">JORNADA</span>
-            </div>
-            <div class="pc-team" id="mcHomeRow">
-              <img id="mcHomeLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="mcHomeName">Local</span><small>Local</small></div>
-              <div class="pr" id="mcHomeProb">—</div>
-            </div>
-            <div class="pc-team" id="mcAwayRow">
-              <img id="mcAwayLogo" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
-              <div class="tn"><span id="mcAwayName">Visitante</span><small>Visitante</small></div>
-              <div class="pr" id="mcAwayProb">—</div>
-            </div>
-            <div class="pc-bar"><div class="h" id="mcBarH" style="width:40%"></div><div id="mcBarD" style="width:27%;background:#5b6474"></div><div class="a" id="mcBarA" style="width:33%"></div></div>
-            <div class="pc-pick">
-              <span class="vchip" id="mcChip">BET</span>
-              <span class="sel" id="mcPickSel">Pick del modelo</span>
-            </div>
-            <div class="pc-foot"><span id="mcDraw">EMPATE —</span><span id="mcVenue"></span></div>
+        <div class="freepick" id="fpMx">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
       </div>
@@ -831,59 +794,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </section>
 
-<!-- ============ PRECIOS LIGA MX / COMBO ============ -->
-<section id="precios-mx">
-  <div class="wrap">
-    <div class="sec-eyebrow reveal">Modelo Liga MX · Apertura 2026</div>
-    <h2 class="sec-title reveal">Liga MX, mes a mes o el torneo entero.</h2>
-    <p class="sec-lede reveal">Suscríbete por mes y cancela cuando quieras — o hazte del <strong>Apertura completo en un solo pago</strong>: lo que queda del torneo más la liguilla, sin renovaciones.</p>
-    <div class="cur-toggle reveal" role="tablist" aria-label="Moneda">
-      <button class="active" data-cur="mxn" role="tab" aria-selected="true">🇲🇽 MXN</button>
-      <button data-cur="usd" role="tab" aria-selected="false">🇺🇸 USD</button>
-    </div>
-    <div class="tiers tiers-3">
-      <div class="tier reveal">
-        <h3>Mensual</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$349<small>MXN al mes</small>" data-usd="$18.99<small>USD al mes</small>">$349<small>MXN al mes</small></div>
-        <div class="per">Solo este modelo · cancela cuando quieras</div>
-        <ul>
-          <li>Todos los partidos y todos los mercados del modelo</li>
-          <li>Veredictos BET / MAYBE / SKIP con momios reales</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=mx_mensual" class="btn btn-dim">Suscribirme</a>
-      </div>
-      <div class="tier featured reveal">
-        <span class="flag">El más elegido</span>
-        <h3>Los 3 modelos</h3>
-        <div class="was" data-mxn="$1,047 MXN" data-usd="$57.99 USD">$1,047 MXN</div>
-        <div class="amt" data-mxn="$549<small>MXN al mes</small>" data-usd="$29.99<small>USD al mes</small>">$549<small>MXN al mes</small></div>
-        <div class="per">MLB + Liga MX + NFL · sale a $183 por modelo</div>
-        <ul>
-          <li>Beisbol todos los días, Liga MX cada semana, NFL cada jornada</li>
-          <li>Los tres completos por menos que dos sueltos</li>
-          <li>Se renueva solo · cancela cuando quieras</li>
-        </ul>
-        <a href="/checkout.html?plan=combo_mensual" class="btn btn-blue">Quiero los 3</a>
-      </div>
-      <div class="tier reveal">
-        <span class="flag flag-alt">Pago único</span>
-        <h3>Apertura completo</h3>
-        <div class="was"></div>
-        <div class="amt" data-mxn="$1,399<small>MXN</small>" data-usd="$76.99<small>USD</small>">$1,399<small>MXN</small></div>
-        <div class="per">Lo que queda del torneo + la liguilla · pago único</div>
-        <ul>
-          <li>Todas las jornadas restantes, hasta la final de la liguilla</li>
-          <li>Todos los partidos, mercados y análisis</li>
-          <li>Un solo pago. Sin renovaciones</li>
-        </ul>
-        <a href="/checkout.html?plan=mx_apertura" class="btn btn-blue">Toda la temporada</a>
-      </div>
-    </div>
 
-  </div>
-</section>
 
 <!-- ============ FAQ ============ -->
 <section id="faq" style="padding-top:20px">
@@ -999,154 +910,240 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   onScroll();
 })();
 
+
+
+
+
+
+
+
 /* ============================================================
-   PICK GRATIS (Modelo MLB) — llena la card del hero y la de
-   "en vivo" con el juego destacado real. Fallback si no responde.
+   FREE PICK — carrusel por modelo (portado de producto.html).
+   Tres vistas del MISMO pick gratis: la card, todos sus mercados
+   con veredicto y el detalle con momio justo + distribución.
    ============================================================ */
 (function () {
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  const logo = id => 'https://www.mlbstatic.com/team-logos/team-cap-on-dark/' + id + '.svg';
-  const amOdds = p => !p || p <= 0 || p >= 1 ? '' : (p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p));
-  const pct = p => Math.round(p * 100) + '%';
-
-  function pickTxt(pick, g) {
-    if (!pick) return 'Pick del modelo';
-    const name = sel => sel === 'home' ? g.home.name : g.away.name;
-    switch (pick.market) {
-      case 'ML': return 'Ganan los ' + name(pick.sel);
-      case 'F5': return name(pick.sel) + ' adelante en la 5ª';
-      case 'RL': {
-        const team = pick.sel.indexOf('home') === 0 ? g.home.name : g.away.name;
-        return pick.sel.indexOf('-1.5') > -1 ? team + ' ganan por 2+' : team + ' no pierden por 2+';
-      }
-      case 'TOTAL': return (pick.sel.indexOf('Over') === 0 ? 'Más de ' : 'Menos de ') + pick.sel.split(' ')[1] + ' carreras';
-      case 'F5_TOTAL': return (pick.sel.indexOf('Over') === 0 ? 'Más de ' : 'Menos de ') + pick.sel.split(' ')[1] + ' en las primeras 5';
-      case 'NRFI': return pick.sel === 'NRFI' ? 'Nadie anota en la 1ª entrada' : 'Hay carrera en la 1ª entrada';
-    }
-    return pick.sel;
-  }
-
-  function applyTo(prefix, g) {
-    set(prefix + 'AwayName', g.away.name); set(prefix + 'HomeName', g.home.name);
-    set(prefix + 'AwayProb', pct(g.moneyline.away)); set(prefix + 'HomeProb', pct(g.moneyline.home));
-    set(prefix + 'AwayPit', g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '');
-    set(prefix + 'HomePit', g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '');
-    set(prefix + 'Venue', (g.venue || '').toUpperCase());
-    /* Qué apuesta mostrar. `pick` solo existe si el juego tiene un pick
-       de alta convicción; si no (pasa cuando el destacado se fija a
-       mano), se usa el mejor VEREDICTO del juego. Así la card nunca
-       queda con el texto de relleno ni anuncia un BET inexistente. */
-    const v = g.verdict || null;
-    set(prefix + 'PickSel', g.pick ? pickTxt(g.pick, g) : (v ? v.label : pickTxt(null, g)));
-    const prob = g.pick ? g.pick.prob : (v ? v.prob : null);
-    set(prefix + 'PickOdds', prob != null ? pct(prob) + (amOdds(prob) ? ' · ' + amOdds(prob) : '') : '');
-    const chip = document.getElementById(prefix + 'Chip');
-    if (chip) {
-      const tipo = g.pick ? 'bet' : (v ? v.verdict : 'bet');
-      chip.textContent = tipo.toUpperCase();
-      chip.className = 'vchip' + (tipo === 'bet' ? '' : ' is-' + tipo);
-    }
-    const dt = new Date(g.game_date);
-    set(prefix + 'Date', dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Mexico_City' }).replace('.', '').toUpperCase());
-    const al = document.getElementById(prefix + 'AwayLogo'), hl = document.getElementById(prefix + 'HomeLogo');
-    if (al) al.src = logo(g.away.id);
-    if (hl) hl.src = logo(g.home.id);
-    const ba = document.getElementById(prefix + 'BarA'), bh = document.getElementById(prefix + 'BarH');
-    if (ba) ba.style.width = (g.moneyline.away * 100) + '%';
-    if (bh) bh.style.width = (g.moneyline.home * 100) + '%';
-  }
-
-  const fallback = {
-    game_date: new Date().toISOString(), venue: 'Dodger Stadium',
-    home: { id: 119, name: 'Dodgers' }, away: { id: 115, name: 'Rockies' },
-    pitchers: { home: { name: 'Yamamoto' }, away: { name: 'Freeland' } },
-    moneyline: { home: 0.72, away: 0.28 },
-    pick: { market: 'ML', sel: 'home', prob: 0.72 }, sims: 10000,
+  const E = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
+  const amOdds = p => (!p || p <= 0 || p >= 1) ? '—'
+    : (p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p));
+  const MX_TZ = 'America/Mexico_City';
+  const ORDEN = { bet: 3, maybe: 2, skip: 1 };
+  const mejorVeredicto = vs => {
+    const l = (vs || []).filter(v => v && v.label);
+    if (!l.length) return null;
+    return l.slice().sort((a, b) => {
+      const d = (ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0);
+      return d !== 0 ? d : (b.prob || 0) - (a.prob || 0);
+    })[0];
   };
 
-  /* la card de "EN VIVO" (lc) sigue mostrando el pick gratis de MLB */
-  fetch('/api/mlb-free')
-    .then(r => r.ok ? r.json() : null)
-    .then(d => { const g = d && d.game ? d.game : fallback; applyTo('lc', g); mlbFallbackHero = g; })
-    .catch(() => { applyTo('lc', fallback); });
+  const chipClase = v => v === 'bet' ? '' : ' is-' + v;
+  function cardHTML(o) {
+    const fila = (t, favorito) =>
+      '<div class="pk-team' + (favorito ? ' fav' : '') + '">' +
+        (t.logo ? '<img src="' + E(t.logo) + '" alt="">' : '<span></span>') +
+        '<span class="tn">' + E(t.name) + (t.sub ? '<small>' + E(t.sub) + '</small>' : '') + '</span>' +
+        '<span class="pr">' + E(t.prob) + '</span>' +
+      '</div>';
+    return '<div class="slide"><div class="pk">' +
+      '<div class="pk-meta">' + E(o.meta) + '</div>' +
+      fila(o.away, o.favAway) + fila(o.home, !o.favAway) +
+      '<div class="pk-bar"><i class="a" style="width:' + o.barA + '%"></i><i class="h" style="width:' + (100 - o.barA) + '%"></i></div>' +
+      '<div class="pk-pick' + chipClase(o.verdict) + '">' +
+        '<span class="pk-chip">' + E(o.verdict.toUpperCase()) + '</span>' +
+        '<span class="pk-sel">' + E(o.label) + '</span>' +
+        '<span class="pk-odds">' + E(o.odds) + '</span>' +
+      '</div>' +
+      '<div class="pk-foot"><span>10,000 simulaciones</span><span>' + E(o.venue) + '</span></div>' +
+    '</div></div>';
+  }
 
-})();
+  function veredictosHTML(vs) {
+    if (!vs || !vs.length) return '';
+    const filas = vs.map(v => {
+      const bits = [];
+      if (v.prob != null) bits.push((v.prob * 100).toFixed(1) + '%');
+      if (v.line_txt) bits.push(E(v.line_txt));
+      return '<div class="vrow ' + E(v.verdict) + '">' +
+        '<span class="vl">' + E(v.label) +
+          (bits.length ? '<small>' + bits.join(' · ') + '</small>' : '') + '</span>' +
+        '<span class="vchip ' + E(v.verdict) + '">' + E(String(v.verdict).toUpperCase()) + '</span>' +
+      '</div>';
+    }).join('');
+    return '<div class="slide"><div class="slide-lbl">Todos los mercados de este partido</div>' + filas + '</div>';
+  }
 
-/* ============================================================
-   PICK GRATIS NFL (card de la sección #vivo-nfl)
-   ============================================================ */
-(function () {
-  const $ = id => document.getElementById(id);
-  const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
-  fetch('/api/nfl-picks?as=guest')
-    .then(r => r.ok ? r.json() : null)
-    .then(d => {
-      const g = d && d.games && d.games.find(x => x.id === d.featured_id);
-      if (!g) { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; return; }
-      const played = g.state === 'post';
-      $('ncTag').textContent = (g.preseason ? 'PRETEMPORADA ' : 'SEMANA ') + (d.week || '') +
-        (played ? ' · PICK YA JUGADO' : '');
-      $('ncAwayName').textContent = g.away.name;
-      $('ncHomeName').textContent = g.home.name;
-      $('ncAwaySub').textContent = g.away.city || '';
-      $('ncHomeSub').textContent = g.home.city || '';
-      if (g.away.logo) $('ncAwayLogo').src = g.away.logo;
-      if (g.home.logo) $('ncHomeLogo').src = g.home.logo;
-      const ml = (g.markets && g.markets.moneyline) || {};
-      $('ncAwayProb').textContent = pct(ml.away);
-      $('ncHomeProb').textContent = pct(ml.home);
-      if (ml.away != null) {
-        $('ncBarA').style.width = (ml.away * 100) + '%';
-        $('ncBarH').style.width = (ml.home * 100) + '%';
-        $(ml.away >= ml.home ? 'ncAwayRow' : 'ncHomeRow').classList.add('fav');
-      }
-      const verdicts = g.verdicts || [];
-      const pick = verdicts.find(v => v.verdict === 'bet') || verdicts.find(v => v.verdict === 'maybe') || verdicts[0];
-      if (pick) {
-        $('ncChip').textContent = (pick.verdict || 'bet').toUpperCase();
-        $('ncPickSel').textContent = pick.label;
-        $('ncPickOdds').textContent = pct(pick.prob);
-      }
-      $('ncVenue').textContent = played && g.score
-        ? 'FINAL ' + g.score.away + '-' + g.score.home + ' · LOS DEMÁS PARTIDOS SIGUEN EN EL MODELO COMPLETO'
-        : (g.venue || '').toUpperCase();
-    })
-    .catch(() => { const h = $('nflCardHolder'); if (h) h.style.display = 'none'; });
-})();
+  function detalleHTML(vs, extra, dist) {
+    const filas = (vs || []).map(v =>
+      '<div class="det-row"><span class="dl">' + E(v.label) + '</span>' +
+      '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
+    ).join('');
+    const cola = (extra || []).map(e =>
+      '<div class="det-row"><span class="dl">' + E(e[0]) + '</span><span class="dv">' + E(e[1]) + '</span></div>'
+    ).join('');
+    if (!filas && !cola) return '';
+    return '<div class="slide"><div class="slide-lbl">Lo que dice el modelo, mercado por mercado</div>' +
+      '<div class="det-rows">' + filas + cola + '</div>' + distHTML(dist) + '</div>';
+  }
 
-/* ============================================================
-   PICK GRATIS LIGA MX (card de la sección #vivo-mx)
-   ============================================================ */
-(function () {
-  const $ = id => document.getElementById(id);
-  const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
-  fetch('/api/mx-free')
-    .then(r => r.ok ? r.json() : null)
-    .then(d => {
-      const g = d && d.game;
-      if (!g) { const h = $('mxCardHolder'); if (h) h.style.display = 'none'; return; }
-      $('mcTag').textContent = 'JORNADA ' + (d.jornada || '');
-      $('mcHomeName').textContent = g.home.name;
-      $('mcAwayName').textContent = g.away.name;
-      if (g.home.logo) $('mcHomeLogo').src = g.home.logo;
-      if (g.away.logo) $('mcAwayLogo').src = g.away.logo;
-      const ml = g.moneyline || {};
-      $('mcHomeProb').textContent = pct(ml.home);
-      $('mcAwayProb').textContent = pct(ml.away);
-      $('mcDraw').textContent = 'EMPATE ' + pct(ml.draw) + ' · MATRIZ EXACTA';
-      $('mcVenue').textContent = (g.venue || '').toUpperCase();
-      if (ml.home != null) {
-        $('mcBarH').style.width = (ml.home * 100) + '%';
-        $('mcBarD').style.width = (ml.draw * 100) + '%';
-        $('mcBarA').style.width = (ml.away * 100) + '%';
-        $((ml.home >= ml.away ? 'mcHomeRow' : 'mcAwayRow')).classList.add('fav');
+  function distHTML(d) {
+    if (!d || !d.valores || !d.valores.length) return '';
+    const v = d.valores, n = v.length, W = 720, H = 52;
+    const gap = n > 30 ? 2 : n > 12 ? 3 : 6;
+    const bw = (W - gap * (n - 1)) / n;
+    const max = Math.max.apply(null, v.concat([0.001]));
+    let bars = '';
+    for (let i = 0; i < n; i++) {
+      const h = Math.max(1.5, (v[i] / max) * (H - 16));
+      const x = i * (bw + gap);
+      let color;
+      if (d.tipo === 'margen') {
+        const m = i - d.centro;
+        color = m > 0 ? '#2f7bff' : m < 0 ? '#d8dfe9' : '#b8922e';
+      } else {
+        color = i > d.linea ? '#2f7bff' : '#d8dfe9';
       }
-      if (g.pick) {
-        $('mcChip').textContent = (g.pick.verdict || 'bet').toUpperCase();
-        $('mcPickSel').textContent = g.pick.label + ' · ' + pct(g.pick.prob);
+      bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h + '" rx="1.5" fill="' + color + '"></rect>';
+      const et = d.tipo === 'margen'
+        ? ((i - d.centro) === 0 ? (d.empate || '0') : ((i - d.centro) > 0 ? '+' + (i - d.centro) : String(i - d.centro)))
+        : (i === n - 1 ? (n - 1) + '+' : String(i));
+      const mostrar = d.tipo === 'margen' ? (n <= 12 || (i - d.centro + 21) % 7 === 0) : (i % 5 === 0 || i === n - 1);
+      if (mostrar) {
+        bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3"' +
+          ' font-family="JetBrains Mono,monospace">' + E(et) + '</text>';
       }
-    })
-    .catch(() => { const h = $('mxCardHolder'); if (h) h.style.display = 'none'; });
+    }
+    if (d.tipo !== 'margen' && d.linea != null) {
+      const lx = (d.linea + 0.5) * (bw + gap) - gap / 2;
+      bars += '<line x1="' + lx + '" y1="0" x2="' + lx + '" y2="' + (H - 12) + '" stroke="#d9b34a" stroke-width="1" stroke-dasharray="3 3"></line>';
+    }
+    return '<div class="dist"><div class="dist-lbl"><span>' + E(d.etiqueta) + '</span>' +
+      (d.nota ? '<span>' + E(d.nota) + '</span>' : '') + '</div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución de 10,000 simulaciones">' + bars + '</svg></div>';
+  }
+
+  /* La diapositiva visible es una variable, no algo deducido del
+     scroll (con transform el navegador no tiene scroll que medir). */
+  function montaFreepick(root, html) {
+    const track = root.querySelector('.slides');
+    track.innerHTML = html;
+    const slides = [...track.querySelectorAll('.slide')];
+    const dots = root.querySelector('.dots');
+    const prev = root.querySelector('.arrow.prev'), next = root.querySelector('.arrow.next');
+    let i = 0;
+    dots.innerHTML = slides.length > 1
+      ? slides.map((_, k) => '<button type="button" aria-label="Ver ' + (k + 1) + ' de ' + slides.length + '"></button>').join('')
+      : '';
+    function ajustaAlto() {
+      const v = track.parentElement;
+      if (slides[i]) v.style.height = slides[i].offsetHeight + 'px';
+    }
+    function pinta() {
+      track.style.transform = 'translateX(calc(' + (-i * 100) + '% - ' + (i * 16) + 'px))';
+      prev.classList.toggle('off', i === 0);
+      next.classList.toggle('off', i >= slides.length - 1);
+      [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
+      slides.forEach((sl, k) => sl.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+      ajustaAlto();
+    }
+    function irA(k) { i = Math.max(0, Math.min(slides.length - 1, k)); pinta(); }
+    prev.onclick = () => irA(i - 1);
+    next.onclick = () => irA(i + 1);
+    [...dots.children].forEach((b, k) => b.addEventListener('click', () => irA(k)));
+    let x0 = null;
+    track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 45) irA(i + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+    /* flechas laterales a la altura del porcentaje grande (escritorio) */
+    function alineaFlechas() {
+      const filas = track.querySelectorAll('.pk-team');
+      const fila = filas[1] || filas[0];
+      if (!fila) return;
+      const y = fila.getBoundingClientRect().top + fila.getBoundingClientRect().height / 2
+        - root.getBoundingClientRect().top;
+      root.style.setProperty('--flechaY', Math.round(y) + 'px');
+    }
+    alineaFlechas();
+    addEventListener('resize', () => { alineaFlechas(); ajustaAlto(); });
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(ajustaAlto);
+      slides.forEach(sl => ro.observe(sl));
+    }
+    pinta();
+  }
+
+  const fecha = iso => new Date(iso).toLocaleString('es-MX',
+    { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase();
+
+  async function carga(m, rootId, api) {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    try {
+      const r = await fetch(api);
+      if (!r.ok) throw new Error('sin datos');
+      const d = await r.json();
+      let o = null, vs = [], extra = [], dist = null;
+      if (m === 'mlb' && d.game) {
+        const g = d.game, v = g.verdict || null;
+        const favH = (g.moneyline.home || 0) >= (g.moneyline.away || 0);
+        o = { meta: fecha(g.game_date),
+          away: { name: g.away.name, sub: g.pitchers && g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '', prob: pct(g.moneyline.away), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.away.id + '.svg' },
+          home: { name: g.home.name, sub: g.pitchers && g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '', prob: pct(g.moneyline.home), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.home.id + '.svg' },
+          favAway: !favH, barA: Math.round((g.moneyline.away || 0.5) * 100),
+          verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+          odds: v ? pct(v.prob) : '', venue: g.venue || '' };
+        vs = g.verdicts || [];
+        if (g.expected) extra.push(['Carreras esperadas', g.away.abbr + ' ' + g.expected.away_runs + ' — ' + g.home.abbr + ' ' + g.expected.home_runs]);
+        dist = { tipo: 'conteo', valores: g.total_dist || [], linea: g.total_line,
+          etiqueta: 'Cómo caen las carreras en 10,000 futuros',
+          nota: g.total_line != null ? 'línea ' + g.total_line : '' };
+      } else if (m === 'mx' && d.game) {
+        const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
+        const favH = (ml.home || 0) >= (ml.away || 0);
+        o = { meta: fecha(g.date),
+          away: { name: g.away.name, sub: 'Visitante', prob: pct(ml.away), logo: g.away.logo },
+          home: { name: g.home.name, sub: 'Local', prob: pct(ml.home), logo: g.home.logo },
+          favAway: !favH, barA: Math.round((ml.away || 0.33) * 100),
+          verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+          odds: v ? pct(v.prob) : '', venue: g.venue || '' };
+        vs = g.verdicts || [];
+        dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
+          etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
+      } else if (m === 'nfl') {
+        const g = (d.games || []).find(x => x.id === d.featured_id);
+        if (g) {
+          const v = mejorVeredicto(g.verdicts);
+          const mk = g.markets || {};
+          const ml = mk.moneyline || {};
+          const favH = (ml.home || 0) >= (ml.away || 0);
+          o = { meta: fecha(g.date),
+            away: { name: g.away.name, sub: g.away.city || '', prob: pct(ml.away), logo: g.away.logo },
+            home: { name: g.home.name, sub: g.home.city || '', prob: pct(ml.home), logo: g.home.logo },
+            favAway: !favH, barA: Math.round((ml.away || 0.5) * 100),
+            verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+            odds: v ? pct(v.prob) : '', venue: g.venue || '' };
+          vs = g.verdicts || [];
+          if (mk.total) extra.push(['Puntos esperados', 'el modelo espera ' + mk.total.model_total + ' (línea ' + mk.total.line + ')']);
+          dist = { tipo: 'margen', valores: mk.margin_dist || [], centro: 21,
+            etiqueta: 'Cómo cae el margen (' + g.home.abbr + ' positivo) en 10,000 futuros' };
+        }
+      }
+      if (!o) { root.closest('.live-card-holder').style.display = 'none'; return; }
+      montaFreepick(root, cardHTML(o) + veredictosHTML(vs) + detalleHTML(vs, extra, dist));
+    } catch (e) {
+      const h = root.closest('.live-card-holder');
+      if (h) h.style.display = 'none';
+    }
+  }
+
+  carga('nfl', 'fpNfl', '/api/nfl-picks?as=guest');
+  carga('mlb', 'fpMlb', '/api/mlb-free');
+  carga('mx',  'fpMx',  '/api/mx-free');
 })();
 
 /* ============================================================
@@ -1163,26 +1160,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
 
-/* Toggle de moneda: hay uno por sección de precios (NFL, MLB, Liga MX)
-   y todos quedan sincronizados — cambiar en cualquiera actualiza los
-   montos de TODA la página y el estado de los demás toggles. */
-(function(){
-  const toggles = [...document.querySelectorAll('.cur-toggle')];
-  if (!toggles.length) return;
-  function setCur(cur){
-    toggles.forEach(t => t.querySelectorAll('button').forEach(b => {
-      const on = b.dataset.cur === cur;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    }));
-    document.querySelectorAll('[data-mxn]').forEach(el => {
-      const v = cur === 'usd' ? el.dataset.usd : el.dataset.mxn;
-      if (v) el.innerHTML = v;
-    });
-  }
-  toggles.forEach(t => t.querySelectorAll('button').forEach(btn =>
-    btn.addEventListener('click', () => setCur(btn.dataset.cur))));
-})();
+
 </script>
 
 <script>
@@ -1675,92 +1653,10 @@ async function refreshUI(){
     misModelosLink.style.display = 'none';
     misModelosLink.classList.remove('nav-models-active');
   }
-  paintComboPrice();
 }
 
-/* Combo 2026 con UN modelo permanente: las tarjetas del combo muestran
-   el precio especial ($799) que el servidor le va a cobrar de verdad.
 
-   Se ejecuta en cada cambio de sesión Y al cargar la página, y es
-   REVERSIBLE (al cerrar sesión vuelve el precio de lista). Antes se
-   pintaba una sola vez y solo con sesión: quien tenía su sesión
-   caducada — el caso real del 18-ago-2026 — seguía viendo $1,199 sin
-   saber por qué. Por eso, sin sesión se muestra el aviso de que el
-   precio puede bajar al entrar. */
-const COMBO_LIST_PRICE = 1199;
-async function paintComboPrice(){
-  const links = [...document.querySelectorAll('a[href="/checkout.html?plan=combo_2026"]')];
-  if(!links.length) return;
 
-  let a = null;
-  if(_session){
-    try{
-      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
-      if(r.ok) a = await r.json();
-    }catch(e){}
-  }
-  const conDescuento = !!(a && a.combo_2026_discount);
-  const px = conDescuento ? Number(a.combo_2026_price) : COMBO_LIST_PRICE;
-  const usd = '$' + (Math.ceil(px * 0.05504 * 100) / 100).toFixed(2);
-  const activeBtn = document.querySelector('.cur-toggle button.active');
-  const cur = activeBtn && activeBtn.dataset.cur === 'usd' ? 'usd' : 'mxn';
-
-  links.forEach(link => {
-    const tier = link.closest('.tier');
-    if(!tier) return;
-
-    /* Se guarda el estado original la primera vez para poder volver
-       a él si el cliente cierra sesión. */
-    const amt = tier.querySelector('.amt');
-    const per = tier.querySelector('.per');
-    if(amt && !amt.dataset.origMxn){
-      amt.dataset.origMxn = amt.dataset.mxn || '';
-      amt.dataset.origUsd = amt.dataset.usd || '';
-    }
-    if(per && !per.dataset.orig) per.dataset.orig = per.textContent;
-
-    if(amt){
-      amt.dataset.mxn = conDescuento ? `$${px.toLocaleString('en-US')}<small>MXN</small>` : amt.dataset.origMxn;
-      amt.dataset.usd = conDescuento ? `${usd}<small>USD</small>` : amt.dataset.origUsd;
-      amt.innerHTML = cur === 'usd' ? amt.dataset.usd : amt.dataset.mxn;
-    }
-    if(per) per.textContent = conDescuento
-      ? ((a && a.monthly_upgrade && a.monthly_upgrade.target === 'combo_2026')
-        ? 'Upgrade de tu plan mensual: un pago y adiós mensualidad'
-        : 'Precio especial: ya tienes uno de los modelos')
-      : per.dataset.orig;
-
-    tier.querySelectorAll('ul li').forEach(li => {
-      if(!li.dataset.orig && /Ahorras/.test(li.textContent)) li.dataset.orig = li.innerHTML;
-      if(li.dataset.orig) li.innerHTML = conDescuento ? 'Ahorras $1,298 vs. comprarlos por separado' : li.dataset.orig;
-    });
-
-    /* Aviso para quien no ha iniciado sesión: si tiene un modelo
-       permanente, su precio es menor — pero hay que identificarlo. */
-    let hint = tier.querySelector('.combo-hint');
-    if(!hint){
-      hint = document.createElement('p');
-      hint.className = 'combo-hint';
-      hint.style.cssText = 'margin:10px 0 0;font-size:0.78rem;line-height:1.45;color:var(--muted,#6e7787)';
-      link.parentNode.insertBefore(hint, link.nextSibling);
-    }
-    if(!_session){
-      hint.innerHTML = '¿Ya pagaste uno de los modelos completos? <a href="#" class="combo-hint-login" style="color:var(--blue,#2f7bff);font-weight:600">Inicia sesión</a> y tu combo baja a $799.';
-      hint.style.display = '';
-    } else {
-      hint.style.display = 'none';
-    }
-  });
-}
-/* Se corre también al cargar, por si el evento de sesión no llega. */
-document.addEventListener('DOMContentLoaded', () => { paintComboPrice(); });
-/* El enlace del aviso abre el mismo modal de acceso. */
-document.addEventListener('click', (ev) => {
-  const l = ev.target.closest('.combo-hint-login');
-  if(!l) return;
-  ev.preventDefault();
-  openAuth('login');
-});
 
 function startAuth(){
   if(!sb && !initSupabase()){ setTimeout(startAuth, 150); return; }

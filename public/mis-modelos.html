@@ -142,7 +142,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="state-icon">🔒</div>
   <div class="state-title">Inicia sesión para ver tus modelos</div>
   <div class="state-body">Crea tu cuenta o inicia sesión para acceder a los picks.</div>
-  <a href="/#precios" class="btn-cta">Ver los modelos</a>
+  <a href="/producto.html" class="btn-cta">Ver los modelos</a>
 </div>
 
 <!-- CONTENIDO PRINCIPAL -->
@@ -266,9 +266,9 @@ async function boot(){
   }catch(e){}
 
   if(acc){
-    paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/#precios');
-    paint(!!acc.mx,  'chipMx',  'ctaMx',  '/#precios-mx');
-    paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/#precios-nfl');
+    paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/producto.html?m=mlb');
+    paint(!!acc.mx,  'chipMx',  'ctaMx',  '/producto.html?m=mx');
+    paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/producto.html?m=nfl');
   }
   showMain();
 }
