@@ -29,6 +29,8 @@ module.exports = async function handler(req, res) {
       id,
       title: p.title,
       price: p.price,
+      /* Precio ancla (valor real pagando mes a mes) para el tachado. */
+      anchor: p.anchor || null,
       currency: p.currency || 'MXN',
       days: p.days || null,
       products: Array.isArray(p.products) ? p.products : null,

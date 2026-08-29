@@ -218,6 +218,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .opt-name small { display: block; font-weight: 450; font-size: 0.8rem; color: var(--muted); margin-top: 1px; }
   .opt-price { text-align: right; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em;
     color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .opt-price s { color: var(--faint); font-weight: 600; font-size: 0.82rem; margin-right: 7px; }
   .opt-price small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--muted);
     letter-spacing: 0; margin-top: 1px; }
   .opt-body { display: none; padding: 0 18px 17px 53px; background: var(--g1); border-top: 1px solid var(--line); }
@@ -440,13 +441,14 @@ const BULLETS = {
 
 let planes = null, elegido = null;
 
-function tarjeta(id, nombre, sub, precio, nota, bullets, flag) {
+function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla) {
   return '<button class="opt" type="button" data-plan="' + esc(id) + '" aria-pressed="false">' +
     '<div class="opt-row">' +
       '<span class="radio"></span>' +
       '<span class="opt-name">' + esc(nombre) + (flag ? '<span class="flag">' + esc(flag) + '</span>' : '') +
         '<small>' + esc(sub) + '</small></span>' +
-      '<span class="opt-price">' + esc(precio) + (nota ? '<small>' + esc(nota) + '</small>' : '') + '</span>' +
+      '<span class="opt-price">' + (ancla ? '<s>' + esc(ancla) + '</s>' : '') + esc(precio) +
+        (nota ? '<small>' + esc(nota) + '</small>' : '') + '</span>' +
     '</div>' +
     '<div class="opt-body"><ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul></div>' +
   '</button>';
@@ -468,8 +470,14 @@ function pintaOpciones(p) {
     money(com.price), 'al mes · ' + money(porModelo) + ' por modelo', BULLETS.combo(), 'El más elegido');
   if (tem) {
     html += '<div class="sep">O bien</div>';
+    /* El tachado es el valor REAL pagando mes a mes (viene del servidor,
+       plans.anchor): el ahorro que ve el cliente es contra la otra
+       opción de esta misma página, no un precio inventado. */
+    const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
     html += tarjeta(tem.id, 'Temporada completa', 'Hasta el final del torneo, sin renovaciones',
-      money(tem.price), 'pago único', BULLETS.temporada(M));
+      money(tem.price), ahorro > 0 ? 'pago único · ahorras ' + money(ahorro) : 'pago único',
+      BULLETS.temporada(M).concat(ahorro > 0 ? ['Mes a mes saldría en ' + money(tem.anchor) + ' — ahorras ' + money(ahorro)] : []),
+      null, tem.anchor ? money(tem.anchor) : null);
   }
   $('opts').innerHTML = html;
   document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
