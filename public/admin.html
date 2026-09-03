@@ -58,7 +58,7 @@
   #mainContent { display: none; padding: 36px 0 80px; }
 
   /* STATS ROW */
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 36px; }
   .stat-card { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
   .stat-card .num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2rem; letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; }
   .stat-card .lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
@@ -99,10 +99,12 @@
   .prod-badge.mundial { background: rgba(21,163,74,0.12); color: var(--win); }
   .prod-badge.mlb { background: rgba(230,126,34,0.14); color: #c25e12; }
   .prod-badge.mx { background: rgba(124,58,237,0.12); color: #6d28d9; }
+  .prod-badge.nfl { background: rgba(29,78,216,0.12); color: #1d4ed8; }
   .prod-badge.none { background: rgba(94,111,134,0.1); color: var(--muted); }
   /* colores de los stat-cards de producto */
   .stat-card .num.mlb { color: #c25e12; }
   .stat-card .num.mx { color: #6d28d9; }
+  .stat-card .num.nfl { color: #1d4ed8; }
   .date-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
   .active-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
   .active-dot.yes { background: var(--win); }
@@ -177,22 +179,19 @@
 <div id="mainContent">
   <div class="wrap">
     <!-- STATS -->
-    <div class="stats-row">
+    <!-- Las tarjetas por modelo las pinta el JS desde PRODUCT_ORDER:
+         escribirlas a mano fue justo lo que dejó a NFL fuera del panel. -->
+    <div class="stats-row" id="statsRow">
       <div class="stat-card"><div class="num" id="statTotal">—</div><div class="lbl">Usuarios registrados</div></div>
-      <div class="stat-card"><div class="num green" id="statMundial">—</div><div class="lbl">Modelo Mundial</div></div>
-      <div class="stat-card"><div class="num mlb" id="statMlb">—</div><div class="lbl">Modelo MLB</div></div>
-      <div class="stat-card"><div class="num mx" id="statMx">—</div><div class="lbl">Modelo Liga MX</div></div>
     </div>
 
     <!-- TABLA -->
     <div class="toolbar">
       <h2>Clientes</h2>
       <input class="search-input" type="text" id="searchInput" placeholder="Buscar por correo…">
-      <div class="filter-tabs">
+      <div class="filter-tabs" id="filterTabs">
         <div class="filter-tab active" data-filter="all">Todos</div>
-        <div class="filter-tab" data-filter="mundial">Mundial</div>
-        <div class="filter-tab" data-filter="mlb">MLB</div>
-        <div class="filter-tab" data-filter="mx">Liga MX</div>
+        <!-- un tab por modelo, también desde PRODUCT_ORDER -->
         <div class="filter-tab" data-filter="none">Sin plan</div>
       </div>
       <button class="refresh-btn" id="refreshBtn">↻ Actualizar</button>
@@ -259,9 +258,36 @@ const PLAN_SHORT = {
   circulo_fundador: 'Círculo', combo_permanente: 'Combo permanente',
   nfl_semana: 'NFL semana', nfl_fundador: 'NFL fundador', nfl_temporada: 'NFL temporada',
   mx_semana: 'MX semana', combo_2026: 'Combo 2026',
+  /* pricing por suscripción (28-ago-2026) */
+  mlb_mensual: 'Mensual', mx_mensual: 'Mensual', nfl_mensual: 'Mensual',
+  combo_mensual: 'Combo mensual',
+  mlb_permanente: 'Permanente', mx_permanente: 'Permanente', nfl_permanente: 'Permanente',
 };
 const PRODUCT_LABEL = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL' };
-const PRODUCT_ORDER = ['mundial', 'mlb', 'mx'];
+/* ÚNICA lista de modelos del panel: de aquí salen los badges, las
+   tarjetas de arriba y los filtros. NFL existía en PRODUCT_LABEL pero
+   no aquí, así que sus clientes no aparecían por ningún lado. */
+const PRODUCT_ORDER = ['mundial', 'mlb', 'mx', 'nfl'];
+
+/* Tarjetas y filtros por modelo, pintados antes de que se enganchen
+   los clics (más abajo en este mismo script). */
+(function pintaControles(){
+  const row = document.getElementById('statsRow');
+  const tabs = document.getElementById('filterTabs');
+  const sinPlan = tabs.querySelector('[data-filter="none"]');
+  PRODUCT_ORDER.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.innerHTML = '<div class="num ' + (p === 'mundial' ? 'green' : p) + '" id="stat-' + p + '">—</div>' +
+      '<div class="lbl">Modelo ' + PRODUCT_LABEL[p] + '</div>';
+    row.appendChild(card);
+    const tab = document.createElement('div');
+    tab.className = 'filter-tab';
+    tab.dataset.filter = p;
+    tab.textContent = PRODUCT_LABEL[p];
+    tabs.insertBefore(tab, sinPlan); // "Sin plan" siempre al final
+  });
+})();
 
 /* helpers de acceso al resumen por producto */
 function prodOf(u){ return u.products || {}; }
@@ -312,9 +338,10 @@ function applyFilters(){
 
 function updateStats(users){
   document.getElementById('statTotal').textContent = users.length;
-  document.getElementById('statMundial').textContent = users.filter(u=>hasProduct(u,'mundial')).length;
-  document.getElementById('statMlb').textContent = users.filter(u=>hasProduct(u,'mlb')).length;
-  document.getElementById('statMx').textContent = users.filter(u=>hasProduct(u,'mx')).length;
+  PRODUCT_ORDER.forEach(p => {
+    const el = document.getElementById('stat-' + p);
+    if (el) el.textContent = users.filter(u => hasProduct(u, p)).length;
+  });
 }
 
 async function loadUsers(tok){
