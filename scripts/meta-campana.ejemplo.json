@@ -1,0 +1,67 @@
+{
+  "_comentario": [
+    "Plantilla de campaña. Cópiala, edítala y córrela con:",
+    "  node scripts/meta-ads.js crear-campana --config mi-campana.json",
+    "Sin --aplicar solo imprime lo que haría. Todo nace en PAUSA.",
+    "Los ids de --publicos-incluidos/excluidos salen de: node scripts/meta-ads.js publicos"
+  ],
+
+  "nombre": "Champions — venta directa (sep 2026)",
+  "objetivo": "OUTCOME_SALES",
+  "link": "https://rickypicks.com.mx/producto.html",
+  "categorias_especiales": [],
+
+  "conjuntos": [
+    {
+      "nombre": "Frío — intereses fútbol MX",
+      "presupuesto_diario": 200,
+      "optimizar_por": "OFFSITE_CONVERSIONS",
+      "evento": "PURCHASE",
+      "geo": { "countries": ["MX"] },
+      "edad_min": 21,
+      "edad_max": 55,
+      "generos": [1],
+      "plataformas": ["facebook", "instagram"],
+      "intereses": [
+        { "id": "6003107902433", "name": "Association football (Soccer)" }
+      ],
+      "publicos_excluidos": [],
+      "advantage": true,
+
+      "anuncios": [
+        {
+          "nombre": "Champions — modelo",
+          "imagen": "./creativos/champions-1.jpg",
+          "texto": "No es una corazonada. Es un modelo que simula cada partido de Champions miles de veces y solo marca la jugada cuando el momio se equivoca.",
+          "titular": "Los picks salen de un modelo, no de un tipster",
+          "descripcion": "Champions completa desde $349",
+          "cta": "LEARN_MORE"
+        }
+      ]
+    },
+
+    {
+      "nombre": "Retargeting — visitó y no compró",
+      "presupuesto_diario": 100,
+      "optimizar_por": "OFFSITE_CONVERSIONS",
+      "evento": "PURCHASE",
+      "geo": { "countries": ["MX"] },
+      "edad_min": 21,
+      "edad_max": 55,
+      "publicos_incluidos": ["PEGA_AQUI_EL_ID_DEL_PUBLICO_DE_SITIO"],
+      "publicos_excluidos": ["PEGA_AQUI_EL_ID_DE_COMPRADORES"],
+      "advantage": false,
+
+      "anuncios": [
+        {
+          "nombre": "Retargeting — precio",
+          "imagen": "./creativos/champions-precio.jpg",
+          "texto": "Ya viste los modelos. Un modelo $349, tres a elegir $599, todos $899.",
+          "titular": "Elige tu modelo",
+          "descripcion": "Acceso inmediato",
+          "cta": "SHOP_NOW"
+        }
+      ]
+    }
+  ]
+}

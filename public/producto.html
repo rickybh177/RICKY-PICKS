@@ -230,7 +230,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   /* "Un modelo" + su temporada de pago único como menú escondido a la
      derecha: una pestaña angosta que se despliega, llamativa, cuando el
      cliente elige el mensual (y se pliega al elegir tres/todos). */
-  .pair { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 10px; align-items: stretch;
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) 54px; gap: 10px; align-items: stretch;
     transition: grid-template-columns .28s cubic-bezier(.2,.8,.2,1); }
   /* plegada: la pestaña mide lo que mide la tarjeta (nunca la estira) */
   .pair:not(.open) .side { position: relative; }
@@ -239,12 +239,20 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .pair.sideon .opt .opt-body { display: block; }
   .pair.open { grid-template-columns: minmax(0, 1fr) 236px; }
   .side { position: relative; display: flex; align-items: center; justify-content: center; text-align: left;
-    border: 1.5px dashed var(--line-2); border-radius: 16px; background: var(--g1); cursor: pointer;
+    border: 1.5px dashed rgba(47,123,255,0.65); border-radius: 16px; background: linear-gradient(180deg, rgba(47,123,255,0.12), rgba(47,123,255,0.04)); cursor: pointer;
     padding: 0; overflow: hidden; min-height: 100%; transition: border-color .15s, background .15s, box-shadow .15s; }
-  .side:hover { border-color: rgba(47,123,255,0.6); }
+  /* plegada: que se note que hay algo escondido — latido suave + chevron que empuja */
+  .pair:not(.open) .side { animation: side-pulse 2.4s ease-in-out infinite; }
+  .pair:not(.open) .side:hover { background: rgba(47,123,255,0.16); animation: none; }
+  @keyframes side-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(47,123,255,0); } 50% { box-shadow: 0 0 0 5px rgba(47,123,255,0.16); border-color: var(--blue); } }
+  .side-dot { position: absolute; top: 7px; right: 7px; width: 9px; height: 9px; border-radius: 50%; background: var(--bet); box-shadow: 0 0 0 2px #fff; }
+  .pair.open .side-dot { display: none; }
   .side-tab { writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'JetBrains Mono', monospace;
-    font-size: 0.56rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-  .side-tab::before { content: '›'; font-size: 0.9rem; margin-bottom: 4px; color: var(--blue); }
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue-deep); white-space: nowrap; }
+  .side-tab i { font-style: normal; }
+  .side-tab b { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.78rem; letter-spacing: -0.01em; margin-left: 5px; }
+  .side-tab::before { content: '‹'; font-size: 1rem; margin-bottom: 5px; color: var(--blue); animation: side-nudge 1.6s ease-in-out infinite; display: inline-block; }
+  @keyframes side-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
   .side-body { display: none; padding: 16px 16px 14px; width: 100%; }
   .pair.open .side { border-style: solid; border-color: var(--blue); background: linear-gradient(160deg, rgba(47,123,255,0.10), rgba(47,123,255,0.02));
     box-shadow: 0 18px 40px -22px rgba(47,123,255,0.7); animation: side-pop .45s cubic-bezier(.2,.9,.3,1.3); }
@@ -332,17 +340,18 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; scrollbar-width: none; scroll-padding: 0 12px; }
     .model-toggle::-webkit-scrollbar { display: none; }
     .model-toggle a, .model-toggle span { flex: 0 0 auto; padding: 10px 14px; font-size: 0.82rem; scroll-snap-align: center; }
-    .opt-row { grid-template-columns: 20px 1fr auto; gap: 10px; padding: 15px 14px; }
+    .opt-row { grid-template-columns: 20px minmax(0, 1fr) minmax(88px, 40%); gap: 10px; padding: 15px 14px; }
     .opt-body { padding-left: 44px; }
     /* en vertical el menú escondido va debajo: tira angosta que crece */
     .pair, .pair.open { grid-template-columns: 1fr; }
     .side { min-height: 40px; }
-    .pair:not(.open) .side-tab { position: static; writing-mode: horizontal-tb; transform: none; padding: 11px 14px; }
-    .side-tab::before { content: 'Temporada completa · pago único'; font: inherit; color: inherit; margin: 0 6px 0 0; }
-    .side-tab { font-size: 0; }
-    .side-tab::before { font-size: 0.6rem; }
-    .side-tab::after { content: '›'; font-size: 0.9rem; color: var(--blue); }
-    .opt-price { font-size: 1.15rem; max-width: 44%; }
+    .pair:not(.open) .side-tab { position: static; writing-mode: horizontal-tb; transform: none; padding: 12px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .side-tab::before { content: 'Temporada completa · un solo pago'; font: inherit; color: inherit; margin: 0; animation: none; font-size: 0.62rem; }
+    .side-tab i { display: none; }
+    .side-tab b { margin: 0; font-size: 0.86rem; }
+    .side-tab::after { content: '›'; font-size: 1rem; color: var(--blue); }
+    .side-dot { top: 50%; right: 12px; transform: translateY(-50%); }
+    .opt-price { font-size: 1.15rem; }
     .opt-price small { white-space: normal; line-height: 1.3; }
     .opt-name { font-size: 0.96rem; }
 
@@ -646,7 +655,8 @@ function pintaOpciones(p) {
   if (tem) {
     const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
     html += '<button type="button" class="side" id="side" data-plan="' + esc(tem.id) + '" aria-expanded="false">' +
-      '<span class="side-tab">Temporada</span>' +
+      '<span class="side-dot"></span>' +
+      '<span class="side-tab"><i>Pago único</i><b>' + esc(money(tem.price)) + '</b></span>' +
       '<span class="side-body">' +
         '<span class="s-eyebrow"><i></i>Pago único · sin renovaciones</span>' +
         '<span class="s-name">Temporada completa de ' + esc(cfg.nombre) + '</span>' +
