@@ -864,12 +864,21 @@ anual):
 | Un modelo | `mlb/mx/nfl/epl/laliga/bundesliga/ucl_mensual` | $349 | ese modelo |
 | Tres modelos a elegir | `tres_mensual` (`choose: 3`) | $599 | 3 de los 7, elegidos en el checkout; un cambio por periodo de cobro |
 | Todos los modelos | `todo_mensual` (ancla $2,443) | $899 | los 7 |
+| Temporada completa (pago único) | `*_temporada` / `mx_apertura` | $899 | ese modelo hasta el fin de su temporada; no se renueva |
 
-Las temporadas de pago único (`*_temporada`, `mx_apertura`,
-`nfl_temporada`, `mlb_temporada`) y `combo_mensual` quedaron
-`retired`/`upcoming`: no se venden, quien las tiene las conserva; el
-upgrade de $199 de un mensual fundador a su temporada se sigue
-honrando (excepción en ambas pasarelas).
+La temporada (8-sep-2026, segunda decisión del dueño) es la única
+salida de pago único: en `producto.html` vive como **menú escondido**
+a la derecha de "Un modelo" (pestaña angosta `.side` dentro de
+`.pair`) que se despliega al elegir el mensual y se pliega con
+tres/todos; en `checkout.html` un mensual de un modelo vuelve a
+ofrecerla antes de pagar (`#seasonUpsell`, precio y ancla del
+catálogo público). Anclas honestas por lo que queda de temporada:
+NFL 2,094, Liga MX 1,396, Europa 3,141, MLB sin ancla (quedan ~2
+meses; mes a mes saldría en menos — el dueño la pidió igual para
+todos los modelos). Al comprarla, la mensualidad de ese modelo se
+cancela sola (`FULL_PASS_PLANS` + `cancelCoveredRecurring`).
+`combo_mensual` sigue `retired`; el upgrade de $199 de un mensual
+fundador a su temporada se sigue honrando.
 
 Cómo viaja la elección del plan de tres (`lib/choices.js`):
 

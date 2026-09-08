@@ -67,6 +67,21 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   #chooser .ch { font: inherit; font-size: 0.84rem; font-weight: 600; padding: 8px 13px; border-radius: 980px; border: 1.5px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; transition: background .15s, border-color .15s; }
   #chooser .ch:hover { background: rgba(255,255,255,0.18); }
   #chooser .ch.on { background: #fff; color: var(--blue-deep); border-color: #fff; }
+  /* re-oferta de la temporada completa en el paso de pago del mensual */
+  #seasonUpsell { position: relative; margin: 0 0 18px; padding: 16px 18px; border-radius: 16px; border: 1.5px solid var(--blue);
+    background: linear-gradient(160deg, rgba(47,123,255,0.10), rgba(47,123,255,0.02)); animation: su-pop .45s cubic-bezier(.2,.9,.3,1.3); }
+  #seasonUpsell .su-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue-deep); display: flex; align-items: center; gap: 6px; }
+  #seasonUpsell .su-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); animation: su-blink 1.4s infinite; }
+  #seasonUpsell .su-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 6px; }
+  #seasonUpsell .su-name { font-weight: 700; font-family: 'Space Grotesk', sans-serif; font-size: 1.02rem; }
+  #seasonUpsell .su-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.15rem; white-space: nowrap; }
+  #seasonUpsell .su-price s { color: var(--muted); font-weight: 500; font-size: 0.8rem; margin-right: 6px; }
+  #seasonUpsell .su-txt { font-size: 0.86rem; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+  #seasonUpsell .su-acts { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  #seasonUpsell .su-go { font: inherit; font-weight: 700; font-size: 0.9rem; padding: 11px 18px; border-radius: 980px; border: none; background: var(--blue-deep); color: #fff; cursor: pointer; }
+  #seasonUpsell .su-no { font: inherit; font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; text-decoration: underline; }
+  @keyframes su-pop { 0% { transform: scale(.97); opacity: .3; } 60% { transform: scale(1.01); } 100% { transform: none; opacity: 1; } }
+  @keyframes su-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
   .plan-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 14px; }
   .plan-name { font-weight: 800; font-size: 1.6rem; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 6px; }
   .plan-price { font-weight: 800; font-size: 2.5rem; letter-spacing: -0.03em; margin: 16px 0 4px; font-feature-settings: "tnum" 1; }
@@ -197,6 +212,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
             <span id="summaryPrice" style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem"></span>
           </div>
         </div>
+        <!-- Re-oferta de la temporada completa cuando se va a pagar un mensual de un modelo (la llena JS) -->
+        <div id="seasonUpsell" style="display:none"></div>
         <button style="display:none" id="payBtn"><span id="payBtnText"></span></button>
         <button class="btn-pay" id="stripeBtn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="#635BFF"/><path d="M11.5 9.5c0-.8.7-1.1 1.8-1.1 1.6 0 3.7.5 5.2 1.4V6.2C17 5.4 15.3 5 13.3 5 9.9 5 7.6 6.7 7.6 9.7c0 4.6 6.3 3.9 6.3 5.9 0 .9-.8 1.2-2 1.2-1.7 0-3.9-.7-5.6-1.7v3.7c1.9.8 3.8 1.2 5.6 1.2 3.5 0 5.9-1.7 5.9-4.8-.1-5-6.3-4.1-6.3-5.7z" fill="#fff"/></svg>
@@ -300,14 +317,14 @@ const PLANS = {
   },
   mlb_temporada: {
     name: 'Modelo MLB — Temporada 2026',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Pago único · toda la temporada + playoffs + Serie Mundial',
     features: [
       'Acceso total hasta el último out de la Serie Mundial',
       'Todos los picks y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $2,094 — ahorras $895',
+      'Postemporada y Serie Mundial incluidas, sin pagar otro mes',
     ],
   },
   mx_fundador: {
@@ -366,14 +383,14 @@ const PLANS = {
   },
   mx_apertura: {
     name: 'Modelo Liga MX — Apertura 2026 completo',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Las 17 jornadas + liguilla · pago único',
     features: [
       'Todo el torneo, hasta la final de la liguilla',
       'Todos los partidos, mercados y análisis',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $2,094 — ahorras $895',
+      'Mes a mes saldría en $1,396 — ahorras $497',
     ],
   },
   nfl_semana: {
@@ -402,14 +419,14 @@ const PLANS = {
   },
   nfl_temporada: {
     name: 'Modelo NFL — Temporada 26-27 completa',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'De la jornada 1 al Super Bowl · pago único',
     features: [
       'Temporada regular completa + playoffs + Super Bowl',
       'Extra por entrar ahora: la pretemporada completa, gratis',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $2,094 — ahorras $895',
+      'Mes a mes saldría en $2,094 — ahorras $1,195',
     ],
   },
 
@@ -538,50 +555,50 @@ const PLANS = {
   },
   epl_temporada: {
     name: 'Modelo Premier League — Temporada 2026-27 completa',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Premier League completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $1,942',
+      'Mes a mes saldría en $3,141 — ahorras $2,242',
     ],
   },
   laliga_temporada: {
     name: 'Modelo LaLiga — Temporada 2026-27 completa',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'LaLiga completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $1,942',
+      'Mes a mes saldría en $3,141 — ahorras $2,242',
     ],
   },
   bundesliga_temporada: {
     name: 'Modelo Bundesliga — Temporada 2026-27 completa',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Bundesliga completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $1,942',
+      'Mes a mes saldría en $3,141 — ahorras $2,242',
     ],
   },
   ucl_temporada: {
     name: 'Modelo Champions League — Temporada 2026-27 completa',
-    price: '$1,199',
+    price: '$899',
     currency: 'MXN',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Champions League completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $1,942',
+      'Mes a mes saldría en $3,141 — ahorras $2,242',
     ],
   },
 };
@@ -693,6 +710,31 @@ if(plan){
   document.getElementById('summaryName').textContent = plan.name;
   document.getElementById('summaryPrice').textContent = `${plan.price} ${plan.currency}`;
   document.title = `RICKY-PICKS — ${plan.name}`;
+}
+
+/* Re-oferta al pagar un mensual de UN modelo: su temporada completa de
+   pago único (precio y ancla del catálogo público, nunca a mano). Si
+   el cliente la ignoró en producto.html, aquí se le vuelve a ofrecer;
+   el botón cambia el checkout a la temporada. */
+const SEASON_OF = { mlb: 'mlb_temporada', mx: 'mx_apertura', nfl: 'nfl_temporada', epl: 'epl_temporada', laliga: 'laliga_temporada', bundesliga: 'bundesliga_temporada', ucl: 'ucl_temporada' };
+let reofertaCerrada = false;
+function pintaReoferta(){
+  const box = document.getElementById('seasonUpsell');
+  if(!box) return;
+  const m = /^([a-z]+)_mensual$/.exec(planId || '');
+  const tem = m && SEASON_OF[m[1]] && catalogo && catalogo[SEASON_OF[m[1]]];
+  if(!tem || reofertaCerrada){ box.style.display = 'none'; return; }
+  const money = n => '$' + Number(n).toLocaleString('en-US');
+  const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
+  box.innerHTML = '<div class="su-eyebrow"><i></i>Antes de pagar · pago único</div>' +
+    '<div class="su-row"><span class="su-name">¿Mejor la temporada completa de ' + MODEL_NAME[m[1]] + '?</span>' +
+    '<span class="su-price">' + (tem.anchor ? '<s>' + money(tem.anchor) + '</s>' : '') + money(tem.price) + '</span></div>' +
+    '<div class="su-txt">Un solo pago, hasta el final de la temporada, sin renovaciones ni mensualidades.' + (ahorro > 0 ? ' Mes a mes te saldría en ' + money(tem.anchor) + ': ahorras ' + money(ahorro) + '.' : '') + '</div>' +
+    '<div class="su-acts"><button type="button" class="su-go" id="suGo">Cambiar a la temporada completa →</button>' +
+    '<button type="button" class="su-no" id="suNo">No, seguir con el mensual de ' + (PLANS[planId] ? PLANS[planId].price : '$349') + '</button></div>';
+  box.style.display = 'block';
+  document.getElementById('suGo').addEventListener('click', () => { location.href = '/checkout.html?plan=' + encodeURIComponent(tem.id); });
+  document.getElementById('suNo').addEventListener('click', () => { reofertaCerrada = true; box.style.display = 'none'; });
 }
 
 /* Selector de modelos para el plan "a elegir": 7 chips, exactamente 3
@@ -943,6 +985,7 @@ async function renderSession(session){
   }
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
+  pintaReoferta();
 
   if(cubiertos.length && cubiertos.length < want.length){
     const NOMBRE = { mundial:'el Mundial', mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };

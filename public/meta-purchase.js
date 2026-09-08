@@ -24,11 +24,11 @@
     torneo: 299,
     final: 99,
     mlb_semana: 199,
-    mlb_temporada: 599,
+    mlb_temporada: 899,
     mx_semana: 249,
-    mx_apertura: 699,
+    mx_apertura: 899,
     nfl_semana: 249,
-    nfl_temporada: 799,
+    nfl_temporada: 899,
     combo_2026: 1199,
     /* Escalera de tres tiers (8-sep-2026): Un modelo $349 · Tres a
        elegir $599 · Todos $899 (lib/plans.js manda). */
@@ -41,10 +41,10 @@
     ucl_mensual: 349,
     tres_mensual: 599,
     todo_mensual: 899,
-    epl_temporada: 1199,
-    laliga_temporada: 1199,
-    bundesliga_temporada: 1199,
-    ucl_temporada: 1199,
+    epl_temporada: 899,
+    laliga_temporada: 899,
+    bundesliga_temporada: 899,
+    ucl_temporada: 899,
   };
 
   var params = new URLSearchParams(window.location.search);

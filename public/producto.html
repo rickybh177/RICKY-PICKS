@@ -227,6 +227,38 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .opt-body li { position: relative; padding-left: 22px; font-size: 0.88rem; color: #3d4759;
     font-weight: 450; margin-bottom: 7px; }
   .opt-body li::before { content: '✓'; position: absolute; left: 0; color: var(--bet); font-weight: 700; }
+  /* "Un modelo" + su temporada de pago único como menú escondido a la
+     derecha: una pestaña angosta que se despliega, llamativa, cuando el
+     cliente elige el mensual (y se pliega al elegir tres/todos). */
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 10px; align-items: stretch;
+    transition: grid-template-columns .28s cubic-bezier(.2,.8,.2,1); }
+  .pair.open { grid-template-columns: minmax(0, 1fr) 236px; }
+  .side { position: relative; display: flex; align-items: center; justify-content: center; text-align: left;
+    border: 1.5px dashed var(--line-2); border-radius: 16px; background: var(--g1); cursor: pointer;
+    padding: 0; overflow: hidden; min-height: 100%; transition: border-color .15s, background .15s, box-shadow .15s; }
+  .side:hover { border-color: rgba(47,123,255,0.6); }
+  .side-tab { writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .side-body { display: none; padding: 16px 16px 14px; width: 100%; }
+  .pair.open .side { border-style: solid; border-color: var(--blue); background: linear-gradient(160deg, rgba(47,123,255,0.10), rgba(47,123,255,0.02));
+    box-shadow: 0 18px 40px -22px rgba(47,123,255,0.7); animation: side-pop .45s cubic-bezier(.2,.9,.3,1.3); }
+  .pair.open .side-tab { display: none; }
+  .pair.open .side-body { display: block; animation: side-in .35s ease .08s both; }
+  .side.on { border-color: var(--blue); box-shadow: 0 14px 34px -18px rgba(47,123,255,0.55); background: var(--g0); }
+  .side .s-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--blue-deep); display: flex; align-items: center; gap: 6px; }
+  .side .s-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); animation: blink 1.4s infinite; }
+  .side .s-name { font-weight: 800; letter-spacing: -0.02em; font-size: 1.02rem; color: var(--ink); margin-top: 6px; }
+  .side .s-price { font-weight: 800; font-size: 1.55rem; letter-spacing: -0.03em; color: var(--ink); margin-top: 4px; }
+  .side .s-price s { color: var(--faint); font-weight: 600; font-size: 0.8rem; margin-right: 6px; }
+  .side .s-price small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--muted); letter-spacing: 0; }
+  .side .s-txt { font-size: 0.8rem; color: #3d4759; margin-top: 8px; line-height: 1.4; }
+  .side .s-cta { display: inline-block; margin-top: 12px; font-weight: 700; font-size: 0.84rem; color: #fff; background: var(--blue-deep);
+    padding: 9px 14px; border-radius: 980px; }
+  .side.on .s-cta { background: var(--bet); }
+  @keyframes side-pop { 0% { transform: scale(.96); opacity: .4; } 60% { transform: scale(1.02); } 100% { transform: none; opacity: 1; } }
+  @keyframes side-in { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
   /* selector de modelos del plan "tres a elegir" */
   .pick-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 14px; margin-bottom: 8px; }
   .picks { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -291,6 +323,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .model-toggle a, .model-toggle span { flex: 1; padding: 10px 6px; font-size: 0.82rem; }
     .opt-row { grid-template-columns: 20px 1fr auto; gap: 10px; padding: 15px 14px; }
     .opt-body { padding-left: 44px; }
+    /* en vertical el menú escondido va debajo: tira angosta que crece */
+    .pair, .pair.open { grid-template-columns: 1fr; }
+    .side { min-height: 40px; }
+    .side-tab { writing-mode: horizontal-tb; transform: none; padding: 11px 14px; }
+    .side-tab::after { content: ' ›'; }
     .opt-price { font-size: 1.15rem; }
 
     /* En vertical todo va un punto más compacto: con los tamaños de
@@ -416,9 +453,7 @@ const MODELOS = {
   mlb: { nombre: 'MLB', pagina: '/mlb.html', api: '/api/mlb-free',
          titulo: 'La recta final, al día',
          lede: 'Todos los juegos del día, cada día: moneyline, hándicap, totales y más — hasta el último out de la Serie Mundial.',
-         /* sin `temporada`: quedan ~5 semanas de regular — nadie paga la
-            temporada completa por eso. Vuelve a aparecer con la 2027. */
-         mensual: 'mlb_mensual', temporada: null },
+         mensual: 'mlb_mensual', temporada: 'mlb_temporada' },
   /* Ligas europeas: cuatro modelos independientes (una pestaña, un
      pick gratis y unos planes cada uno), en la página /europa.html?liga=…
      `euro: true` = mientras sus planes lleven `upcoming` se pinta
@@ -581,9 +616,27 @@ function pintaOpciones(p) {
   const todo = p.todo_mensual || null;
   if (!men && cfg.euro) { pintaProximamente(); return; }
   if (!men) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
+  const tem = cfg.temporada ? p[cfg.temporada] : null;
   let html = '';
-  html += tarjeta(men.id, 'Un modelo · Solo ' + cfg.nombre, 'Cancela cuando quieras',
-    money(men.price), 'al mes', BULLETS.mensual(M));
+  /* "Un modelo" con su temporada de pago único como menú escondido a la
+     derecha (se despliega al elegir el mensual). */
+  html += '<div class="pair" id="pair">' +
+    tarjeta(men.id, 'Un modelo · Solo ' + cfg.nombre, 'Cancela cuando quieras', money(men.price), 'al mes', BULLETS.mensual(M));
+  if (tem) {
+    const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
+    html += '<button type="button" class="side" id="side" data-plan="' + esc(tem.id) + '" aria-expanded="false">' +
+      '<span class="side-tab">Temporada completa · pago único</span>' +
+      '<span class="side-body">' +
+        '<span class="s-eyebrow"><i></i>Pago único · sin renovaciones</span>' +
+        '<span class="s-name">Temporada completa de ' + esc(cfg.nombre) + '</span>' +
+        '<span class="s-price">' + (tem.anchor ? '<s>' + esc(money(tem.anchor)) + '</s>' : '') + esc(money(tem.price)) +
+          '<small>una sola vez' + (ahorro > 0 ? ' · ahorras ' + esc(money(ahorro)) : '') + '</small></span>' +
+        '<span class="s-txt">' + esc(BULLETS.temporada(M)[0]) + '. Pagas una vez y te olvidas de la mensualidad.</span>' +
+        '<span class="s-cta" id="sideCta">Mejor la temporada →</span>' +
+      '</span>' +
+    '</button>';
+  }
+  html += '</div>';
   if (tres) {
     html += '<div class="sep">O bien</div>';
     html += tarjeta(tres.id, 'Tres modelos a elegir', 'Los 3 que tú escojas · cambia uno cada mes',
@@ -601,6 +654,11 @@ function pintaOpciones(p) {
   }
   $('opts').innerHTML = html;
   pintaChips();
+  const side = document.getElementById('side');
+  if (side) {
+    side.addEventListener('click', () => elegir(side.dataset.plan));
+    side.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(side.dataset.plan); } });
+  }
   document.querySelectorAll('.opt').forEach(b => {
     b.addEventListener('click', () => elegir(b.dataset.plan));
     b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(b.dataset.plan); } });
@@ -615,6 +673,18 @@ function elegir(id) {
     b.classList.toggle('on', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  /* menú escondido de la temporada: abierto con el mensual o con la
+     propia temporada; plegado con tres/todos */
+  const pair = document.getElementById('pair'), side = document.getElementById('side');
+  if (pair && side) {
+    const esTem = id === side.dataset.plan;
+    const abierto = esTem || id === cfg.mensual;
+    pair.classList.toggle('open', abierto);
+    side.classList.toggle('on', esTem);
+    side.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    const cta = document.getElementById('sideCta');
+    if (cta) cta.textContent = esTem ? '✓ Temporada elegida' : 'Mejor la temporada →';
+  }
   const p = planes && planes[id];
   const esTres = !!(p && p.choose);
   const listo = !esTres || elegidos.length === (p.choose || 3);
@@ -624,7 +694,7 @@ function elegir(id) {
     a.classList.toggle('off', !listo);
     a.textContent = listo ? 'Continuar' : 'Elige ' + ((p && p.choose) || 3) + ' modelos';
   });
-  if (p) $('sTxt').innerHTML = esc(esTres ? 'Tres modelos a elegir' : p.title.split('—').pop().trim()) +
+  if (p) $('sTxt').innerHTML = esc(esTres ? 'Tres modelos a elegir' : (!p.recurring ? 'Temporada completa · ' + cfg.nombre : p.title.split('—').pop().trim())) +
     '<small>' + money(p.price) + ' ' + esc(p.currency) + (p.recurring ? ' al mes' : ' · pago único') + '</small>' +
     (esTres && elegidos.length ? '<small>' + esc(elegidos.map(m => NOMBRE[m]).join(' + ')) + '</small>' : '');
 }

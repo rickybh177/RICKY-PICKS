@@ -371,7 +371,7 @@ async function loadPlans() {
     const liga = p[LIGA + '_mensual'], tres = p.tres_mensual, todo = p.todo_mensual;
     const acts = [];
     if (liga) acts.push('<a class="day" href="/checkout.html?plan=' + esc(liga.id) + '">Solo ' + esc(L.corto) + ' ' + money(liga.price) + '/mes</a>');
-    if (tres || todo) acts.push('<a class="founder" href="/producto.html?m=' + esc(LIGA) + '">Ver los 3 planes</a>');
+    if (tres || todo) acts.push('<a class="founder" href="/producto.html?m=' + esc(LIGA) + '">Ver los planes</a>');
     if (!acts.length) return;
     const partes = [];
     if (liga) partes.push('solo ' + L.corto + ' por ' + money(liga.price) + ' al mes');
