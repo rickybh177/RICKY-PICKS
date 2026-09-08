@@ -518,6 +518,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
     .odds3 { grid-template-columns: 1fr; }
     .tool-row { flex-direction: column; }
+    /* Los dos botones de cada pick gratis: siempre en dos columnas
+       iguales (antes uno se iba a la siguiente línea según el largo del
+       texto y cada sección se veía distinta). */
+    .live-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .live-cta .btn-primary, .live-cta .btn-ghost { text-align: center; padding-left: 12px; padding-right: 12px; font-size: 0.9rem; white-space: nowrap; }
+    /* menos aire entre secciones en vertical */
+    section { padding: 56px 0; }
     footer .wrap { flex-direction: column; }
     .guarantee { flex-direction: column; }
   }

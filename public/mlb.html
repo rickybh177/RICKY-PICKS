@@ -199,6 +199,24 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .plans-banner .acts a { text-align: center; padding: 12px 8px; }
   }
+
+  /* ---- vertical (uniforme en las 4 páginas de modelo, 8-sep-2026) ----
+     La barra de modelos se desliza de lado dentro de su recuadro (7
+     modelos ya no caben en filas) y el banner de planes ocupa lo justo:
+     una línea de texto y dos botones iguales. */
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; flex-wrap: nowrap; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; scrollbar-width: none; border-radius: 980px; }
+    .model-toggle::-webkit-scrollbar { display: none; }
+    .model-toggle .mt-opt { flex: 0 0 auto; padding: 10px 14px; font-size: 0.82rem; scroll-snap-align: center; }
+    .plans-banner { padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 8px; }
+    .plans-banner .txt { font-size: 0.84rem; text-align: center; }
+    .plans-banner .txt small { display: none; }
+    .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; white-space: normal; }
+    .plans-banner .acts a { display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px 8px; font-size: 0.8rem; line-height: 1.25; }
+    .plans-banner a.founder { background: var(--blue-deep); }
+  }
 </style>
 </head>
 <body>
@@ -720,6 +738,19 @@ $('refreshBtn').addEventListener('click', () => load(currentDate, true));
 })();
 
 load(null);
+</script>
+
+<script>
+/* barra de modelos deslizable (celular): el modelo activo queda a la vista */
+(function () {
+  function centra() {
+    var bar = document.querySelector('.model-toggle');
+    var act = bar && (bar.querySelector('.active') || bar.querySelector('[aria-selected="true"]'));
+    if (!bar || !act || bar.scrollWidth <= bar.clientWidth) return;
+    bar.scrollLeft = Math.max(0, act.offsetLeft - (bar.clientWidth - act.offsetWidth) / 2);
+  }
+  centra(); window.addEventListener('load', centra); setTimeout(centra, 400); /* la barra puede pintarse por JS después */
+})();
 </script>
 </body>
 </html>
