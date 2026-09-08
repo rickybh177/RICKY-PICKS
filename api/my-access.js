@@ -5,7 +5,8 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, EURO_PRODUCTS } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, EURO_PRODUCTS, entitlementExpiry } = require('../lib/plans');
+const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -34,6 +35,18 @@ module.exports = async function handler(req, res) {
     for (const p of EURO_PRODUCTS) euro[p] = ents.find(e => e.product === p && e.active) || null;
     const upgrade = monthlyUpgradeFor(ents);
     const permDisc = comboPermanentDiscount(ents);
+    let tres = null;
+    const tresRows = ents.filter(e => e.plan === 'tres_mensual' && e.active);
+    if (tresRows.length) {
+      const renewedAt = Math.max(...tresRows.map(r => Date.parse(r.updated_at) || 0));
+      const swappedAt = await loadSwap(user.id, 'tres_mensual');
+      tres = {
+        products: tresRows.map(r => r.product).sort(),
+        renews_at: new Date(entitlementExpiry('tres_mensual', tresRows[0].updated_at)).toISOString(),
+        swap_available: !swappedAt || Date.parse(swappedAt) < renewedAt,
+        swapped_at: swappedAt,
+      };
+    }
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       mundial: !!mundial,
@@ -50,6 +63,11 @@ module.exports = async function handler(req, res) {
       laliga_plan: euro.laliga ? euro.laliga.plan : null,
       bundesliga: !!euro.bundesliga,
       bundesliga_plan: euro.bundesliga ? euro.bundesliga.plan : null,
+      ucl: !!euro.ucl,
+      ucl_plan: euro.ucl ? euro.ucl.plan : null,
+      /* Plan "Tres modelos a elegir": qué eligió y si ya puede hacer su
+         cambio del periodo (uno por renovación). null si no lo tiene. */
+      tres,
       /* Precio del Combo 2026 para ESTE usuario (el front solo lo
          pinta — el cobro real lo decide el servidor de nuevo):
          $199 si su mensualidad hace upgrade al combo, $799 con un

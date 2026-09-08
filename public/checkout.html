@@ -60,6 +60,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
   /* PLAN SUMMARY */
   .plan-card { background: linear-gradient(160deg, var(--blue) 0%, var(--blue-deep) 100%); color: #fff; border-radius: 26px; padding: 34px; box-shadow: 0 24px 70px -28px rgba(29,78,216,0.4); }
+  /* selector del plan "tres modelos a elegir" */
+  #chooser { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.22); }
+  #chooser .ch-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.85; margin-bottom: 10px; }
+  #chooser .ch-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  #chooser .ch { font: inherit; font-size: 0.84rem; font-weight: 600; padding: 8px 13px; border-radius: 980px; border: 1.5px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; transition: background .15s, border-color .15s; }
+  #chooser .ch:hover { background: rgba(255,255,255,0.18); }
+  #chooser .ch.on { background: #fff; color: var(--blue-deep); border-color: #fff; }
   .plan-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 14px; }
   .plan-name { font-weight: 800; font-size: 1.6rem; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 6px; }
   .plan-price { font-weight: 800; font-size: 2.5rem; letter-spacing: -0.03em; margin: 16px 0 4px; font-feature-settings: "tnum" 1; }
@@ -504,13 +511,27 @@ const PLANS = {
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
-  todo_mensual: {
-    name: 'Todo RICKY·PICKS — Suscripción mensual',
+  tres_mensual: {
+    name: 'Tres modelos a elegir — Suscripción mensual',
     price: '$599',
+    currency: 'MXN',
+    period: 'Suscripción mensual · tú eliges 3 de los 7 modelos',
+    choose: 3,
+    features: [
+      'Los tres modelos que elijas, completos: todos los partidos y todos los mercados',
+      'Sale a $200 por modelo (por separado serían $1,047)',
+      'Puedes cambiar uno de tus tres modelos cada mes desde Mis modelos',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  todo_mensual: {
+    name: 'Todos los modelos — Suscripción mensual',
+    price: '$899',
     currency: 'MXN',
     period: 'Suscripción mensual · los 7 modelos',
     features: [
-      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $86 por modelo',
+      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $128 por modelo',
+      'Por separado serían $2,443 al mes',
       'Beisbol a diario, fútbol cada fin de semana y entre semana, NFL cada jornada',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
@@ -570,6 +591,18 @@ const params = new URLSearchParams(window.location.search);
 const planId = params.get('plan');
 const payoErr = params.get('pago');
 
+/* ---- plan "a elegir" (tres_mensual): los modelos escogidos ----
+   Vienen en ?modelos=a,b,c desde producto.html y se pueden ajustar
+   aquí mismo (chips en la tarjeta). El servidor exige exactamente 3
+   válidos; aquí solo se refleja. */
+const ALL_MODELS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
+const MODEL_NAME = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
+const MODEL_ICO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆' };
+const CHOOSE_N = (PLANS[planId] && PLANS[planId].choose) || 0;
+let chosen = ALL_MODELS.filter(m => String(params.get('modelos') || '').split(',').includes(m));
+if(!CHOOSE_N) chosen = [];
+const needsChoice = () => CHOOSE_N && chosen.length !== CHOOSE_N;
+
 // a qué modelo pertenece un plan:
 // mlb_ -> /mlb.html · nfl_ -> /nfl.html · mx_ y combo_ -> /mx.html
 // epl_/laliga_/bundesliga_/ucl_ -> /europa.html?liga=<liga>
@@ -622,13 +655,22 @@ const conQuery = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
   } else if(planId.startsWith('ucl_')){
     go.href = '/europa.html?liga=ucl';
     go.textContent = 'Ir al Modelo Champions League →';
-  } else if(planId.startsWith('todo_')){
+  } else if(planId.startsWith('todo_') || planId.startsWith('tres_')){
     go.href = '/mis-modelos.html';
     go.textContent = 'Ir a Mis modelos →';
   }
 })();
 
 const plan = PLANS[planId];
+
+/* Catálogo vigente (sin retirados ni "próximamente"). Un plan que
+   sigue en PLANS pero ya no en el catálogo solo se puede comprar como
+   oferta prometida (upgrade $199 de un mensual fundador a su
+   temporada, combo_2026 con descuento); a cualquier otro se le dice
+   aquí que ya no se vende, en vez de descubrirlo al pagar. */
+let catalogo = null;
+const catalogoListo = fetch('/api/plans-public', { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : null).then(d => { catalogo = (d && d.plans) || null; }).catch(() => {});
 
 /* mostrar error de pago si vino rebotado */
 if(payoErr === 'error'){
@@ -652,6 +694,40 @@ if(plan){
   document.getElementById('summaryPrice').textContent = `${plan.price} ${plan.currency}`;
   document.title = `RICKY-PICKS — ${plan.name}`;
 }
+
+/* Selector de modelos para el plan "a elegir": 7 chips, exactamente 3
+   encendidos. Cambiarlos actualiza la URL (para que un refresh o el
+   regreso del pago conserven la elección) y el candado de "ya lo tienes". */
+function pintaEleccion(){
+  if(!CHOOSE_N) return;
+  let box = document.getElementById('chooser');
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'chooser';
+    document.getElementById('planFeatures').insertAdjacentElement('afterend', box);
+  }
+  const faltan = CHOOSE_N - chosen.length;
+  box.innerHTML = '<div class="ch-lbl">Tus ' + CHOOSE_N + ' modelos' +
+      (faltan > 0 ? ' · elige ' + faltan + ' más' : faltan < 0 ? ' · quita ' + (-faltan) : ' ✓') + '</div>' +
+    '<div class="ch-chips">' + ALL_MODELS.map(m =>
+      '<button type="button" class="ch' + (chosen.includes(m) ? ' on' : '') + '" data-m="' + m + '" aria-pressed="' + chosen.includes(m) + '">' +
+        MODEL_ICO[m] + ' ' + MODEL_NAME[m] + '</button>').join('') + '</div>';
+  box.querySelectorAll('.ch').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.m;
+    if(chosen.includes(m)) chosen = chosen.filter(x => x !== m);
+    else if(chosen.length >= CHOOSE_N) return;
+    else chosen = ALL_MODELS.filter(x => chosen.includes(x) || x === m);
+    const u = new URL(location.href);
+    u.searchParams.set('modelos', chosen.join(','));
+    history.replaceState(null, '', u);
+    pintaEleccion();
+    if(_currentSession) renderSession(_currentSession);
+  }));
+  const lista = chosen.map(m => MODEL_NAME[m]).join(', ');
+  document.getElementById('summaryName').textContent = plan.name + (lista ? ' (' + lista + ')' : '');
+  ['stripeBtn','mpBtn','payBtn'].forEach(id => { const b = document.getElementById(id); if(b) b.disabled = !!needsChoice(); });
+}
+pintaEleccion();
 
 /* supabase */
 let sb = null;
@@ -757,8 +833,12 @@ function productsOf(p){
   if(p.startsWith('bundesliga_')) return ['bundesliga'];
   if(p.startsWith('ucl_')) return ['ucl'];
   if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO);
+  if(p.startsWith('tres_')) return chosen.slice(); // "a elegir": lo que escogió
   return ['mundial'];
 }
+/* Productos de UNA fila: su columna product (la única verdad para un
+   tres_mensual) y el plan como respaldo para filas viejas. */
+const rowProducts = r => (r && r.product ? [r.product] : productsOf(r && r.plan));
 
 /* TODAS las filas activas que se traslapan con el plan (no solo la
    primera): la cobertura se evalúa producto por producto sobre esta
@@ -773,8 +853,8 @@ async function checkEntitlement(){
   // está comprando.
   const want = productsOf(planId);
   try{
-    const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
-    const rows = (data||[]).filter(r => r.active && productsOf(r.plan).some(p => want.includes(p)));
+    const {data} = await sb.from('entitlements').select('plan,product,active,updated_at').eq('active',true);
+    const rows = (data||[]).filter(r => r.active && rowProducts(r).some(p => want.includes(p)));
     _entRows = rows;
     if(rows.length) {
       const ent = rows[0];
@@ -816,6 +896,24 @@ async function renderSession(session){
   }
   const up = acceso && acceso.monthly_upgrade;
   const esUpgradeMensual = !!(up && up.target === planId);
+
+  /* Plan retirado sin oferta prometida: no se vende. */
+  await catalogoListo;
+  const ofertaPrometida = esUpgradeMensual || (planId === 'combo_2026' && acceso && acceso.combo_2026_discount);
+  if(catalogo && plan && !catalogo[planId] && !ofertaPrometida && !(ent && ent.plan === planId)){
+    authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='none';
+    let box = document.getElementById('retiredStep');
+    if(!box){
+      box = document.createElement('div'); box.id = 'retiredStep';
+      entitledStep.insertAdjacentElement('afterend', box);
+    }
+    box.innerHTML = '<h2>Este plan ya no está a la venta</h2>' +
+      '<p class="sub">Hoy todo es suscripción: un modelo ($349), tres a elegir ($599) o todos ($899). Cancela cuando quieras.</p>' +
+      '<a href="/producto.html?m=' + encodeURIComponent((productsOf(planId)[0] === 'mundial' ? 'mlb' : productsOf(planId)[0])) + '" class="btn-pay" style="margin-top:20px;text-decoration:none">Ver los planes vigentes →</a>';
+    box.style.display = 'block';
+    return;
+  }
+  const rs = document.getElementById('retiredStep'); if(rs) rs.style.display = 'none';
 
   /* ¿Lo que ya tiene cubre (o supera) lo que intenta comprar?
      El combo cubre todo lo de MLB y Liga MX; comprar el combo teniendo
@@ -947,6 +1045,7 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
 /* botón de pago */
 document.getElementById('payBtn').addEventListener('click', async () => {
   if(!sb || !_currentSession) return;
+  if(needsChoice()){ showMsg(payMsg,'bad', 'Elige exactamente ' + CHOOSE_N + ' modelos.'); return; }
   const payBtn = document.getElementById('payBtn');
   payBtn.disabled = true;
   payBtn.innerHTML = `<span class="spinner-inline"></span> <span>Abriendo pago…</span>`;
@@ -956,7 +1055,7 @@ document.getElementById('payBtn').addEventListener('click', async () => {
     const res = await fetch('/api/create-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
-      body: JSON.stringify({ plan: planId }),
+      body: JSON.stringify({ plan: planId, models: CHOOSE_N ? chosen : undefined }),
     });
     const out = await res.json();
     if(!res.ok || !out.checkout_url){
@@ -974,6 +1073,7 @@ document.getElementById('payBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('mpBtn').addEventListener('click', async () => {
+  if(needsChoice()){ showMsg(payMsg,'bad', 'Elige exactamente ' + CHOOSE_N + ' modelos.'); return; }
   const mpBtn = document.getElementById('mpBtn');
   mpBtn.disabled = true;
   mpBtn.innerHTML = `<span class="spinner-inline" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> <span>Abriendo Mercado Pago…</span>`;
@@ -982,7 +1082,7 @@ document.getElementById('mpBtn').addEventListener('click', async () => {
     const res = await fetch('/api/create-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: `Bearer ${tok}` } : {}) },
-      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined }),
+      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.checkout_url) {
@@ -1000,6 +1100,7 @@ document.getElementById('mpBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('stripeBtn').addEventListener('click', async () => {
+  if(needsChoice()){ showMsg(payMsg,'bad', 'Elige exactamente ' + CHOOSE_N + ' modelos.'); return; }
   const stripeBtn = document.getElementById('stripeBtn');
   stripeBtn.disabled = true;
   stripeBtn.innerHTML = `<span class="spinner-inline"></span> <span>Abriendo pago…</span>`;
@@ -1008,7 +1109,7 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
     const res = await fetch('/api/stripe-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined }),
+      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
     });
     const out = await res.json();
     if (!res.ok || !out.url) {

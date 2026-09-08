@@ -51,7 +51,8 @@ module.exports = async function handler(req, res) {
       const s = event.data.object;
       const meta = s.metadata || {};
       if (meta.user_id && meta.plan && (s.payment_status === 'paid' || s.status === 'complete')) {
-        await grantEntitlement(meta.user_id, meta.plan);
+        const models = meta.models ? String(meta.models).split(',') : undefined; // "a elegir"
+        const granted = await grantEntitlement(meta.user_id, meta.plan, { products: models });
         console.log('stripe-webhook: alta inicial', meta.user_id, meta.plan);
         const email = (s.customer_details && s.customer_details.email) || s.customer_email;
         if (meta.plan === 'combo_total') {
@@ -66,7 +67,7 @@ module.exports = async function handler(req, res) {
         if (isSubscription(meta.plan)) {
           const nueva = typeof s.subscription === 'string' ? s.subscription
             : (s.subscription && s.subscription.id) || null;
-          await cancelCoveredRecurring(meta.user_id, email, meta.plan, { stripeSubId: nueva });
+          await cancelCoveredRecurring(meta.user_id, email, meta.plan, { stripeSubId: nueva, products: granted && granted.products });
         }
       }
     } else if (event.type === 'invoice.paid') {
@@ -99,7 +100,11 @@ module.exports = async function handler(req, res) {
         const sub = await stripe.subscriptions.retrieve(subId);
         const meta = sub.metadata || {};
         if (meta.user_id && meta.plan) {
-          await grantEntitlement(meta.user_id, meta.plan);
+          /* "a elegir": en renovación mandan sus filas (un cambio de
+             modelo las movió y la metadata de la suscripción quedó
+             vieja); la metadata es el respaldo si no hay filas. */
+          const models = meta.models ? String(meta.models).split(',') : undefined;
+          await grantEntitlement(meta.user_id, meta.plan, { products: models, preferRows: true });
           console.log('stripe-webhook: renovación', meta.user_id, meta.plan, inv.id);
         }
       }

@@ -4,7 +4,8 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, isUpcoming, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 
@@ -85,15 +86,26 @@ module.exports = async function handler(req, res) {
      tienes" y los precios especiales. Nunca lo que diga el navegador. */
   const ents = await getEntitlements(user.id, user.email);
 
-  /* Un plan retirado no se vende — con UNA excepción: combo_2026 sigue
-     comprable para quien tiene una oferta prometida vigente (upgrade
-     $199 de los mensuales legado o $799 con un modelo completo pagado). */
+  /* Plan "a elegir" (tres_mensual): la elección se valida aquí y se
+     GUARDA antes de crear la suscripción (el preapproval de MP no
+     lleva metadata y su external_reference es fijo): el webhook la
+     lee de ahí en el alta; además va en el concepto del cobro. Si no
+     se pudo guardar, no se abre el pago. */
+  let models = null;
+  if (isChoosePlan(planId)) {
+    models = validChoice(planId, body && body.models);
+    if (!models) return res.status(400).json({ error: 'Elige exactamente 3 modelos.' });
+    try { await saveChoice(user.id, planId, models); }
+    catch (e) { console.error('create-payment: elección no guardada', e.message); return res.status(500).json({ error: e.message }); }
+  }
+
+  /* Un plan retirado no se vende — salvo ofertas prometidas vigentes:
+     el upgrade de $199 de los mensuales fundador a su temporada, y
+     combo_2026 con $799 por un modelo completo pagado. */
   if (plan.retired) {
-    let permitido = false;
-    if (planId === 'combo_2026') {
-      const upRet = monthlyUpgradeFor(ents);
-      permitido = (upRet && upRet.target === 'combo_2026') || !!comboPermanentDiscount(ents);
-    }
+    const upRet = monthlyUpgradeFor(ents);
+    let permitido = !!(upRet && upRet.target === planId);
+    if (planId === 'combo_2026') permitido = permitido || !!comboPermanentDiscount(ents);
     if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
   }
 
@@ -102,8 +114,8 @@ module.exports = async function handler(req, res) {
      no le agrega nada. Si solo cubre ALGUNOS productos (tiene
      mlb_temporada y compra todo_mensual) la compra sigue y
      grantEntitlement conserva ese pase (coverageBeats). */
-  const yaCubiertos = productsAlreadyCovered(ents, planId);
-  if (yaCubiertos.length && yaCubiertos.length >= productsForPlan(planId).length) {
+  const yaCubiertos = productsAlreadyCovered(ents, planId, undefined, models);
+  if (yaCubiertos.length && yaCubiertos.length >= (models || productsForPlan(planId)).length) {
     return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
@@ -154,7 +166,8 @@ module.exports = async function handler(req, res) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          reason: `RICKY·PICKS — ${plan.title}`,
+          // "a elegir": la elección también va en el concepto (respaldo del webhook)
+          reason: models ? reasonWith(plan.title, models) : `RICKY·PICKS — ${plan.title}`,
           external_reference: `${user.id}:${plan.id}`,
           payer_email: user.email,
           auto_recurring: {

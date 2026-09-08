@@ -227,6 +227,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .opt-body li { position: relative; padding-left: 22px; font-size: 0.88rem; color: #3d4759;
     font-weight: 450; margin-bottom: 7px; }
   .opt-body li::before { content: '✓'; position: absolute; left: 0; color: var(--bet); font-weight: 700; }
+  /* selector de modelos del plan "tres a elegir" */
+  .pick-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 14px; margin-bottom: 8px; }
+  .picks { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pick { font: inherit; font-size: 0.82rem; font-weight: 600; padding: 7px 12px; border-radius: 980px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink); cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+  .pick:hover { border-color: rgba(47,123,255,0.5); }
+  .pick.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .go.off, .sticky a.off { opacity: 0.55; cursor: not-allowed; transform: none; }
   .flag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem;
     font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--blue-tint);
     color: var(--blue-deep); border: 1px solid rgba(47,123,255,0.3); border-radius: 6px;
@@ -487,6 +494,11 @@ const BULLETS = {
     '1X2, doble oportunidad, goles, ambos anotan y córners con veredicto',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
+  tres: () => ([
+    'Tres modelos completos, los que tú elijas — sale a $200 por modelo',
+    'Cambia uno de tus tres modelos cada mes desde Mis modelos',
+    'Se renueva solo cada mes · cancela cuando quieras',
+  ]),
   todo: () => ([
     'Todos los modelos: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions',
     'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
@@ -496,8 +508,17 @@ const BULLETS = {
 
 let planes = null, elegido = null;
 
-function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla) {
-  return '<button class="opt" type="button" data-plan="' + esc(id) + '" aria-pressed="false">' +
+/* Los 7 modelos vendibles (orden canónico, el mismo de lib/plans.js) */
+const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
+const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆' };
+/* elección del plan "tres a elegir": arranca con el modelo de esta página */
+let elegidos = [M];
+
+/* div (no button): adentro va el selector de modelos, y un botón no
+   puede contener otros botones. */
+function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla, extra) {
+  return '<div class="opt" role="button" tabindex="0" data-plan="' + esc(id) + '" aria-pressed="false">' +
     '<div class="opt-row">' +
       '<span class="radio"></span>' +
       '<span class="opt-name">' + esc(nombre) + (flag ? '<span class="flag">' + esc(flag) + '</span>' : '') +
@@ -505,8 +526,31 @@ function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla) {
       '<span class="opt-price">' + (ancla ? '<s>' + esc(ancla) + '</s>' : '') + esc(precio) +
         (nota ? '<small>' + esc(nota) + '</small>' : '') + '</span>' +
     '</div>' +
-    '<div class="opt-body"><ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul></div>' +
-  '</button>';
+    '<div class="opt-body"><ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' + (extra || '') + '</div>' +
+  '</div>';
+}
+
+/* Chips del plan "tres a elegir": exactamente 3 encendidos. */
+function chipsHTML() {
+  const faltan = 3 - elegidos.length;
+  return '<div class="pick-lbl">Tus 3 modelos' + (faltan > 0 ? ' · elige ' + faltan + ' más' : ' ✓') + '</div>' +
+    '<div class="picks">' + TODOS.map(m =>
+      '<button type="button" class="pick' + (elegidos.includes(m) ? ' on' : '') + '" data-m="' + m + '" aria-pressed="' + elegidos.includes(m) + '">' +
+        ICONO[m] + ' ' + esc(NOMBRE[m]) + '</button>').join('') + '</div>';
+}
+function pintaChips() {
+  const box = document.getElementById('picker');
+  if (!box) return;
+  box.innerHTML = chipsHTML();
+  box.querySelectorAll('.pick').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const m = b.dataset.m;
+    if (elegidos.includes(m)) elegidos = elegidos.filter(x => x !== m);
+    else if (elegidos.length >= 3) return;
+    else elegidos = TODOS.filter(x => elegidos.includes(x) || x === m);
+    pintaChips();
+    elegir('tres_mensual');
+  }));
 }
 
 /* Liga europea todavía sin planes a la venta (beta privada): en vez del
@@ -528,37 +572,40 @@ function pintaOpciones(p) {
      el pago único de la temporada completa. Ligas europeas: mientras su
      mensual lleve `upcoming` en lib/plans.js no viene en el catálogo y
      se pinta "próximamente"; su "todos" es todo_mensual (los 7). */
+  /* Tres tiers, todo suscripción (8-sep-2026): Un modelo (el de esta
+     página) · Tres modelos a elegir · Todos los modelos. Las
+     temporadas de pago único ya no se venden (upcoming en lib/plans.js
+     → no vienen en el catálogo). */
   const men = p[cfg.mensual];
-  const tem = cfg.temporada ? p[cfg.temporada] : null;
-  const com = cfg.euro ? (p.todo_mensual || null) : p.combo_mensual;
+  const tres = p.tres_mensual || null;
+  const todo = p.todo_mensual || null;
   if (!men && cfg.euro) { pintaProximamente(); return; }
   if (!men) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
   let html = '';
-  html += tarjeta(men.id, 'Mensual · Solo ' + cfg.nombre, 'Cancela cuando quieras',
+  html += tarjeta(men.id, 'Un modelo · Solo ' + cfg.nombre, 'Cancela cuando quieras',
     money(men.price), 'al mes', BULLETS.mensual(M));
-  if (com) {
-    const nModelos = (com.products || []).length || 3;
+  if (tres) {
     html += '<div class="sep">O bien</div>';
-    html += cfg.euro
-      ? tarjeta(com.id, 'Mensual · Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
-          money(com.price), 'al mes · ' + money(Math.round(com.price / nModelos)) + ' por modelo', BULLETS.todo(), 'El más elegido')
-      : tarjeta(com.id, 'Mensual · Los 3 modelos', 'MLB + Liga MX + NFL',
-          money(com.price), 'al mes · ' + money(Math.round(com.price / nModelos)) + ' por modelo', BULLETS.combo(), 'El más elegido');
+    html += tarjeta(tres.id, 'Tres modelos a elegir', 'Los 3 que tú escojas · cambia uno cada mes',
+      money(tres.price), 'al mes · ' + money(Math.round(tres.price / 3)) + ' por modelo', BULLETS.tres(), 'El más elegido', null,
+      '<div id="picker"></div>');
   }
-  if (tem) {
+  if (todo) {
+    const n = (todo.products || []).length || 7;
+    const ahorro = todo.anchor ? todo.anchor - todo.price : 0;
     html += '<div class="sep">O bien</div>';
-    /* El tachado es el valor REAL pagando mes a mes (viene del servidor,
-       plans.anchor): el ahorro que ve el cliente es contra la otra
-       opción de esta misma página, no un precio inventado. */
-    const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
-    html += tarjeta(tem.id, 'Temporada completa', 'Hasta el final del torneo, sin renovaciones',
-      money(tem.price), ahorro > 0 ? 'pago único · ahorras ' + money(ahorro) : 'pago único',
-      BULLETS.temporada(M).concat(ahorro > 0 ? ['Mes a mes saldría en ' + money(tem.anchor) + ' — ahorras ' + money(ahorro)] : []),
-      null, tem.anchor ? money(tem.anchor) : null);
+    html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
+      money(todo.price), 'al mes · ' + money(Math.round(todo.price / n)) + ' por modelo',
+      BULLETS.todo().concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []),
+      null, todo.anchor ? money(todo.anchor) : null);
   }
   $('opts').innerHTML = html;
-  document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
-  elegir(elegido && p[elegido] ? elegido : (com ? com.id : men.id)); // "todos" viene preseleccionado cuando existe
+  pintaChips();
+  document.querySelectorAll('.opt').forEach(b => {
+    b.addEventListener('click', () => elegir(b.dataset.plan));
+    b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(b.dataset.plan); } });
+  });
+  elegir(elegido && p[elegido] ? elegido : (tres ? tres.id : men.id)); // "tres" viene preseleccionado
 }
 
 function elegir(id) {
@@ -569,11 +616,22 @@ function elegir(id) {
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   const p = planes && planes[id];
-  const url = '/checkout.html?plan=' + encodeURIComponent(id);
-  $('goBtn').href = url; $('sGo').href = url;
-  if (p) $('sTxt').innerHTML = esc(p.title.split('—').pop().trim()) +
-    '<small>' + money(p.price) + ' ' + esc(p.currency) + (p.recurring ? ' al mes' : ' · pago único') + '</small>';
+  const esTres = !!(p && p.choose);
+  const listo = !esTres || elegidos.length === (p.choose || 3);
+  const url = '/checkout.html?plan=' + encodeURIComponent(id) + (esTres ? '&modelos=' + elegidos.join(',') : '');
+  [$('goBtn'), $('sGo')].forEach(a => {
+    a.href = listo ? url : '#';
+    a.classList.toggle('off', !listo);
+    a.textContent = listo ? 'Continuar' : 'Elige ' + ((p && p.choose) || 3) + ' modelos';
+  });
+  if (p) $('sTxt').innerHTML = esc(esTres ? 'Tres modelos a elegir' : p.title.split('—').pop().trim()) +
+    '<small>' + money(p.price) + ' ' + esc(p.currency) + (p.recurring ? ' al mes' : ' · pago único') + '</small>' +
+    (esTres && elegidos.length ? '<small>' + esc(elegidos.map(m => NOMBRE[m]).join(' + ')) + '</small>' : '');
 }
+document.addEventListener('click', e => {
+  const a = e.target.closest('#goBtn, #sGo');
+  if (a && a.classList.contains('off')) { e.preventDefault(); const pk = document.getElementById('picker'); if (pk) pk.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+});
 
 /* no-store: tras un cambio de precios, un catálogo cacheado 5 min
    dejaría la página pintando planes que ya no existen. */
@@ -878,8 +936,7 @@ if (sb) {
     if (_session) { await sb.auth.signOut(); return; }
     /* No hay modal aquí: el checkout ya pide cuenta cuando toca. Sin
        plan elegible (liga en "próximamente") mejor al modelo. */
-    const destino = elegido || (planes && cfg.temporada && planes[cfg.temporada] ? cfg.temporada : null);
-    location.href = destino ? '/checkout.html?plan=' + encodeURIComponent(destino) : cfg.pagina;
+    location.href = elegido ? $('goBtn').href : cfg.pagina;
   });
 }
 </script>

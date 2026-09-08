@@ -54,8 +54,14 @@ try {
   });
 } catch (e) {}
 
-const { PLANS, isSubscription, isUpcoming, planCoversProduct, coverageBeats, EURO_PRODUCTS } = require('../lib/plans');
-const { getAdmin, grantEntitlement, productsForPlan } = require('../lib/supabaseAdmin');
+const { PLANS, isSubscription, isUpcoming, planCoversProduct, coverageBeats, EURO_PRODUCTS, ALL_MODELS, isChoosePlan, validChoice, productsAlreadyCovered } = require('../lib/plans');
+const { getAdmin, grantEntitlement, productsForPlan, chosenProducts } = require('../lib/supabaseAdmin');
+const { coveredBy } = require('../lib/cancel-recurring');
+const { saveChoice, loadChoice, clearChoice, choiceFromReason, reasonWith } = require('../lib/choices');
+/* elección de prueba para los planes "a elegir" (tres_mensual) */
+const TEST_CHOICE = ['mlb', 'mx', 'epl'];
+const grantOpts = id => (isChoosePlan(id) ? { products: TEST_CHOICE } : undefined);
+const expectedProducts = id => (isChoosePlan(id) ? TEST_CHOICE.slice() : productsForPlan(id));
 
 const STATIC_ONLY = process.argv.includes('--static');
 const TEST_EMAIL = 'test-entitlements@rickypicks.internal';
@@ -80,13 +86,20 @@ const ok = msg => console.log('  ✓ ' + msg);
   console.log('=== 1. Verificación estática de cada plan ===');
   for (const [id, plan] of Object.entries(PLANS)) {
     console.log(id + ':');
-    const products = productsForPlan(id);
+    const products = expectedProducts(id);
     if (!products.length || products.some(p => !KNOWN_PRODUCTS.includes(p))) {
       fail(`producto desconocido: ${JSON.stringify(products)}`);
     } else {
-      ok(`producto(s): ${products.join(', ')}`);
+      ok((isChoosePlan(id) ? `a elegir (${plan.choose} de ${ALL_MODELS.length}); prueba con: ` : 'producto(s): ') + products.join(', '));
     }
     for (const p of products) {
+      if (isChoosePlan(id)) {
+        /* "a elegir": el gate acepta el plan solo con la FILA del producto */
+        if (planCoversProduct(id, p, { product: p }) && !planCoversProduct(id, p, { product: 'nfl' }) && !planCoversProduct(id, p))
+          ok(`el modelo "${p}" acepta este plan solo con su fila`);
+        else fail(`el modelo "${p}" con plan a elegir: la cobertura debe salir de la fila, no del plan`);
+        continue;
+      }
       if (accessRuleAccepts(p, id)) ok(`el modelo "${p}" acepta este plan`);
       else if (id === 'mexico') warn(`plan legado "mexico": el gate del Mundial ya no lo acepta (no se vende — ignorar o borrar)`);
       else fail(`el gate del modelo "${p}" NO acepta este plan → el cliente pagaría sin ver nada`);
@@ -120,12 +133,45 @@ const ok = msg => console.log('  ✓ ' + msg);
       ['mlb_mensual',      1,   'mlb_mensual',    false], // renovación: el mismo plan se refresca
       ['mlb_temporada',    140, 'mlb_mensual',    false], // le quedan 10 días: el mensual da más
       ['mlb_mensual',      40,  'combo_mensual',  false], // vencido: se pisa
+      ['mlb_temporada',    30,  'tres_mensual',   true],  // el pase pagado sobrevive a un tres
+      ['tres_mensual',     3,   'tres_mensual',   false], // renovación del tres: se refresca
+      ['tres_mensual',     3,   'mlb_temporada',  false], // upgrade a temporada (legado): pisa
     ];
     for (const [tiene, dias, compra, esperado] of casos) {
       const got = coverageBeats({ plan: tiene, active: true, updated_at: hace(dias) }, compra, ahora);
       const txt = `tiene ${tiene} (hace ${dias} d) y compra ${compra} → ${got ? 'se conserva' : 'se pisa'}`;
       if (got === esperado) ok(txt); else fail(txt + ` (esperaba que ${esperado ? 'se conservara' : 'se pisara'})`);
     }
+  }
+
+  console.log('\n=== 1c. Plan "a elegir" (tres_mensual): elección, cobertura y cancelaciones ===');
+  {
+    const t = (cond, msg) => (cond ? ok(msg) : fail(msg));
+    t(JSON.stringify(validChoice('tres_mensual', 'ucl,mlb,nfl')) === JSON.stringify(['mlb', 'nfl', 'ucl']), 'validChoice ordena canónico: ucl,mlb,nfl → mlb,nfl,ucl');
+    t(validChoice('tres_mensual', ['mlb', 'mlb', 'nfl']) === null, 'validChoice rechaza repetidos');
+    t(validChoice('tres_mensual', 'mlb,mx,nfl,epl') === null, 'validChoice rechaza 4');
+    t(validChoice('tres_mensual', 'mlb,mx,foo') === null, 'validChoice rechaza un modelo inexistente');
+    t(validChoice('todo_mensual', 'mlb,mx,nfl') === null, 'validChoice solo aplica a planes a elegir');
+    t(choiceFromReason('tres_mensual', reasonWith('Tres modelos a elegir — Suscripción mensual', ['mlb', 'mx', 'epl'])).join(',') === 'mlb,mx,epl', 'el concepto de Mercado Pago lleva y devuelve la elección');
+    t(choiceFromReason('tres_mensual', 'RICKY·PICKS — Tres modelos') === null, 'sin corchetes no se adivina nada');
+    const ahora = Date.now(), reciente = new Date(ahora - 5 * 86400e3).toISOString();
+    const ents = [{ plan: 'mlb_temporada', product: 'mlb', active: true, updated_at: reciente }];
+    t(productsAlreadyCovered(ents, 'tres_mensual', ahora, ['mlb', 'mx', 'nfl']).join(',') === 'mlb', 'con mlb_temporada, un tres [mlb,mx,nfl] ya tiene cubierto mlb (la compra sigue: agrega mx y nfl)');
+    t(productsAlreadyCovered(ents, 'tres_mensual', ahora, ['mx', 'nfl', 'epl']).length === 0, 'con mlb_temporada, un tres [mx,nfl,epl] no tiene nada cubierto');
+    t(coveredBy('tres_mensual', 'mx_mensual', ['mx', 'nfl', 'epl']) === true, 'comprar tres [mx,nfl,epl] cancela mx_mensual (cubierto)');
+    t(coveredBy('tres_mensual', 'mlb_mensual', ['mx', 'nfl', 'epl']) === false, 'comprar tres [mx,nfl,epl] NO cancela mlb_mensual');
+    t(coveredBy('tres_mensual', 'todo_mensual', ['mx', 'nfl', 'epl']) === false, 'comprar tres NO cancela todo_mensual (el todo da más)');
+    t(coveredBy('tres_mensual', 'combo_mensual', ['mlb', 'mx', 'nfl']) === true, 'comprar tres [mlb,mx,nfl] cancela combo_mensual legado (mismos 3)');
+    t(coveredBy('todo_mensual', 'tres_mensual') === true, 'comprar todo cancela un tres anterior');
+    t(coveredBy('mlb_mensual', 'tres_mensual') === false, 'comprar mlb_mensual NO cancela un tres');
+    t(coveredBy('tres_mensual', 'tres_mensual', ['mlb', 'mx', 'nfl']) === true, 'un tres nuevo cancela el tres anterior (re-suscripción; el recién creado se conserva por keep)');
+    const enVenta = Object.keys(PLANS).filter(k => PLANS[k].price > 0 && !PLANS[k].retired && !PLANS[k].upcoming);
+    const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'tres_mensual', 'todo_mensual'];
+    const faltan = esperados.filter(k => !enVenta.includes(k));
+    const sobran = enVenta.filter(k => !esperados.includes(k) && !['mexico', 'torneo', 'final'].includes(k));
+    t(!faltan.length && !sobran.length, `a la venta exactamente los 3 tiers (7 × un modelo, tres, todos)${faltan.length ? ' — faltan ' + faltan : ''}${sobran.length ? ' — sobran ' + sobran : ''}`);
+    t(enVenta.every(k => isSubscription(k) || ['mexico', 'torneo', 'final'].includes(k)), 'todo lo que se vende es suscripción (sin pagos únicos)');
+    t(PLANS.tres_mensual.price === 599 && PLANS.todo_mensual.price === 899 && PLANS.mlb_mensual.price === 349, 'precios: $349 / $599 / $899');
   }
 
   if (STATIC_ONLY) {
@@ -154,10 +200,10 @@ const ok = msg => console.log('  ✓ ' + msg);
 
   for (const id of Object.keys(PLANS)) {
     try {
-      await grantEntitlement(userId, id);
+      await grantEntitlement(userId, id, grantOpts(id));
       const { data: rows } = await admin.from('entitlements')
         .select('plan, product, active').eq('user_id', userId).eq('plan', id).eq('active', true);
-      const expected = productsForPlan(id).sort().join(',');
+      const expected = expectedProducts(id).sort().join(',');
       const got = (rows || []).map(r => r.product).sort().join(',');
       if (got === expected) ok(`${id} → filas [${got}]`);
       else fail(`${id} → esperaba productos [${expected}], la BD tiene [${got}]`);
@@ -209,6 +255,66 @@ const ok = msg => console.log('  ✓ ' + msg);
       fail('sección 3: ' + e.message);
     }
     await admin.from('entitlements').delete().eq('user_id', userId);
+  }
+
+  console.log('\n=== 4. Tres modelos a elegir: alta, renovación, cambio de modelo y respaldos (BD real) ===');
+  {
+    const filas = async () => {
+      const { data } = await admin.from('entitlements')
+        .select('plan, product, active, updated_at').eq('user_id', userId).eq('active', true);
+      const m = {}; (data || []).forEach(r => { m[r.product] = r; }); return m;
+    };
+    const lista = async () => Object.entries(await filas()).filter(([, r]) => r.plan === 'tres_mensual').map(([p]) => p).sort().join(',');
+    const t = (cond, msg) => (cond ? ok(msg) : fail(msg));
+    try {
+      await admin.from('entitlements').delete().eq('user_id', userId);
+      await clearChoice(userId, 'tres_mensual'); // sin respaldo de una corrida anterior
+      /* alta sin elección: debe fallar fuerte (nunca se adivina) */
+      let boom = null;
+      try { await grantEntitlement(userId, 'tres_mensual'); } catch (e) { boom = e; }
+      t(!!boom && !(await lista()), 'alta sin modelos elegidos → grantEntitlement falla y no escribe nada');
+      /* alta con la elección (metadata de Stripe / concepto de MP) */
+      const r1 = await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'mlb', 'mx'] });
+      t((await lista()) === 'epl,mlb,mx' && r1.products.join(',') === 'mlb,mx,epl', 'alta con [epl,mlb,mx] → 3 filas tres_mensual (mlb, mx, epl)');
+      /* renovación con metadata vieja: mandan las filas */
+      await new Promise(res => setTimeout(res, 25));
+      const antes = (await filas()).mlb.updated_at;
+      await grantEntitlement(userId, 'tres_mensual', { products: ['mlb', 'mx', 'nfl'], preferRows: true });
+      const f2 = await filas();
+      t((await lista()) === 'epl,mlb,mx' && !f2.nfl && new Date(f2.mlb.updated_at) > new Date(antes), 'renovación con metadata vieja [mlb,mx,nfl] → siguen mlb, mx, epl y se refresca updated_at');
+      /* cambio de modelo (lo que hace api/swap-model): epl → ucl con el mismo updated_at */
+      const same = f2.mlb.updated_at;
+      await admin.from('entitlements').delete().eq('user_id', userId).eq('plan', 'tres_mensual').eq('product', 'epl');
+      await admin.from('entitlements').upsert({ user_id: userId, plan: 'tres_mensual', product: 'ucl', active: true, updated_at: same }, { onConflict: 'user_id,product' });
+      t((await lista()) === 'mlb,mx,ucl', 'cambio epl → ucl: filas mlb, mx, ucl');
+      /* renovación después del cambio: la metadata de Stripe sigue diciendo [epl,mlb,mx] */
+      await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'mlb', 'mx'], preferRows: true });
+      t((await lista()) === 'mlb,mx,ucl', 'renovación tras el cambio → respeta las filas (mlb, mx, ucl), no la metadata vieja');
+      t((await chosenProducts(admin, userId, 'tres_mensual')).join(',') === 'mlb,mx,ucl', 'chosenProducts lee la elección de las filas');
+      /* renovación de Mercado Pago sin concepto legible: sale de las filas */
+      await grantEntitlement(userId, 'tres_mensual', { preferRows: true });
+      t((await lista()) === 'mlb,mx,ucl', 'renovación sin elección (MP) → se resuelve de las filas');
+      /* alta por MP: sin filas, con la elección guardada en el checkout (KV) */
+      await admin.from('entitlements').delete().eq('user_id', userId);
+      await saveChoice(userId, 'tres_mensual', ['nfl', 'laliga', 'bundesliga']);
+      t((await loadChoice(userId, 'tres_mensual')).join(',') === 'nfl,laliga,bundesliga', 'saveChoice/loadChoice (KV) guarda y lee la elección');
+      await grantEntitlement(userId, 'tres_mensual', { preferRows: true });
+      t((await lista()) === 'bundesliga,laliga,nfl', 'alta sin metadata (MP) → toma la elección guardada en el checkout');
+      /* cobertura: un pase pagado sobrevive a un tres que lo incluya */
+      await admin.from('entitlements').delete().eq('user_id', userId);
+      await grantEntitlement(userId, 'mlb_temporada');
+      const r3 = await grantEntitlement(userId, 'tres_mensual', { products: ['mlb', 'mx', 'nfl'] });
+      const f3 = await filas();
+      t(f3.mlb.plan === 'mlb_temporada' && f3.mx.plan === 'tres_mensual' && f3.nfl.plan === 'tres_mensual' && (r3.kept || []).map(k => k.product).join(',') === 'mlb', 'mlb_temporada + tres [mlb,mx,nfl] → mlb se conserva como temporada; mx y nfl como tres');
+      /* upgrade: todo pisa al tres */
+      await grantEntitlement(userId, 'todo_mensual');
+      const f4 = await filas();
+      t(f4.mx.plan === 'todo_mensual' && f4.nfl.plan === 'todo_mensual' && f4.ucl.plan === 'todo_mensual' && f4.mlb.plan === 'mlb_temporada', 'tres, luego todo_mensual → todo pisa al tres y conserva la temporada');
+    } catch (e) {
+      fail('sección 4: ' + e.message);
+    }
+    await admin.from('entitlements').delete().eq('user_id', userId);
+    await clearChoice(userId, 'tres_mensual');
   }
 
   console.log(`\n${failures ? '✗ ' + failures + ' FALLA(S)' : '✓ Todos los planes pasan'}${warnings ? ' · ' + warnings + ' advertencia(s)' : ''}`);

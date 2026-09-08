@@ -37,6 +37,7 @@ module.exports = async function handler(req, res) {
       currency: p.currency || 'MXN',
       days: p.days || null,
       products: Array.isArray(p.products) ? p.products : null,
+      choose: p.choose || null,   // "a elegir": cuántos modelos escoge el cliente
       recurring: !!p.recurring,
     };
   }

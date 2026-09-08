@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { PLANS, FULL_PASS_PLANS } = require('../lib/plans');
 const { grantEntitlement, getAdmin } = require('../lib/supabaseAdmin');
 const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
+const { choiceFromReason } = require('../lib/choices');
 
 /* Correo del usuario (para poder cancelar sus suscripciones de
    Stripe cuando el pase lo compró por Mercado Pago). Best-effort. */
@@ -96,7 +97,11 @@ module.exports = async function handler(req, res) {
         console.error('mp-webhook: preapproval sin external_reference válido:', pre.id);
         return res.status(200).end();
       }
-      await grantEntitlement(userId, planId);
+      /* "a elegir": renovación → sus filas; alta → la elección guardada
+         en el checkout, o el concepto del cobro como respaldo. */
+      const granted = await grantEntitlement(userId, planId, {
+        products: choiceFromReason(planId, pre.reason) || undefined, preferRows: true,
+      });
       console.log(`mp-webhook: suscripción ${type === 'subscription_preapproval' ? 'alta' : 'renovación'} — user_id=${userId} plan=${planId} preapproval=${preapprovalId}`);
       /* Upgrade al Combo Total: apagar la suscripción anterior. */
       if (planId === 'combo_total') {
@@ -109,7 +114,7 @@ module.exports = async function handler(req, res) {
       if (type === 'subscription_preapproval') {
         /* emailOf: el correo de la CUENTA del sitio — el payer_email de
            MP puede ser otro y el lado Stripe busca por correo. */
-        await cancelCoveredRecurring(userId, await emailOf(userId), planId, { preapprovalId: pre.id });
+        await cancelCoveredRecurring(userId, await emailOf(userId), planId, { preapprovalId: pre.id, products: granted && granted.products });
       }
       return res.status(200).end();
     } catch (e) {

@@ -229,6 +229,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       </div>
     </div>
 
+    <!-- Plan "Tres modelos a elegir": qué eligió y su cambio del mes -->
+    <div class="sub-box" id="tresBox" style="display:none">
+      <div class="sb-txt" id="tresTxt"></div>
+      <div class="sb-acts" id="tresActs"></div>
+    </div>
+
     <div class="sub-box">
       <div class="sb-txt"><strong>Tu suscripción.</strong> Actualiza tu método de pago, revisa tus cobros o cancela cuando quieras — sin llamadas ni correos.</div>
       <div class="sb-acts">
@@ -317,8 +323,49 @@ async function boot(){
     paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga');
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga');
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl');
+    pintaTres(acc.tres);
   }
   showMain();
+}
+
+/* ---- Plan "Tres modelos a elegir": un cambio por periodo de cobro ----
+   El servidor (api/swap-model.js) decide todo; aquí solo se ofrece
+   quitar uno de los tres y meter otro. */
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
+const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
+const fechaMX = iso => { try { return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'long' }); } catch(e){ return ''; } };
+function pintaTres(tres){
+  const box = document.getElementById('tresBox');
+  if(!tres || !Array.isArray(tres.products) || !tres.products.length){ box.style.display = 'none'; return; }
+  const txt = document.getElementById('tresTxt');
+  const acts = document.getElementById('tresActs');
+  const lista = tres.products.map(p => NOMBRE[p] || p).join(', ');
+  const sel = (id, opts) => '<select id="' + id + '" style="font:inherit;font-size:0.85rem;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)">' +
+    opts.map(p => '<option value="' + p + '">' + NOMBRE[p] + '</option>').join('') + '</select>';
+  if(tres.swap_available){
+    txt.innerHTML = '<strong>Tu plan de tres modelos:</strong> ' + lista + '. Este mes puedes cambiar uno de ellos por otro; el cobro no cambia.';
+    acts.innerHTML = sel('swapDrop', tres.products) + '<span style="align-self:center;color:var(--muted)">→</span>' +
+      sel('swapAdd', TODOS.filter(p => !tres.products.includes(p))) +
+      '<button id="swapBtn">Cambiar</button>';
+    document.getElementById('swapBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('swapBtn');
+      const drop = document.getElementById('swapDrop').value, add = document.getElementById('swapAdd').value;
+      if(!confirm('¿Cambiar ' + NOMBRE[drop] + ' por ' + NOMBRE[add] + '? Solo puedes hacer un cambio por mes.')) return;
+      const h = await authHeaders();
+      if(!h){ showState('stateNoAuth'); return; }
+      btn.disabled = true; btn.textContent = 'Cambiando…';
+      try{
+        const r = await fetch('/api/swap-model', { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify({ drop, add }) });
+        const out = await r.json();
+        if(!r.ok){ alert(out.error || 'No se pudo hacer el cambio.'); btn.disabled = false; btn.textContent = 'Cambiar'; return; }
+        location.reload();
+      }catch(e){ alert('No se pudo hacer el cambio. Intenta de nuevo.'); btn.disabled = false; btn.textContent = 'Cambiar'; }
+    });
+  } else {
+    txt.innerHTML = '<strong>Tu plan de tres modelos:</strong> ' + lista + '. Ya hiciste tu cambio de este periodo; el siguiente se abre con tu renovación' + (tres.renews_at ? ' el ' + fechaMX(tres.renews_at) : '') + '.';
+    acts.innerHTML = '';
+  }
+  box.style.display = 'flex';
 }
 
 /* ---- gestión de suscripción ----

@@ -4,7 +4,8 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, isUpcoming, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { saveChoice } = require('../lib/choices');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -42,7 +43,8 @@ const PLAN_NAMES = {
   laliga_mensual: 'Modelo LaLiga — Suscripción mensual',
   bundesliga_mensual: 'Modelo Bundesliga — Suscripción mensual',
   ucl_mensual: 'Modelo Champions League — Suscripción mensual',
-  todo_mensual: 'Todo RICKY·PICKS: los 7 modelos — Suscripción mensual',
+  tres_mensual: 'Tres modelos a elegir — Suscripción mensual',
+  todo_mensual: 'Todos los modelos (7) — Suscripción mensual',
   epl_temporada: 'Modelo Premier League — Temporada 2026-27 completa',
   laliga_temporada: 'Modelo LaLiga — Temporada 2026-27 completa',
   bundesliga_temporada: 'Modelo Bundesliga — Temporada 2026-27 completa',
@@ -90,21 +92,30 @@ module.exports = async function handler(req, res) {
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
+
+    /* Plan "a elegir" (tres_mensual): la elección llega del checkout
+       y se valida aquí (exactamente 3 modelos válidos). Viaja en la
+       metadata de la sesión Y de la suscripción (el webhook de
+       renovaciones la lee de ahí) y se guarda como respaldo. */
+    let models = null;
+    if (isChoosePlan(plan)) {
+      models = validChoice(plan, body && body.models);
+      if (!models) return res.status(400).json({ error: 'Elige exactamente 3 modelos.' });
+      try { await saveChoice(user.id, plan, models); } catch (e) { console.error('stripe-create: elección no respaldada', e.message); }
+    }
     /* Accesos actuales de ESTE usuario (filas expandidas por producto):
        deciden la excepción de los retirados, el candado de "ya lo
        tienes" y los precios especiales. Nunca lo que diga el navegador. */
     const ents = await getEntitlements(user.id, user.email);
 
-    /* Un plan retirado no se vende — con UNA excepción: combo_2026
-       sigue comprable para quien tiene una oferta prometida vigente
-       (el upgrade de $199 de los mensuales legado o el $799 con un
-       modelo completo pagado). */
+    /* Un plan retirado no se vende — salvo ofertas prometidas
+       vigentes: el upgrade de $199 de los mensuales fundador a su
+       temporada (retiradas del público el 8-sep-2026) y combo_2026
+       con $799 por un modelo completo pagado. */
     if (def.retired) {
-      let permitido = false;
-      if (plan === 'combo_2026') {
-        const up = monthlyUpgradeFor(ents);
-        permitido = (up && up.target === 'combo_2026') || !!comboPermanentDiscount(ents);
-      }
+      const up = monthlyUpgradeFor(ents);
+      let permitido = !!(up && up.target === plan);
+      if (plan === 'combo_2026') permitido = permitido || !!comboPermanentDiscount(ents);
       if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
     }
 
@@ -113,12 +124,19 @@ module.exports = async function handler(req, res) {
        algo que no le agrega nada. Si solo cubre ALGUNOS productos
        (tiene mlb_temporada y compra todo_mensual) la compra sigue y
        grantEntitlement conserva ese pase (coverageBeats). */
-    const yaCubiertos = productsAlreadyCovered(ents, plan);
-    if (yaCubiertos.length && yaCubiertos.length >= productsForPlan(plan).length) {
+    const yaCubiertos = productsAlreadyCovered(ents, plan, undefined, models);
+    if (yaCubiertos.length && yaCubiertos.length >= (models || productsForPlan(plan)).length) {
       return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
     }
 
-    const p = { name: PLAN_NAMES[plan], price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase() };
+    const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
+    const p = {
+      name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : ''),
+      price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase(),
+    };
+    /* metadata que leen stripe-capture (alta) y stripe-webhook
+       (renovaciones): user_id, plan y, en "a elegir", los modelos. */
+    const META = models ? { user_id: user.id, plan, models: models.join(',') } : { user_id: user.id, plan };
     const SITE_URL = siteUrl(req);
 
     /* ---- Mensuales (MLB, Liga MX, Combo): SUSCRIPCIÓN real ----
@@ -141,10 +159,10 @@ module.exports = async function handler(req, res) {
           quantity: 1,
         }],
         // metadata en la suscripción: el webhook la lee en cada renovación
-        subscription_data: { metadata: { user_id: user.id, plan } },
+        subscription_data: { metadata: META },
         success_url: `${SITE_URL}/checkout.html?plan=${plan}&via=stripe&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${SITE_URL}/checkout.html?plan=${plan}`,
-        metadata: { user_id: user.id, plan },
+        metadata: META,
         customer_email: user.email,
       };
       if (discount) {

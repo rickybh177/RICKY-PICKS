@@ -172,8 +172,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   /* barra de invitado (freemium) */
   /* Banner de planes: el mismo que MLB y NFL. Liga MX no lo tenía —
      el invitado solo veía la barra de arriba, sin precios ni CTA de
-     compra al pie. Los importes salen de lib/plans.js (mx_semana 249,
-     mx_apertura 699); si cambian allá, hay que actualizarlos aquí. */
+     compra al pie. Los importes salen de lib/plans.js (mx_mensual 349,
+     tres_mensual 599, todo_mensual 899); si cambian allá, hay que
+     actualizarlos aquí. */
   .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
   .plans-banner.on { display: block; }
   .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
@@ -281,10 +282,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Suscríbete por $349 al mes — o el Apertura entero en un solo pago.</small></div>
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Solo Liga MX por $349 al mes, tres modelos a elegir por $599 o los siete por $899. Cancela cuando quieras.</small></div>
     <div class="acts">
-      <a class="day" href="/checkout.html?plan=mx_mensual">Mensual $349</a>
-      <a class="founder" href="/checkout.html?plan=mx_apertura">Apertura <s style="opacity:0.55;font-weight:500">$2,094</s> $1,199</a>
+      <a class="day" href="/checkout.html?plan=mx_mensual">Solo Liga MX $349/mes</a>
+      <a class="founder" href="/producto.html?m=mx">Ver los 3 planes</a>
     </div>
   </div>
 </div>

@@ -30,13 +30,17 @@
     nfl_semana: 249,
     nfl_temporada: 799,
     combo_2026: 1199,
-    /* Fútbol europeo, un modelo por liga — precios PROVISIONALES (lib/plans.js manda;
-       mientras lleven `upcoming` allá no se venden y esto no dispara). */
+    /* Escalera de tres tiers (8-sep-2026): Un modelo $349 · Tres a
+       elegir $599 · Todos $899 (lib/plans.js manda). */
+    mlb_mensual: 349,
+    mx_mensual: 349,
+    nfl_mensual: 349,
     epl_mensual: 349,
     laliga_mensual: 349,
     bundesliga_mensual: 349,
     ucl_mensual: 349,
-    todo_mensual: 599,
+    tres_mensual: 599,
+    todo_mensual: 899,
     epl_temporada: 1199,
     laliga_temporada: 1199,
     bundesliga_temporada: 1199,

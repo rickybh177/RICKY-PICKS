@@ -24,7 +24,9 @@ module.exports = async function handler(req, res) {
     const plan   = session.metadata && session.metadata.plan;
     if (!userId || !plan) return res.status(400).json({ error: 'Metadatos inválidos.' });
 
-    await grantEntitlement(userId, plan);
+    // "a elegir": los modelos vienen en la metadata (models: "a,b,c")
+    const models = session.metadata && session.metadata.models ? String(session.metadata.models).split(',') : undefined;
+    const granted = await grantEntitlement(userId, plan, { products: models });
     const email = (session.customer_details && session.customer_details.email) || session.customer_email;
     /* Upgrade al Combo Total: cancelar la suscripción anterior
        (combo legado o mensual individual) para no cobrar doble. */
@@ -43,7 +45,7 @@ module.exports = async function handler(req, res) {
     if (isSubscription(plan)) {
       const nueva = typeof session.subscription === 'string' ? session.subscription
         : (session.subscription && session.subscription.id) || null;
-      await cancelCoveredRecurring(userId, email, plan, { stripeSubId: nueva });
+      await cancelCoveredRecurring(userId, email, plan, { stripeSubId: nueva, products: granted && granted.products });
     }
     /* `value` = lo realmente cobrado (Stripe da centavos); solo lo usa
        el Pixel de Meta para reportar la compra. */

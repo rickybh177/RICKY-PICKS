@@ -359,7 +359,7 @@ async function authHeader() {
 }
 
 /* ---- banner de planes: solo con lo que /api/plans-public trae ----
-   Mensual de ESTA liga + Europa (las 3 ligas) + temporada completa.
+   Un modelo (ESTA liga) + Tres a elegir + Todos, todo suscripción.
    Si ninguno está a la venta (beta / próximamente), el banner no
    existe: nunca un botón hacia un plan que el checkout rechazaría. */
 let plansReady = false;
@@ -368,16 +368,18 @@ async function loadPlans() {
     const r = await fetch('/api/plans-public', { cache: 'no-store' });
     if (!r.ok) return;
     const p = ((await r.json()) || {}).plans || {};
-    const liga = p[LIGA + '_mensual'], todo = p.todo_mensual, tem = p[LIGA + '_temporada'];
+    const liga = p[LIGA + '_mensual'], tres = p.tres_mensual, todo = p.todo_mensual;
     const acts = [];
-    if (liga) acts.push('<a class="day" href="/checkout.html?plan=' + esc(liga.id) + '">' + esc(L.corto) + ' ' + money(liga.price) + '/mes</a>');
-    if (todo) acts.push('<a class="day" href="/checkout.html?plan=' + esc(todo.id) + '">Todos los modelos ' + money(todo.price) + '/mes</a>');
-    if (tem) acts.push('<a class="founder" href="/checkout.html?plan=' + esc(tem.id) + '">Temporada ' + (tem.anchor ? '<s style="opacity:0.55;font-weight:500">' + money(tem.anchor) + '</s> ' : '') + money(tem.price) + '</a>');
+    if (liga) acts.push('<a class="day" href="/checkout.html?plan=' + esc(liga.id) + '">Solo ' + esc(L.corto) + ' ' + money(liga.price) + '/mes</a>');
+    if (tres || todo) acts.push('<a class="founder" href="/producto.html?m=' + esc(LIGA) + '">Ver los 3 planes</a>');
     if (!acts.length) return;
-    const base = liga || todo;
-    $('plansSub').textContent = base
-      ? 'Suscríbete desde ' + money(base.price) + ' al mes' + (tem ? ' — o la temporada 2026-27 entera en un solo pago.' : '.')
-      : 'La temporada 2026-27 entera en un solo pago.';
+    const partes = [];
+    if (liga) partes.push('solo ' + L.corto + ' por ' + money(liga.price) + ' al mes');
+    if (tres) partes.push('tres modelos a elegir por ' + money(tres.price));
+    if (todo) partes.push('los siete por ' + money(todo.price));
+    $('plansSub').textContent = partes.length
+      ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1) + (partes.length > 1 ? ', ' + partes.slice(1).join(' o ') : '') + '. Cancela cuando quieras.'
+      : '';
     $('plansActs').innerHTML = acts.join('');
     plansReady = true;
     $('plansBanner').classList.toggle('on', currentAccess === 'guest');

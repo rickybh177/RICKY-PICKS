@@ -850,8 +850,52 @@ De producto:
 
 - Migración `scripts/migrate-entitlements-product.sql` en Supabase:
   pendiente del dueño según el registro del incidente de julio; los
-  combos europeos dependen de ella. `node scripts/verify-plans.js` (en
+  planes multi-modelo (tres/todo) dependen de ella. `node scripts/verify-plans.js` (en
   vivo) es la prueba.
-- Precios de Europa provisionales en `lib/plans.js` (y sus espejos en
-  `checkout.html` / `meta-purchase.js`); los fija la estrategia de
-  pricing antes de quitar `upcoming`.
+- (Resuelto el 8-sep-2026) Precios definitivos: ver "Planes a la venta".
+
+## Planes a la venta (8-sep-2026)
+
+Tres tiers, todo suscripción mensual (decisión del dueño, opción A sin
+anual):
+
+| Plan | id | Precio | Qué da |
+|---|---|---|---|
+| Un modelo | `mlb/mx/nfl/epl/laliga/bundesliga/ucl_mensual` | $349 | ese modelo |
+| Tres modelos a elegir | `tres_mensual` (`choose: 3`) | $599 | 3 de los 7, elegidos en el checkout; un cambio por periodo de cobro |
+| Todos los modelos | `todo_mensual` (ancla $2,443) | $899 | los 7 |
+
+Las temporadas de pago único (`*_temporada`, `mx_apertura`,
+`nfl_temporada`, `mlb_temporada`) y `combo_mensual` quedaron
+`retired`/`upcoming`: no se venden, quien las tiene las conserva; el
+upgrade de $199 de un mensual fundador a su temporada se sigue
+honrando (excepción en ambas pasarelas).
+
+Cómo viaja la elección del plan de tres (`lib/choices.js`):
+
+- **Stripe**: `metadata.models = "a,b,c"` en la sesión y en la
+  suscripción (`stripe-create`), respaldo en el KV del bucket
+  `odds-cache` (`choice-tres_mensual-<userId>`). `stripe-capture` y el
+  webhook de alta la leen; la renovación (`invoice.paid`) pasa
+  `preferRows: true`.
+- **Mercado Pago**: el preapproval no lleva metadata → la elección se
+  guarda en el KV ANTES de crear la suscripción (si falla, no se abre
+  el pago) y además va al final del concepto (`reason … [a,b,c]`);
+  `mp-webhook` usa filas → KV → concepto, en ese orden.
+- **Verdad desde el primer cobro = las filas** de `entitlements` (una
+  por modelo, plan `tres_mensual`). `grantEntitlement(userId, plan,
+  { products, preferRows })` resuelve la lista y falla fuerte si no hay
+  nada (el webhook responde 5xx y la pasarela reintenta); nunca adivina.
+- **Cambio de modelo** `POST /api/swap-model {drop, add}`: uno por
+  periodo (marca `swap-tres_mensual-<userId>` comparada con el
+  `updated_at` de las filas), la fila nueva copia el `updated_at` para
+  vencer con el periodo pagado, no pisa un pase que dure más. UI en
+  `mis-modelos.html` con `/api/my-access` → `tres`.
+- Cobertura/cancelaciones: `coveredBy(bought, monthly, boughtProducts)`
+  en `lib/cancel-recurring.js` — un tres cancela los mensuales que
+  incluye; solo `todo_mensual` (o el mismo tres) cancela un tres.
+
+Pruebas: `node scripts/verify-plans.js` (estático + vivo: secciones 1c y
+4 cubren el tres) y la simulación de pasarelas con stubs (alta,
+captura, webhooks, renovación tras un cambio, MP sin metadata, upgrade
+$199 legado) — todo en verde el 8-sep-2026.
