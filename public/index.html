@@ -636,15 +636,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span class="dot">·</span>PICKS</a>
     <div class="nav-right">
-      <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
-      <a href="/nfl.html" class="nav-link" id="nflNavBtn">NFL</a>
-      <a href="/mlb.html" class="nav-link" id="mlbNavBtn">MLB</a>
-      <a href="/europa.html?liga=epl" class="nav-link" id="eplNavBtn">Premier</a>
-      <a href="/europa.html?liga=laliga" class="nav-link" id="laligaNavBtn">LaLiga</a>
-      <a href="/europa.html?liga=bundesliga" class="nav-link" id="bundesligaNavBtn">Bundesliga</a>
-      <a href="/europa.html?liga=ucl" class="nav-link" id="uclNavBtn">Champions</a>
+      <!-- Sin enlaces a cada modelo (decisión del dueño, 8-sep-2026):
+           arriba solo "Mis modelos", que es la puerta a los siete. Se
+           muestra con o sin sesión; sin ella, esa página pide entrar. -->
       <a href="/producto.html" class="nav-link">Planes</a>
-      <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
+      <a href="/mis-modelos.html" class="nav-link" id="misModelosLink">Mis modelos</a>
       <button id="authBtn" class="nav-ghost">Entrar</button>
       <button id="navFreeBtn" class="nav-cta">Pick gratis</button>
     </div>
@@ -1807,17 +1803,9 @@ let _session = null;
 
 
 async function refreshUI(){
-  const u = _session ? _session.user : null;
-  const misModelosLink = document.getElementById('misModelosLink');
-  if(u){
-    authBtn.textContent = 'Salir';
-    misModelosLink.style.display = 'inline-flex';
-    misModelosLink.classList.add('nav-models-active');
-  } else {
-    authBtn.textContent = 'Iniciar sesión';
-    misModelosLink.style.display = 'none';
-    misModelosLink.classList.remove('nav-models-active');
-  }
+  /* "Mis modelos" vive siempre en el nav; lo único que cambia con la
+     sesión es el botón de entrar/salir. */
+  authBtn.textContent = _session && _session.user ? 'Salir' : 'Iniciar sesión';
 }
 
 

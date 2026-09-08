@@ -318,7 +318,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <a href="/" class="logo"><span class="mark">R·P</span>RICKY<span style="color:var(--blue)">·</span>PICKS</a>
     <div class="nav-actions">
-      <a class="nav-btn" id="verModelo" href="/mlb.html">Mis Modelos</a>
+      <a class="nav-btn" href="/mis-modelos.html">Mis modelos</a>
       <button class="nav-btn" id="authBtn">Entrar</button>
     </div>
   </div>
@@ -441,7 +441,6 @@ const cfg = MODELOS[M];
 document.title = 'RICKY·PICKS — Plan ' + cfg.nombre;
 $('buyTitle').textContent = cfg.titulo;
 $('buyLede').textContent = cfg.lede;
-$('verModelo').href = cfg.pagina;
 $('verTodos').href = cfg.pagina;
 document.querySelectorAll('.model-toggle a').forEach(a => {
   if (a.dataset.m === M) {
