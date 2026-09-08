@@ -14,6 +14,10 @@
       - Aparece en el checkout (public/checkout.html) para que la
         página de compra no diga "Plan no válido".
       - Congruencia de suscripción: recurring ⇒ 30 días.
+   1b. REGLA DE COBERTURA (sin BD): un plan nuevo NO pisa un pase
+      vigente que dura más (coverageBeats, lib/plans.js) — la
+      mecánica con la que un todo_mensual borraba mlb_temporada y
+      europa_temporada (5-sep-2026).
    2. EN VIVO (contra Supabase real):
       - Otorga cada plan a un usuario de PRUEBA dedicado y verifica
         que las filas de entitlement se crean con su producto.
@@ -21,9 +25,18 @@
         faltantes, FKs) que rechazan planes EN SILENCIO — la causa
         de los incidentes del 17 y 18 de julio de 2026.
       - Limpia las filas al final (el usuario de prueba se queda).
+   3. EN VIVO: la regla de cobertura contra la BD real — pases de
+      temporada + una mensualidad encima, renovación y upgrade.
 
-   Uso:  node scripts/verify-plans.js
+   Uso:  node scripts/verify-plans.js            (estático + en vivo)
+         node scripts/verify-plans.js --static   (solo la sección 1;
+                                                  no toca Supabase)
    Sale con código 1 si algo falla (sirve para CI).
+
+   Planes `upcoming` (cableados pero todavía no a la venta, ver
+   lib/plans.js): se verifican igual que los demás — la cadena
+   compra → acceso debe estar lista ANTES de ponerlos a la venta —
+   pero faltar en checkout.html es advertencia, no falla.
    ============================================================ */
 
 const fs = require('fs');
@@ -41,11 +54,12 @@ try {
   });
 } catch (e) {}
 
-const { PLANS, isSubscription, planCoversProduct } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, planCoversProduct, coverageBeats, EURO_PRODUCTS } = require('../lib/plans');
 const { getAdmin, grantEntitlement, productsForPlan } = require('../lib/supabaseAdmin');
 
+const STATIC_ONLY = process.argv.includes('--static');
 const TEST_EMAIL = 'test-entitlements@rickypicks.internal';
-const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx', 'nfl'];
+const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx', 'nfl', 'epl', 'laliga', 'bundesliga', 'ucl'];
 
 /* ¿El validador de acceso del modelo acepta este plan?
    Usa planCoversProduct de lib/plans.js — la MISMA regla que usan
@@ -78,13 +92,45 @@ const ok = msg => console.log('  ✓ ' + msg);
       else fail(`el gate del modelo "${p}" NO acepta este plan → el cliente pagaría sin ver nada`);
     }
     if (checkoutHtml.includes(`${id}:`) || checkoutHtml.includes(`'${id}'`) || checkoutHtml.includes(`"${id}"`)) {
-      ok('aparece en checkout.html');
+      ok('aparece en checkout.html' + (isUpcoming(id) ? ' (todavía no a la venta: upcoming)' : ''));
     } else if (id === 'mexico' || !plan.price) {
       warn('no está en checkout.html (legado o solo por código, no se vende)');
+    } else if (isUpcoming(id)) {
+      warn('no está en checkout.html — todavía no se vende (upcoming), pero agrégalo ANTES de quitar la bandera');
     } else {
       fail('NO está en checkout.html → /checkout.html?plan=' + id + ' diría "Plan no válido"');
     }
     if (isSubscription(id) && plan.days !== 30) fail(`recurring pero days=${plan.days} (debe ser 30)`);
+    if (isUpcoming(id) && plan.retired) fail('upcoming Y retired a la vez: no puede estar por salir y ya retirado');
+  }
+
+  console.log('\n=== 1b. Regla de cobertura: un plan nuevo no pisa un pase vigente que dura más ===');
+  {
+    const day = 86400e3, ahora = Date.now();
+    const hace = d => new Date(ahora - d * day).toISOString();
+    /* [lo que tiene, hace cuántos días lo compró, lo que compra, ¿se conserva?] */
+    const casos = [
+      ['mlb_temporada',    30,  'todo_mensual',   true],
+      ['europa_temporada', 10,  'todo_mensual',   true],
+      ['europa_temporada', 10,  'europa_mensual', true],
+      ['europa_permanente', 400, 'epl_mensual',   true],
+      ['nfl_temporada',    20,  'combo_mensual',  true],  // starts_at: el reloj arranca en el kickoff
+      ['combo_permanente', 400, 'mlb_mensual',    true],
+      ['mx_mensual',       5,   'mx_apertura',    false], // upgrade: la temporada sí pisa al mensual
+      ['mlb_mensual',      1,   'mlb_mensual',    false], // renovación: el mismo plan se refresca
+      ['mlb_temporada',    140, 'mlb_mensual',    false], // le quedan 10 días: el mensual da más
+      ['mlb_mensual',      40,  'combo_mensual',  false], // vencido: se pisa
+    ];
+    for (const [tiene, dias, compra, esperado] of casos) {
+      const got = coverageBeats({ plan: tiene, active: true, updated_at: hace(dias) }, compra, ahora);
+      const txt = `tiene ${tiene} (hace ${dias} d) y compra ${compra} → ${got ? 'se conserva' : 'se pisa'}`;
+      if (got === esperado) ok(txt); else fail(txt + ` (esperaba que ${esperado ? 'se conservara' : 'se pisara'})`);
+    }
+  }
+
+  if (STATIC_ONLY) {
+    console.log(`\n${failures ? '✗ ' + failures + ' FALLA(S)' : '✓ Todos los planes pasan (solo estático)'}${warnings ? ' · ' + warnings + ' advertencia(s)' : ''}`);
+    process.exit(failures ? 1 : 0);
   }
 
   console.log('\n=== 2. Otorgamiento real contra Supabase (usuario de prueba) ===');
@@ -118,7 +164,50 @@ const ok = msg => console.log('  ✓ ' + msg);
     } catch (e) {
       fail(`${id} → grantEntitlement FALLÓ: ${e.message} (¿candado en la BD?)`);
     }
-    // limpiar para el siguiente plan (el mismo producto se pisa entre planes)
+    // limpiar para el siguiente plan (sin filas previas, la regla de cobertura no interviene)
+    await admin.from('entitlements').delete().eq('user_id', userId);
+  }
+
+  console.log('\n=== 3. Una compra nueva no pisa los pases pagados (BD real, mismo usuario de prueba) ===');
+  {
+    const filas = async () => {
+      const { data } = await admin.from('entitlements')
+        .select('plan, product, active, updated_at').eq('user_id', userId).eq('active', true);
+      const m = {}; (data || []).forEach(r => { m[r.product] = r; }); return m;
+    };
+    const espera = (etiqueta, got, exp) => {
+      const g = Object.keys(exp).map(p => `${p}=${got[p] ? got[p].plan : '—'}`).join(' ');
+      const bien = Object.keys(exp).every(p => got[p] && got[p].plan === exp[p]);
+      if (bien) ok(`${etiqueta}: ${g}`);
+      else fail(`${etiqueta}: ${g} (esperaba ${Object.entries(exp).map(([p, v]) => p + '=' + v).join(' ')})`);
+    };
+    try {
+      await admin.from('entitlements').delete().eq('user_id', userId);
+      await grantEntitlement(userId, 'mlb_temporada');
+      await grantEntitlement(userId, 'europa_temporada');
+      const r = await grantEntitlement(userId, 'todo_mensual');
+      espera('mlb_temporada + europa_temporada, luego todo_mensual', await filas(), {
+        mlb: 'mlb_temporada', epl: 'europa_temporada', laliga: 'europa_temporada', bundesliga: 'europa_temporada', ucl: 'europa_temporada',
+        mx: 'todo_mensual', nfl: 'todo_mensual',
+      });
+      const keptStr = (r && r.kept || []).map(k => k.product).sort().join(',');
+      // mlb (temporada) + todo lo que cubre europa_temporada (las ligas de Europa + Champions)
+      const expKept = ['mlb', ...EURO_PRODUCTS].sort().join(',');
+      if (keptStr === expKept) ok(`grantEntitlement reporta kept=[${keptStr}]`);
+      else fail(`grantEntitlement reporta kept=[${keptStr}] (esperaba ${expKept})`);
+      /* Renovación: el mismo plan siempre se refresca. */
+      const antes = (await filas()).mx.updated_at;
+      await new Promise(res => setTimeout(res, 25));
+      await grantEntitlement(userId, 'todo_mensual');
+      const despues = (await filas()).mx.updated_at;
+      if (new Date(despues) > new Date(antes)) ok('renovar todo_mensual refresca updated_at');
+      else fail('renovar todo_mensual NO refrescó updated_at');
+      /* Upgrade: la temporada sí pisa al mensual. */
+      await grantEntitlement(userId, 'mx_apertura');
+      espera('todo_mensual, luego mx_apertura (upgrade)', await filas(), { mx: 'mx_apertura', nfl: 'todo_mensual', mlb: 'mlb_temporada' });
+    } catch (e) {
+      fail('sección 3: ' + e.message);
+    }
     await admin.from('entitlements').delete().eq('user_id', userId);
   }
 

@@ -451,6 +451,81 @@ const PLANS = {
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
+
+  /* ---- Fútbol de Europa (precios PROVISIONALES: espejo de lib/plans.js;
+     el cobro real siempre sale del servidor). Mientras lleven
+     `upcoming` allá, el servidor rechaza la compra con "todavía no
+     está a la venta" y aquí solo se ve la ficha. ---- */
+  epl_mensual: {
+    name: 'Modelo Premier League — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Las 38 jornadas de la Premier: todos los partidos, todos los mercados',
+      '1X2, doble oportunidad, goles, ambos anotan, córners y más',
+      'Veredicto BET / MAYBE / SKIP contra los momios reales',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  laliga_mensual: {
+    name: 'Modelo LaLiga — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Las 38 jornadas de LaLiga: todos los partidos, todos los mercados',
+      '1X2, doble oportunidad, goles, ambos anotan, córners y más',
+      'Veredicto BET / MAYBE / SKIP contra los momios reales',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  bundesliga_mensual: {
+    name: 'Modelo Bundesliga — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Las 34 jornadas de la Bundesliga: todos los partidos, todos los mercados',
+      '1X2, doble oportunidad, goles, ambos anotan, córners y más',
+      'Veredicto BET / MAYBE / SKIP contra los momios reales',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  europa_mensual: {
+    name: 'Europa: Premier + LaLiga + Bundesliga — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · las tres ligas por el precio de una',
+    features: [
+      'Premier League, LaLiga, Bundesliga y Champions League completas por el precio de un modelo',
+      'Cada fin de semana, todos los partidos de las tres ligas con veredicto',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  todo_mensual: {
+    name: 'Todo RICKY·PICKS — Suscripción mensual',
+    price: '$599',
+    currency: 'MXN',
+    period: 'Suscripción mensual · los 6 modelos',
+    features: [
+      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $100 por modelo',
+      'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  europa_temporada: {
+    name: 'Europa: Premier + LaLiga + Bundesliga — Temporada 2026-27 completa',
+    price: '$1,199',
+    currency: 'MXN',
+    period: 'Pago único · de agosto a mayo, las tres ligas',
+    features: [
+      'Las tres ligas completas hasta la última jornada de la 2026-27',
+      'Todos los partidos, mercados y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Mes a mes saldría en $3,141 — ahorras $1,942',
+    ],
+  },
 };
 
 /* leer plan de la URL */
@@ -459,14 +534,23 @@ const planId = params.get('plan');
 const payoErr = params.get('pago');
 
 // a qué modelo pertenece un plan:
-// mlb_ -> /mlb.html · mx_ y combo_ -> /mx.html · resto -> Mundial
+// mlb_ -> /mlb.html · nfl_ -> /nfl.html · mx_ y combo_ -> /mx.html
+// epl_/laliga_/bundesliga_ -> /europa.html?liga=<liga> · europa_ -> Premier
+// todo_ (los 6 modelos) y Mundial -> /mis-modelos.html
+// OJO: la URL de Europa ya trae "?" — para pegarle ?pago=… usa conQuery.
 const modelUrl = p => {
   p = p || '';
   if(p.startsWith('mlb_') || p === 'circulo_fundador') return '/mlb.html';
   if(p.startsWith('nfl_')) return '/nfl.html';
   if(p.startsWith('mx_') || p.startsWith('combo_')) return '/mx.html';
+  if(p.startsWith('epl_')) return '/europa.html?liga=epl';
+  if(p.startsWith('laliga_')) return '/europa.html?liga=laliga';
+  if(p.startsWith('bundesliga_')) return '/europa.html?liga=bundesliga';
+  if(p.startsWith('europa_')) return '/europa.html?liga=epl';
   return '/mis-modelos.html';
 };
+/* Pega parámetros a una URL que puede o no traer query ya. */
+const conQuery = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
 
 /* "Continuar como invitado": manda al modelo del plan que estaba
    viendo, donde el pick gratis se ve sin cuenta. */
@@ -489,6 +573,21 @@ const modelUrl = p => {
   } else if(planId.startsWith('combo_')){
     go.href = '/mx.html';
     go.textContent = 'Ir a tus modelos →';
+  } else if(planId.startsWith('epl_')){
+    go.href = '/europa.html?liga=epl';
+    go.textContent = 'Ir al Modelo Premier League →';
+  } else if(planId.startsWith('laliga_')){
+    go.href = '/europa.html?liga=laliga';
+    go.textContent = 'Ir al Modelo LaLiga →';
+  } else if(planId.startsWith('bundesliga_')){
+    go.href = '/europa.html?liga=bundesliga';
+    go.textContent = 'Ir al Modelo Bundesliga →';
+  } else if(planId.startsWith('europa_')){
+    go.href = '/europa.html?liga=epl';
+    go.textContent = 'Ir a los modelos de Europa →';
+  } else if(planId.startsWith('todo_')){
+    go.href = '/mis-modelos.html';
+    go.textContent = 'Ir a Mis modelos →';
   }
 })();
 
@@ -604,27 +703,43 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
 
 document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
 
-/* Productos que cubre un plan: mlb_* -> mlb, mx_* -> mx,
-   combo_* -> mlb+mx, resto -> mundial. */
+/* Productos que cubre un plan: mlb_* -> mlb, mx_* -> mx, nfl_* -> nfl,
+   combo_* -> mlb+mx(+nfl), epl_/laliga_/bundesliga_ -> su liga,
+   europa_* -> las 3 ligas + Champions, todo_* -> todos los modelos, resto -> mundial.
+   (Espejo de productsForPlan en lib/supabaseAdmin.js.) */
+const EURO = ['epl','laliga','bundesliga','ucl'];
 function productsOf(p){
   p = p || '';
-  if(p === 'circulo_fundador' || p === 'combo_total' || p === 'combo_2026') return ['mlb','mx','nfl'];
+  if(p === 'circulo_fundador' || p === 'combo_total' || p === 'combo_2026' || p === 'combo_mensual') return ['mlb','mx','nfl'];
   if(p.startsWith('combo_')) return ['mlb','mx'];
   if(p.startsWith('mlb_')) return ['mlb'];
   if(p.startsWith('mx_')) return ['mx'];
   if(p.startsWith('nfl_')) return ['nfl'];
+  if(p.startsWith('epl_')) return ['epl'];
+  if(p.startsWith('laliga_')) return ['laliga'];
+  if(p.startsWith('bundesliga_')) return ['bundesliga'];
+  if(p.startsWith('ucl_')) return ['ucl'];
+  if(p.startsWith('europa_')) return EURO.slice();
+  if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO);
   return ['mundial'];
 }
 
+/* TODAS las filas activas que se traslapan con el plan (no solo la
+   primera): la cobertura se evalúa producto por producto sobre esta
+   lista. Quien tiene mlb_temporada + europa_temporada y compra
+   todo_mensual tiene 4 filas que cuentan, no 1. */
+let _entRows = [];
 async function checkEntitlement(){
   if(!sb) return null;
-  // Cada producto (mundial / mlb / mx) vive en su propia fila. El
-  // producto se deriva del `plan` en JS. Buscamos cualquier fila cuyo
-  // producto se traslape con el del plan que se está comprando.
+  // Cada producto (mundial / mlb / mx / nfl / liga europea) vive en su
+  // propia fila. El producto se deriva del `plan` en JS. Buscamos
+  // cualquier fila cuyo producto se traslape con el del plan que se
+  // está comprando.
   const want = productsOf(planId);
   try{
     const {data} = await sb.from('entitlements').select('plan,active,updated_at').eq('active',true);
     const rows = (data||[]).filter(r => r.active && productsOf(r.plan).some(p => want.includes(p)));
+    _entRows = rows;
     if(rows.length) {
       const ent = rows[0];
       // Plan individual expira al día siguiente — permitir re-compra
@@ -671,17 +786,36 @@ async function renderSession(session){
      solo una pata SÍ se permite (es el upgrade). El upgrade del
      mensual al pase por $199 TAMBIÉN se permite siempre — antes el
      mensual contaba como "ya tienes acceso" y bloqueaba la compra. */
-  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','combo_2026','circulo_fundador'], mx: ['mx_apertura','mx_fundador','combo_total','combo_2026','circulo_fundador'], nfl: ['nfl_temporada','nfl_fundador','combo_total','combo_2026','circulo_fundador'] };
+  /* Europa: solo la temporada completa y el permanente "cubren" una
+     liga — un mensual (de la liga, de Europa o de todo) nunca bloquea
+     comprar la temporada, que es el upgrade natural. Los permanentes
+     por código (mlb/mx/nfl/combo_permanente) también cubren su modelo. */
+  const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','combo_2026','circulo_fundador','mlb_permanente','combo_permanente'], mx: ['mx_apertura','mx_fundador','combo_total','combo_2026','circulo_fundador','mx_permanente','combo_permanente'], nfl: ['nfl_temporada','nfl_fundador','combo_total','combo_2026','circulo_fundador','nfl_permanente'],
+    epl: ['europa_temporada','europa_permanente'], laliga: ['europa_temporada','europa_permanente'], bundesliga: ['europa_temporada','europa_permanente'], ucl: ['europa_temporada','europa_permanente'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
-  const covered = ent && !buyingCombo && !esUpgradeMensual &&
-    productsOf(planId).every(p => (TOP[p]||[]).includes(ent.plan));
+  /* Cobertura producto por producto sobre TODAS las filas activas (no
+     solo la primera): quien tiene mlb_temporada + mx_apertura +
+     nfl_temporada ya tiene todo lo del combo mensual aunque sean tres
+     filas. Cubierto en TODO = ya tiene acceso; cubierto en PARTE = la
+     compra sigue (le agrega lo demás) y el servidor conserva esos
+     pases tal cual — se le avisa abajo. */
+  const want = productsOf(planId);
+  const cubiertos = want.filter(p => _entRows.some(r => (TOP[p]||[]).includes(r.plan)));
+  const covered = ent && !buyingCombo && !esUpgradeMensual && cubiertos.length === want.length;
   if(ent && !esUpgradeMensual && (ent.plan === planId || covered)){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }
   authStep.style.display='none'; payStep.style.display='block'; entitledStep.style.display='none';
   document.getElementById('payEmail').textContent = session.user.email;
+
+  if(cubiertos.length && cubiertos.length < want.length){
+    const NOMBRE = { mundial:'el Mundial', mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
+    const lista = arr => { const n = arr.map(p => NOMBRE[p] || p); return n.length > 1 ? n.slice(0,-1).join(', ') + ' y ' + n[n.length-1] : n[0]; };
+    const resto = want.filter(p => !cubiertos.includes(p));
+    showMsg(payMsg, 'info', `Ya tienes ${lista(cubiertos)} con un pase completo: se conserva tal cual. Esta compra te agrega ${lista(resto)}.`);
+  }
 
   if(acceso){
     const original = plan.price; // p.ej. '$1,199'
@@ -765,7 +899,7 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
       // Código de acceso gratis — redirigir al modelo que otorga el plan
       msg.textContent = '¡Código canjeado! Redirigiendo…';
       msg.className = 'msg ok';
-      setTimeout(() => { window.location.href = modelUrl(data.plan) + '?pago=' + (data.plan || 'torneo'); }, 1200);
+      setTimeout(() => { window.location.href = conQuery(modelUrl(data.plan), 'pago=' + (data.plan || 'torneo')); }, 1200);
     }
   } catch(e) {
     msg.textContent = e.message;
@@ -880,8 +1014,8 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
       const out = await res.json();
       if (out.ok) {
         // `val` viaja para que el Pixel reporte el importe real cobrado.
-        const dest = modelUrl(out.plan) + '?pago=' + out.plan
-          + (out.value > 0 ? '&val=' + out.value : '');
+        const dest = conQuery(modelUrl(out.plan), 'pago=' + out.plan
+          + (out.value > 0 ? '&val=' + out.value : ''));
         history.replaceState(null, '', dest);
         window.location.href = dest;
         return;

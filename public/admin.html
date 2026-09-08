@@ -100,11 +100,20 @@
   .prod-badge.mlb { background: rgba(230,126,34,0.14); color: #c25e12; }
   .prod-badge.mx { background: rgba(124,58,237,0.12); color: #6d28d9; }
   .prod-badge.nfl { background: rgba(29,78,216,0.12); color: #1d4ed8; }
+  /* Europa: un color por liga (comparten página, no producto) */
+  .prod-badge.epl { background: rgba(14,116,144,0.12); color: #0e7490; }
+  .prod-badge.laliga { background: rgba(190,18,60,0.12); color: #be123c; }
+  .prod-badge.bundesliga { background: rgba(77,124,15,0.14); color: #4d7c0f; }
+  .prod-badge.ucl { background: rgba(180,83,9,0.12); color: #b45309; }
   .prod-badge.none { background: rgba(94,111,134,0.1); color: var(--muted); }
   /* colores de los stat-cards de producto */
   .stat-card .num.mlb { color: #c25e12; }
   .stat-card .num.mx { color: #6d28d9; }
   .stat-card .num.nfl { color: #1d4ed8; }
+  .stat-card .num.epl { color: #0e7490; }
+  .stat-card .num.laliga { color: #be123c; }
+  .stat-card .num.bundesliga { color: #4d7c0f; }
+  .stat-card .num.ucl { color: #b45309; }
   .date-cell { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
   .active-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
   .active-dot.yes { background: var(--win); }
@@ -262,12 +271,18 @@ const PLAN_SHORT = {
   mlb_mensual: 'Mensual', mx_mensual: 'Mensual', nfl_mensual: 'Mensual',
   combo_mensual: 'Combo mensual',
   mlb_permanente: 'Permanente', mx_permanente: 'Permanente', nfl_permanente: 'Permanente',
+  /* fútbol de Europa (sep-2026) */
+  epl_mensual: 'Mensual', laliga_mensual: 'Mensual', bundesliga_mensual: 'Mensual',
+  europa_mensual: 'Europa mensual', todo_mensual: 'Todo mensual',
+  europa_temporada: 'Europa temporada', europa_permanente: 'Europa permanente',
 };
-const PRODUCT_LABEL = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL' };
+const PRODUCT_LABEL = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
 /* ÚNICA lista de modelos del panel: de aquí salen los badges, las
    tarjetas de arriba y los filtros. NFL existía en PRODUCT_LABEL pero
-   no aquí, así que sus clientes no aparecían por ningún lado. */
-const PRODUCT_ORDER = ['mundial', 'mlb', 'mx', 'nfl'];
+   no aquí, así que sus clientes no aparecían por ningún lado. Las tres
+   ligas de Europa son productos separados (un cliente puede tener solo
+   la Premier), por eso van una por una. */
+const PRODUCT_ORDER = ['mundial', 'mlb', 'mx', 'nfl', 'epl', 'laliga', 'bundesliga', 'ucl'];
 
 /* Tarjetas y filtros por modelo, pintados antes de que se enganchen
    los clics (más abajo en este mismo script). */

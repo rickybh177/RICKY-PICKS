@@ -1,10 +1,10 @@
 /* POST /api/stripe-create  { plan }
    Crea una sesión de Stripe Checkout y devuelve la URL de pago. */
 const Stripe = require('stripe');
-const { getUserFromToken, getEntitlement, getEntitlements } = require('../lib/supabaseAdmin');
+const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, isUpcoming, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -36,6 +36,14 @@ const PLAN_NAMES = {
   mx_mensual:    'Modelo Liga MX — Suscripción mensual',
   nfl_mensual:   'Modelo NFL — Suscripción mensual',
   combo_mensual: 'Los 3 modelos — Suscripción mensual',
+  /* Fútbol de Europa (cableado; a la venta cuando el dueño quite
+     `upcoming` en lib/plans.js) */
+  epl_mensual:        'Modelo Premier League — Suscripción mensual',
+  laliga_mensual:     'Modelo LaLiga — Suscripción mensual',
+  bundesliga_mensual: 'Modelo Bundesliga — Suscripción mensual',
+  europa_mensual:     'Europa: Premier + LaLiga + Bundesliga + Champions — Suscripción mensual',
+  todo_mensual:       'Todo RICKY·PICKS: los 6 modelos — Suscripción mensual',
+  europa_temporada:   'Europa: Premier + LaLiga + Bundesliga + Champions — Temporada 2026-27 completa',
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
@@ -69,25 +77,42 @@ module.exports = async function handler(req, res) {
     if (!def || !PLAN_NAMES[plan] || !(def.price > 0)) {
       return res.status(400).json({ error: 'Plan inválido.' });
     }
+    /* Plan cableado pero todavía no a la venta (Europa en beta
+       privada): se rechaza ANTES de tocar Stripe, sin excepciones. */
+    if (isUpcoming(plan)) {
+      return res.status(400).json({ error: 'Ese plan todavía no está a la venta.' });
+    }
     const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
     const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
+    /* Accesos actuales de ESTE usuario (filas expandidas por producto):
+       deciden la excepción de los retirados, el candado de "ya lo
+       tienes" y los precios especiales. Nunca lo que diga el navegador. */
+    const ents = await getEntitlements(user.id, user.email);
 
     /* Un plan retirado no se vende — con UNA excepción: combo_2026
        sigue comprable para quien tiene una oferta prometida vigente
        (el upgrade de $199 de los mensuales legado o el $799 con un
-       modelo completo pagado). Se verifica contra los entitlements de
-       ESTE usuario, nunca contra lo que diga el navegador. */
+       modelo completo pagado). */
     if (def.retired) {
       let permitido = false;
       if (plan === 'combo_2026') {
-        const ents = await getEntitlements(user.id, user.email);
         const up = monthlyUpgradeFor(ents);
         permitido = (up && up.target === 'combo_2026') || !!comboPermanentDiscount(ents);
       }
       if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
+    }
+
+    /* Ya tiene TODO lo que incluye este plan con un acceso que dura
+       más (pase de temporada o permanente vigente): no se le cobra
+       algo que no le agrega nada. Si solo cubre ALGUNOS productos
+       (tiene mlb_temporada y compra todo_mensual) la compra sigue y
+       grantEntitlement conserva ese pase (coverageBeats). */
+    const yaCubiertos = productsAlreadyCovered(ents, plan);
+    if (yaCubiertos.length && yaCubiertos.length >= productsForPlan(plan).length) {
+      return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
     }
 
     const p = { name: PLAN_NAMES[plan], price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase() };
@@ -159,7 +184,6 @@ module.exports = async function handler(req, res) {
     let permDisc = null;
     let upgrade = null;
     if (FULL_PASS_PLANS.includes(plan)) {
-      const ents = await getEntitlements(user.id, user.email);
       const up = monthlyUpgradeFor(ents);
       if (up && up.target === plan) {
         upgrade = up;

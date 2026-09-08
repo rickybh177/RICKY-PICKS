@@ -4,14 +4,36 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, comboPermanentDiscount, monthlyUpgradeFor, FULL_PASS_PLANS } = require('../lib/plans');
-const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
+const { PLANS, isSubscription, isUpcoming, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { DISCOUNTS } = require('../lib/discounts');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
+
+/* A qué página regresa el cliente después de pagar: cada producto a
+   SU modelo. Regresa la ruta relativa al dominio, que puede traer su
+   propio query (Europa: /europa.html?liga=<liga>) — por eso quien la
+   use debe pegar los parámetros de pago con `sep`, nunca con "?".
+     mlb_*   -> mlb.html            nfl_*   -> nfl.html
+     mx_* / combo_* -> mx.html      epl_/laliga_/bundesliga_ -> europa.html?liga=<liga>
+     europa_* -> europa.html?liga=epl (la primera de las tres)
+     todo_*  -> mis-modelos.html (seis modelos: que elija)
+     Mundial -> mis-modelos.html */
+function destForPlan(planId) {
+  const p = String(planId || '');
+  if (p.startsWith('mlb_') || p === 'circulo_fundador') return 'mlb.html';
+  if (p.startsWith('nfl_')) return 'nfl.html';
+  if (p.startsWith('mx_') || p.startsWith('combo_')) return 'mx.html';
+  if (p.startsWith('epl_')) return 'europa.html?liga=epl';
+  if (p.startsWith('laliga_')) return 'europa.html?liga=laliga';
+  if (p.startsWith('bundesliga_')) return 'europa.html?liga=bundesliga';
+  if (p.startsWith('europa_')) return 'europa.html?liga=epl';
+  return 'mis-modelos.html';
+}
+const sep = dest => (dest.includes('?') ? '&' : '?');
 
 /* Dominio del sitio: PRIMERO el host real de la petición (igual que
    stripe-create) y la env como respaldo. Lección del 25-jul-2026:
@@ -53,18 +75,36 @@ module.exports = async function handler(req, res) {
   if (!plan || !(plan.price > 0)) {
     return res.status(400).json({ error: 'Plan no válido.' });
   }
+  /* Plan cableado pero todavía no a la venta (Europa en beta privada):
+     se rechaza ANTES de tocar Mercado Pago, sin excepciones. */
+  if (isUpcoming(planId)) {
+    return res.status(400).json({ error: 'Ese plan todavía no está a la venta.' });
+  }
+  /* Accesos actuales de ESTE usuario (filas expandidas por producto):
+     deciden la excepción de los retirados, el candado de "ya lo
+     tienes" y los precios especiales. Nunca lo que diga el navegador. */
+  const ents = await getEntitlements(user.id, user.email);
+
   /* Un plan retirado no se vende — con UNA excepción: combo_2026 sigue
      comprable para quien tiene una oferta prometida vigente (upgrade
-     $199 de los mensuales legado o $799 con un modelo completo pagado).
-     Se verifica contra los entitlements de ESTE usuario. */
+     $199 de los mensuales legado o $799 con un modelo completo pagado). */
   if (plan.retired) {
     let permitido = false;
     if (planId === 'combo_2026') {
-      const entsRet = await getEntitlements(user.id, user.email);
-      const upRet = monthlyUpgradeFor(entsRet);
-      permitido = (upRet && upRet.target === 'combo_2026') || !!comboPermanentDiscount(entsRet);
+      const upRet = monthlyUpgradeFor(ents);
+      permitido = (upRet && upRet.target === 'combo_2026') || !!comboPermanentDiscount(ents);
     }
     if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
+  }
+
+  /* Ya tiene TODO lo que incluye este plan con un acceso que dura más
+     (pase de temporada o permanente vigente): no se le cobra algo que
+     no le agrega nada. Si solo cubre ALGUNOS productos (tiene
+     mlb_temporada y compra todo_mensual) la compra sigue y
+     grantEntitlement conserva ese pase (coverageBeats). */
+  const yaCubiertos = productsAlreadyCovered(ents, planId);
+  if (yaCubiertos.length && yaCubiertos.length >= productsForPlan(planId).length) {
+    return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
@@ -77,7 +117,6 @@ module.exports = async function handler(req, res) {
         al pagar (monthlyUpgradeFor).
      2) Combo con UN modelo completo pagado: $799. */
   if (FULL_PASS_PLANS.includes(planId)) {
-    const ents = await getEntitlements(user.id, user.email);
     const up = monthlyUpgradeFor(ents);
     if (up && up.target === planId) {
       finalPrice = up.price;
@@ -106,9 +145,10 @@ module.exports = async function handler(req, res) {
       // descuento" en un preapproval. El código sí funciona con tarjeta.
       return res.status(400).json({ error: 'Ese código de descuento solo aplica pagando con tarjeta.' });
     }
-    const subDest = planId.startsWith('nfl_') ? 'nfl.html'
-      : (planId === 'mlb_fundador' || planId === 'circulo_fundador') ? 'mlb.html'
-      : 'mx.html';
+    /* Misma ruta de regreso que el pago único (destForPlan). Antes el
+       mensual de MLB caía en mx.html salvo el fundador; ahora cada
+       producto vuelve a su modelo, Europa incluida. */
+    const subDest = destForPlan(planId);
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',
@@ -123,7 +163,7 @@ module.exports = async function handler(req, res) {
             transaction_amount: plan.price,
             currency_id: plan.currency,
           },
-          back_url: `${base}/${subDest}?pago=ok`,
+          back_url: `${base}/${subDest}${sep(subDest)}pago=ok`,
           status: 'pending',
         }),
       });
@@ -138,13 +178,11 @@ module.exports = async function handler(req, res) {
       return res.status(502).json({ error: 'No se pudo conectar con el servidor de pagos. Intenta de nuevo.' });
     }
   }
-  // Al volver del pago, cada producto regresa a SU modelo:
-  // mlb_* -> /mlb.html, nfl_* -> /nfl.html, mx_*/combo_* -> /mx.html,
-  // Mundial -> /mis-modelos.html
-  const dest = plan.id.startsWith('mlb_') ? 'mlb.html'
-    : plan.id.startsWith('nfl_') ? 'nfl.html'
-    : (plan.id.startsWith('mx_') || plan.id.startsWith('combo_')) ? 'mx.html'
-    : 'mis-modelos.html';
+  // Al volver del pago, cada producto regresa a SU modelo (ver
+  // destForPlan arriba). `dest` puede traer query propio (Europa), por
+  // eso los parámetros de pago se pegan con sep(dest).
+  const dest = destForPlan(plan.id);
+  const q = sep(dest);
   const preference = {
     items: [{
       id: plan.id,
@@ -160,8 +198,8 @@ module.exports = async function handler(req, res) {
     back_urls: {
       // `plan` viaja de vuelta para que el Pixel de Meta pueda
       // reportar la compra (public/meta-purchase.js).
-      success: `${base}/${dest}?pago=ok&plan=${plan.id}&val=${finalPrice}`,
-      pending: `${base}/${dest}?pago=pendiente`,
+      success: `${base}/${dest}${q}pago=ok&plan=${plan.id}&val=${finalPrice}`,
+      pending: `${base}/${dest}${q}pago=pendiente`,
       failure: `${base}/checkout.html?plan=${plan.id}&pago=error`,
     },
     // auto_return solo funciona con URLs HTTPS públicas (no localhost)

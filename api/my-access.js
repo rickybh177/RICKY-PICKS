@@ -1,11 +1,11 @@
 /* ============================================================
    GET /api/my-access
    Requiere sesión. Regresa qué productos tiene activos el usuario
-   (Mundial y/o MLB) para poder mostrar el switcher entre "Mis
-   modelos" (Mundial) y "Modelo MLB" cuando tiene ambos.
+   (Mundial, MLB, Liga MX, NFL y las tres ligas de Europa) para que
+   "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, EURO_PRODUCTS } = require('../lib/plans');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -28,6 +28,10 @@ module.exports = async function handler(req, res) {
     const mlb = ents.find(e => e.product === 'mlb' && e.active);
     const mx = ents.find(e => e.product === 'mx' && e.active);
     const nfl = ents.find(e => e.product === 'nfl' && e.active);
+    /* Europa: una liga por producto (epl / laliga / bundesliga). Un
+       combo europeo o "todo" ya viene expandido en una fila por liga. */
+    const euro = {};
+    for (const p of EURO_PRODUCTS) euro[p] = ents.find(e => e.product === p && e.active) || null;
     const upgrade = monthlyUpgradeFor(ents);
     const permDisc = comboPermanentDiscount(ents);
     res.setHeader('Cache-Control', 'no-store');
@@ -40,6 +44,12 @@ module.exports = async function handler(req, res) {
       mx_plan: mx ? mx.plan : null,
       nfl: !!nfl,
       nfl_plan: nfl ? nfl.plan : null,
+      epl: !!euro.epl,
+      epl_plan: euro.epl ? euro.epl.plan : null,
+      laliga: !!euro.laliga,
+      laliga_plan: euro.laliga ? euro.laliga.plan : null,
+      bundesliga: !!euro.bundesliga,
+      bundesliga_plan: euro.bundesliga ? euro.bundesliga.plan : null,
       /* Precio del Combo 2026 para ESTE usuario (el front solo lo
          pinta — el cobro real lo decide el servidor de nuevo):
          $199 si su mensualidad hace upgrade al combo, $799 con un

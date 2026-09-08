@@ -21,7 +21,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <script src="/meta-purchase.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doctor Liga MX — RICKY·PICKS · El Apertura 2026, marcador por marcador</title>
+<!-- título y OG se ajustan por liga en JS (?liga=epl|laliga|bundesliga) -->
+<title>Modelos de Europa — RICKY·PICKS · Premier, LaLiga y Bundesliga, marcador por marcador</title>
+<meta property="og:title" id="ogTitle" content="Modelos de Europa — RICKY·PICKS">
+<meta property="og:description" id="ogDesc" content="Premier League, LaLiga y Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,7 +41,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
     --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
     --beta: #7c3aed; --beta-bg: rgba(124,58,237,0.09);
-    --alt: #b8922e; --alt-bg: rgba(229,185,74,0.12);
+    --rest: #b8922e; --rest-bg: rgba(229,185,74,0.12);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -57,17 +61,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--muted); background: var(--g2); padding: 8px 13px; border-radius: 9px; transition: background .15s; white-space: nowrap; }
   .refresh:hover { background: var(--line); color: var(--text); }
 
-  /* h1 accesible pero invisible: el dueño quitó la cabecera, pero la
-     página sigue necesitando un encabezado para lectores de pantalla y
-     para Google (mx.html y mlb.html sí se indexan). */
+  /* h1 accesible pero invisible (misma decisión que mx.html) */
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-  .head { padding: 18px 0 8px; } /* menos aire: la cabecera se quitó */
-  .head .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--beta); margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
-  .head .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--beta); box-shadow: 0 0 8px var(--beta); animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 50% { opacity: 0.35; } }
-  .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.7rem, 6vw, 2.6rem); text-wrap: balance; }
-  .head .lede { color: var(--muted); font-size: 0.96rem; font-weight: 450; margin-top: 12px; max-width: 60ch; }
-  .meta-band { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .head { padding: 18px 0 8px; }
+  .meta-band { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .meta-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g1); border: 1px solid var(--line); padding: 6px 11px; border-radius: 8px; }
 
   .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
@@ -81,7 +78,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .badge { border-radius: 6px; padding: 3px 8px; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
   .badge.live { background: var(--skip-bg); color: var(--skip); }
   .badge.final { background: var(--g2); color: var(--muted); }
-  .badge.alt { background: var(--alt-bg); color: var(--alt); }
+  .badge.rest { background: var(--rest-bg); color: var(--rest); }
   .badge.noodds { background: var(--blue-tint); color: var(--blue-deep); }
 
   .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
@@ -158,28 +155,28 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .lockbox .go { width: 100%; background: var(--blue-deep); color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; transition: background .15s; }
   .lockbox .go:hover { background: var(--blue); }
   .lockbox .err { color: var(--skip); font-size: 0.78rem; margin-top: 10px; min-height: 1.2em; }
+  .lockbox .beta-pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--beta); background: var(--beta-bg); border: 1px solid rgba(124,58,237,0.4); border-radius: 6px; padding: 4px 10px; margin-bottom: 12px; }
+  .lockbox .alt-links { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .lockbox .alt-links a { font-size: 0.82rem; color: var(--muted); }
 
-  /* toggle entre modelos (mismo patrón que mlb.html / mis-modelos) */
+  /* toggle entre modelos (mismo patrón que mx.html / mlb.html) */
   .model-toggle { display: inline-flex; flex-wrap: wrap; background: var(--g2); border: 1px solid var(--line); border-radius: 22px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
   .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
   .model-toggle .mt-opt:hover { color: var(--text); }
   .model-toggle .mt-opt.active { background: var(--g0); color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
   @media (max-width: 620px) {
     .model-toggle { display: flex; width: 100%; }
-    .model-toggle .mt-opt { flex: 1 1 30%; padding: 10px 6px; font-size: 0.8rem; }
+    .model-toggle .mt-opt { flex: 1 1 30%; padding: 10px 6px; font-size: 0.78rem; }
   }
+  /* sub-toggle de liga: Premier / LaLiga / Bundesliga */
 
-  /* barra de invitado (freemium) */
-  /* Banner de planes: el mismo que MLB y NFL. Liga MX no lo tenía —
-     el invitado solo veía la barra de arriba, sin precios ni CTA de
-     compra al pie. Los importes salen de lib/plans.js (mx_semana 249,
-     mx_apertura 699); si cambian allá, hay que actualizarlos aquí. */
+  /* barra de invitado (freemium) + banner de planes (precios de /api/plans-public) */
   .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
   .plans-banner.on { display: block; }
   .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
   .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
   .plans-banner .txt small { display: block; font-weight: 450; color: var(--muted); font-size: 0.74rem; }
-  .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; }
+  .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; flex-wrap: wrap; justify-content: flex-end; }
   .plans-banner .acts a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
   .plans-banner a.day { background: var(--g2); color: var(--text); border: 1px solid var(--line-2); }
   .plans-banner a.founder { background: var(--beta); color: #fff; }
@@ -221,7 +218,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <a class="logo" href="/">
       <span class="mark">R·P</span>
-      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">LIGA MX</span>
+      <span class="word">RICKY<span style="color:var(--blue)">·</span>PICKS</span><span class="tag">EUROPA</span>
     </a>
     <div class="jorn" id="jornChip" style="display:none">—</div>
     <div class="nav-actions">
@@ -230,44 +227,42 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </nav>
 
-<!-- candado admin -->
+<!-- candado: cuenta sin acceso / beta privada -->
 <div class="lockwrap" id="lockWrap" style="display:none">
   <div class="lockbox">
-    <div class="ic">🔒</div>
-    <h2>Entra a tu cuenta</h2>
-    <p>Inicia sesión para activar tu acceso al modelo Liga MX.</p>
+    <div class="beta-pill" id="lkPill" style="display:none">Beta privada</div>
+    <div class="ic" id="lkIcon">🔒</div>
+    <h2 id="lkTitle">Entra a tu cuenta</h2>
+    <p id="lkText">Inicia sesión para activar tu acceso al modelo.</p>
     <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
     <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="go" id="lkGo">Entrar</button>
     <div class="err" id="lkErr"></div>
     <button id="lkGuest" style="margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.82rem;text-decoration:underline;cursor:pointer">Continuar como invitado — ver el pick gratis</button>
+    <div class="alt-links" id="lkAlt" style="display:none">
+      <a href="/mx.html">Mientras tanto: el modelo de Liga MX</a>
+      <a href="/">Volver al inicio</a>
+    </div>
   </div>
 </div>
 
 <div id="appWrap" style="display:none">
 <header class="head">
   <div class="wrap">
-    <h1 class="sr-only">Cada partido, resuelto marcador por marcador.</h1>
+    <h1 class="sr-only" id="pageH1">Fútbol de Europa, resuelto marcador por marcador.</h1>
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
-      <span class="mt-opt active" role="tab" aria-selected="true">⚽ Liga MX</span>
-      <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
-      <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="epl" href="/europa.html?liga=epl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="laliga" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="bundesliga" href="/europa.html?liga=bundesliga">🇩🇪 Bundesliga</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="ucl" href="/europa.html?liga=ucl">🏆 Champions</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
     </div>
-    <!-- Upgrade para el combo legado (MLB+Liga MX): agregar NFL -->
-    <div id="comboUpgrade" style="display:none;position:relative;margin:14px 0 0;background:linear-gradient(135deg,#12203f,#0e1729);color:#e9edf4;border:1px solid rgba(120,160,255,0.3);border-radius:14px;padding:18px 20px">
-      <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem;background:none;border:none;cursor:pointer">✕</button>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8fb0f5;margin-bottom:8px">Tu combo puede crecer</div>
-      <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Agrega la NFL a tu combo 🏈</div>
-      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> con <strong style="color:#fff">un solo pago de <span class="combo-px">$1,199</span></strong> y llévate los 3 modelos, NFL incluida. Si tienes una suscripción mensual, cancélala en «Administrar suscripción» para no pagar doble.</div>
-      <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — <span class="combo-px">$1,199</span> pago único</a>
-    </div>
+    <div class="meta-band" id="metaBand"></div>
     <div class="guest-bar" id="guestBar" style="display:none">
       <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
-      <a class="gb-cta" href="/producto.html?m=mx">Desbloquear la jornada</a>
+      <a class="gb-cta" href="/producto.html?m=europa">Desbloquear la jornada</a>
       <a class="gb-login" href="#" id="guestLogin">¿Ya tienes acceso? Entrar</a>
     </div>
   </div>
@@ -279,13 +274,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </main>
 
+<!-- Banner de planes: se arma con /api/plans-public (nunca precios a
+     mano). Si la liga aún no tiene planes a la venta, no se muestra. -->
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Suscríbete por $349 al mes — o el Apertura entero en un solo pago.</small></div>
-    <div class="acts">
-      <a class="day" href="/checkout.html?plan=mx_mensual">Mensual $349</a>
-      <a class="founder" href="/checkout.html?plan=mx_apertura">Apertura <s style="opacity:0.55;font-weight:500">$2,094</s> $1,199</a>
-    </div>
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small id="plansSub"></small></div>
+    <div class="acts" id="plansActs"></div>
   </div>
 </div>
 
@@ -307,17 +301,52 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
 const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+
+/* ---- liga activa (?liga=epl|laliga|bundesliga; Premier por defecto) ---- */
+const LIGAS = {
+  epl: { nombre: 'Premier League', corto: 'Premier', pais: 'Inglaterra', bandera: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  laliga: { nombre: 'LaLiga', corto: 'LaLiga', pais: 'España', bandera: '🇪🇸' },
+  bundesliga: { nombre: 'Bundesliga', corto: 'Bundesliga', pais: 'Alemania', bandera: '🇩🇪' },
+  ucl: { nombre: 'Champions League', corto: 'Champions', pais: 'Europa', bandera: '🏆' },
+};
+const _params = new URLSearchParams(location.search);
+const LIGA = LIGAS[_params.get('liga')] ? _params.get('liga') : 'epl';
+const L = LIGAS[LIGA];
+const PAGE_URL = '/europa.html?liga=' + LIGA;
+if (_params.get('liga') !== LIGA) {
+  // liga inválida o ausente: se normaliza la URL sin recargar
+  _params.set('liga', LIGA);
+  history.replaceState(null, '', '/europa.html?' + _params.toString());
+}
+document.title = 'Modelo ' + L.nombre + ' — RICKY·PICKS · La temporada 2026-27, marcador por marcador';
+$('ogTitle').setAttribute('content', 'Modelo ' + L.nombre + ' — RICKY·PICKS');
+$('ogDesc').setAttribute('content', L.nombre + ' partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.');
+$('pageH1').textContent = L.nombre + ', resuelta marcador por marcador.';
+// cada liga es una pestaña de la barra de modelos (decisión del dueño, 8-sep): la activa se marca aquí
+document.querySelectorAll('.model-toggle a[data-liga]').forEach(a => {
+  const on = a.dataset.liga === LIGA;
+  a.classList.toggle('active', on);
+  a.setAttribute('aria-selected', on ? 'true' : 'false');
+});
+
 let currentAccess = 'full';
 let featuredId = null;
 let gamesById = {};
-/* momios manuales guardados por partido (persisten entre recargas) */
+/* Parámetros del EV que manda el servidor (ev_params): el encogimiento
+   hacia el mercado y las barras BET/MAYBE. Se replican aquí para
+   recalcular con los momios del usuario sin copiar constantes a mano;
+   el respaldo solo aplica si un payload viejo no los trae. */
+let EVP = { blend: 0.22, x2: { bet: 0.03, maybe: 0.01, floor: 0.2 }, total: { bet: 0.025, maybe: 0.01, floor: 0.3 }, btts: { bet: 0.025, maybe: 0.01, floor: 0.2 } };
+/* momios manuales guardados por partido, por liga (persisten entre recargas) */
+const UO_KEY = 'rp_euro_' + LIGA + '_odds';
 let userOdds = {};
-try { userOdds = JSON.parse(localStorage.getItem('rp_mx_odds') || '{}') || {}; } catch (e) {}
+try { userOdds = JSON.parse(localStorage.getItem(UO_KEY) || '{}') || {}; } catch (e) {}
 
 function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
 function am(v) { return v == null ? '—' : (v > 0 ? '+' + v : String(v)); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function money(n) { return '$' + Number(n).toLocaleString('en-US'); }
 
 async function authHeader() {
   if (!sb) return {};
@@ -328,62 +357,97 @@ async function authHeader() {
   } catch (e) { return {}; }
 }
 
-/* Precio del Combo Total para ESTE cliente: quien tiene un modelo
-   permanente paga $799 (lo decide el servidor; aquí solo se refleja
-   para que ningún banner anuncie un precio distinto al que se cobra). */
-async function syncComboPrice() {
-  const spots = document.querySelectorAll('.combo-px');
-  if (!spots.length) return;
-  const headers = await authHeader();
-  if (!headers.Authorization) return;
+/* ---- banner de planes: solo con lo que /api/plans-public trae ----
+   Mensual de ESTA liga + Europa (las 3 ligas) + temporada completa.
+   Si ninguno está a la venta (beta / próximamente), el banner no
+   existe: nunca un botón hacia un plan que el checkout rechazaría. */
+let plansReady = false;
+async function loadPlans() {
   try {
-    const res = await fetch('/api/my-access', { headers });
-    if (!res.ok) return;
-    const a = await res.json();
-    if (!a.combo_2026_discount) return;
-    const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US');
-    spots.forEach(el => { el.textContent = px; });
-  } catch (e) { /* si falla, se queda el precio de lista */ }
+    const r = await fetch('/api/plans-public', { cache: 'no-store' });
+    if (!r.ok) return;
+    const p = ((await r.json()) || {}).plans || {};
+    const liga = p[LIGA + '_mensual'], eu = p.europa_mensual, tem = p.europa_temporada;
+    const acts = [];
+    if (liga) acts.push('<a class="day" href="/checkout.html?plan=' + esc(liga.id) + '">' + esc(L.corto) + ' ' + money(liga.price) + '/mes</a>');
+    if (eu) acts.push('<a class="day" href="/checkout.html?plan=' + esc(eu.id) + '">Las 3 ligas ' + money(eu.price) + '/mes</a>');
+    if (tem) acts.push('<a class="founder" href="/checkout.html?plan=' + esc(tem.id) + '">Temporada ' + (tem.anchor ? '<s style="opacity:0.55;font-weight:500">' + money(tem.anchor) + '</s> ' : '') + money(tem.price) + '</a>');
+    if (!acts.length) return;
+    const base = liga || eu;
+    $('plansSub').textContent = base
+      ? 'Suscríbete desde ' + money(base.price) + ' al mes' + (tem ? ' — o la temporada 2026-27 entera en un solo pago.' : '.')
+      : 'La temporada 2026-27 entera en un solo pago.';
+    $('plansActs').innerHTML = acts.join('');
+    plansReady = true;
+    $('plansBanner').classList.toggle('on', currentAccess === 'guest');
+  } catch (e) { /* sin catálogo no hay banner */ }
 }
-syncComboPrice();
-if (sb) sb.auth.onAuthStateChange(() => { syncComboPrice(); });
-
 
 async function load(refresh) {
   $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está resolviendo la jornada, marcador por marcador…</div>';
   const q = new URLSearchParams();
+  q.set('liga', LIGA);
   if (refresh) q.set('refresh', '1');
-  // dev: ?as=guest en la URL de la página fuerza la vista de invitado
-  if (new URLSearchParams(location.search).get('as') === 'guest') q.set('as', 'guest');
+  // dev: ?as=guest / ?as=beta en la URL de la página fuerza esa vista
+  const as = _params.get('as');
+  if (as === 'guest' || as === 'beta') q.set('as', as);
   const headers = await authHeader();
   let res;
   try {
-    res = await fetch('/api/mx-picks?' + q.toString(), { headers });
+    res = await fetch('/api/euro-picks?' + q.toString(), { headers });
   } catch (e) { return renderError('Sin conexión con el servidor.'); }
   if (res.status === 403) {
-    // 403 CON sesión iniciada = cuenta válida pero sin acceso a la beta
-    showLock(headers.Authorization ? 'Esta cuenta no tiene acceso a la beta privada.' : '');
+    let body = null;
+    try { body = await res.json(); } catch (e) {}
+    if (body && body.beta) { showBeta(!!headers.Authorization); return; }
+    // 403 CON sesión iniciada = cuenta válida pero sin acceso
+    showLock(headers.Authorization ? 'Esta cuenta no tiene acceso a este modelo.' : '');
     return;
   }
+  if (res.status === 400) return renderError('Esa liga no existe. Elige Premier, LaLiga o Bundesliga arriba.');
   if (!res.ok) return renderError('El modelo no pudo calcular la jornada. Intenta actualizar.');
   const bd = await res.json();
   currentAccess = bd.access || 'full';
+  if (bd.ev_params) EVP = bd.ev_params;
   $('lockWrap').style.display = 'none';
   $('appWrap').style.display = 'block';
   $('jornChip').style.display = 'block';
-  $('jornChip').textContent = 'JORNADA ' + bd.jornada;
+  // copas: el servidor manda la fase ("Jornada 3 de 8", "Octavos de final"…)
+  $('jornChip').textContent = bd.phase_label ? bd.phase_label.toUpperCase() : 'JORNADA ' + bd.jornada;
   $('guestBar').style.display = currentAccess === 'guest' ? 'flex' : 'none';
-  $('plansBanner').classList.toggle('on', currentAccess === 'guest');
+  $('plansBanner').classList.toggle('on', currentAccess === 'guest' && plansReady);
   renderMeta(bd);
   renderBoard(bd);
   return bd;
 }
 
+/* candado normal: cuenta sin acceso (o invitado que quiere entrar) */
 function showLock(msg) {
   $('appWrap').style.display = 'none';
   $('jornChip').style.display = 'none';
   $('lockWrap').style.display = 'block';
+  $('lkPill').style.display = 'none';
+  $('lkAlt').style.display = 'none';
+  $('lkGuest').style.display = '';
+  $('lkIcon').textContent = '🔒';
+  $('lkTitle').textContent = 'Entra a tu cuenta';
+  $('lkText').textContent = 'Inicia sesión para activar tu acceso al modelo ' + L.nombre + '.';
   $('lkErr').textContent = msg || '';
+}
+
+/* beta privada: el modelo existe pero todavía no se abre al público.
+   El admin (o quien esté en la beta) puede entrar con su cuenta. */
+function showBeta(hadSession) {
+  $('appWrap').style.display = 'none';
+  $('jornChip').style.display = 'none';
+  $('lockWrap').style.display = 'block';
+  $('lkPill').style.display = 'inline-block';
+  $('lkAlt').style.display = 'flex';
+  $('lkGuest').style.display = 'none';
+  $('lkIcon').textContent = '🧪';
+  $('lkTitle').textContent = 'Beta privada — muy pronto';
+  $('lkText').textContent = 'El modelo de ' + L.nombre + ' está en pruebas cerradas. Si formas parte de la beta, entra con tu cuenta; si no, muy pronto abrimos.';
+  $('lkErr').textContent = hadSession ? 'Esta cuenta todavía no está en la beta.' : '';
 }
 
 function renderError(msg) {
@@ -395,15 +459,13 @@ function renderError(msg) {
 
 function renderMeta(bd) {
   const chips = [
-    esc(bd.tournament),
-    'Jornada ' + bd.jornada,
+    (bd.league_flag ? bd.league_flag + ' ' : '') + esc(bd.tournament || L.nombre),
+    bd.phase_label || ('Jornada ' + bd.jornada + (bd.rounds ? ' de ' + bd.rounds : '')),
     'Matriz exacta de marcadores',
-    bd.games_learned > 0 ? 'Ratings al día con ' + bd.games_learned + ' juegos del torneo' : 'Ratings base: ' + (bd.league ? bd.league.fit_games : '—') + ' juegos 2024-26',
-    'Momios: ' + esc(bd.odds_source || '—'),
-    'Ajuste por altitud de la sede',
+    bd.games_learned > 0 ? 'Ratings al día con ' + bd.games_learned + ' juegos de la temporada' : 'Ratings base: ' + (bd.league ? bd.league.fit_games : '—') + ' juegos 2022-26',
+    'Momios: ' + esc(bd.odds_source || 'aún sin consenso'),
   ];
-  const mb = $('metaBand'); // la cabecera se quitó: el contenedor puede no existir
-  if (mb) mb.innerHTML = chips.map(c => '<span class="meta-chip">' + c + '</span>').join('');
+  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + c + '</span>').join('');
 }
 
 function dayKey(iso) {
@@ -420,16 +482,13 @@ function renderBoard(bd) {
   const games = (bd.games || []).filter(g =>
     !g.error && (g.state !== 'post' || g.id === featuredId));
   if (!games.length) {
-    $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La Liga MX descansa. Vuelve cerca de la próxima jornada.</div>';
+    $('games').innerHTML = '<div class="state"><h2>Sin partidos en la ventana</h2>La ' + esc(L.nombre) + ' descansa (fecha FIFA o receso). Vuelve cerca de la próxima jornada.</div>';
     return;
   }
-  // agrupar por día requiere orden cronológico (el API manda los
-  // terminados al final)
+  // agrupar por día requiere orden cronológico (el API manda los terminados al final)
   games.sort((a, b) => new Date(a.date) - new Date(b.date));
   /* El pick gratis va SIEMPRE hasta arriba, con su propio encabezado de
-     día: la tarjeta solo muestra la HORA, así que sin encabezado se
-     quedaría sin fecha. El resto sigue agrupado por día, del partido
-     más próximo al más lejano. */
+     día; el resto agrupado por día, del más próximo al más lejano. */
   const destacado = games.find(g => g.id === featuredId);
   const resto = destacado ? games.filter(g => g !== destacado) : games;
   let html = '', lastDay = '', i = 0;
@@ -454,9 +513,9 @@ function metaRow(g) {
   if (currentAccess === 'guest' && g.id === featuredId && !g.locked) badges += '<span class="badge free">Pick gratis</span>';
   if (live) badges += '<span class="badge live">En vivo</span>';
   if (final) badges += '<span class="badge final">Terminó</span>';
-  if (g.altitude_m >= 700) badges += '<span class="badge alt">+' + g.altitude_m.toLocaleString() + ' m para la visita</span>';
-  if (!g.market_source && !final && !live) badges += '<span class="badge noodds">Aún sin momios</span>';
-  return '<div class="card-meta"><span>' + time.toUpperCase() + '</span><span class="sep">·</span>' +
+  if (g.rest && (g.rest.home || g.rest.away) && !final) badges += '<span class="badge rest">Descanso corto</span>';
+  if (!g.market_source && !final && !live && !g.locked) badges += '<span class="badge noodds">Aún sin momios</span>';
+  return '<div class="card-meta"><span>' + time.toUpperCase() + ' CDMX</span><span class="sep">·</span>' +
     '<span>' + esc((g.venue || '').toUpperCase()) + '</span><span style="flex:1"></span>' + badges + '</div>';
 }
 
@@ -476,7 +535,7 @@ function teamRows(g) {
     (t.record ? '<span class="team-sub mono">' + esc(t.record) + ' (G-E-P)</span>' : '') + '</div>' +
     '<div class="team-score">' + (final && score != null ? score : '') + '</div>' +
     '</div>';
-  // convención Liga MX: el LOCAL va arriba (a diferencia de MLB/NFL)
+  // convención de fútbol: el LOCAL va arriba (igual que Liga MX)
   return row(g.home, final ? g.score.home : null) + row(g.away, final ? g.score.away : null);
 }
 
@@ -491,7 +550,7 @@ function gameCard(g, i) {
       '<div class="over">' +
       '<div class="lk-t">4 veredictos listos para este partido</div>' +
       '<div class="lk-s">1X2 · DOBLE OPORTUNIDAD · GOLES · AMBOS ANOTAN</div>' +
-      '<a href="/producto.html?m=mx">Desbloquear la jornada</a>' +
+      '<a href="/producto.html?m=europa">Desbloquear la jornada</a>' +
       '</div></div></div>';
   }
   const analysis = g.analysis
@@ -623,19 +682,21 @@ function distChart(m, g) {
 
 /* ============================================================
    MOMIOS MANUALES DEL USUARIO — recalcula el valor y los
-   veredictos contra los momios de SU casa. Réplica exacta de la
-   lógica de EV del servidor (solo usa probabilidades que ya son
-   públicas en el payload; los coeficientes nunca viajan).
+   veredictos contra los momios de SU casa. Réplica de la lógica de
+   EV del servidor con los parámetros que él mismo manda (ev_params:
+   encogimiento hacia el mercado y barras); solo usa probabilidades
+   que ya son públicas en el payload — los coeficientes nunca viajan.
    ============================================================ */
 const amProb = a => { const n = Number(String(a).replace('+', '')); if (!isFinite(n) || n === 0) return null; return n > 0 ? 100 / (n + 100) : -n / (-n + 100); };
 const parseAm = raw => { if (raw == null) return null; const s = String(raw).trim().replace('+', ''); if (!s) return null; const n = Number(s); return (isFinite(n) && Math.abs(n) >= 100) ? n : null; };
 function devigN(arr) { const c = arr.map(amProb); if (c.some(x => x == null)) return arr.map(() => null); const s = c.reduce((a, b) => a + b, 0); return s > 0 ? c.map(x => x / s) : c; }
-/* mismo blend y barras que el servidor (22% mercado; bet 3%/2.5%) */
-function evOf(p, amOdd, pMkt, floor, betBar, maybeBar) {
+/* mismo blend y barras que el servidor (bars = EVP.x2 / EVP.total / EVP.btts) */
+function evOf(p, amOdd, pMkt, bars) {
   const imp = amProb(amOdd); if (imp == null || p == null) return null;
-  const pb = pMkt != null ? 0.78 * p + 0.22 * pMkt : p;
+  const blend = EVP.blend != null ? EVP.blend : 0.22;
+  const pb = pMkt != null ? (1 - blend) * p + blend * pMkt : p;
   const ev = pb * (1 / imp) - 1;
-  const verdict = (pb >= floor && ev >= betBar) ? 'bet' : (pb >= floor && ev >= maybeBar) ? 'maybe' : 'skip';
+  const verdict = (pb >= bars.floor && ev >= bars.bet) ? 'bet' : (pb >= bars.floor && ev >= bars.maybe) ? 'maybe' : 'skip';
   return { ev: +ev.toFixed(3), verdict };
 }
 function readUoInputs(gid) {
@@ -658,7 +719,7 @@ function recalcUserVerdicts(gid, o) {
       { label: 'Empate', p: m.moneyline.draw, am: o.mld, mk: dv[1], txt: '1X2 empate' },
       { label: 'Gana ' + g.away.name, p: m.moneyline.away, am: o.mla, mk: dv[2], txt: '1X2 ' + g.away.abbr },
     ];
-    opts.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.2, 0.03, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+    opts.forEach(x => { const r = evOf(x.p, x.am, x.mk, EVP.x2); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
     const value = opts.filter(x => x.verdict !== 'skip').sort((a, b) => b.ev - a.ev)[0];
     const best = value || opts.slice().sort((a, b) => b.p - a.p)[0];
     repl['1x2'] = { label: best.label, prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: best.txt + ' · tu momio ' + fmtAm(best.am) };
@@ -672,7 +733,7 @@ function recalcUserVerdicts(gid, o) {
         { side: 'Más', p: t.over, am: o.ovr, mk: dv[0], pre: 'O ' },
         { side: 'Menos', p: 1 - t.over, am: o.und, mk: dv[1], pre: 'U ' },
       ];
-      sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.3, 0.025, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+      sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, EVP.total); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
       const best = sides.slice().sort((a, b) => ((b.ev == null ? -9 : b.ev) - (a.ev == null ? -9 : a.ev)))[0];
       repl['total'] = { label: best.side + ' de ' + o.line + ' goles', prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: best.pre + o.line + ' · tu momio ' + fmtAm(best.am) };
     }
@@ -684,7 +745,7 @@ function recalcUserVerdicts(gid, o) {
       { side: 'SÍ', p: m.btts.yes, am: o.btsy, mk: dv[0] },
       { side: 'NO', p: m.btts.no, am: o.btsn, mk: dv[1] },
     ];
-    sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, 0.2, 0.025, 0.01); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
+    sides.forEach(x => { const r = evOf(x.p, x.am, x.mk, EVP.btts); x.ev = r ? r.ev : null; x.verdict = r ? r.verdict : 'skip'; });
     const best = sides.slice().sort((a, b) => ((b.ev == null ? -9 : b.ev) - (a.ev == null ? -9 : a.ev)))[0];
     repl['btts'] = { label: 'Ambos equipos anotan: ' + best.side, prob: best.p, edge: best.ev, verdict: best.verdict, line_txt: 'BTTS · tu momio ' + fmtAm(best.am) };
   }
@@ -693,7 +754,7 @@ function recalcUserVerdicts(gid, o) {
   return (g.verdicts || []).map(v => repl[v.market] || v);
 }
 
-function saveUserOdds() { try { localStorage.setItem('rp_mx_odds', JSON.stringify(userOdds)); } catch (e) {} }
+function saveUserOdds() { try { localStorage.setItem(UO_KEY, JSON.stringify(userOdds)); } catch (e) {} }
 
 function applyUserOdds(gid) {
   const o = readUoInputs(gid);
@@ -731,6 +792,7 @@ $('games').addEventListener('click', e => {
 /* ---- login (candado) ---- */
 $('lkGo').addEventListener('click', async () => {
   $('lkErr').textContent = '';
+  if (!sb) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; return; }
   try {
     const { error } = await sb.auth.signInWithPassword({
       email: $('lkEmail').value.trim(), password: $('lkPass').value,
@@ -743,41 +805,26 @@ $('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').
 
 $('refreshBtn').addEventListener('click', () => load(true));
 
-/* Combo legado (MLB+MX): ofrecer el upgrade al Combo Total. */
-(async () => {
-  if (!sb) return;
-  try {
-    const { data } = await sb.auth.getSession();
-    if (!data || !data.session) return;
-    if (sessionStorage.getItem('comboUpgradeDismissed')) return;
-    const q = await sb.from('entitlements').select('plan,active').eq('active', true);
-    if ((q.data || []).some(r => r.active && r.plan === 'combo_fundador')) {
-      $('comboUpgrade').style.display = 'block';
-      $('comboUpgradeClose').addEventListener('click', () => {
-        sessionStorage.setItem('comboUpgradeDismissed', '1');
-        $('comboUpgrade').style.display = 'none';
-      });
-    }
-  } catch (e) {}
-})();
 $('guestLogin').addEventListener('click', e => { e.preventDefault(); showLock(''); });
 /* Volver al pick gratis sin registrarse: el candado no debe ser
-   una calle sin salida. */
+   una calle sin salida (solo cuando la liga ya es pública). */
 $('lkGuest').addEventListener('click', () => {
   $('lockWrap').style.display = 'none';
   $('appWrap').style.display = 'block';
   $('jornChip').style.display = '';
 });
 
+loadPlans();
+
 /* Al volver del pago (?pago=ok): el webhook puede tardar unos
-   segundos en otorgar el acceso — reintentamos hasta verlo. */
-const _params = new URLSearchParams(location.search);
+   segundos en otorgar el acceso — reintentamos hasta verlo. La URL
+   limpia conserva la liga. */
 if (_params.get('pago') === 'ok') {
   $('guestMsg').innerHTML = 'Pago recibido — <strong>activando tu acceso…</strong>';
   let _tries = 0;
   (async function poll() {
     const bd = await load();
-    if (bd && bd.access === 'full') { history.replaceState(null, '', '/mx.html'); return; }
+    if (bd && bd.access === 'full') { history.replaceState(null, '', PAGE_URL); return; }
     if (++_tries < 6) setTimeout(poll, 1800);
     else $('guestMsg').innerHTML = 'Tu pago se está procesando. Si en unos minutos no ves tu acceso, recarga la página o escríbenos.';
   })();

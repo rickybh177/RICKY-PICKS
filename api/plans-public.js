@@ -11,7 +11,10 @@
    de aquí, no copiar números.
 
    No expone nada sensible: solo id, título, precio, moneda y vigencia
-   de planes comprables (sin `retired` y con precio > 0).
+   de planes comprables (sin `retired`, sin `upcoming` y con precio
+   > 0). Un plan `upcoming` (cableado pero todavía no a la venta —
+   Europa en beta privada) tampoco sale: el front deduce "próximamente"
+   de su ausencia, nunca de un precio que no se puede cobrar.
    ============================================================ */
 const { PLANS } = require('../lib/plans');
 
@@ -24,7 +27,7 @@ module.exports = async function handler(req, res) {
 
   const out = {};
   for (const [id, p] of Object.entries(PLANS)) {
-    if (!p || p.retired || !(p.price > 0)) continue;
+    if (!p || p.retired || p.upcoming || !(p.price > 0)) continue;
     out[id] = {
       id,
       title: p.title,

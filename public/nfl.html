@@ -126,13 +126,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
   .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
   /* ---- TOGGLE DE MODELO (NFL | MLB | Liga MX) ---- */
-  .model-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle { display: inline-flex; flex-wrap: wrap; background: var(--g2); border: 1px solid var(--line); border-radius: 22px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
   .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
   .model-toggle .mt-opt:hover { color: var(--text); }
   .model-toggle .mt-opt.active { background: var(--g0); color: var(--beta); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
   @media (max-width: 620px) {
-    .model-toggle { display: flex; width: 100%; max-width: 380px; }
-    .model-toggle .mt-opt { flex: 1; padding: 10px 6px; font-size: 0.8rem; }
+    .model-toggle { display: flex; width: 100%; }
+    .model-toggle .mt-opt { flex: 1 1 30%; padding: 10px 6px; font-size: 0.8rem; }
   }
 
   /* ---- candado por juego (invitado) ---- */
@@ -216,6 +216,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <span class="mt-opt active" role="tab" aria-selected="true">🏈 NFL</span>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="epl" href="/europa.html?liga=epl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="laliga" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="bundesliga" href="/europa.html?liga=bundesliga">🇩🇪 Bundesliga</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="ucl" href="/europa.html?liga=ucl">🏆 Champions</a>
     </div>
     <div id="disclose"></div>
   </div>
