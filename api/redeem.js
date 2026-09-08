@@ -1,7 +1,8 @@
 /* POST /api/redeem  { code }
    Canjea un código de acceso (gratis) o valida un código de descuento. */
 const { getUserFromToken, grantEntitlement } = require('../lib/supabaseAdmin');
-const { DISCOUNTS } = require('../lib/discounts');
+const { DISCOUNTS, priceWith, labelWith } = require('../lib/discounts');
+const { PLANS } = require('../lib/plans');
 
 // Códigos válidos: código -> plan que otorga
 const CODES = {
@@ -56,7 +57,15 @@ module.exports = async function handler(req, res) {
     // ¿Es código de descuento?
     const discount = DISCOUNTS[code];
     if (discount) {
-      return res.status(200).json({ ok: true, type: 'discount', plan: discount.plan, pct: discount.pct });
+      /* El precio final lo calcula el servidor (lib/plans.js es la
+         fuente de verdad); el checkout solo lo pinta. */
+      const lista = (PLANS[discount.plan] || {}).price;
+      return res.status(200).json({
+        ok: true, type: 'discount', plan: discount.plan,
+        pct: discount.pct || null,
+        price: lista != null ? priceWith({ ...discount, code }, lista) : null,
+        label: labelWith({ ...discount, code }),
+      });
     }
 
     const plan = CODES[code];

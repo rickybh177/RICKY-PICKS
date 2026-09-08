@@ -1081,11 +1081,17 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
       }
       _activeDiscount = { code, pct: data.pct, plan: data.plan };
       const original = PLANS[planId].price;
-      const numPrice = parseInt(original.replace('$',''));
-      const discounted = Math.round(numPrice * (1 - data.pct / 100));
+      /* El precio con descuento lo manda el SERVIDOR (data.price): aquí
+         solo se pinta. El porcentaje es el respaldo para los códigos
+         viejos que no traen precio. */
+      const numPrice = parseInt(original.replace(/[^0-9]/g, ''), 10);
+      const discounted = data.price != null ? data.price
+        : Math.round(numPrice * (1 - data.pct / 100));
       document.getElementById('summaryPrice').innerHTML =
-        `<span style="text-decoration:line-through;color:var(--muted);font-size:0.85rem">${original} MXN</span> <span style="color:#16a34a">$${discounted} MXN</span>`;
-      msg.textContent = `✓ ${data.pct}% de descuento aplicado.`;
+        `<span style="text-decoration:line-through;color:var(--muted);font-size:0.85rem">${original} MXN</span> <span style="color:#16a34a">$${discounted.toLocaleString('en-US')} MXN</span>`;
+      msg.textContent = data.pct != null
+        ? `✓ ${data.pct}% de descuento aplicado.`
+        : `✓ Código aplicado: pagas $${discounted.toLocaleString('en-US')} MXN.`;
       msg.className = 'msg ok';
       btn.textContent = 'Aplicado';
     } else {

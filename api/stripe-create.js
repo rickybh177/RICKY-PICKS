@@ -2,7 +2,7 @@
    Crea una sesión de Stripe Checkout y devuelve la URL de pago. */
 const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
-const { DISCOUNTS } = require('../lib/discounts');
+const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
 const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
@@ -88,7 +88,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Ese plan todavía no está a la venta.' });
     }
     const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
-    const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === plan ? DISCOUNTS[discountCode] : null;
+    const discount = discountFor(discountCode, plan);
 
     const user = await getUserFromToken(bearer(req));
     if (!user) return res.status(401).json({ error: 'Inicia sesión primero.' });
@@ -169,12 +169,14 @@ module.exports = async function handler(req, res) {
         /* Código de descuento sobre suscripción: cupón de UNA sola vez
            (solo el primer mes; las renovaciones van a precio completo).
            Redondeado a pesos para que coincida con lo que ve el cliente. */
-        const pesosOff = Math.round((p.price / 100) * (discount.pct / 100));
-        const coupon = await stripe.coupons.create({
-          amount_off: pesosOff * 100, currency: p.currency,
-          duration: 'once', name: `Código ${discountCode}`,
-        });
-        sessionParams.discounts = [{ coupon: coupon.id }];
+        const pesosOff = def.price - priceWith(discount, def.price);
+        if (pesosOff > 0) {
+          const coupon = await stripe.coupons.create({
+            amount_off: pesosOff * 100, currency: p.currency,
+            duration: 'once', name: `Código ${discountCode}`,
+          });
+          sessionParams.discounts = [{ coupon: coupon.id }];
+        }
       } else {
         /* Rollover: lo pagado por el Pase (24 h) o la Semana (48 h)
            se descuenta del primer mes del plan mensual con MLB. */
@@ -194,8 +196,8 @@ module.exports = async function handler(req, res) {
     }
 
     /* ---- resto de planes: pago único ---- */
-    let finalPrice = discount ? Math.round(p.price * (1 - discount.pct / 100)) : p.price;
-    let productName = discount ? `${p.name} (${discount.pct}% descuento)` : p.name;
+    let finalPrice = priceWith(discount, def.price) * 100; // Stripe cobra en centavos
+    let productName = discount ? `${p.name} (${labelWith(discount)})` : p.name;
 
     /* Precios especiales de los pases completos (manda el más fuerte):
        1) Upgrade del MENSUAL: con cualquier mensualidad vigente, el

@@ -7,7 +7,7 @@
 const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
-const { DISCOUNTS } = require('../lib/discounts');
+const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 
 function bearer(req) {
   const h = req.headers.authorization || '';
@@ -119,9 +119,9 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
   }
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
-  const discount = discountCode && DISCOUNTS[discountCode] && DISCOUNTS[discountCode].plan === planId ? DISCOUNTS[discountCode] : null;
-  let finalPrice = discount ? Math.round(plan.price * (1 - discount.pct / 100)) : plan.price;
-  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${discount.pct}% descuento)` : `RICKY·PICKS — ${plan.title}`;
+  const discount = discountFor(discountCode, planId);
+  let finalPrice = priceWith(discount, plan.price);
+  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${labelWith(discount)})` : `RICKY·PICKS — ${plan.title}`;
 
   /* Precios especiales de los pases completos (manda el más fuerte):
      1) Upgrade del MENSUAL: con cualquier mensualidad vigente, el pase
