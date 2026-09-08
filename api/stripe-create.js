@@ -36,14 +36,17 @@ const PLAN_NAMES = {
   mx_mensual:    'Modelo Liga MX — Suscripción mensual',
   nfl_mensual:   'Modelo NFL — Suscripción mensual',
   combo_mensual: 'Los 3 modelos — Suscripción mensual',
-  /* Fútbol de Europa (cableado; a la venta cuando el dueño quite
+  /* Fútbol europeo, un modelo por liga (cableado; a la venta cuando el dueño quite
      `upcoming` en lib/plans.js) */
-  epl_mensual:        'Modelo Premier League — Suscripción mensual',
-  laliga_mensual:     'Modelo LaLiga — Suscripción mensual',
+  epl_mensual: 'Modelo Premier League — Suscripción mensual',
+  laliga_mensual: 'Modelo LaLiga — Suscripción mensual',
   bundesliga_mensual: 'Modelo Bundesliga — Suscripción mensual',
-  europa_mensual:     'Europa: Premier + LaLiga + Bundesliga + Champions — Suscripción mensual',
-  todo_mensual:       'Todo RICKY·PICKS: los 6 modelos — Suscripción mensual',
-  europa_temporada:   'Europa: Premier + LaLiga + Bundesliga + Champions — Temporada 2026-27 completa',
+  ucl_mensual: 'Modelo Champions League — Suscripción mensual',
+  todo_mensual: 'Todo RICKY·PICKS: los 7 modelos — Suscripción mensual',
+  epl_temporada: 'Modelo Premier League — Temporada 2026-27 completa',
+  laliga_temporada: 'Modelo LaLiga — Temporada 2026-27 completa',
+  bundesliga_temporada: 'Modelo Bundesliga — Temporada 2026-27 completa',
+  ucl_temporada: 'Modelo Champions League — Temporada 2026-27 completa',
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js

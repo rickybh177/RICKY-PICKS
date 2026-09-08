@@ -249,7 +249,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <div id="appWrap" style="display:none">
 <header class="head">
   <div class="wrap">
-    <h1 class="sr-only" id="pageH1">Fútbol de Europa, resuelto marcador por marcador.</h1>
+    <h1 class="sr-only" id="pageH1">Cada partido, resuelto marcador por marcador.</h1>
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="epl" href="/europa.html?liga=epl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="laliga" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
@@ -262,7 +262,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="meta-band" id="metaBand"></div>
     <div class="guest-bar" id="guestBar" style="display:none">
       <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
-      <a class="gb-cta" href="/producto.html?m=europa">Desbloquear la jornada</a>
+      <a class="gb-cta" id="guestCta" href="/producto.html?m=epl">Desbloquear la jornada</a>
       <a class="gb-login" href="#" id="guestLogin">¿Ya tienes acceso? Entrar</a>
     </div>
   </div>
@@ -322,6 +322,7 @@ document.title = 'Modelo ' + L.nombre + ' — RICKY·PICKS · La temporada 2026-
 $('ogTitle').setAttribute('content', 'Modelo ' + L.nombre + ' — RICKY·PICKS');
 $('ogDesc').setAttribute('content', L.nombre + ' partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.');
 $('pageH1').textContent = L.nombre + ', resuelta marcador por marcador.';
+$('guestCta').href = '/producto.html?m=' + LIGA; // los planes de ESTA liga
 // cada liga es una pestaña de la barra de modelos (decisión del dueño, 8-sep): la activa se marca aquí
 document.querySelectorAll('.model-toggle a[data-liga]').forEach(a => {
   const on = a.dataset.liga === LIGA;
@@ -367,13 +368,13 @@ async function loadPlans() {
     const r = await fetch('/api/plans-public', { cache: 'no-store' });
     if (!r.ok) return;
     const p = ((await r.json()) || {}).plans || {};
-    const liga = p[LIGA + '_mensual'], eu = p.europa_mensual, tem = p.europa_temporada;
+    const liga = p[LIGA + '_mensual'], todo = p.todo_mensual, tem = p[LIGA + '_temporada'];
     const acts = [];
     if (liga) acts.push('<a class="day" href="/checkout.html?plan=' + esc(liga.id) + '">' + esc(L.corto) + ' ' + money(liga.price) + '/mes</a>');
-    if (eu) acts.push('<a class="day" href="/checkout.html?plan=' + esc(eu.id) + '">Las 3 ligas ' + money(eu.price) + '/mes</a>');
+    if (todo) acts.push('<a class="day" href="/checkout.html?plan=' + esc(todo.id) + '">Todos los modelos ' + money(todo.price) + '/mes</a>');
     if (tem) acts.push('<a class="founder" href="/checkout.html?plan=' + esc(tem.id) + '">Temporada ' + (tem.anchor ? '<s style="opacity:0.55;font-weight:500">' + money(tem.anchor) + '</s> ' : '') + money(tem.price) + '</a>');
     if (!acts.length) return;
-    const base = liga || eu;
+    const base = liga || todo;
     $('plansSub').textContent = base
       ? 'Suscríbete desde ' + money(base.price) + ' al mes' + (tem ? ' — o la temporada 2026-27 entera en un solo pago.' : '.')
       : 'La temporada 2026-27 entera en un solo pago.';
@@ -550,7 +551,7 @@ function gameCard(g, i) {
       '<div class="over">' +
       '<div class="lk-t">4 veredictos listos para este partido</div>' +
       '<div class="lk-s">1X2 · DOBLE OPORTUNIDAD · GOLES · AMBOS ANOTAN</div>' +
-      '<a href="/producto.html?m=europa">Desbloquear la jornada</a>' +
+      '<a href="/producto.html?m=' + LIGA + '">Desbloquear la jornada</a>' +
       '</div></div></div>';
   }
   const analysis = g.analysis

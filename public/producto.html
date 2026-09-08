@@ -330,7 +330,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/producto.html?m=mx"  data-m="mx"  role="tab">⚽ Liga MX</a>
       <a href="/producto.html?m=nfl" data-m="nfl" role="tab">🏈 NFL</a>
       <a href="/producto.html?m=mlb" data-m="mlb" role="tab">⚾ MLB</a>
-      <a href="/producto.html?m=europa" data-m="europa" role="tab">🌍 Europa</a>
+      <a href="/producto.html?m=epl" data-m="epl" role="tab">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
+      <a href="/producto.html?m=laliga" data-m="laliga" role="tab">🇪🇸 LaLiga</a>
+      <a href="/producto.html?m=bundesliga" data-m="bundesliga" role="tab">🇩🇪 Bundesliga</a>
+      <a href="/producto.html?m=ucl" data-m="ucl" role="tab">🏆 Champions</a>
     </div>
 
     <div class="cols">
@@ -409,26 +412,30 @@ const MODELOS = {
          /* sin `temporada`: quedan ~5 semanas de regular — nadie paga la
             temporada completa por eso. Vuelve a aparecer con la 2027. */
          mensual: 'mlb_mensual', temporada: null },
-  /* Fútbol de Europa: tres ligas en UNA página (/europa.html?liga=…)
-     y un solo bloque de planes (mensual por liga, las 3 ligas, todo
-     RICKY·PICKS y la temporada). `pagina`/`api` se completan abajo con
-     la liga elegida; el pick gratis sale de la Premier salvo alias. */
-  europa: { nombre: 'Europa', pagina: '/europa.html', api: '/api/euro-free',
-         titulo: 'Premier League, LaLiga, Bundesliga y Champions',
-         lede: 'Las tres ligas grandes de Europa, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
-         mensual: 'europa_mensual', temporada: 'europa_temporada' },
+  /* Ligas europeas: cuatro modelos independientes (una pestaña, un
+     pick gratis y unos planes cada uno), en la página /europa.html?liga=…
+     `euro: true` = mientras sus planes lleven `upcoming` se pinta
+     "próximamente" y su "todos" es todo_mensual (los 7 modelos). */
+  epl: { nombre: 'Premier League', pagina: '/europa.html?liga=epl', api: '/api/euro-free?liga=epl', euro: true,
+         titulo: 'La Premier League completa, jornada por jornada',
+         lede: 'Las 38 jornadas de Premier League, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'epl_mensual', temporada: 'epl_temporada' },
+  laliga: { nombre: 'LaLiga', pagina: '/europa.html?liga=laliga', api: '/api/euro-free?liga=laliga', euro: true,
+         titulo: 'LaLiga completa, jornada por jornada',
+         lede: 'Las 38 jornadas de LaLiga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'laliga_mensual', temporada: 'laliga_temporada' },
+  bundesliga: { nombre: 'Bundesliga', pagina: '/europa.html?liga=bundesliga', api: '/api/euro-free?liga=bundesliga', euro: true,
+         titulo: 'La Bundesliga completa, jornada por jornada',
+         lede: 'Las 34 jornadas de Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'bundesliga_mensual', temporada: 'bundesliga_temporada' },
+  ucl: { nombre: 'Champions League', pagina: '/europa.html?liga=ucl', api: '/api/euro-free?liga=ucl', euro: true,
+         titulo: 'La Champions completa, de la fase de liga a la final',
+         lede: 'Cada partido de la Champions League resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
+         mensual: 'ucl_mensual', temporada: 'ucl_temporada' },
 };
-const EURO_LIGAS = { epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
 const param = new URLSearchParams(location.search).get('m');
-/* ?m=epl|laliga|bundesliga son alias de ?m=europa que además eligen de
-   qué liga sale el pick gratis (y a qué liga manda "ver el modelo"). */
-const LIGA = EURO_LIGAS[param] ? param : 'epl';
-const M = MODELOS[param] ? param : EURO_LIGAS[param] ? 'europa' : 'mlb';
+const M = MODELOS[param] ? param : 'mlb';
 const cfg = MODELOS[M];
-if (M === 'europa') {
-  cfg.pagina += '?liga=' + LIGA;
-  cfg.api += '?liga=' + LIGA;
-}
 
 /* nav + toggle + enlaces al modelo */
 document.title = 'RICKY·PICKS — Plan ' + cfg.nombre;
@@ -451,6 +458,7 @@ document.querySelectorAll('.model-toggle a').forEach(a => {
    plan retirado de $599). */
 const BULLETS = {
   mensual: m => {
+    if (MODELOS[m].euro) return BULLETS.liga(MODELOS[m].nombre);
     const base = [
       'Todos los partidos y todos los mercados del modelo',
       'Veredicto BET / MAYBE / SKIP con momios reales',
@@ -471,27 +479,19 @@ const BULLETS = {
     ];
     if (m === 'nfl') base.splice(1, 0, 'Playoffs y Super Bowl incluidos, más la pretemporada de regalo');
     if (m === 'mx')  base.splice(1, 0, 'Las 17 jornadas más la liguilla completa');
+    if (MODELOS[m].euro) base.splice(1, 0, m === 'ucl' ? 'De la fase de liga a la final, partido por partido' : 'De agosto a la última jornada de la 2026-27');
     return base;
   },
-  /* ---- Europa ---- */
+  /* ---- ligas europeas ---- */
   liga: nombre => ([
     'Todos los partidos de ' + nombre + ', jornada por jornada',
     '1X2, doble oportunidad, goles, ambos anotan y córners con veredicto',
-    'Se renueva solo cada mes · cancela cuando quieras',
-  ]),
-  europa: () => ([
-    'Premier League, LaLiga, Bundesliga y Champions League completas',
-    'Cada fin de semana, todos los partidos de las tres ligas con veredicto',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
   todo: () => ([
     'Todos los modelos: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions',
     'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
     'Se renueva solo cada mes · cancela cuando quieras',
-  ]),
-  temporadaEuropa: () => ([
-    'Las tres ligas completas, de agosto a la última jornada de mayo',
-    'Un solo pago: sin renovaciones ni cargos mensuales',
   ]),
 };
 
@@ -510,68 +510,42 @@ function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla) {
   '</button>';
 }
 
-/* Europa todavía sin planes a la venta (beta privada): en vez del
+/* Liga europea todavía sin planes a la venta (beta privada): en vez del
    texto de error, una caja de "próximamente" y sin botón de compra. */
 function pintaProximamente() {
   $('opts').innerHTML = '<div class="soon">' +
     '<div class="soon-lbl">Próximamente · beta privada</div>' +
-    '<h2>Los planes de Europa aún no están a la venta.</h2>' +
-    '<p>El modelo ya corre las tres ligas jornada por jornada; lo estamos afinando en beta privada antes de abrirlo. Los precios se publican aquí en cuanto salga.</p>' +
-    '<div class="soon-ligas">' + Object.values(EURO_LIGAS).map(n => '<span>' + esc(n) + '</span>').join('') + '</div>' +
+    '<h2>Los planes de ' + esc(cfg.nombre) + ' aún no están a la venta.</h2>' +
+    '<p>El modelo ya corre jornada por jornada; lo estamos afinando en beta privada antes de abrirlo. Los precios se publican aquí en cuanto salga.</p>' +
     '<a href="/mis-modelos.html">Mientras tanto, mira tus otros modelos →</a>' +
   '</div>';
   $('goBtn').style.display = 'none';
   $('sticky').style.display = 'none';
 }
 
-/* Planes de Europa: mensual por liga (solo las que estén a la venta),
-   las 3 ligas (el más elegido), todo RICKY·PICKS y la temporada
-   completa. Cada tarjeta aparece solo si /api/plans-public la trae:
-   así ponerlas a la venta una por una no requiere tocar esta página. */
-function pintaOpcionesEuropa(p) {
-  const porLiga = Object.keys(EURO_LIGAS).map(k => p[k + '_mensual']).filter(Boolean);
-  const eu = p.europa_mensual, todo = p.todo_mensual, tem = p.europa_temporada;
-  if (!porLiga.length && !eu && !todo && !tem) { pintaProximamente(); return; }
-  const partes = [];
-  if (porLiga.length) {
-    partes.push(porLiga.map(pl => {
-      const liga = EURO_LIGAS[pl.id.replace('_mensual', '')];
-      return tarjeta(pl.id, 'Mensual · Solo ' + liga, 'Cancela cuando quieras',
-        money(pl.price), 'al mes', BULLETS.liga(liga));
-    }).join(''));
-  }
-  if (eu) partes.push(tarjeta(eu.id, 'Mensual · Europa, las 3 ligas', 'Premier League + LaLiga + Bundesliga',
-    money(eu.price), 'al mes · ' + money(Math.round(eu.price / 3)) + ' por liga', BULLETS.europa(), 'El más elegido'));
-  if (todo) partes.push(tarjeta(todo.id, 'Mensual · Todo RICKY·PICKS', 'Los 6 modelos: MLB, Liga MX, NFL y las 3 ligas',
-    money(todo.price), 'al mes · ' + money(Math.round(todo.price / 6)) + ' por modelo', BULLETS.todo()));
-  if (tem) {
-    const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
-    partes.push(tarjeta(tem.id, 'Temporada Europa completa', 'Las 3 ligas hasta mayo, sin renovaciones',
-      money(tem.price), ahorro > 0 ? 'pago único · ahorras ' + money(ahorro) : 'pago único',
-      BULLETS.temporadaEuropa().concat(ahorro > 0 ? ['Mes a mes saldría en ' + money(tem.anchor) + ' — ahorras ' + money(ahorro)] : []),
-      null, tem.anchor ? money(tem.anchor) : null));
-  }
-  $('opts').innerHTML = partes.join('<div class="sep">O bien</div>');
-  document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
-  const pre = (elegido && p[elegido]) ? elegido : (eu || porLiga[0] || todo || tem).id;
-  elegir(pre); // las 3 ligas viene preseleccionado cuando existe
-}
-
 function pintaOpciones(p) {
-  if (M === 'europa') { pintaOpcionesEuropa(p); return; }
   /* Pricing por suscripción (28-ago-2026): mensual del modelo, mensual
-     de los tres (el más elegido) y — cuando queda temporada por
-     delante — el pago único de la temporada completa. */
-  const men = p[cfg.mensual], com = p.combo_mensual;
+     de todos (el más elegido) y — cuando queda temporada por delante —
+     el pago único de la temporada completa. Ligas europeas: mientras su
+     mensual lleve `upcoming` en lib/plans.js no viene en el catálogo y
+     se pinta "próximamente"; su "todos" es todo_mensual (los 7). */
+  const men = p[cfg.mensual];
   const tem = cfg.temporada ? p[cfg.temporada] : null;
-  if (!men || !com) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
-  const porModelo = Math.round(com.price / 3);
+  const com = cfg.euro ? (p.todo_mensual || null) : p.combo_mensual;
+  if (!men && cfg.euro) { pintaProximamente(); return; }
+  if (!men) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
   let html = '';
   html += tarjeta(men.id, 'Mensual · Solo ' + cfg.nombre, 'Cancela cuando quieras',
     money(men.price), 'al mes', BULLETS.mensual(M));
-  html += '<div class="sep">O bien</div>';
-  html += tarjeta(com.id, 'Mensual · Los 3 modelos', 'MLB + Liga MX + NFL',
-    money(com.price), 'al mes · ' + money(porModelo) + ' por modelo', BULLETS.combo(), 'El más elegido');
+  if (com) {
+    const nModelos = (com.products || []).length || 3;
+    html += '<div class="sep">O bien</div>';
+    html += cfg.euro
+      ? tarjeta(com.id, 'Mensual · Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
+          money(com.price), 'al mes · ' + money(Math.round(com.price / nModelos)) + ' por modelo', BULLETS.todo(), 'El más elegido')
+      : tarjeta(com.id, 'Mensual · Los 3 modelos', 'MLB + Liga MX + NFL',
+          money(com.price), 'al mes · ' + money(Math.round(com.price / nModelos)) + ' por modelo', BULLETS.combo(), 'El más elegido');
+  }
   if (tem) {
     html += '<div class="sep">O bien</div>';
     /* El tachado es el valor REAL pagando mes a mes (viene del servidor,
@@ -585,7 +559,7 @@ function pintaOpciones(p) {
   }
   $('opts').innerHTML = html;
   document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => elegir(b.dataset.plan)));
-  elegir(elegido && p[elegido] ? elegido : com.id); // los 3 modelos viene preseleccionado
+  elegir(elegido && p[elegido] ? elegido : (com ? com.id : men.id)); // "todos" viene preseleccionado cuando existe
 }
 
 function elegir(id) {
@@ -790,13 +764,13 @@ function mejorVeredicto(vs) {
 async function cargaPick() {
   try {
     const r = await fetch(cfg.api);
-    /* Europa en beta privada: el servidor contesta 403 {beta:true} a
+    /* Liga europea en beta privada: el servidor contesta 403 {beta:true} a
        quien no es admin. No es un error — se muestra como tal. */
     const d = await r.json().catch(() => null);
     if (r.status === 403 && d && d.beta) {
-      montaCarrusel('<div class="slide"><div class="pk pk-beta"><div class="pk-meta">' + esc(EURO_LIGAS[LIGA] || 'Europa') + ' · Beta privada</div>' +
+      montaCarrusel('<div class="slide"><div class="pk pk-beta"><div class="pk-meta">' + esc(cfg.nombre) + ' · Beta privada</div>' +
         '<div class="pk-sel">El modelo ya corre, pero todavía en privado.</div>' +
-        '<small>El pick gratis de cada jornada aparece aquí en cuanto abramos las ligas de Europa.</small></div></div>');
+        '<small>El pick gratis de cada jornada aparece aquí en cuanto abramos el modelo.</small></div></div>');
       $('liveSub').textContent = 'BETA';
       return;
     }
@@ -835,7 +809,7 @@ async function cargaPick() {
       vs = g.verdicts || [];
       dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
         etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
-    } else if (M === 'europa' && d.game) {
+    } else if (cfg.euro && d.game) {
       /* /api/euro-free trae EXACTAMENTE la forma de /api/mx-free (más
          league_id / league_name): misma card, misma distribución. */
       const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
@@ -848,7 +822,7 @@ async function cargaPick() {
         verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
         odds: v ? pct(v.prob) : '', venue: g.venue || '',
       };
-      $('liveSub').textContent = ((d.league_name || EURO_LIGAS[LIGA] || 'Europa') + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase();
+      $('liveSub').textContent = ((d.league_name || cfg.nombre) + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase();
       vs = g.verdicts || [];
       dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
         etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
@@ -904,7 +878,7 @@ if (sb) {
   $('authBtn').addEventListener('click', async () => {
     if (_session) { await sb.auth.signOut(); return; }
     /* No hay modal aquí: el checkout ya pide cuenta cuando toca. Sin
-       plan elegible (Europa en "próximamente") mejor al modelo. */
+       plan elegible (liga en "próximamente") mejor al modelo. */
     const destino = elegido || (planes && cfg.temporada && planes[cfg.temporada] ? cfg.temporada : null);
     location.href = destino ? '/checkout.html?plan=' + encodeURIComponent(destino) : cfg.pagina;
   });

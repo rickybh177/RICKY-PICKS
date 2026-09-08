@@ -30,14 +30,17 @@
     nfl_semana: 249,
     nfl_temporada: 799,
     combo_2026: 1199,
-    /* Fútbol de Europa — precios PROVISIONALES (lib/plans.js manda;
+    /* Fútbol europeo, un modelo por liga — precios PROVISIONALES (lib/plans.js manda;
        mientras lleven `upcoming` allá no se venden y esto no dispara). */
     epl_mensual: 349,
     laliga_mensual: 349,
     bundesliga_mensual: 349,
-    europa_mensual: 349,
+    ucl_mensual: 349,
     todo_mensual: 599,
-    europa_temporada: 1199,
+    epl_temporada: 1199,
+    laliga_temporada: 1199,
+    bundesliga_temporada: 1199,
+    ucl_temporada: 1199,
   };
 
   var params = new URLSearchParams(window.location.search);

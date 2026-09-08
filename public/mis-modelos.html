@@ -73,7 +73,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   h1 { font-weight: 800; font-size: clamp(1.9rem, 5vw, 2.6rem); letter-spacing: -0.035em; line-height: 1.05; }
   .lede { color: var(--muted); margin-top: 12px; max-width: 54ch; }
 
-  /* TARJETAS DE MODELO (cuatro: MLB, Liga MX, NFL y Europa → 2×2) */
+  /* TARJETAS DE MODELO (siete: MLB, Liga MX, NFL, Premier, LaLiga, Bundesliga y Champions → 2 columnas) */
   .models { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin: 32px 0 40px; }
   .model-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; background: #fff; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
   .model-card:hover { transform: translateY(-2px); box-shadow: 0 18px 46px -26px rgba(22,24,29,0.4); border-color: #d5deea; }
@@ -87,7 +87,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .mc-cta:hover { background: var(--blue-deep); }
   .mc-cta.ghost { background: var(--soft); color: var(--ink); }
   .mc-cta.ghost:hover { background: var(--soft-2); }
-  /* chips por liga dentro de la tarjeta de Europa */
+  /* chips por liga (sin uso desde el 8-sep-2026: cada liga tiene su tarjeta) */
   .mc-ligas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .mc-liga { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em; padding: 5px 10px; border-radius: 980px; background: var(--soft); color: var(--muted); white-space: nowrap; }
   .mc-liga.on { background: rgba(22,163,74,0.1); color: var(--win); }
@@ -189,22 +189,43 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <a class="mc-cta" id="ctaNfl" href="/nfl.html">Abrir modelo →</a>
       </div>
 
-      <!-- Europa: tres ligas en un solo modelo/página; cada liga tiene
-           su propio acceso (epl / laliga / bundesliga), de ahí los chips. -->
+      <!-- Ligas europeas: cuatro modelos, cuatro tarjetas (cada liga
+           tiene su propio acceso: epl / laliga / bundesliga / ucl). -->
       <div class="model-card">
         <div class="mc-top">
-          <span class="mc-ico">🌍</span>
-          <span class="mc-chip" id="chipEuropa">Sin acceso</span>
+          <span class="mc-ico">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+          <span class="mc-chip" id="chipEpl">Sin acceso</span>
         </div>
-        <h2>Fútbol Europa 🌍</h2>
-        <p>Premier League, LaLiga, Bundesliga y Champions League: cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
-        <div class="mc-ligas">
-          <span class="mc-liga" id="ligaEpl">Premier · Sin acceso</span>
-          <span class="mc-liga" id="ligaLaliga">LaLiga · Sin acceso</span>
-          <span class="mc-liga" id="ligaBundesliga">Bundesliga · Sin acceso</span>
-          <span class="mc-liga" id="ligaUcl">Champions · Sin acceso</span>
+        <h2>Modelo Premier League</h2>
+        <p>Las 38 jornadas de Premier League, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaEpl" href="/europa.html?liga=epl">Abrir modelo →</a>
+      </div>
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">🇪🇸</span>
+          <span class="mc-chip" id="chipLaliga">Sin acceso</span>
         </div>
-        <a class="mc-cta" id="ctaEuropa" href="/europa.html?liga=epl">Abrir modelo →</a>
+        <h2>Modelo LaLiga</h2>
+        <p>Las 38 jornadas de LaLiga, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaLaliga" href="/europa.html?liga=laliga">Abrir modelo →</a>
+      </div>
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">🇩🇪</span>
+          <span class="mc-chip" id="chipBundesliga">Sin acceso</span>
+        </div>
+        <h2>Modelo Bundesliga</h2>
+        <p>Las 34 jornadas de Bundesliga, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaBundesliga" href="/europa.html?liga=bundesliga">Abrir modelo →</a>
+      </div>
+      <div class="model-card">
+        <div class="mc-top">
+          <span class="mc-ico">🏆</span>
+          <span class="mc-chip" id="chipUcl">Sin acceso</span>
+        </div>
+        <h2>Modelo Champions League</h2>
+        <p>De la fase de liga a la final: cada partido resuelto marcador por marcador, con los 36 clubes puestos en la misma escala y veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaUcl" href="/europa.html?liga=ucl">Abrir modelo →</a>
       </div>
     </div>
 
@@ -291,20 +312,11 @@ async function boot(){
     paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/producto.html?m=mlb');
     paint(!!acc.mx,  'chipMx',  'ctaMx',  '/producto.html?m=mx');
     paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/producto.html?m=nfl');
-    /* Europa: la tarjeta está activa si tiene CUALQUIERA de las tres
-       ligas; el botón abre la primera con acceso. Cada chip pinta la
-       suya (acc.epl / acc.laliga / acc.bundesliga). */
-    let primeraLiga = null;
-    [['epl', 'ligaEpl', 'Premier'], ['laliga', 'ligaLaliga', 'LaLiga'], ['bundesliga', 'ligaBundesliga', 'Bundesliga'], ['ucl', 'ligaUcl', 'Champions']]
-      .forEach(([p, id, nombre]) => {
-        const el = document.getElementById(id);
-        const has = !!acc[p];
-        el.textContent = nombre + ' · ' + (has ? 'Activo' : 'Sin acceso');
-        el.classList.toggle('on', has);
-        if (has && !primeraLiga) primeraLiga = p;
-      });
-    paint(!!primeraLiga, 'chipEuropa', 'ctaEuropa', '/producto.html?m=europa');
-    if (primeraLiga) document.getElementById('ctaEuropa').href = '/europa.html?liga=' + primeraLiga;
+    /* Ligas europeas: cada modelo pinta su tarjeta con su producto. */
+    paint(!!acc.epl, 'chipEpl', 'ctaEpl', '/producto.html?m=epl');
+    paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga');
+    paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga');
+    paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl');
   }
   showMain();
 }

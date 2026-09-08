@@ -17,7 +17,7 @@
    1b. REGLA DE COBERTURA (sin BD): un plan nuevo NO pisa un pase
       vigente que dura más (coverageBeats, lib/plans.js) — la
       mecánica con la que un todo_mensual borraba mlb_temporada y
-      europa_temporada (5-sep-2026).
+      epl_temporada (5-sep-2026).
    2. EN VIVO (contra Supabase real):
       - Otorga cada plan a un usuario de PRUEBA dedicado y verifica
         que las filas de entitlement se crean con su producto.
@@ -111,9 +111,9 @@ const ok = msg => console.log('  ✓ ' + msg);
     /* [lo que tiene, hace cuántos días lo compró, lo que compra, ¿se conserva?] */
     const casos = [
       ['mlb_temporada',    30,  'todo_mensual',   true],
-      ['europa_temporada', 10,  'todo_mensual',   true],
-      ['europa_temporada', 10,  'europa_mensual', true],
-      ['europa_permanente', 400, 'epl_mensual',   true],
+      ['epl_temporada',    10,  'todo_mensual',   true],
+      ['ucl_temporada',    10,  'ucl_mensual',    true],
+      ['epl_permanente',   400, 'epl_mensual',    true],
       ['nfl_temporada',    20,  'combo_mensual',  true],  // starts_at: el reloj arranca en el kickoff
       ['combo_permanente', 400, 'mlb_mensual',    true],
       ['mx_mensual',       5,   'mx_apertura',    false], // upgrade: la temporada sí pisa al mensual
@@ -184,15 +184,15 @@ const ok = msg => console.log('  ✓ ' + msg);
     try {
       await admin.from('entitlements').delete().eq('user_id', userId);
       await grantEntitlement(userId, 'mlb_temporada');
-      await grantEntitlement(userId, 'europa_temporada');
+      await grantEntitlement(userId, 'epl_temporada');
       const r = await grantEntitlement(userId, 'todo_mensual');
-      espera('mlb_temporada + europa_temporada, luego todo_mensual', await filas(), {
-        mlb: 'mlb_temporada', epl: 'europa_temporada', laliga: 'europa_temporada', bundesliga: 'europa_temporada', ucl: 'europa_temporada',
-        mx: 'todo_mensual', nfl: 'todo_mensual',
+      espera('mlb_temporada + epl_temporada, luego todo_mensual', await filas(), {
+        mlb: 'mlb_temporada', epl: 'epl_temporada',
+        laliga: 'todo_mensual', bundesliga: 'todo_mensual', ucl: 'todo_mensual', mx: 'todo_mensual', nfl: 'todo_mensual',
       });
       const keptStr = (r && r.kept || []).map(k => k.product).sort().join(',');
-      // mlb (temporada) + todo lo que cubre europa_temporada (las ligas de Europa + Champions)
-      const expKept = ['mlb', ...EURO_PRODUCTS].sort().join(',');
+      // se conservan las dos temporadas pagadas: mlb y epl
+      const expKept = ['epl', 'mlb'].sort().join(',');
       if (keptStr === expKept) ok(`grantEntitlement reporta kept=[${keptStr}]`);
       else fail(`grantEntitlement reporta kept=[${keptStr}] (esperaba ${expKept})`);
       /* Renovación: el mismo plan siempre se refresca. */

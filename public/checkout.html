@@ -452,7 +452,7 @@ const PLANS = {
     ],
   },
 
-  /* ---- Fútbol de Europa (precios PROVISIONALES: espejo de lib/plans.js;
+  /* ---- Fútbol europeo, un modelo por liga (precios PROVISIONALES: espejo de lib/plans.js;
      el cobro real siempre sale del servidor). Mientras lleven
      `upcoming` allá, el servidor rechaza la compra con "todavía no
      está a la venta" y aquí solo se ve la ficha. ---- */
@@ -492,14 +492,15 @@ const PLANS = {
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
-  europa_mensual: {
-    name: 'Europa: Premier + LaLiga + Bundesliga — Suscripción mensual',
+  ucl_mensual: {
+    name: 'Modelo Champions League — Suscripción mensual',
     price: '$349',
     currency: 'MXN',
-    period: 'Suscripción mensual · las tres ligas por el precio de una',
+    period: 'Suscripción mensual · cancela cuando quieras',
     features: [
-      'Premier League, LaLiga, Bundesliga y Champions League completas por el precio de un modelo',
-      'Cada fin de semana, todos los partidos de las tres ligas con veredicto',
+      'Todos los partidos de Champions League, jornada por jornada, todos los mercados',
+      '1X2, doble oportunidad, goles, ambos anotan, córners y más',
+      'Veredicto BET / MAYBE / SKIP contra los momios reales',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
@@ -507,20 +508,56 @@ const PLANS = {
     name: 'Todo RICKY·PICKS — Suscripción mensual',
     price: '$599',
     currency: 'MXN',
-    period: 'Suscripción mensual · los 6 modelos',
+    period: 'Suscripción mensual · los 7 modelos',
     features: [
-      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $100 por modelo',
-      'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
+      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $86 por modelo',
+      'Beisbol a diario, fútbol cada fin de semana y entre semana, NFL cada jornada',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
-  europa_temporada: {
-    name: 'Europa: Premier + LaLiga + Bundesliga — Temporada 2026-27 completa',
+  epl_temporada: {
+    name: 'Modelo Premier League — Temporada 2026-27 completa',
     price: '$1,199',
     currency: 'MXN',
-    period: 'Pago único · de agosto a mayo, las tres ligas',
+    period: 'Pago único · de agosto a la última jornada',
     features: [
-      'Las tres ligas completas hasta la última jornada de la 2026-27',
+      'Premier League completa hasta el final de la temporada 2026-27',
+      'Todos los partidos, mercados y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Mes a mes saldría en $3,141 — ahorras $1,942',
+    ],
+  },
+  laliga_temporada: {
+    name: 'Modelo LaLiga — Temporada 2026-27 completa',
+    price: '$1,199',
+    currency: 'MXN',
+    period: 'Pago único · de agosto a la última jornada',
+    features: [
+      'LaLiga completa hasta el final de la temporada 2026-27',
+      'Todos los partidos, mercados y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Mes a mes saldría en $3,141 — ahorras $1,942',
+    ],
+  },
+  bundesliga_temporada: {
+    name: 'Modelo Bundesliga — Temporada 2026-27 completa',
+    price: '$1,199',
+    currency: 'MXN',
+    period: 'Pago único · de agosto a la última jornada',
+    features: [
+      'Bundesliga completa hasta el final de la temporada 2026-27',
+      'Todos los partidos, mercados y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Mes a mes saldría en $3,141 — ahorras $1,942',
+    ],
+  },
+  ucl_temporada: {
+    name: 'Modelo Champions League — Temporada 2026-27 completa',
+    price: '$1,199',
+    currency: 'MXN',
+    period: 'Pago único · de agosto a la última jornada',
+    features: [
+      'Champions League completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
       'Mes a mes saldría en $3,141 — ahorras $1,942',
@@ -535,8 +572,8 @@ const payoErr = params.get('pago');
 
 // a qué modelo pertenece un plan:
 // mlb_ -> /mlb.html · nfl_ -> /nfl.html · mx_ y combo_ -> /mx.html
-// epl_/laliga_/bundesliga_ -> /europa.html?liga=<liga> · europa_ -> Premier
-// todo_ (los 6 modelos) y Mundial -> /mis-modelos.html
+// epl_/laliga_/bundesliga_/ucl_ -> /europa.html?liga=<liga>
+// todo_ (todos los modelos) y Mundial -> /mis-modelos.html
 // OJO: la URL de Europa ya trae "?" — para pegarle ?pago=… usa conQuery.
 const modelUrl = p => {
   p = p || '';
@@ -546,7 +583,7 @@ const modelUrl = p => {
   if(p.startsWith('epl_')) return '/europa.html?liga=epl';
   if(p.startsWith('laliga_')) return '/europa.html?liga=laliga';
   if(p.startsWith('bundesliga_')) return '/europa.html?liga=bundesliga';
-  if(p.startsWith('europa_')) return '/europa.html?liga=epl';
+  if(p.startsWith('ucl_')) return '/europa.html?liga=ucl';
   return '/mis-modelos.html';
 };
 /* Pega parámetros a una URL que puede o no traer query ya. */
@@ -582,9 +619,9 @@ const conQuery = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
   } else if(planId.startsWith('bundesliga_')){
     go.href = '/europa.html?liga=bundesliga';
     go.textContent = 'Ir al Modelo Bundesliga →';
-  } else if(planId.startsWith('europa_')){
-    go.href = '/europa.html?liga=epl';
-    go.textContent = 'Ir a los modelos de Europa →';
+  } else if(planId.startsWith('ucl_')){
+    go.href = '/europa.html?liga=ucl';
+    go.textContent = 'Ir al Modelo Champions League →';
   } else if(planId.startsWith('todo_')){
     go.href = '/mis-modelos.html';
     go.textContent = 'Ir a Mis modelos →';
@@ -705,7 +742,7 @@ document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='E
 
 /* Productos que cubre un plan: mlb_* -> mlb, mx_* -> mx, nfl_* -> nfl,
    combo_* -> mlb+mx(+nfl), epl_/laliga_/bundesliga_ -> su liga,
-   europa_* -> las 3 ligas + Champions, todo_* -> todos los modelos, resto -> mundial.
+   ucl_ -> ucl, todo_* -> todos los modelos, resto -> mundial.
    (Espejo de productsForPlan en lib/supabaseAdmin.js.) */
 const EURO = ['epl','laliga','bundesliga','ucl'];
 function productsOf(p){
@@ -719,14 +756,13 @@ function productsOf(p){
   if(p.startsWith('laliga_')) return ['laliga'];
   if(p.startsWith('bundesliga_')) return ['bundesliga'];
   if(p.startsWith('ucl_')) return ['ucl'];
-  if(p.startsWith('europa_')) return EURO.slice();
   if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO);
   return ['mundial'];
 }
 
 /* TODAS las filas activas que se traslapan con el plan (no solo la
    primera): la cobertura se evalúa producto por producto sobre esta
-   lista. Quien tiene mlb_temporada + europa_temporada y compra
+   lista. Quien tiene mlb_temporada + epl_temporada y compra
    todo_mensual tiene 4 filas que cuentan, no 1. */
 let _entRows = [];
 async function checkEntitlement(){
@@ -791,7 +827,7 @@ async function renderSession(session){
      comprar la temporada, que es el upgrade natural. Los permanentes
      por código (mlb/mx/nfl/combo_permanente) también cubren su modelo. */
   const TOP = { mundial: ['torneo'], mlb: ['mlb_temporada','mlb_fundador','combo_total','combo_2026','circulo_fundador','mlb_permanente','combo_permanente'], mx: ['mx_apertura','mx_fundador','combo_total','combo_2026','circulo_fundador','mx_permanente','combo_permanente'], nfl: ['nfl_temporada','nfl_fundador','combo_total','combo_2026','circulo_fundador','nfl_permanente'],
-    epl: ['europa_temporada','europa_permanente'], laliga: ['europa_temporada','europa_permanente'], bundesliga: ['europa_temporada','europa_permanente'], ucl: ['europa_temporada','europa_permanente'] };
+    epl: ['epl_temporada','epl_permanente'], laliga: ['laliga_temporada','laliga_permanente'], bundesliga: ['bundesliga_temporada','bundesliga_permanente'], ucl: ['ucl_temporada','ucl_permanente'] };
   /* Combos y Círculo siempre se pueden comprar teniendo una pata: es el upgrade. */
   const buyingCombo = (planId||'').startsWith('combo_') || planId === 'circulo_fundador';
   /* Cobertura producto por producto sobre TODAS las filas activas (no

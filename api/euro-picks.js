@@ -5,7 +5,7 @@
    con paywall server-side que /api/mx-picks, con dos diferencias:
 
    - El producto es la liga (`epl`, `laliga`, `bundesliga`): cada
-     una tiene su entitlement propio (o llega vía europa_* / todo_*,
+     una tiene su entitlement propio (o llega vía todo_*,
      que otorgan las tres).
    - BETA PRIVADA: mientras una liga no esté en PUBLIC_LEAGUES,
      cualquier caller que no sea admin (con o sin sesión) recibe

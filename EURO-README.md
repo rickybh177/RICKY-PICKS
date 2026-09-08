@@ -455,9 +455,9 @@ BTTS), no por ROI.
 ## Champions League (8-sep-2026): un modelo de copa sobre el mismo núcleo
 
 La Champions entra como cuarto modelo europeo (`ucl`, ESPN
-`uefa.champions`, página `/europa.html?liga=ucl`) y **dentro del
-paquete Europa** (producto `ucl` en `europa_*` y `todo_*`; nunca se
-vende sola). Misma matriz Dixon-Coles y mismos endpoints; lo que cambia
+`uefa.champions`, página `/europa.html?liga=ucl`), con su propio
+producto y sus propios planes (`ucl_mensual`, `ucl_temporada`),
+exactamente como las otras tres ligas: no hay paquete "Europa". Misma matriz Dixon-Coles y mismos endpoints; lo que cambia
 es cómo se estiman los ratings y de qué aprende en temporada.
 
 ### Por qué no basta con "otra liga"
@@ -572,21 +572,15 @@ node scripts/build-ucl-priors.js --halfLife 500
   liga YA pública (destacado completo, resto `locked`); `?as=beta`
   simula al público con la liga privada (403).
 - **Planes cableados pero no a la venta** (`upcoming: true` en
-  `lib/plans.js`, precios PROVISIONALES): `epl_mensual`,
-  `laliga_mensual`, `bundesliga_mensual` ($349), `europa_mensual` (las 3
-  ligas, $349 — mismo precio que un modelo), `todo_mensual` (los 6
-  modelos, $599), `europa_temporada` (pago único, $1,199, ancla $3,141,
-  275 días). Son los precios de la estrategia recomendada el
-  5-sep-2026 (Europa se vende como UN modelo, nunca por liga; ver el
-  documento de pricing); el dueño decide antes de vender. `europa_permanente`
-  (precio 0, solo por código/soporte, sin `upcoming`). Productos:
-  `epl`, `laliga`, `bundesliga`. Un plan `upcoming` NO sale en
-  `/api/plans-public` y `api/stripe-create.js` / `api/create-payment.js`
-  lo rechazan con "Ese plan todavía no está a la venta." antes de
-  tocar la pasarela. `europa_temporada` está en `FULL_PASS_PLANS`
-  (cancela las mensualidades europeas que cubre) y la regla
-  `coverageBeats` conserva un pase vigente que dura más (un
-  `todo_mensual` ya no pisa `europa_temporada`).
+  `lib/plans.js`, precios PROVISIONALES): cada liga tiene su propia
+  mensualidad (`epl/laliga/bundesliga/ucl_mensual`, $349) y su temporada
+  2026-27 completa (`*_temporada`, $1,199 pago único, ancla 9 × $349 =
+  $3,141, 275 días), más `todo_mensual` (los 7 modelos, $599). **No
+  existe un paquete "Europa"**: el dueño decidió el 8-sep-2026 que cada
+  liga se comunica y se vende por separado, igual que MLB / Liga MX /
+  NFL (se retiraron `europa_mensual`, `europa_temporada` y
+  `europa_permanente` antes de venderse). Los permanentes por código
+  (`*_permanente`, price 0) también van por liga.
 - **Frontend ya preparado para la apertura**: `public/europa.html`
   lee el banner de planes de `/api/plans-public` (`<liga>_mensual`,
   `europa_mensual`, `europa_temporada`) y lo oculta si ninguno está a

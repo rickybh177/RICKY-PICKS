@@ -19,7 +19,7 @@ function bearer(req) {
    use debe pegar los parámetros de pago con `sep`, nunca con "?".
      mlb_*   -> mlb.html            nfl_*   -> nfl.html
      mx_* / combo_* -> mx.html      epl_/laliga_/bundesliga_ -> europa.html?liga=<liga>
-     europa_* -> europa.html?liga=epl (la primera de las tres)
+     ucl_* -> europa.html?liga=ucl
      todo_*  -> mis-modelos.html (seis modelos: que elija)
      Mundial -> mis-modelos.html */
 function destForPlan(planId) {
@@ -30,7 +30,7 @@ function destForPlan(planId) {
   if (p.startsWith('epl_')) return 'europa.html?liga=epl';
   if (p.startsWith('laliga_')) return 'europa.html?liga=laliga';
   if (p.startsWith('bundesliga_')) return 'europa.html?liga=bundesliga';
-  if (p.startsWith('europa_')) return 'europa.html?liga=epl';
+  if (p.startsWith('ucl_')) return 'europa.html?liga=ucl';
   return 'mis-modelos.html';
 }
 const sep = dest => (dest.includes('?') ? '&' : '?');

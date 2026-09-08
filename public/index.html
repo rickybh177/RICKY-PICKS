@@ -639,7 +639,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/mx.html" class="nav-link" id="mxNavBtn">Liga MX</a>
       <a href="/nfl.html" class="nav-link" id="nflNavBtn">NFL</a>
       <a href="/mlb.html" class="nav-link" id="mlbNavBtn">MLB</a>
-      <a href="/europa.html?liga=epl" class="nav-link" id="europaNavBtn">Europa</a>
+      <a href="/europa.html?liga=epl" class="nav-link" id="eplNavBtn">Premier</a>
+      <a href="/europa.html?liga=laliga" class="nav-link" id="laligaNavBtn">LaLiga</a>
+      <a href="/europa.html?liga=bundesliga" class="nav-link" id="bundesligaNavBtn">Bundesliga</a>
+      <a href="/europa.html?liga=ucl" class="nav-link" id="uclNavBtn">Champions</a>
       <a href="/producto.html" class="nav-link">Planes</a>
       <a href="/mis-modelos.html" class="nav-link" id="misModelosLink" style="display:none">Mis modelos</a>
       <button id="authBtn" class="nav-ghost">Entrar</button>
@@ -659,7 +662,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/producto.html?m=mx" class="hero-cta">Liga MX</a>
       <a href="/producto.html?m=nfl" class="hero-cta">NFL</a>
       <a href="/producto.html?m=mlb" class="hero-cta">MLB</a>
-      <a href="/producto.html?m=europa" class="hero-cta">Europa</a>
+      <a href="/producto.html?m=epl" class="hero-cta">Premier</a>
+      <a href="/producto.html?m=laliga" class="hero-cta">LaLiga</a>
+      <a href="/producto.html?m=bundesliga" class="hero-cta">Bundesliga</a>
+      <a href="/producto.html?m=ucl" class="hero-cta">Champions</a>
     </div>
   </div>
   <div class="hero-panel">
@@ -802,20 +808,107 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      Mientras el modelo esté en beta privada, /api/euro-free contesta
      403 {beta:true} y el JS (carga) QUITA esta sección entera del DOM:
      nada debe verse roto ni a medias. -->
-<section id="vivo-europa">
+<section id="vivo-epl">
   <div class="wrap">
     <div class="live-grid">
       <div>
-        <div class="sec-eyebrow reveal">Nuevo · Fútbol de Europa</div>
-        <h2 class="sec-title reveal">Free pick Europa.</h2>
-        <p class="sec-lede reveal">Premier League, LaLiga, Bundesliga y Champions League, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las tres ligas y la Champions completas viven en tu plan.</p>
+        <div class="sec-eyebrow reveal">Nuevo · Premier League</div>
+        <h2 class="sec-title reveal">Free pick Premier League.</h2>
+        <p class="sec-lede reveal">La Premier League, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
         <div class="live-cta reveal">
           <a class="btn-primary" href="/europa.html?liga=epl">Ver el pick gratis</a>
-          <a class="btn-ghost" href="/producto.html?m=europa">Ver planes Europa</a>
+          <a class="btn-ghost" href="/producto.html?m=epl">Ver planes Premier</a>
         </div>
       </div>
-      <div class="live-card-holder reveal" id="europaCardHolder">
-        <div class="freepick" id="fpEuropa">
+      <div class="live-card-holder reveal" id="eplCardHolder">
+        <div class="freepick" id="fpEpl">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="vivo-laliga">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · LaLiga</div>
+        <h2 class="sec-title reveal">Free pick LaLiga.</h2>
+        <p class="sec-lede reveal">LaLiga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="/europa.html?liga=laliga">Ver el pick gratis</a>
+          <a class="btn-ghost" href="/producto.html?m=laliga">Ver planes LaLiga</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="laligaCardHolder">
+        <div class="freepick" id="fpLaliga">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="vivo-bundesliga">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · Bundesliga</div>
+        <h2 class="sec-title reveal">Free pick Bundesliga.</h2>
+        <p class="sec-lede reveal">La Bundesliga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 34 jornadas completas viven en tu plan.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="/europa.html?liga=bundesliga">Ver el pick gratis</a>
+          <a class="btn-ghost" href="/producto.html?m=bundesliga">Ver planes Bundesliga</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="bundesligaCardHolder">
+        <div class="freepick" id="fpBundesliga">
+          <div class="deck">
+            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
+          </div>
+          <div class="dots-row">
+            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="dots"></div>
+            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="vivo-ucl">
+  <div class="wrap">
+    <div class="live-grid">
+      <div>
+        <div class="sec-eyebrow reveal">Nuevo · Champions League</div>
+        <h2 class="sec-title reveal">Free pick Champions League.</h2>
+        <p class="sec-lede reveal">La Champions League, de la fase de liga a la final, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — la Champions completa vive en tu plan.</p>
+        <div class="live-cta reveal">
+          <a class="btn-primary" href="/europa.html?liga=ucl">Ver el pick gratis</a>
+          <a class="btn-ghost" href="/producto.html?m=ucl">Ver planes Champions</a>
+        </div>
+      </div>
+      <div class="live-card-holder reveal" id="uclCardHolder">
+        <div class="freepick" id="fpUcl">
           <div class="deck">
             <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
           </div>
@@ -850,8 +943,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>Porque estás entrando antes que nadie. El precio de $399 se congela para ti mientras sigas activo. Los que se unan después pagarán más.</p>
       </details>
       <details>
-        <summary>¿Qué incluyen los planes de Europa?</summary>
-        <p>Premier League, LaLiga, Bundesliga y Champions League son modelos independientes: puedes contratar una sola liga al mes, las tres juntas, o todo RICKY·PICKS (los seis modelos) en una sola mensualidad; también hay una temporada 2026-27 completa de pago único. Los precios son según el plan vigente y siempre se muestran en la página de planes antes de pagar. Mientras el modelo esté en beta privada, los planes aparecen como "próximamente".</p>
+        <summary>¿Qué incluyen los planes de las ligas europeas?</summary>
+        <p>Premier League, LaLiga, Bundesliga y Champions League son cuatro modelos independientes, cada uno con su mensualidad y su temporada 2026-27 completa de pago único; también puedes contratar todo RICKY·PICKS (los siete modelos) en una sola mensualidad. Los precios son según el plan vigente y siempre se muestran en la página de planes antes de pagar. Mientras el modelo esté en beta privada, los planes aparecen como "próximamente".</p>
       </details>
     </div>
   </div>
@@ -869,8 +962,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <dd>Incluye los tres modelos completos hasta el final de su temporada en curso: MLB hasta la Serie Mundial 2026, Liga MX Apertura 2026 hasta la final de la liguilla, y NFL 26-27 hasta el Super Bowl (pretemporada incluida). Es un solo pago: no se renueva ni se cobra otra vez.</dd>
         <dt>Planes mensuales (legado)</dt>
         <dd>Los planes de suscripción mensual (Mensual Fundador de MLB/Liga MX/NFL, Combo Total mensual y Círculo Fundador) ya no se venden. Quienes los contrataron conservan su precio y sus beneficios mientras su suscripción siga activa, y pueden cancelarla cuando quieran desde <em>Administrar suscripción</em>.</dd>
-        <dt>Modelos de Europa (Premier League, LaLiga, Bundesliga y Champions League, temporada 2026-27)</dt>
-        <dd>Cada liga es un producto independiente. Los planes mensuales (una liga, las tres ligas de Europa o todo RICKY·PICKS) se renuevan solos cada mes al precio según el plan vigente y se cancelan cuando quieras; la Temporada Europa es un solo pago que cubre las tres ligas hasta su última jornada y no se renueva. El pick destacado de cada jornada es gratuito y no requiere plan. Mientras el modelo esté en beta privada, ningún plan de Europa está a la venta.</dd>
+        <dt>Modelos de fútbol europeo (Premier League, LaLiga, Bundesliga y Champions League, temporada 2026-27)</dt>
+        <dd>Cada liga es un modelo y un producto independiente. Los planes mensuales (una liga, o todo RICKY·PICKS) se renuevan solos cada mes al precio según el plan vigente y se cancelan cuando quieras; la temporada completa de cada liga es un solo pago que cubre hasta su última jornada y no se renueva. El pick destacado de cada jornada es gratuito y no requiere plan. Mientras estos modelos estén en beta privada, ninguno de sus planes está a la venta.</dd>
         <dt>General</dt>
         <dd>Las predicciones son análisis estadístico y no garantizan resultados de ninguna apuesta. Lo que contratas es el acceso al modelo, nunca el dinero que apuestes por tu cuenta.</dd>
       </dl>
@@ -1122,12 +1215,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   const fecha = iso => new Date(iso).toLocaleString('es-MX',
     { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase();
 
-  /* Europa en beta privada (403 {beta:true}), sin partido o con error:
-     se quita la SECCIÓN completa — un bloque "Nuevo" a medias vende
-     menos que ninguno. Los demás modelos solo esconden su card. */
+  /* Liga europea en beta privada (403 {beta:true}), sin partido o con
+     error: se quita SU sección completa — un bloque "Nuevo" a medias
+     vende menos que ninguno. Los demás modelos solo esconden su card. */
+  const EURO = new Set(['epl', 'laliga', 'bundesliga', 'ucl']);
   function quitaEuropa(m) {
-    if (m !== 'europa') return false;
-    const s = document.getElementById('vivo-europa');
+    if (!EURO.has(m)) return false;
+    const s = document.getElementById('vivo-' + m);
     if (s) s.remove();
     return true;
   }
@@ -1166,7 +1260,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         vs = g.verdicts || [];
         dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
           etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
-      } else if (m === 'europa' && d.game) {
+      } else if (EURO.has(m) && d.game) {
         /* /api/euro-free trae la MISMA forma que /api/mx-free (más
            league_id / league_name): card idéntica, margen de goles. */
         const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
@@ -1211,7 +1305,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   carga('nfl', 'fpNfl', '/api/nfl-picks?as=guest');
   carga('mlb', 'fpMlb', '/api/mlb-free');
   carga('mx',  'fpMx',  '/api/mx-free');
-  carga('europa', 'fpEuropa', '/api/euro-free?liga=epl');
+  carga('epl', 'fpEpl', '/api/euro-free?liga=epl');
+  carga('laliga', 'fpLaliga', '/api/euro-free?liga=laliga');
+  carga('bundesliga', 'fpBundesliga', '/api/euro-free?liga=bundesliga');
+  carga('ucl', 'fpUcl', '/api/euro-free?liga=ucl');
 })();
 
 /* ============================================================
