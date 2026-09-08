@@ -319,8 +319,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     main { padding: 22px 0 30px; }
   }
   @media (max-width: 620px) {
-    .model-toggle { display: flex; width: 100%; }
-    .model-toggle a, .model-toggle span { flex: 1; padding: 10px 6px; font-size: 0.82rem; }
+    /* En celular los 7 modelos no caben: la barra se desliza de lado
+       dentro de su recuadro (sin barra de scroll visible) y la pestaña
+       activa se centra sola al cargar. */
+    .model-toggle { display: flex; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; scrollbar-width: none; scroll-padding: 0 12px; }
+    .model-toggle::-webkit-scrollbar { display: none; }
+    .model-toggle a, .model-toggle span { flex: 0 0 auto; padding: 10px 14px; font-size: 0.82rem; scroll-snap-align: center; }
     .opt-row { grid-template-columns: 20px 1fr auto; gap: 10px; padding: 15px 14px; }
     .opt-body { padding-left: 44px; }
     /* en vertical el menú escondido va debajo: tira angosta que crece */
@@ -490,6 +495,11 @@ document.querySelectorAll('.model-toggle a').forEach(a => {
     span.className = 'active'; span.setAttribute('role', 'tab');
     span.setAttribute('aria-selected', 'true'); span.innerHTML = a.innerHTML;
     a.replaceWith(span);
+    /* barra deslizable (celular): que el modelo activo quede a la vista */
+    const bar = span.parentElement;
+    if (bar.scrollWidth > bar.clientWidth) {
+      bar.scrollLeft = Math.max(0, span.offsetLeft - (bar.clientWidth - span.offsetWidth) / 2);
+    }
   }
 });
 
