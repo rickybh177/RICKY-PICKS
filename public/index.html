@@ -991,7 +991,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="modal" style="max-width:420px">
     <div class="modal-head">
       <div>
-        <h3 id="authTitle">Crea tu cuenta</h3>
+        <h3 id="authTitle">Inicia sesión</h3>
         <div class="day">Para guardar tu acceso</div>
       </div>
       <button class="modal-close" id="authClose" aria-label="Cerrar">✕</button>
@@ -1001,8 +1001,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <input id="authEmail" type="email" class="auth-input" placeholder="tu@correo.com" autocomplete="email">
       <label class="tlab" style="margin-top:12px">Contraseña</label>
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
-      <button class="tool-run" id="authSubmit" style="margin-top:16px">Crear cuenta</button>
-      <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
+      <button class="tool-run" id="authSubmit" style="margin-top:16px">Entrar</button>
+      <div class="auth-toggle" id="authToggle">¿No tienes cuenta? Crea una</div>
       <div id="forgotWrap" style="text-align:center;margin-top:8px;display:none"><a href="#" id="forgotLink" style="font-size:13px;color:var(--faint);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
       <div class="redeem-msg" id="authMsg"></div>
     </div>
@@ -1713,9 +1713,9 @@ const authMsg     = document.getElementById('authMsg');
 const authEmail   = document.getElementById('authEmail');
 const authPass    = document.getElementById('authPass');
 const authBtn     = document.getElementById('authBtn');
-let authMode = 'signup';
+let authMode = 'login'; // por defecto iniciar sesión (8-sep-2026)
 
-function openAuth(mode){ authMode = mode||'signup'; renderAuthMode(); authMsg.className='redeem-msg'; authMsg.textContent=''; authOverlay.classList.add('open'); }
+function openAuth(mode){ authMode = mode||'login'; renderAuthMode(); authMsg.className='redeem-msg'; authMsg.textContent=''; authOverlay.classList.add('open'); }
 function closeAuth(){ authOverlay.classList.remove('open'); }
 document.getElementById('authClose').addEventListener('click', closeAuth);
 authOverlay.addEventListener('click', e => { if(e.target===authOverlay) closeAuth(); });
@@ -1823,7 +1823,7 @@ startAuth();
 document.addEventListener('click', async (ev) => {
   const authClick = ev.target.closest('#authBtn');
   if(authClick){
-    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('signup'); }
+    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
     return;
   }
 });

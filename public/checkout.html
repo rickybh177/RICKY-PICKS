@@ -171,7 +171,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="auth-card">
       <!-- Paso 1: autenticación (se oculta cuando hay sesión) -->
       <div id="authStep">
-        <h2 id="stepTitle">Crea tu cuenta</h2>
+        <h2 id="stepTitle">Inicia sesión</h2>
         <p class="sub">Tu compra queda vinculada a tu cuenta para que puedas acceder desde cualquier dispositivo.</p>
         <div id="userBar" class="user-bar" style="display:none">
           <span class="email" id="userEmail"></span>
@@ -187,9 +187,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
             <input class="form-input" type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
           </div>
           <button class="btn-pay" id="authSubmit" style="background:var(--ink)">
-            <span id="authBtnText">Crear cuenta</span>
+            <span id="authBtnText">Entrar</span>
           </button>
-          <div class="auth-toggle" id="authToggle">¿Ya tienes cuenta? Inicia sesión</div>
+          <div class="auth-toggle" id="authToggle">¿No tienes cuenta? Crea una</div>
           <div class="msg" id="authMsg"></div>
           <!-- Salida sin registro: el pick gratis no necesita cuenta.
                Solo comprar la necesita. -->
@@ -608,6 +608,13 @@ const params = new URLSearchParams(window.location.search);
 const planId = params.get('plan');
 const payoErr = params.get('pago');
 
+/* ---- modo "entrar" (?entrar=1&next=/ruta) ----
+   La misma página sirve para iniciar sesión sin comprar nada: los
+   botones "Entrar" de producto.html y "Iniciar sesión" de Mis modelos
+   llegan aquí. Con sesión, regresa a `next` (solo rutas del sitio). */
+const ENTRAR = params.get('entrar') === '1';
+const NEXT = (() => { const n = params.get('next') || ''; return /^\/[a-z0-9\-._~!$&'()*+,;=:@%\/?]*$/i.test(n) && !n.startsWith('//') ? n : '/mis-modelos.html'; })();
+
 /* ---- plan "a elegir" (tres_mensual): los modelos escogidos ----
    Vienen en ?modelos=a,b,c desde producto.html y se pueden ajustar
    aquí mismo (chips en la tarjeta). El servidor exige exactamente 3
@@ -644,7 +651,7 @@ const conQuery = (url, q) => url + (url.includes('?') ? '&' : '?') + q;
 (function(){
   const link = document.getElementById('guestOutLink');
   if(!link) return;
-  link.href = modelUrl(planId);
+  link.href = ENTRAR ? NEXT : modelUrl(planId);
 })();
 
 /* el botón de "Ya tienes acceso" lleva al modelo del plan que se ve */
@@ -696,8 +703,15 @@ if(payoErr === 'error'){
   b.classList.add('show');
 }
 
+/* modo entrar: tarjeta de bienvenida en lugar del plan */
+if(ENTRAR){
+  document.getElementById('planCard').innerHTML = '<div class="plan-eyebrow">Tu cuenta</div>' +
+    '<h1 style="font-size:1.6rem;line-height:1.15;margin-top:6px">Entra para ver tus modelos</h1>' +
+    '<p style="margin-top:12px;opacity:0.85;font-size:0.95rem;line-height:1.5">Tus picks, tus planes y tu suscripción viven en tu cuenta. Si todavía no tienes una, créala en un minuto: el pick gratis de cada modelo no la necesita.</p>';
+  document.title = 'RICKY-PICKS — Entrar';
+}
 /* plan inválido */
-if(!plan){
+if(!plan && !ENTRAR){
   document.getElementById('planCard').innerHTML = '<div style="padding:20px;color:#fff">Ese plan ya no está disponible. <a href="/producto.html" style="color:#fff;text-decoration:underline;font-weight:600">Ver los planes vigentes</a></div>';
 }
 
@@ -782,7 +796,7 @@ function initSb(){
 }
 initSb();
 
-let authMode = 'signup';
+let authMode = 'login'; // por defecto INICIAR SESIÓN; quien no tenga cuenta cambia a "Crea una" (decisión del dueño 8-sep-2026)
 let _currentSession = null;
 
 const authStep     = document.getElementById('authStep');
@@ -913,6 +927,8 @@ async function checkEntitlement(){
 }
 
 async function renderSession(session){
+  /* modo entrar: con sesión no hay nada que comprar aquí → de regreso */
+  if(ENTRAR && session){ location.replace(NEXT); return; }
   if(!session){
     authStep.style.display='block'; payStep.style.display='none'; entitledStep.style.display='none';
     userBar.style.display='none'; authForm.style.display='block';

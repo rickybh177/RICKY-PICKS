@@ -1026,9 +1026,9 @@ if (sb) {
   sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); });
   $('authBtn').addEventListener('click', async () => {
     if (_session) { await sb.auth.signOut(); return; }
-    /* No hay modal aquí: el checkout ya pide cuenta cuando toca. Sin
-       plan elegible (liga en "próximamente") mejor al modelo. */
-    location.href = elegido ? $('goBtn').href : cfg.pagina;
+    /* "Entrar" = iniciar sesión, no comprar: el checkout en modo entrar
+       (login por defecto) y de regreso a esta misma página. */
+    location.href = '/checkout.html?entrar=1&next=' + encodeURIComponent(location.pathname + location.search);
   });
 }
 </script>
