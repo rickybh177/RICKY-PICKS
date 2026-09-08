@@ -30,7 +30,12 @@ const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 
 /* Ligas abiertas al público (freemium). Vacío = todas en beta privada. */
-const PUBLIC_LEAGUES = new Set([]);
+/* 8-sep-2026: las cuatro ligas son PÚBLICAS en modo freemium (el pick
+   gratis de cada jornada se ve sin cuenta; el resto de la cartelera va
+   bloqueado en el servidor). Sus planes siguen con `upcoming` en
+   lib/plans.js, así que el candado manda a "próximamente". Para volver
+   a beta privada: vaciar el Set (en los DOS endpoints). */
+const PUBLIC_LEAGUES = new Set(['epl', 'laliga', 'bundesliga', 'ucl']);
 
 const _cache = new Map(); // leagueId -> { at, value }
 const TTL = 5 * 60 * 1000;

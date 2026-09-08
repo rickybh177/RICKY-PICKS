@@ -557,12 +557,14 @@ node scripts/build-ucl-priors.js --halfLife 500
 
 ## Estado actual (5-sep-2026)
 
-- **Beta privada admin-only** en las tres ligas: `PUBLIC_LEAGUES = new
-  Set([])` en `api/euro-picks.js` Y en `api/euro-free.js` (deben ser
-  el mismo Set; si divergen el landing enseña un pick gratis de una
-  liga cuya página sigue cerrada, o al revés). No-admin (con o sin
-  sesión) → `403 { error: 'Modelo en beta privada.', beta: true,
-  league_id, league_name }`.
+- **Freemium público desde el 8-sep-2026** en las cuatro ligas
+  (`PUBLIC_LEAGUES` con las cuatro en `api/euro-picks.js` Y en
+  `api/euro-free.js`; deben ser el mismo Set): el pick gratis de cada
+  jornada se ve sin cuenta en el landing, en producto.html y en la
+  página del modelo; el resto de la cartelera llega `locked` desde el
+  servidor y el candado manda a producto.html, que mientras los planes
+  lleven `upcoming` muestra "próximamente". Para volver a beta privada,
+  vaciar el Set en los dos archivos.
 - El admin entra por `ADMIN_EMAILS` (`rickybh17@gmail.com`) en los dos
   endpoints, y `lib/supabaseAdmin.js` le fabrica entitlements
   `epl_mensual` / `laliga_mensual` / `bundesliga_mensual` para que los
