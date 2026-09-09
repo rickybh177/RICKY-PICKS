@@ -45,6 +45,9 @@
     laliga_temporada: 899,
     bundesliga_temporada: 899,
     ucl_temporada: 899,
+    /* Pase de las 4 ligas europeas: solo por código, así que el valor
+       real lo manda el capture de la pasarela cuando existe. */
+    europa_temporada: 3596,
   };
 
   var params = new URLSearchParams(window.location.search);

@@ -32,6 +32,7 @@ function destForPlan(planId) {
   if (p.startsWith('laliga_')) return 'europa.html?liga=laliga';
   if (p.startsWith('bundesliga_')) return 'europa.html?liga=bundesliga';
   if (p.startsWith('ucl_')) return 'europa.html?liga=ucl';
+  if (p.startsWith('europa_')) return 'europa.html';
   return 'mis-modelos.html';
 }
 const sep = dest => (dest.includes('?') ? '&' : '?');
@@ -99,13 +100,17 @@ module.exports = async function handler(req, res) {
     catch (e) { console.error('create-payment: elección no guardada', e.message); return res.status(500).json({ error: e.message }); }
   }
 
-  /* Un plan retirado no se vende — salvo ofertas prometidas vigentes:
-     el upgrade de $199 de los mensuales fundador a su temporada, y
-     combo_2026 con $799 por un modelo completo pagado. */
+  /* Un plan retirado no se vende — salvo ofertas prometidas vigentes
+     (el upgrade de $199 de los mensuales fundador a su temporada, y
+     combo_2026 con $799 por un modelo completo pagado) o un código
+     válido para ese plan (europa_temporada con DAYOG). */
   if (plan.retired) {
     const upRet = monthlyUpgradeFor(ents);
     let permitido = !!(upRet && upRet.target === planId);
     if (planId === 'combo_2026') permitido = permitido || !!comboPermanentDiscount(ents);
+    /* Igual que en stripe-create: un código válido para ESTE plan abre
+       la compra de un pase fuera del catálogo (europa_temporada). */
+    permitido = permitido || !!discountFor(((body && body.discount_code) || ''), planId);
     if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
   }
 

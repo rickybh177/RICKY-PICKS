@@ -116,6 +116,12 @@ module.exports = async function handler(req, res) {
       const up = monthlyUpgradeFor(ents);
       let permitido = !!(up && up.target === plan);
       if (plan === 'combo_2026') permitido = permitido || !!comboPermanentDiscount(ents);
+      /* Un código válido PARA ESTE PLAN también abre la compra: así se
+         venden los pases que están fuera del catálogo público y se
+         cierran uno a uno (europa_temporada con DAYOG). El código se
+         valida contra lib/discounts.js en el servidor — el navegador
+         solo manda el texto. */
+      permitido = permitido || !!discount;
       if (!permitido) return res.status(400).json({ error: 'Ese plan ya no está a la venta.' });
     }
 

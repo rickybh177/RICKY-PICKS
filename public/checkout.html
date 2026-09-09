@@ -20,7 +20,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <!-- End Meta Pixel Code -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY-PICKS — Completa tu compra</title>
+<link rel="canonical" href="https://rickypicks.com.mx/checkout.html">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:site_name" content="Ricky Picks">
+<meta property="og:title" content="Completa tu compra — Ricky Picks">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rickypicks.com.mx/checkout.html">
+<meta property="og:image" content="https://rickypicks.com.mx/banner.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rickypicks.com.mx/banner.png">
+<title>Completa tu compra — Ricky Picks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -601,6 +611,22 @@ const PLANS = {
       'Mes a mes saldría en $3,141 — ahorras $2,242',
     ],
   },
+  /* Pase de las 4 ligas europeas: fuera del catálogo público, solo se
+     compra con código (DAYOG lo deja en $2,399). El precio de aquí es
+     la lista —la suma de las cuatro sueltas— y el código lo tacha. */
+  europa_temporada: {
+    name: 'Las 4 ligas de Europa — Temporada 2026-27 completa',
+    price: '$3,596',
+    currency: 'MXN',
+    period: 'Pago único · las cuatro ligas hasta el final de la 2026-27',
+    features: [
+      'Premier League, LaLiga, Bundesliga y Champions, completas',
+      'Hasta la última jornada y la final de la Champions',
+      'Todos los partidos, mercados y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Por separado son $3,596 — cuatro temporadas de $899',
+    ],
+  },
 };
 
 /* leer plan de la URL */
@@ -641,6 +667,7 @@ const modelUrl = p => {
   if(p.startsWith('laliga_')) return '/europa.html?liga=laliga';
   if(p.startsWith('bundesliga_')) return '/europa.html?liga=bundesliga';
   if(p.startsWith('ucl_')) return '/europa.html?liga=ucl';
+  if(p.startsWith('europa_')) return '/europa.html';
   return '/mis-modelos.html';
 };
 /* Pega parámetros a una URL que puede o no traer query ya. */
@@ -708,7 +735,7 @@ if(ENTRAR){
   document.getElementById('planCard').innerHTML = '<div class="plan-eyebrow">Tu cuenta</div>' +
     '<h1 style="font-size:1.6rem;line-height:1.15;margin-top:6px">Entra para ver tus modelos</h1>' +
     '<p style="margin-top:12px;opacity:0.85;font-size:0.95rem;line-height:1.5">Tus picks, tus planes y tu suscripción viven en tu cuenta. Si todavía no tienes una, créala en un minuto: el pick gratis de cada modelo no la necesita.</p>';
-  document.title = 'RICKY-PICKS — Entrar';
+  document.title = 'Ricky Picks — Entrar';
 }
 /* plan inválido */
 if(!plan && !ENTRAR){
@@ -723,7 +750,7 @@ if(plan){
   document.getElementById('planFeatures').innerHTML = plan.features.map(f => `<li>${f}</li>`).join('');
   document.getElementById('summaryName').textContent = plan.name;
   document.getElementById('summaryPrice').textContent = `${plan.price} ${plan.currency}`;
-  document.title = `RICKY-PICKS — ${plan.name}`;
+  document.title = `Ricky Picks — ${plan.name}`;
 }
 
 /* Re-oferta al pagar un mensual de UN modelo: su temporada completa de
