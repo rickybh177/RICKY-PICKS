@@ -1809,6 +1809,47 @@ async function refreshUI(){
   /* "Mis modelos" vive siempre en el nav; lo único que cambia con la
      sesión es el botón de entrar/salir. */
   authBtn.textContent = _session && _session.user ? 'Salir' : 'Iniciar sesión';
+  atajosDeCliente();
+}
+
+/* ---- Atajos para clientes con modelo (8-sep-2026) ----
+   Solo para quien tiene sesión Y acceso vigente a un modelo: los CTA
+   de la landing que hoy llevan a los planes de ese modelo lo mandan
+   directo a su modelo. Sin sesión, o sin ese modelo, todo sigue igual
+   (a /producto.html?m=…). Lo decide /api/my-access, nunca el navegador. */
+const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl' };
+const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
+let _atajosDe = null; // user_id con el que se pintaron los atajos
+async function atajosDeCliente(){
+  const links = [...document.querySelectorAll('a[href^="/producto.html?m="], a[data-plans-href]')];
+  const uid = _session && _session.user ? _session.user.id : null;
+  if(!uid){
+    /* sin sesión: restaurar los enlaces a planes si se habían cambiado */
+    links.forEach(a => { if(a.dataset.plansHref){ a.href = a.dataset.plansHref; if(a.dataset.plansText) a.textContent = a.dataset.plansText; } });
+    _atajosDe = null;
+    return;
+  }
+  if(_atajosDe === uid) return;
+  let acc = null;
+  try{
+    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+    if(r.ok) acc = await r.json();
+  }catch(e){}
+  if(!acc) return;
+  _atajosDe = uid;
+  links.forEach(a => {
+    const href = a.dataset.plansHref || a.getAttribute('href');
+    const m = /[?&]m=([a-z]+)/.exec(href);
+    if(!m || !MODEL_PAGE[m[1]]) return;
+    a.dataset.plansHref = href;
+    if(!a.dataset.plansText) a.dataset.plansText = a.textContent;
+    if(acc[m[1]]){
+      a.href = MODEL_PAGE[m[1]];
+      if(a.classList.contains('btn-ghost')) a.textContent = 'Abrir mi modelo ' + MODEL_NAME[m[1]];
+    } else {
+      a.href = href; a.textContent = a.dataset.plansText;
+    }
+  });
 }
 
 
