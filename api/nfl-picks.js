@@ -16,6 +16,7 @@ const { buildWeek } = require('../lib/nfl/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
 const { kvGet, kvPut } = require('../lib/odds/theoddsapi');
+const { elegir: elegirLibre } = require('../lib/free-pick');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -40,15 +41,16 @@ const TTL = 5 * 60 * 1000;
      portada). Si ya NO queda ningún juego por empezar, se conserva el
      último: ahí sí la semana terminó y el frontend avisa "ya se jugó"
      y manda al modelo completo. */
+/* Antes: `mejor BET * 10 + mejor prob`, o sea el juego más cantado de
+   la semana. Ahora manda lib/free-pick.js — seguridad + intriga y el
+   partidazo al fondo (un Chiefs–Cowboys es por lo que se paga). */
+function normNfl(g) {
+  return { liga: 'nfl', home: g.home.name, away: g.away.name, verdicts: g.verdicts };
+}
 function pickBest(list) {
   if (!list.length) return null;
-  const score = g => {
-    const vs = g.verdicts || [];
-    const bestBet = Math.max(0, ...vs.filter(v => v.verdict === 'bet').map(v => v.prob || 0));
-    const bestAny = Math.max(0, ...vs.map(v => v.prob || 0));
-    return bestBet * 10 + bestAny; // los BET mandan; desempate por probabilidad
-  };
-  return list.reduce((a, b) => (score(b) > score(a) ? b : a)).id;
+  const g = elegirLibre(list, normNfl);
+  return g ? g.id : null;
 }
 
 async function resolveFeatured(value) {
