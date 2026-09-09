@@ -15,7 +15,8 @@
    abierta, igual que en euro-picks).
    ============================================================ */
 const { buildBoard } = require('../lib/euro/model');
-const { featuredGame } = require('../lib/euro/featured');
+const { featuredGame, overrideDe } = require('../lib/euro/featured');
+const { veredictoDeCard } = require('../lib/free-pick');
 const { leagueOf } = require('../lib/euro/leagues');
 const { getUserFromToken } = require('../lib/supabaseAdmin');
 
@@ -75,8 +76,12 @@ module.exports = async function handler(req, res) {
       if (!best) {
         value = { jornada: board.jornada, tournament: board.tournament, league_id: board.league_id, league_name: board.league_name, game: null };
       } else {
-        const topPick = (best.verdicts || []).filter(v => v.verdict === 'bet')
-          .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0] || (best.verdicts || [])[0] || null;
+        /* Mercado fijado a mano (override) o, si no, el mejor BET. */
+        const ov = overrideDe(leagueId, best);
+        const topPick = (ov && ov.mercado ? veredictoDeCard(best.verdicts, ov.mercado) : null)
+          || (best.verdicts || []).filter(v => v.verdict === 'bet')
+            .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0]
+          || (best.verdicts || [])[0] || null;
         value = {
           jornada: board.jornada,
           tournament: board.tournament,

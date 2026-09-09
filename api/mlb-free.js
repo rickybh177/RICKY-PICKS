@@ -6,7 +6,8 @@
    sigue gated en /api/mlb-picks.
    ============================================================ */
 const { buildDay } = require('../lib/mlb/model');
-const { featuredGame, activeDay } = require('../lib/mlb/featured');
+const { featuredGame, activeDay, overrideDe } = require('../lib/mlb/featured');
+const { veredictoDeCard } = require('../lib/free-pick');
 
 const _cache = new Map(); // date -> { at, value }
 const TTL = 10 * 60 * 1000;
@@ -81,7 +82,13 @@ module.exports = async function handler(req, res) {
                —pasa cuando el pick gratis se fija a mano— la card se
                quedaba con el texto de relleno y con un chip BET que el
                juego no tiene. */
-            verdict: mejorVeredicto(best.verdicts),
+            /* Mercado fijado a mano (override) o, si no, el mejor
+               veredicto por rango y probabilidad. */
+            verdict: (() => {
+              const ov = overrideDe(best, date);
+              const v = ov && ov.mercado ? veredictoDeCard(best.verdicts, ov.mercado) : null;
+              return v ? { verdict: v.verdict, label: v.label, prob: v.prob } : mejorVeredicto(best.verdicts);
+            })(),
             /* La cartelera COMPLETA del pick gratis: todos sus mercados
                con veredicto y la distribución de carreras. No es nada
                nuevo — /api/mlb-picks ya sirve este mismo juego entero a

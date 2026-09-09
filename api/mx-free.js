@@ -6,7 +6,8 @@
    gated en /api/mx-picks.
    ============================================================ */
 const { buildBoard } = require('../lib/mx/model');
-const { featuredGame } = require('../lib/mx/featured');
+const { featuredGame, overrideDe } = require('../lib/mx/featured');
+const { veredictoDeCard } = require('../lib/free-pick');
 
 let _cache = null; // { at, value }
 const TTL = 10 * 60 * 1000;
@@ -30,8 +31,13 @@ module.exports = async function handler(req, res) {
       if (!best) {
         value = { jornada: board.jornada, game: null };
       } else {
-        const topPick = (best.verdicts || []).filter(v => v.verdict === 'bet')
-          .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0] || (best.verdicts || [])[0] || null;
+        /* Si el partido está fijado a mano con `mercado`, la card enseña
+           ESE veredicto; si no, el mejor BET (y de último, el primero). */
+        const ov = overrideDe(best);
+        const topPick = (ov && ov.mercado ? veredictoDeCard(best.verdicts, ov.mercado) : null)
+          || (best.verdicts || []).filter(v => v.verdict === 'bet')
+            .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0]
+          || (best.verdicts || [])[0] || null;
         value = {
           jornada: board.jornada,
           tournament: board.tournament,
