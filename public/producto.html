@@ -1050,7 +1050,9 @@ async function cargaPick() {
     } else if (M === 'nfl') {
       const g = (d.games || []).find(x => x.id === d.featured_id);
       if (g) {
-        const v = mejorVeredicto(g.verdicts);
+        /* El servidor puede fijar qué mercado enseña la card (override
+           manual); si no lo manda, se calcula aquí como siempre. */
+        const v = d.featured_pick || mejorVeredicto(g.verdicts);
         const ml = (g.markets && g.markets.moneyline) || {};
         const favH = (ml.home || 0) >= (ml.away || 0);
         o = {

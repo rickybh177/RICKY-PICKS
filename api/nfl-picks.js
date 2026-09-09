@@ -16,7 +16,7 @@ const { buildWeek } = require('../lib/nfl/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
 const { kvGet, kvPut } = require('../lib/odds/theoddsapi');
-const { elegir: elegirLibre } = require('../lib/free-pick');
+const { pickBest, pickDeCard } = require('../lib/nfl/featured');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -41,17 +41,10 @@ const TTL = 5 * 60 * 1000;
      portada). Si ya NO queda ningún juego por empezar, se conserva el
      último: ahí sí la semana terminó y el frontend avisa "ya se jugó"
      y manda al modelo completo. */
-/* Antes: `mejor BET * 10 + mejor prob`, o sea el juego más cantado de
-   la semana. Ahora manda lib/free-pick.js — seguridad + intriga y el
-   partidazo al fondo (un Chiefs–Cowboys es por lo que se paga). */
-function normNfl(g) {
-  return { liga: 'nfl', home: g.home.name, away: g.away.name, verdicts: g.verdicts };
-}
-function pickBest(list) {
-  if (!list.length) return null;
-  const g = elegirLibre(list, normNfl);
-  return g ? g.id : null;
-}
+/* La elección (regla compartida + overrides manuales) vive en
+   lib/nfl/featured.js, junto a la de los otros tres modelos. Aquí
+   se queda solo el clavado en el KV, que necesita la máquina de
+   estados de la semana. */
 
 async function resolveFeatured(value) {
   const games = (value.games || []).filter(g => !g.error);
@@ -130,14 +123,20 @@ module.exports = async function handler(req, res) {
       if (key === 'auto:auto') _cache.set(value.seasontype + ':' + value.week, { at: Date.now(), value });
     }
     res.setHeader('Cache-Control', 'no-store');
+    /* Veredicto que debe enseñar la card del destacado. Viaja resuelto
+       desde aquí porque el front de NFL lo calculaba por su cuenta y
+       así no habría forma de fijar un mercado a mano. */
+    const destacado = (value.games || []).find(g => g.id === value.featured_id) || null;
+    const featured_pick = pickDeCard(destacado);
     if (access === 'full') {
-      return res.status(200).json({ ...value, access: 'full' });
+      return res.status(200).json({ ...value, featured_pick, access: 'full' });
     }
     // invitado: destacado completo, el resto bloqueado
     const games = (value.games || []).map(g =>
       g.id === value.featured_id ? g : lockGame(g));
     return res.status(200).json({
       ...value,
+      featured_pick,
       access: 'guest',
       locked_count: games.filter(g => g.locked).length,
       games,
