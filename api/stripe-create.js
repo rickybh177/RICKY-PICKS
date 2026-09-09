@@ -136,9 +136,17 @@ module.exports = async function handler(req, res) {
     }
 
     const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
+    /* Precio de fundador: quien ya era cliente de los modelos previos
+       paga menos por "Todos los modelos". Va en el precio BASE de la
+       suscripción —no como cupón— para que valga en CADA renovación:
+       un cupón de Stripe con duration 'once' solo abarataría el primer
+       mes y al segundo le llegaría el cobro completo. */
+    const founder = plan === FOUNDER_PLAN ? founderPriceFor(ents) : null;
+    const precioBase = founder ? founder.price : def.price;
     const p = {
-      name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : ''),
-      price: def.price * 100, currency: String(def.currency || 'MXN').toLowerCase(),
+      name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '')
+        + (founder ? ' — precio de fundador' : ''),
+      price: precioBase * 100, currency: String(def.currency || 'MXN').toLowerCase(),
     };
     /* metadata que leen stripe-capture (alta) y stripe-webhook
        (renovaciones): user_id, plan y, en "a elegir", los modelos. */
@@ -202,7 +210,7 @@ module.exports = async function handler(req, res) {
     }
 
     /* ---- resto de planes: pago único ---- */
-    let finalPrice = priceWith(discount, def.price) * 100; // Stripe cobra en centavos
+    let finalPrice = priceWith(discount, precioBase) * 100; // Stripe cobra en centavos
     let productName = discount ? `${p.name} (${labelWith(discount)})` : p.name;
 
     /* Precios especiales de los pases completos (manda el más fuerte):

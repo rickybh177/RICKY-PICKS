@@ -123,10 +123,17 @@ module.exports = async function handler(req, res) {
   if (yaCubiertos.length && yaCubiertos.length >= (models || productsForPlan(planId)).length) {
     return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
   }
+  /* Precio de fundador: en Mercado Pago va en transaction_amount del
+     preapproval, o sea el monto de TODOS los meses (MP cobra siempre lo
+     mismo), que es justo lo que se quiere. */
+  const founder = planId === FOUNDER_PLAN ? founderPriceFor(ents) : null;
+  const precioBase = founder ? founder.price : plan.price;
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountFor(discountCode, planId);
-  let finalPrice = priceWith(discount, plan.price);
-  let finalTitle = discount ? `RICKY·PICKS — ${plan.title} (${labelWith(discount)})` : `RICKY·PICKS — ${plan.title}`;
+  let finalPrice = priceWith(discount, precioBase);
+  let finalTitle = `RICKY·PICKS — ${plan.title}`
+    + (founder ? ' (precio de fundador)' : '')
+    + (discount ? ` (${labelWith(discount)})` : '');
 
   /* Precios especiales de los pases completos (manda el más fuerte):
      1) Upgrade del MENSUAL: con cualquier mensualidad vigente, el pase

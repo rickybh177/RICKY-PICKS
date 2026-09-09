@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, EURO_PRODUCTS, entitlementExpiry } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -35,6 +35,10 @@ module.exports = async function handler(req, res) {
     for (const p of EURO_PRODUCTS) euro[p] = ents.find(e => e.product === p && e.active) || null;
     const upgrade = monthlyUpgradeFor(ents);
     const permDisc = comboPermanentDiscount(ents);
+    /* Precio de fundador de "Todos los modelos" para clientes antiguos
+       (o null). El front solo lo PINTA; el cobro lo vuelve a decidir el
+       servidor en stripe-create / create-payment. */
+    const founder = founderPriceFor(ents);
     let tres = null;
     const tresRows = ents.filter(e => e.plan === 'tres_mensual' && e.active);
     if (tresRows.length) {
@@ -77,6 +81,8 @@ module.exports = async function handler(req, res) {
       combo_2026_discount: !!(permDisc || (upgrade && upgrade.target === 'combo_2026')),
       /* Upgrade del plan mensual: { target, price, from } o null. */
       monthly_upgrade: upgrade,
+      /* { plan, price, models, count } — precio de fundador o null. */
+      founder,
     });
   } catch (e) {
     console.error('my-access:', e);

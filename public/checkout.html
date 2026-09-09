@@ -1028,7 +1028,10 @@ async function renderSession(session){
      - Mensualero: su pase a $199 y su mensualidad se cancela sola.
      - Combo con un modelo completo pagado: $799. */
   let acceso = null;
-  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026'].includes(planId)){
+  /* todo_mensual entra a la lista por el PRECIO DE FUNDADOR: sin
+     consultar my-access, un cliente antiguo vería los $899 de lista y
+     solo descubriría su precio en la pantalla de pago. */
+  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026','todo_mensual'].includes(planId)){
     try{
       const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
       if(r.ok) acceso = await r.json();
@@ -1112,6 +1115,24 @@ async function renderSession(session){
     } else if(planId === 'combo_2026' && acceso.combo_2026_discount){
       pinta('$' + Number(acceso.combo_2026_price).toLocaleString('en-US'),
         'Precio especial: ya tienes uno de los modelos');
+    } else if(acceso.founder && acceso.founder.plan === planId){
+      /* Precio de fundador: se dice POR QUÉ lo tiene, que es el punto
+         de la oferta, y que no lo pierde al renovar. */
+      const f = acceso.founder;
+      pinta('$' + Number(f.price).toLocaleString('en-US'),
+        'Precio de fundador por ser cliente desde antes · cada mes, mientras no canceles');
+      const resumen = document.getElementById('summaryName');
+      if(resumen && !document.getElementById('founderTag')){
+        const tag = document.createElement('div');
+        tag.id = 'founderTag';
+        tag.style.cssText = 'margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.28);font-size:0.85rem;line-height:1.5;color:var(--ink)';
+        tag.innerHTML = '<strong>★ Tu precio de fundador</strong><br>' +
+          'Ya eras cliente de ' + (f.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos') +
+          ', así que pagas <strong>$' + Number(f.price).toLocaleString('en-US') + ' al mes</strong> en vez de ' + plan.price +
+          '. Lo conservas mientras no canceles.';
+        const caja = resumen.closest('div[style*="background"]');
+        if(caja) caja.insertAdjacentElement('afterend', tag);
+      }
     }
   }
 

@@ -20,7 +20,18 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <!-- End Meta Pixel Code -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY·PICKS — Elige tu plan</title>
+<link rel="canonical" href="https://rickypicks.com.mx/producto.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:site_name" content="Ricky Picks">
+<meta property="og:title" content="Planes y precios — Ricky Picks">
+<meta property="og:description" content="Elige tu plan: un modelo, tres a elegir o todos. Acceso a los picks del modelo con récord público.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rickypicks.com.mx/producto.html">
+<meta property="og:image" content="https://rickypicks.com.mx/banner.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rickypicks.com.mx/banner.png">
+<title>Planes y precios — Ricky Picks</title>
 <meta name="description" content="Elige tu plan: una semana de prueba, la temporada completa o el combo con los tres modelos.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -309,6 +320,14 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     padding: 18px 22px; border-radius: 14px; text-decoration: none;
     box-shadow: 0 16px 36px -16px rgba(29,78,216,0.75); transition: transform .15s ease, background .15s ease; }
   .go:hover { transform: translateY(-2px); background: var(--blue); }
+  .founder-note { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 16px;
+    background: linear-gradient(135deg, rgba(22,163,74,0.09), rgba(47,123,255,0.07));
+    border: 1px solid rgba(22,163,74,0.28); border-radius: 14px; padding: 14px 16px; }
+  .founder-note .fn-ico { flex: none; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--bet); color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 700; }
+  .founder-note b { display: block; font-size: 0.92rem; letter-spacing: -0.01em; color: var(--ink); }
+  .founder-note span { display: block; font-size: 0.84rem; color: #3d4759; font-weight: 450; margin-top: 2px; }
   .trust { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; }
   .trust span { font-size: 0.8rem; color: var(--muted); position: relative; padding-left: 20px; }
   .trust span::before { content: '✓'; position: absolute; left: 0; color: var(--bet); font-weight: 700; }
@@ -433,6 +452,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p class="lede" id="buyLede">Todos los partidos, todos los mercados, con veredicto claro en cada uno.</p>
       </header>
       <section class="buy">
+        <!-- Aviso de precio de fundador: solo aparece para quien ya era
+             cliente de los modelos previos (lo decide /api/my-access). -->
+        <div class="founder-note" id="founderNote" hidden></div>
         <div class="opts" id="opts"></div>
         <a class="go" id="goBtn" href="#">Continuar</a>
         <div class="trust">
@@ -505,7 +527,7 @@ const M = MODELOS[param] ? param : 'mlb';
 const cfg = MODELOS[M];
 
 /* nav + toggle + enlaces al modelo */
-document.title = 'RICKY·PICKS — Plan ' + cfg.nombre;
+document.title = 'Ricky Picks — Plan ' + cfg.nombre;
 $('buyTitle').textContent = cfg.titulo;
 $('buyLede').textContent = cfg.lede;
 $('verTodos').href = cfg.pagina;
@@ -571,7 +593,40 @@ const BULLETS = {
   ]),
 };
 
-let planes = null, elegido = null;
+let planes = null, elegido = null, fundador = null;
+
+/* Precio de fundador: se lo pregunta al servidor en cada cambio de
+   sesión. Sin sesión no se puede saber quién es, así que se pinta el
+   precio de lista y el aviso queda escondido. */
+function pintaAvisoFundador() {
+  const box = document.getElementById('founderNote');
+  if (!box) return;
+  if (!fundador) { box.hidden = true; return; }
+  const cuantos = fundador.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos';
+  box.innerHTML = '<span class="fn-ico">★</span><span>' +
+    '<b>Tienes precio de fundador: ' + esc(money(fundador.price)) + ' al mes</b>' +
+    '<span>Es tu descuento por haber sido cliente de ' + cuantos + ' antes. ' +
+    'Se aplica a «Todos los modelos» y lo conservas mientras no canceles.</span></span>';
+  box.hidden = false;
+}
+
+async function sincronizaFundador() {
+  try {
+    if (!sb) return;
+    const { data } = await sb.auth.getSession();
+    const nuevo = await (async () => {
+      if (!data || !data.session) return null;
+      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + data.session.access_token } });
+      if (!r.ok) return null;
+      const a = await r.json();
+      return a && a.founder ? a.founder : null;
+    })();
+    const antes = fundador ? fundador.price : null;
+    fundador = nuevo;
+    pintaAvisoFundador();
+    if ((nuevo ? nuevo.price : null) !== antes && planes) pintaOpciones(planes);
+  } catch (e) { /* si falla, se queda el precio de lista */ }
+}
 
 /* Los 7 modelos vendibles (orden canónico, el mismo de lib/plans.js) */
 const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
@@ -676,12 +731,19 @@ function pintaOpciones(p) {
   }
   if (todo) {
     const n = (todo.products || []).length || 7;
-    const ahorro = todo.anchor ? todo.anchor - todo.price : 0;
+    /* Precio de fundador (clientes de los modelos previos): sustituye al
+       de lista y tacha los $899, no el ancla de "por separado". El cobro
+       real lo vuelve a decidir el servidor. */
+    const precio = fundador ? fundador.price : todo.price;
+    const ahorro = todo.anchor ? todo.anchor - precio : 0;
+    const bullets = BULLETS.todo()
+      .concat(fundador ? ['Tu precio de fundador se queda mientras no canceles'] : [])
+      .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
     html += '<div class="sep">O bien</div>';
     html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
-      money(todo.price), 'al mes · ' + money(Math.round(todo.price / n)) + ' por modelo',
-      BULLETS.todo().concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []),
-      null, todo.anchor ? money(todo.anchor) : null);
+      money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
+      bullets, fundador ? 'Precio de fundador' : null,
+      fundador ? money(todo.price) : (todo.anchor ? money(todo.anchor) : null));
   }
   $('opts').innerHTML = html;
   pintaChips();
@@ -1033,7 +1095,7 @@ function pintaSesion() {
   b.title = _session ? _session.user.email + ' — cerrar sesión' : 'Inicia sesión';
 }
 if (sb) {
-  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); });
+  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); sincronizaFundador(); });
   $('authBtn').addEventListener('click', async () => {
     if (_session) { await sb.auth.signOut(); return; }
     /* "Entrar" = iniciar sesión, no comprar: el checkout en modo entrar
