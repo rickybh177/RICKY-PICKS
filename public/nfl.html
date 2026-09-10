@@ -21,7 +21,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <script src="/meta-purchase.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MODELO NFL 26-27 — RICKY·PICKS</title>
+<link rel="canonical" href="https://rickypicks.com.mx/nfl.html">
+<meta property="og:site_name" content="Ricky Picks">
+<meta property="og:title" content="Modelo NFL 26-27 — Ricky Picks">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rickypicks.com.mx/nfl.html">
+<meta property="og:image" content="https://rickypicks.com.mx/banner.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rickypicks.com.mx/banner.png">
+<title>Modelo NFL 26-27 — Ricky Picks</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,6 +111,23 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
   .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
   .vrow.skip .vl { color: var(--faint); font-weight: 500; }
+  .vchip.lectura { background: var(--g2); color: var(--muted); border: 1px solid var(--line-2); }
+
+  /* props de jugador */
+  details.props { margin-top: 10px; }
+  details.props summary { list-style: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-deep); background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); border-radius: 9px; padding: 10px 12px; user-select: none; }
+  details.props summary::-webkit-details-marker { display: none; }
+  details.props summary::after { content: ' ▾'; }
+  details.props[open] summary::after { content: ' ▴'; }
+  .props-body { margin-top: 8px; }
+  .props-state, .props-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); padding: 8px 4px; }
+  .player { background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .player-h { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .player-h .pp { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--faint); font-weight: 600; }
+  .prow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+  .prow .pl { font-weight: 600; font-size: 0.84rem; }
+  .prow .pl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 500; color: var(--faint); margin-top: 2px; }
+  .prow.skip .pl, .prow.lectura .pl { color: var(--muted); font-weight: 500; }
 
   .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--beta); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
   .analysis-box .a-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--beta); margin-bottom: 6px; }
@@ -378,7 +404,7 @@ function renderWeek(wk) {
 
 /* Tarjeta censurada: se ve el partido y la hora, nunca los veredictos. */
 function lockedCard(g, i) {
-  const fake = ['Spread', 'Total', 'Ganador', 'Props del QB']
+  const fake = ['Spread', 'Total', 'Ganador', 'Props de jugador']
     .map(l => '<div class="vrow"><span class="vl">' + l + '</span><span class="vchip maybe">····</span></div>').join('');
   return '<div class="card" style="--i:' + i + '">' +
     metaRow(g) + teamRows(g) +
@@ -474,20 +500,66 @@ function moreDetails(g) {
     det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
     det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
     det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
-    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total) +
-    (g.qb_props
-      ? '<div class="det-h">Props del QB (proyección del modelo)</div>' +
-        qbRows(g.home, g.qb_props.home) + qbRows(g.away, g.qb_props.away)
-      : '');
+    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total);
   return '<details class="more"><summary>Todos los mercados y props</summary>' +
-    '<div class="det-rows">' + rows + '</div>' + distChart(m, g) + '</details>';
+    '<div class="det-rows">' + rows + '</div>' + propsBlock(g) + distChart(m, g) + '</details>';
 }
 function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
-function qbRows(team, p) {
-  if (!p) return '';
-  return det('QB de ' + team.name + ' · yardas por pase O/U ' + p.pass_yds.line, 'Over ' + pct1(p.pass_yds.over) + ' · proyección ' + p.pass_yds.mean + ' yds') +
-         det('QB de ' + team.name + ' · 2+ TDs de pase', pct1(p.pass_tds.over) + ' · proyección ' + p.pass_tds.mean);
+
+/* ---- props de jugador: bajo demanda (cuestan momios), por juego ---- */
+function propsBlock(g) {
+  if (!g.env || g.state === 'post') return '';
+  return '<details class="props" data-game="' + esc(g.id) + '">' +
+    '<summary>Props de jugador — yardas, recepciones, TDs</summary>' +
+    '<div class="props-body"><div class="props-state">Cargando proyecciones y momios de props…</div></div>' +
+    '</details>';
 }
+const PCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP', lectura: 'LECTURA' };
+async function loadProps(det) {
+  if (det.dataset.loaded) return;
+  det.dataset.loaded = '1';
+  const body = det.querySelector('.props-body');
+  const q = new URLSearchParams({ game: det.dataset.game, st: currentST, week: currentWeek });
+  const headers = await authHeader();
+  let res;
+  try { res = await fetch('/api/nfl-props?' + q.toString(), { headers }); }
+  catch (e) { body.innerHTML = '<div class="props-state">Sin conexión.</div>'; det.dataset.loaded = ''; return; }
+  if (res.status === 403) { body.innerHTML = '<div class="props-state">🔒 Los props de este juego están en tu plan.</div>'; return; }
+  if (!res.ok) { body.innerHTML = '<div class="props-state">No se pudieron calcular los props.</div>'; det.dataset.loaded = ''; return; }
+  const d = await res.json();
+  if (!d.players || !d.players.length) { body.innerHTML = '<div class="props-state">' + esc(d.note || 'Sin jugadores con historial suficiente.') + '</div>'; return; }
+  const POS = { QB: 0, RB: 1, WR: 2, TE: 3 };
+  const list = d.players.slice().sort((a, b) => (a.side === 'away' ? 0 : 1) - (b.side === 'away' ? 0 : 1) || POS[a.pos] - POS[b.pos]);
+  let html = '<div class="props-meta">Historial real por jugador · momios de props de ' + (d.odds_books || 0) + ' casas · ' + d.with_lines + ' mercados con línea</div>';
+  for (const p of list) {
+    html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos) + ' · ' + esc(p.team) + '</span>' +
+      (p.questionable ? ' <span class="badge wx">Questionable</span>' : '') +
+      (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
+    for (const mk of p.markets) {
+      const m = mk.model;
+      let proj, mercado, prob;
+      if (mk.key === 'anytime_td') {
+        proj = 'modelo ' + pct1(mk.p);
+        mercado = mk.line ? 'Sí ' + am(mk.line.price) : 'sin línea';
+        prob = '';
+      } else {
+        proj = 'modelo ' + m.mu + (m.sd ? ' ± ' + m.sd : '');
+        mercado = mk.line ? (mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point + ' (' + am(mk.line.price) + ')' : 'sin línea';
+        prob = mk.p != null ? ' · ' + pct1(mk.p) : '';
+      }
+      const v = mk.verdict || 'lectura';
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+        '<small>' + esc(proj) + ' · ' + esc(mercado) + prob + (mk.ev != null ? ' · edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%' : '') + '</small></span>' +
+        '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
+    }
+    html += '</div>';
+  }
+  body.innerHTML = html;
+}
+document.addEventListener('toggle', e => {
+  const t = e.target;
+  if (t && t.matches && t.matches('details.props') && t.open) loadProps(t);
+}, true);
 
 function distChart(m, g) {
   const d = m.margin_dist || [];
