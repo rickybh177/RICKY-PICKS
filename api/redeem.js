@@ -32,6 +32,7 @@ const CODES = {
   'MLBFULL': 'mlb_temporada', // código de acceso completo MLB (temporada 2026)
   'COMBOMES': 'combo_fundador', // pago por transferencia: MLB + Liga MX por 30 días (sin suscripción; expira solo)
   'SAUTOP': 'combo_permanente', // acceso permanente MLB + Liga MX (código de soporte)
+  'FULLMOD': 'full_mes', // TODOS los modelos por 30 días, sin cobro (expira solo)
 };
 
 function bearer(req) {
