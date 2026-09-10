@@ -21,7 +21,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <script src="/meta-purchase.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RICKY-PICKS — Mis modelos</title>
+<link rel="canonical" href="https://rickypicks.com.mx/mis-modelos.html">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:site_name" content="Ricky Picks">
+<meta property="og:title" content="Mis modelos — Ricky Picks">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rickypicks.com.mx/mis-modelos.html">
+<meta property="og:image" content="https://rickypicks.com.mx/banner.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rickypicks.com.mx/banner.png">
+<title>Mis modelos — Ricky Picks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -81,6 +91,19 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .mc-ico { font-size: 1.9rem; line-height: 1; }
   .mc-chip { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 12px; border-radius: 980px; background: var(--soft); color: var(--muted); white-space: nowrap; }
   .mc-chip.on { background: rgba(22,163,74,0.1); color: var(--win); }
+  /* Suscripción que se acabó: ni verde (no está activa) ni gris
+     (no es "nunca compró"). Ámbar = se te terminó, vuelve. */
+  .mc-chip.fin { background: rgba(217,138,10,0.12); color: #a56a06; }
+  .fin-aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 26px;
+    background: rgba(217,138,10,0.08); border: 1px solid rgba(217,138,10,0.3);
+    border-radius: 14px; padding: 15px 17px; }
+  .fin-aviso .fa-ico { flex: none; width: 26px; height: 26px; border-radius: 50%;
+    background: #d98a0a; color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 700; }
+  .fin-aviso b { display: block; font-size: 0.95rem; color: var(--ink); }
+  .fin-aviso span { display: block; font-size: 0.87rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .fin-aviso a { color: var(--blue); font-weight: 600; text-decoration: none; }
+  .fin-aviso a:hover { text-decoration: underline; }
   .model-card h2 { font-size: 1.22rem; font-weight: 750; letter-spacing: -0.02em; }
   .model-card p { color: var(--muted); font-size: 0.92rem; margin-top: 8px; flex: 1; }
   .mc-cta { margin-top: 20px; text-decoration: none; text-align: center; font-weight: 700; font-size: 0.92rem; padding: 13px 20px; border-radius: 12px; background: var(--blue); color: #fff; transition: background .15s ease; }
@@ -158,6 +181,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <h1>Mis modelos</h1>
       <p class="lede">Estos son los modelos activos. Entra al que quieras para ver los picks del día.</p>
     </div>
+
+    <!-- Aviso de suscripción terminada (lo llena el JS con my-access) -->
+    <div class="fin-aviso" id="finAviso" hidden></div>
 
     <div class="models">
       <div class="model-card">
@@ -278,13 +304,56 @@ function showMain(){
   document.getElementById('mainContent').style.display = 'block';
 }
 
-/* Marca una tarjeta como activa o como "ver planes" según el acceso. */
-function paint(has, chipId, ctaId, plansHref){
+const NOMBRE_MODELO = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL',
+  epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
+
+/* Aviso de arriba: se le dice CLARO a quien ya fue cliente que su
+   suscripción se terminó y desde cuándo. Antes no se le decía nada —
+   peor aún, se le seguía marcando "Activo" — y descubría el candado
+   hasta entrar al modelo. */
+function pintaFinAviso(acc){
+  const box = document.getElementById('finAviso');
+  if(!box) return;
+  const fin = acc && acc.expirados ? acc.expirados : {};
+  const nombres = Object.keys(fin).map(p => NOMBRE_MODELO[p] || p);
+  if(!nombres.length){ box.hidden = true; return; }
+
+  /* La fecha más reciente entre los vencidos: es "cuándo se acabó". */
+  const cuando = Object.values(fin)
+    .map(v => Date.parse(v.expired_at)).filter(n => isFinite(n)).sort().pop();
+  /* Zona de México, como el resto del sitio: sin esto una fecha cerca
+     de medianoche UTC se le muestra al cliente un día antes. */
+  const fecha = cuando ? new Date(cuando).toLocaleDateString('es-MX',
+    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' }) : null;
+
+  const lista = nombres.length === 1 ? nombres[0]
+    : nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1];
+  const varios = nombres.length > 1;
+
+  box.innerHTML = '<span class="fa-ico">!</span><span>' +
+    '<b>Tu suscripción se terminó</b>' +
+    '<span>' + (varios ? 'Se acabó tu acceso a ' : 'Se acabó tu acceso a ') + lista +
+    (fecha ? ' el ' + fecha : '') + '. Tus picks te esperan en cuanto la reactives — ' +
+    '<a href="/producto.html">ver planes</a>.</span></span>';
+  box.hidden = false;
+}
+
+/* Marca una tarjeta según el acceso. Tres estados, no dos: activo,
+   TERMINADO (ya fue cliente y se le acabó) y sin acceso. */
+function paint(has, chipId, ctaId, plansHref, vencido){
   const chip = document.getElementById(chipId);
   const cta  = document.getElementById(ctaId);
+  chip.classList.remove('fin');
   if(has){
     chip.textContent = 'Activo';
     chip.classList.add('on');
+  } else if(vencido){
+    chip.textContent = 'Terminó';
+    chip.classList.remove('on');
+    chip.classList.add('fin');
+    cta.textContent = 'Reactivar →';
+    cta.classList.remove('ghost');
+    cta.href = plansHref;
   } else {
     chip.textContent = 'Sin acceso';
     chip.classList.remove('on');
@@ -316,15 +385,17 @@ async function boot(){
   }catch(e){}
 
   if(acc){
-    paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/producto.html?m=mlb');
-    paint(!!acc.mx,  'chipMx',  'ctaMx',  '/producto.html?m=mx');
-    paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/producto.html?m=nfl');
+    const fin = acc.expirados || {};
+    paint(!!acc.mlb, 'chipMlb', 'ctaMlb', '/producto.html?m=mlb', fin.mlb);
+    paint(!!acc.mx,  'chipMx',  'ctaMx',  '/producto.html?m=mx', fin.mx);
+    paint(!!acc.nfl, 'chipNfl', 'ctaNfl', '/producto.html?m=nfl', fin.nfl);
     /* Ligas europeas: cada modelo pinta su tarjeta con su producto. */
-    paint(!!acc.epl, 'chipEpl', 'ctaEpl', '/producto.html?m=epl');
-    paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga');
-    paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga');
-    paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl');
+    paint(!!acc.epl, 'chipEpl', 'ctaEpl', '/producto.html?m=epl', fin.epl);
+    paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga', fin.laliga);
+    paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
+    paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
     pintaTres(acc.tres);
+    pintaFinAviso(acc);
   }
   showMain();
 }

@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry, entitlementGrants } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -25,14 +25,40 @@ module.exports = async function handler(req, res) {
 
   try {
     const ents = await getEntitlements(user.id, user.email);
-    const mundial = ents.find(e => e.product === 'mundial' && e.active);
-    const mlb = ents.find(e => e.product === 'mlb' && e.active);
-    const mx = ents.find(e => e.product === 'mx' && e.active);
-    const nfl = ents.find(e => e.product === 'nfl' && e.active);
+
+    /* VIGENTE, no solo "active": `active` es una bandera de la fila y
+       sigue en true cuando el mes ya se acabó. Mirándola sola, a quien
+       se le vencía la suscripción "Mis modelos" le seguía diciendo
+       "Activo" y al entrar al modelo se topaba con el candado sin
+       explicación. entitlementGrants sí compara contra la vigencia. */
+    const vigente = prod => {
+      const e = ents.find(x => x.product === prod && x.active);
+      return e && entitlementGrants(e, prod) ? e : null;
+    };
+    /* La fila existe pero ya venció: es un cliente que SE FUE, no uno
+       que nunca compró. Se reporta aparte para poder decírselo. */
+    const vencido = prod => {
+      const e = ents.find(x => x.product === prod && x.active);
+      if (!e || entitlementGrants(e, prod)) return null;
+      return { plan: e.plan, title: (PLANS[e.plan] || {}).title || e.plan,
+        expired_at: new Date(entitlementExpiry(e.plan, e.updated_at)).toISOString() };
+    };
+
+    const mundial = vigente('mundial');
+    const mlb = vigente('mlb');
+    const mx = vigente('mx');
+    const nfl = vigente('nfl');
     /* Europa: una liga por producto (epl / laliga / bundesliga). Un
        combo europeo o "todo" ya viene expandido en una fila por liga. */
     const euro = {};
-    for (const p of EURO_PRODUCTS) euro[p] = ents.find(e => e.product === p && e.active) || null;
+    for (const p of EURO_PRODUCTS) euro[p] = vigente(p);
+
+    /* { producto: {plan, title, expired_at} } — solo los vencidos. */
+    const expirados = {};
+    for (const p of ['mundial', 'mlb', 'mx', 'nfl', ...EURO_PRODUCTS]) {
+      const v = vencido(p);
+      if (v) expirados[p] = v;
+    }
     const upgrade = monthlyUpgradeFor(ents);
     const permDisc = comboPermanentDiscount(ents);
     /* Precio de fundador de "Todos los modelos" para clientes antiguos
@@ -83,6 +109,9 @@ module.exports = async function handler(req, res) {
       monthly_upgrade: upgrade,
       /* { plan, price, models, count } — precio de fundador o null. */
       founder,
+      /* Suscripciones/pases que YA VENCIERON, por producto:
+         { mlb: { plan, title, expired_at }, … }. Vacío si no hay. */
+      expirados,
     });
   } catch (e) {
     console.error('my-access:', e);
