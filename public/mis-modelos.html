@@ -304,37 +304,51 @@ function showMain(){
   document.getElementById('mainContent').style.display = 'block';
 }
 
-const NOMBRE_MODELO = { mundial: 'Mundial', mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL',
+const NOMBRE_MODELO = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL',
   epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
 
-/* Aviso de arriba: se le dice CLARO a quien ya fue cliente que su
-   suscripción se terminó y desde cuándo. Antes no se le decía nada —
-   peor aún, se le seguía marcando "Activo" — y descubría el candado
-   hasta entrar al modelo. */
+/* Fecha legible, o null si el dato no es de fiar. Blindaje: la vigencia
+   se calcula como updated_at + días, así que una fila sin updated_at
+   daba "30 de enero de 1970" — antes que enseñar un absurdo, no se
+   enseña fecha. */
+function fechaLegible(ms){
+  if(!isFinite(ms)) return null;
+  const d = new Date(ms);
+  if(d.getFullYear() < 2020 || d.getFullYear() > 2100) return null;
+  return d.toLocaleDateString('es-MX',
+    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' });
+}
+
+/* Aviso de arriba para quien ya fue cliente: qué se le acabó y cuándo.
+   La lista NO se enumera entera cuando son muchos — cada tarjeta de
+   abajo ya dice "Terminó", así que repetir los siete nombres solo hacía
+   el mensaje ilegible. */
 function pintaFinAviso(acc){
   const box = document.getElementById('finAviso');
   if(!box) return;
-  const fin = acc && acc.expirados ? acc.expirados : {};
-  const nombres = Object.keys(fin).map(p => NOMBRE_MODELO[p] || p);
-  if(!nombres.length){ box.hidden = true; return; }
+  const fin = (acc && acc.expirados) ? acc.expirados : {};
+  const claves = Object.keys(fin).filter(p => NOMBRE_MODELO[p]);
+  if(!claves.length){ box.hidden = true; return; }
 
-  /* La fecha más reciente entre los vencidos: es "cuándo se acabó". */
-  const cuando = Object.values(fin)
-    .map(v => Date.parse(v.expired_at)).filter(n => isFinite(n)).sort().pop();
-  /* Zona de México, como el resto del sitio: sin esto una fecha cerca
-     de medianoche UTC se le muestra al cliente un día antes. */
-  const fecha = cuando ? new Date(cuando).toLocaleDateString('es-MX',
-    { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' }) : null;
+  const nombres = claves.map(p => NOMBRE_MODELO[p]);
+  const cuantos = nombres.length;
+  const lista = cuantos > 3 ? cuantos + ' modelos'
+    : cuantos === 1 ? nombres[0]
+    : nombres.slice(0, -1).join(', ') + ' y ' + nombres[cuantos - 1];
 
-  const lista = nombres.length === 1 ? nombres[0]
-    : nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1];
-  const varios = nombres.length > 1;
+  /* Solo se pone fecha si TODOS vencieron el mismo día; si no, decirlo
+     con una sola fecha sería falso. */
+  const dias = [...new Set(claves.map(p => {
+    const f = fechaLegible(Date.parse(fin[p].expired_at));
+    return f || '';
+  }))].filter(Boolean);
+  const fecha = dias.length === 1 ? dias[0] : null;
 
   box.innerHTML = '<span class="fa-ico">!</span><span>' +
     '<b>Tu suscripción se terminó</b>' +
-    '<span>' + (varios ? 'Se acabó tu acceso a ' : 'Se acabó tu acceso a ') + lista +
-    (fecha ? ' el ' + fecha : '') + '. Tus picks te esperan en cuanto la reactives — ' +
-    '<a href="/producto.html">ver planes</a>.</span></span>';
+    '<span>Tu acceso a ' + lista + (fecha ? ' terminó el ' + fecha : ' ya terminó') + '. ' +
+    'Puedes reactivar el que quieras desde su tarjeta, aquí abajo — o ' +
+    '<a href="/producto.html">ver todos los planes</a>.</span></span>';
   box.hidden = false;
 }
 

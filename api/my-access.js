@@ -53,9 +53,12 @@ module.exports = async function handler(req, res) {
     const euro = {};
     for (const p of EURO_PRODUCTS) euro[p] = vigente(p);
 
-    /* { producto: {plan, title, expired_at} } — solo los vencidos. */
+    /* { producto: {plan, title, expired_at} } — solo los vencidos.
+       El Mundial NO entra: fue un torneo que ya acabó, no tiene página
+       ni forma de reactivarse, y aparecía en el aviso diciéndole a 170
+       clientes que "se les acabó el acceso" a algo que terminó solo. */
     const expirados = {};
-    for (const p of ['mundial', 'mlb', 'mx', 'nfl', ...EURO_PRODUCTS]) {
+    for (const p of ['mlb', 'nfl', 'mx', ...EURO_PRODUCTS]) {
       const v = vencido(p);
       if (v) expirados[p] = v;
     }
