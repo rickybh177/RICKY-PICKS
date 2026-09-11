@@ -319,36 +319,77 @@ function fechaLegible(ms){
     { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City' });
 }
 
-/* Aviso de arriba para quien ya fue cliente: qué se le acabó y cuándo.
-   La lista NO se enumera entera cuando son muchos — cada tarjeta de
-   abajo ya dice "Terminó", así que repetir los siete nombres solo hacía
-   el mensaje ilegible. */
+/* ---- El aviso, escrito según EL PLAN que tenía cada quien ----
+   No es lo mismo una mensualidad que un pase de temporada de pago
+   único o un código de cortesía: a los dos últimos decirles "tu
+   suscripción" es falso, nunca tuvieron una. */
+const money = n => '$' + Number(n).toLocaleString('en-US');
+
+function listaModelos(prods){
+  const n = (prods || []).map(p => NOMBRE_MODELO[p]).filter(Boolean);
+  if(n.length >= 7) return 'todos los modelos';
+  if(n.length > 3) return n.length + ' modelos';
+  if(n.length === 1) return n[0];
+  return n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1];
+}
+
+/* Cómo se llama lo que tenía, en sus palabras. Se devuelve también el
+   GÉNERO: "tu suscripción" pide "reactívaLA" y "tu pase" pide
+   "reactívaLO". */
+function queTenia(g){
+  const cuantos = (g.products || []).length;
+  const modelos = listaModelos(g.products);
+  if(g.tipo === 'codigo')    return { txt: 'Tu acceso de cortesía a ' + modelos, fem: false };
+  if(g.tipo === 'prueba')    return { txt: 'Tu semana de prueba de ' + modelos, fem: true };
+  if(g.tipo === 'temporada') return { txt: 'Tu pase de temporada de ' + modelos, fem: false };
+  if(cuantos >= 7)  return { txt: 'Tu suscripción a todos los modelos', fem: true };
+  if(cuantos === 1) return { txt: 'Tu suscripción a ' + modelos, fem: true };
+  return { txt: 'Tu suscripción de ' + cuantos + ' modelos (' + modelos + ')', fem: true };
+}
+
+/* La invitación a volver, con SU precio: si trae precio de fundador se
+   le dice, porque es la razón más fuerte para regresar. */
+function comoVolver(g, fem){
+  if(g.precio == null) return ' Puedes volver cuando quieras — <a href="' + g.reactivar + '">ver planes</a>.';
+  const precio = money(g.precio);
+  const sufijo = g.tipo === 'mensual' ? ' al mes' : '';
+  if(g.es_fundador){
+    return ' <b>Tu precio de fundador de ' + precio + sufijo + ' sigue en pie.</b>' +
+      ' <a href="' + g.reactivar + '">Reactivar →</a>';
+  }
+  return ' Reactíva' + (fem ? 'la' : 'lo') + ' por ' + precio + sufijo + '.' +
+    ' <a href="' + g.reactivar + '">' + (g.tipo === 'mensual' ? 'Reactivar' : 'Volver') + ' →</a>';
+}
+
 function pintaFinAviso(acc){
   const box = document.getElementById('finAviso');
   if(!box) return;
-  const fin = (acc && acc.expirados) ? acc.expirados : {};
-  const claves = Object.keys(fin).filter(p => NOMBRE_MODELO[p]);
-  if(!claves.length){ box.hidden = true; return; }
+  const grupos = ((acc && acc.expirados_plan) || []).filter(g => (g.products || []).some(p => NOMBRE_MODELO[p]));
+  if(!grupos.length){ box.hidden = true; return; }
 
-  const nombres = claves.map(p => NOMBRE_MODELO[p]);
-  const cuantos = nombres.length;
-  const lista = cuantos > 3 ? cuantos + ' modelos'
-    : cuantos === 1 ? nombres[0]
-    : nombres.slice(0, -1).join(', ') + ' y ' + nombres[cuantos - 1];
+  let cuerpo;
+  if(grupos.length === 1){
+    /* Caso normal: un solo plan → mensaje hecho a su medida. */
+    const g = grupos[0];
+    const fecha = fechaLegible(Date.parse(g.expired_at));
+    const q = queTenia(g);
+    cuerpo = q.txt + (fecha ? ' terminó el ' + fecha : ' ya terminó') + '.' + comoVolver(g, q.fem);
+  } else {
+    /* Tenía varias cosas distintas: no se inventa un plan, se resume y
+       cada tarjeta de abajo dice cuál. */
+    const total = new Set(grupos.flatMap(g => g.products).filter(p => NOMBRE_MODELO[p])).size;
+    cuerpo = 'Tu acceso a ' + (total === 1 ? '1 modelo' : total + ' modelos') + ' ya terminó. ' +
+      'Puedes reactivar el que quieras desde su tarjeta, aquí abajo — o ' +
+      '<a href="/producto.html">ver todos los planes</a>.';
+  }
 
-  /* Solo se pone fecha si TODOS vencieron el mismo día; si no, decirlo
-     con una sola fecha sería falso. */
-  const dias = [...new Set(claves.map(p => {
-    const f = fechaLegible(Date.parse(fin[p].expired_at));
-    return f || '';
-  }))].filter(Boolean);
-  const fecha = dias.length === 1 ? dias[0] : null;
+  const TITULO = { mensual: 'Tu suscripción se terminó', temporada: 'Tu pase de temporada se terminó',
+    prueba: 'Tu semana de prueba se terminó', codigo: 'Tu acceso se terminó' };
+  const titulo = grupos.length === 1 ? (TITULO[grupos[0].tipo] || 'Tu acceso se terminó')
+    : 'Tu acceso se terminó';
 
   box.innerHTML = '<span class="fa-ico">!</span><span>' +
-    '<b>Tu suscripción se terminó</b>' +
-    '<span>Tu acceso a ' + lista + (fecha ? ' terminó el ' + fecha : ' ya terminó') + '. ' +
-    'Puedes reactivar el que quieras desde su tarjeta, aquí abajo — o ' +
-    '<a href="/producto.html">ver todos los planes</a>.</span></span>';
+    '<b>' + titulo + '</b><span>' + cuerpo + '</span></span>';
   box.hidden = false;
 }
 

@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry, entitlementGrants } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -68,6 +68,41 @@ module.exports = async function handler(req, res) {
        (o null). El front solo lo PINTA; el cobro lo vuelve a decidir el
        servidor en stripe-create / create-payment. */
     const founder = founderPriceFor(ents);
+
+    /* Lo vencido AGRUPADO POR PLAN, para poder hablarle a cada quien de
+       lo que de verdad tenía. Antes el aviso decía "tu suscripción" a
+       todo el mundo — también a quien compró un pase de temporada de
+       pago único o entró con un código, que nunca tuvieron una.
+       `tipo` distingue los tres casos y `precio` es lo que le costaría
+       volver HOY (con su precio de fundador si le toca). */
+    const expirados_plan = (() => {
+      const porPlan = {};
+      for (const [prod, v] of Object.entries(expirados)) {
+        const g = porPlan[v.plan] || (porPlan[v.plan] = { plan: v.plan, title: v.title, products: [], expired_at: v.expired_at });
+        g.products.push(prod);
+        /* si el mismo plan cubre varios, se queda la fecha más tardía */
+        if (Date.parse(v.expired_at) > Date.parse(g.expired_at)) g.expired_at = v.expired_at;
+      }
+      return Object.values(porPlan).map(g => {
+        const def = PLANS[g.plan] || {};
+        const tipo = def.recurring ? 'mensual'
+          : !(def.price > 0) ? 'codigo'
+          : (def.days || 0) <= 10 ? 'prueba'   // la semana no es una temporada
+          : 'temporada';
+        /* Precio de volver: el de lista, salvo que tenga precio de
+           fundador para ESE plan (hoy solo todo_mensual). */
+        const lista = def.price > 0 ? def.price : null;
+        const precio = (founder && founder.plan === g.plan) ? founder.price : lista;
+        /* A dónde mandarlo: si su plan sigue a la venta, al checkout de
+           ese plan; si ya no existe (semanas, combos legado), a la
+           página del primer modelo que tenía. */
+        const vendible = !!(def.price > 0 && !def.retired && !isUpcoming(g.plan));
+        const reactivar = vendible
+          ? '/checkout.html?plan=' + encodeURIComponent(g.plan)
+          : '/producto.html?m=' + encodeURIComponent(g.products[0] || 'mlb');
+        return { ...g, tipo, precio, precio_lista: lista, es_fundador: precio != null && lista != null && precio < lista, reactivar };
+      });
+    })();
     let tres = null;
     const tresRows = ents.filter(e => e.plan === 'tres_mensual' && e.active);
     if (tresRows.length) {
@@ -115,6 +150,10 @@ module.exports = async function handler(req, res) {
       /* Suscripciones/pases que YA VENCIERON, por producto:
          { mlb: { plan, title, expired_at }, … }. Vacío si no hay. */
       expirados,
+      /* Lo mismo agrupado por PLAN, con tipo (mensual / temporada /
+         codigo), precio para volver y a dónde mandarlo. Es lo que usa
+         el aviso para hablarle a cada quien de SU plan. */
+      expirados_plan,
     });
   } catch (e) {
     console.error('my-access:', e);
