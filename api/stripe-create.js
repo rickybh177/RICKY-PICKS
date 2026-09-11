@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, FOUNDER_PLAN, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);

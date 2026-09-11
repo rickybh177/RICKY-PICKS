@@ -4,7 +4,7 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, FOUNDER_PLAN, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
