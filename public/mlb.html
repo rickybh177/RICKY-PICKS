@@ -340,7 +340,10 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
-const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+/* Etiqueta visible del veredicto. La LLAVE sigue siendo 'bet' (es el
+   dato que manda el modelo y viaja en la API); solo cambia lo que lee
+   el cliente: BET → PICK (decisión del dueño, 13-sep-2026). */
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
 let currentDate = null;
 
 const qs0 = new URLSearchParams(location.search);

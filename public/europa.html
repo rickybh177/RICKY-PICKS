@@ -318,7 +318,10 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 
 const $ = id => document.getElementById(id);
 const MX_TZ = 'America/Mexico_City';
-const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+/* Etiqueta visible del veredicto. La LLAVE sigue siendo 'bet' (es el
+   dato que manda el modelo y viaja en la API); solo cambia lo que lee
+   el cliente: BET → PICK (decisión del dueño, 13-sep-2026). */
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
 
 /* ---- liga activa (?liga=epl|laliga|bundesliga; Premier por defecto) ---- */
 const LIGAS = {
@@ -352,7 +355,7 @@ let currentAccess = 'full';
 let featuredId = null;
 let gamesById = {};
 /* Parámetros del EV que manda el servidor (ev_params): el encogimiento
-   hacia el mercado y las barras BET/MAYBE. Se replican aquí para
+   hacia el mercado y las barras PICK/MAYBE. Se replican aquí para
    recalcular con los momios del usuario sin copiar constantes a mano;
    el respaldo solo aplica si un payload viejo no los trae. */
 let EVP = { blend: 0.22, x2: { bet: 0.03, maybe: 0.01, floor: 0.2 }, total: { bet: 0.025, maybe: 0.01, floor: 0.3 }, btts: { bet: 0.025, maybe: 0.01, floor: 0.2 } };

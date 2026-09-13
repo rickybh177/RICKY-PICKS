@@ -302,7 +302,10 @@ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e)
 const $ = id => document.getElementById(id);
 const AS_GUEST = new URLSearchParams(location.search).get('as') === 'guest'; // probar vista de invitado en dev
 const MX_TZ = 'America/Mexico_City';
-const VCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP' };
+/* Etiqueta visible del veredicto. La LLAVE sigue siendo 'bet' (es el
+   dato que manda el modelo y viaja en la API); solo cambia lo que lee
+   el cliente: BET → PICK (decisión del dueño, 13-sep-2026). */
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
 const PRE_WEEKS = 4, REG_WEEKS = 18;
 let currentWeek = null;
 let currentST = null; // 1 pretemporada · 2 regular
@@ -514,7 +517,7 @@ function propsBlock(g) {
     '<div class="props-body"><div class="props-state">Cargando proyecciones y momios de props…</div></div>' +
     '</details>';
 }
-const PCHIP = { bet: 'BET', maybe: 'MAYBE', skip: 'SKIP', lectura: 'LECTURA' };
+const PCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP', lectura: 'LECTURA' };
 async function loadProps(det) {
   if (det.dataset.loaded) return;
   det.dataset.loaded = '1';

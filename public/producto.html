@@ -554,7 +554,7 @@ const BULLETS = {
     if (MODELOS[m].euro) return BULLETS.liga(MODELOS[m].nombre);
     const base = [
       'Todos los partidos y todos los mercados del modelo',
-      'Veredicto BET / MAYBE / SKIP con momios reales',
+      'Veredicto PICK / MAYBE / SKIP con momios reales',
       'Se renueva solo cada mes · cancela cuando quieras',
     ];
     if (m === 'nfl') base.splice(2, 0, 'Extra por entrar ahora: la pretemporada gratis');
@@ -804,6 +804,11 @@ fetch('/api/plans-public', { cache: 'no-store' })
   .then(d => { planes = (d && d.plans) || null; if (planes) pintaOpciones(planes); })
   .catch(() => { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; });
 
+/* Etiqueta visible del veredicto: la llave sigue siendo el dato que
+   manda el modelo ('bet'); lo que lee el cliente es PICK. */
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
+const chipTxt = v => VCHIP[v] || String(v || '').toUpperCase();
+
 /* ---- IZQUIERDA: el pick gratis, con los datos reales de cada modelo ---- */
 function chipClase(v) { return v === 'bet' ? '' : ' is-' + v; }
 
@@ -819,7 +824,7 @@ function cardHTML(o) {
     fila(o.away, o.favAway) + fila(o.home, !o.favAway) +
     '<div class="pk-bar"><i class="a" style="width:' + o.barA + '%"></i><i class="h" style="width:' + (100 - o.barA) + '%"></i></div>' +
     '<div class="pk-pick' + chipClase(o.verdict) + '">' +
-      '<span class="pk-chip">' + esc(o.verdict.toUpperCase()) + '</span>' +
+      '<span class="pk-chip">' + esc(chipTxt(o.verdict)) + '</span>' +
       '<span class="pk-sel">' + esc(o.label) + '</span>' +
       '<span class="pk-odds">' + esc(o.odds) + '</span>' +
     '</div>' +
@@ -837,7 +842,7 @@ function veredictosHTML(vs) {
     return '<div class="vrow ' + esc(v.verdict) + '">' +
       '<span class="vl">' + esc(v.label) +
         (bits.length ? '<small>' + bits.join(' · ') + '</small>' : '') + '</span>' +
-      '<span class="vchip ' + esc(v.verdict) + '">' + esc(String(v.verdict).toUpperCase()) + '</span>' +
+      '<span class="vchip ' + esc(v.verdict) + '">' + esc(chipTxt(v.verdict)) + '</span>' +
     '</div>';
   }).join('');
   return '<div class="slide"><div class="slide-lbl">Todos los mercados de este partido</div>' + filas + '</div>';
