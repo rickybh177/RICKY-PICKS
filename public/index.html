@@ -326,6 +326,21 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .btn-ghost { display: inline-block; background: none; color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.94rem; padding: 13px 24px; border-radius: 12px; border: 1px solid var(--line-2); transition: border-color .15s; }
   .btn-ghost:hover { border-color: var(--blue); }
 
+  /* CTA del pick gratis. Sustituye al párrafo explicativo: la card ya
+     enseña el pick, así que la acción real de la sección es entrar al
+     análisis — por eso pesa más que un .btn-primary normal. */
+  .btn-analisis { display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%); color: #fff;
+    text-decoration: none; font-weight: 700; font-size: 1rem; letter-spacing: -0.01em;
+    padding: 16px 28px; border-radius: 14px; border: none; line-height: 1.2;
+    box-shadow: 0 12px 28px -12px rgba(47,123,255,0.7);
+    transition: transform .16s ease, box-shadow .16s ease; }
+  .btn-analisis:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -12px rgba(47,123,255,0.8); }
+  .btn-analisis:active { transform: translateY(0); }
+  .btn-analisis svg { width: 17px; height: 17px; flex: 0 0 auto; fill: none; stroke: currentColor;
+    stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .16s ease; }
+  .btn-analisis:hover svg { transform: translateX(4px); }
+
   /* ---- PRECIOS ---- */
   .cur-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin-top: 26px; }
   .cur-toggle button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--muted); background: none; border: none; padding: 8px 20px; border-radius: 980px; cursor: pointer; transition: color .15s, background .15s; }
@@ -534,6 +549,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
        texto y cada sección se veía distinta). */
     .live-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .live-cta .btn-primary, .live-cta .btn-ghost { text-align: center; padding-left: 12px; padding-right: 12px; font-size: 0.9rem; white-space: nowrap; }
+    /* "Ver el análisis completo" no cabe a media columna: ocupa el
+       ancho y el de planes queda debajo, con área táctil cómoda */
+    .live-cta .btn-analisis { grid-column: 1 / -1; width: 100%; padding: 17px 20px; font-size: 1rem; }
     /* menos aire entre secciones en vertical */
     section { padding: 56px 0; }
     footer .wrap { flex-direction: column; }
@@ -761,7 +779,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2 class="sec-title reveal">Free pick NFL.</h2>
         <p class="sec-lede reveal">El mismo modelo, ahora en fútbol americano: 10,000 simulaciones por juego, spread, total, moneyline y props del QB. Este es el pick gratis de la jornada — la cartelera completa vive en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/nfl.html">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/nfl.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=nfl">Ver planes NFL</a>
         </div>
       </div>
@@ -791,9 +809,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <div>
         <div class="sec-eyebrow reveal">En vivo ahora</div>
         <h2 class="sec-title reveal">Free pick MLB.</h2>
-        <p class="sec-lede reveal">Esta card sale del modelo real, corriendo ahora mismo. Pásalo con las flechas: la card, todos sus mercados con veredicto y el detalle del modelo. La cartelera completa vive en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/mlb.html">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/mlb.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=mlb">Ver planes MLB</a>
         </div>
       </div>
@@ -823,7 +840,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
         <h2 class="sec-title reveal">Free pick Liga MX.</h2>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/mx.html">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/mx.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=mx">Ver planes Liga MX</a>
         </div>
       </div>
@@ -857,7 +874,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2 class="sec-title reveal">Free pick Premier League.</h2>
         <p class="sec-lede reveal">La Premier League, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/europa.html?liga=epl">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/europa.html?liga=epl">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=epl">Ver planes Premier</a>
         </div>
       </div>
@@ -886,7 +903,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2 class="sec-title reveal">Free pick LaLiga.</h2>
         <p class="sec-lede reveal">LaLiga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/europa.html?liga=laliga">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/europa.html?liga=laliga">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=laliga">Ver planes LaLiga</a>
         </div>
       </div>
@@ -915,7 +932,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2 class="sec-title reveal">Free pick Bundesliga.</h2>
         <p class="sec-lede reveal">La Bundesliga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 34 jornadas completas viven en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/europa.html?liga=bundesliga">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/europa.html?liga=bundesliga">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=bundesliga">Ver planes Bundesliga</a>
         </div>
       </div>
@@ -944,7 +961,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2 class="sec-title reveal">Free pick Champions League.</h2>
         <p class="sec-lede reveal">La Champions League, de la fase de liga a la final, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — la Champions completa vive en tu plan.</p>
         <div class="live-cta reveal">
-          <a class="btn-primary" href="/europa.html?liga=ucl">Ver el pick gratis</a>
+          <a class="btn-analisis" href="/europa.html?liga=ucl">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
           <a class="btn-ghost" href="/producto.html?m=ucl">Ver planes Champions</a>
         </div>
       </div>
