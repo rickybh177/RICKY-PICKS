@@ -4,7 +4,7 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, FOUNDER_PLAN, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
@@ -126,13 +126,13 @@ module.exports = async function handler(req, res) {
   /* Precio de fundador: en Mercado Pago va en transaction_amount del
      preapproval, o sea el monto de TODOS los meses (MP cobra siempre lo
      mismo), que es justo lo que se quiere. */
-  const founder = planId === FOUNDER_PLAN ? founderPriceFor(ents) : null;
-  const precioBase = founder ? founder.price : plan.price;
+  const oferta = precioDe(planId, ents);
+  const precioBase = oferta ? oferta.price : plan.price;
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountFor(discountCode, planId);
   let finalPrice = priceWith(discount, precioBase);
   let finalTitle = `RICKY·PICKS — ${plan.title}`
-    + (founder ? ' (precio de fundador)' : '')
+    + (oferta ? (oferta.motivo === 'fundador' ? ' (precio de fundador)' : ' (precio por ser cliente)') : '')
     + (discount ? ` (${labelWith(discount)})` : '');
 
   /* Precios especiales de los pases completos (manda el más fuerte):

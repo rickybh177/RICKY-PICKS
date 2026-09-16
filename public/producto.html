@@ -452,8 +452,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p class="lede" id="buyLede">Todos los partidos, todos los mercados, con veredicto claro en cada uno.</p>
       </header>
       <section class="buy">
-        <!-- Aviso de precio de fundador: solo aparece para quien ya era
-             cliente de los modelos previos (lo decide /api/my-access). -->
+        <!-- Aviso de precio especial: fundador, o "ya tienes un modelo".
+             Quién lo ve y a qué precio lo decide /api/my-access. -->
         <div class="founder-note" id="founderNote" hidden></div>
         <div class="opts" id="opts"></div>
         <a class="go" id="goBtn" href="#">Continuar</a>
@@ -593,38 +593,59 @@ const BULLETS = {
   ]),
 };
 
-let planes = null, elegido = null, fundador = null;
+let planes = null, elegido = null, ofertas = {};
 
-/* Precio de fundador: se lo pregunta al servidor en cada cambio de
-   sesión. Sin sesión no se puede saber quién es, así que se pinta el
-   precio de lista y el aviso queda escondido. */
-function pintaAvisoFundador() {
+/* El precio que le toca a ESTE cliente en un plan, o null si paga lista.
+   Lo calcula el servidor (lib/plans.js → precioDe) y aquí solo se pinta:
+   el cobro lo vuelve a decidir el servidor al crear el pago. */
+const ofertaDe = plan => ofertas[plan] || null;
+
+/* Aviso de arriba. Dos motivos posibles, con copy distinto porque son
+   cosas distintas: el fundador ya era cliente ANTES de que existiera la
+   promoción; el de "un modelo" es un cliente de hoy al que se le invita
+   a subir. */
+function pintaAviso() {
   const box = document.getElementById('founderNote');
   if (!box) return;
-  if (!fundador) { box.hidden = true; return; }
-  const cuantos = fundador.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos';
-  box.innerHTML = '<span class="fn-ico">★</span><span>' +
-    '<b>Tienes precio de fundador: ' + esc(money(fundador.price)) + ' al mes</b>' +
-    '<span>Es tu descuento por haber sido cliente de ' + cuantos + ' antes. ' +
-    'Se aplica a «Todos los modelos» y lo conservas mientras no canceles.</span></span>';
+  const tres = ofertaDe('tres_mensual'), todo = ofertaDe('todo_mensual');
+  const o = todo || tres;
+  if (!o) { box.hidden = true; return; }
+
+  if (o.motivo === 'fundador') {
+    const cuantos = o.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos';
+    box.innerHTML = '<span class="fn-ico">★</span><span>' +
+      '<b>Tienes precio de fundador: ' + esc(money(o.price)) + ' al mes</b>' +
+      '<span>Es tu descuento por haber sido cliente de ' + cuantos + ' antes. ' +
+      'Lo conservas mientras no canceles.</span></span>';
+  } else {
+    /* Copy del upgrade: corto, concreto y con los dos precios. */
+    const faltan = 7 - 1;
+    const partes = [];
+    if (tres) partes.push('los 3 que elijas a <b>' + esc(money(tres.price)) + '</b> (antes ' + esc(money(tres.lista)) + ')');
+    if (todo) partes.push('todos a <b>' + esc(money(todo.price)) + '</b> (antes ' + esc(money(todo.lista)) + ')');
+    box.innerHTML = '<span class="fn-ico">★</span><span>' +
+      '<b>Ya tienes 1 modelo. Te faltan ' + faltan + '.</b>' +
+      '<span>Por ser cliente: ' + partes.join(' o ') + ', al mes. ' +
+      'El precio se queda mientras no canceles.</span></span>';
+  }
   box.hidden = false;
 }
 
-async function sincronizaFundador() {
+async function sincronizaOfertas() {
   try {
     if (!sb) return;
     const { data } = await sb.auth.getSession();
-    const nuevo = await (async () => {
-      if (!data || !data.session) return null;
+    const nuevas = await (async () => {
+      if (!data || !data.session) return {};
       const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + data.session.access_token } });
-      if (!r.ok) return null;
+      if (!r.ok) return {};
       const a = await r.json();
-      return a && a.founder ? a.founder : null;
+      return (a && a.ofertas) || {};
     })();
-    const antes = fundador ? fundador.price : null;
-    fundador = nuevo;
-    pintaAvisoFundador();
-    if ((nuevo ? nuevo.price : null) !== antes && planes) pintaOpciones(planes);
+    const antes = JSON.stringify(ofertas);
+    ofertas = nuevas;
+    pintaAviso();
+    if (JSON.stringify(ofertas) !== antes && planes) pintaOpciones(planes);
   } catch (e) { /* si falla, se queda el precio de lista */ }
 }
 
@@ -724,26 +745,37 @@ function pintaOpciones(p) {
   }
   html += '</div>';
   if (tres) {
+    /* Si al cliente le toca precio especial, se pinta ESE y se tacha el
+       de lista. El cobro lo vuelve a decidir el servidor. */
+    const oTres = ofertaDe(tres.id);
+    const pTres = oTres ? oTres.price : tres.price;
     html += '<div class="sep">O bien</div>';
     html += tarjeta(tres.id, 'Tres modelos a elegir', 'Los 3 que tú escojas · cambia uno cada mes',
-      money(tres.price), 'al mes · ' + money(Math.round(tres.price / 3)) + ' por modelo', BULLETS.tres(), 'El más elegido', null,
+      money(pTres), 'al mes · ' + money(Math.round(pTres / 3)) + ' por modelo',
+      BULLETS.tres().concat(oTres ? ['Tu precio por ser cliente — se queda mientras no canceles'] : []),
+      oTres ? 'Tu precio' : 'El más elegido',
+      oTres ? money(tres.price) : null,
       '<div id="picker"></div>');
   }
   if (todo) {
     const n = (todo.products || []).length || 7;
-    /* Precio de fundador (clientes de los modelos previos): sustituye al
-       de lista y tacha los $899, no el ancla de "por separado". El cobro
-       real lo vuelve a decidir el servidor. */
-    const precio = fundador ? fundador.price : todo.price;
+    /* Precio especial (fundador o "ya tienes un modelo"): sustituye al de
+       lista y tacha los $899, no el ancla de "por separado". */
+    const oTodo = ofertaDe(todo.id);
+    const precio = oTodo ? oTodo.price : todo.price;
     const ahorro = todo.anchor ? todo.anchor - precio : 0;
+    const etiqueta = !oTodo ? null : oTodo.motivo === 'fundador' ? 'Precio de fundador' : 'Tu precio';
+    const nota = !oTodo ? null : oTodo.motivo === 'fundador'
+      ? 'Tu precio de fundador se queda mientras no canceles'
+      : 'Tu precio por ser cliente — se queda mientras no canceles';
     const bullets = BULLETS.todo()
-      .concat(fundador ? ['Tu precio de fundador se queda mientras no canceles'] : [])
+      .concat(nota ? [nota] : [])
       .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
     html += '<div class="sep">O bien</div>';
     html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
       money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
-      bullets, fundador ? 'Precio de fundador' : null,
-      fundador ? money(todo.price) : (todo.anchor ? money(todo.anchor) : null));
+      bullets, etiqueta,
+      oTodo ? money(todo.price) : (todo.anchor ? money(todo.anchor) : null));
   }
   $('opts').innerHTML = html;
   pintaChips();
@@ -1102,7 +1134,7 @@ function pintaSesion() {
   b.title = _session ? _session.user.email + ' — cerrar sesión' : 'Inicia sesión';
 }
 if (sb) {
-  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); sincronizaFundador(); });
+  sb.auth.onAuthStateChange((_e, s) => { _session = s; pintaSesion(); sincronizaOfertas(); });
   $('authBtn').addEventListener('click', async () => {
     if (_session) { await sb.auth.signOut(); return; }
     /* "Entrar" = iniciar sesión, no comprar: el checkout en modo entrar

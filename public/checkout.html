@@ -1031,7 +1031,7 @@ async function renderSession(session){
   /* todo_mensual entra a la lista por el PRECIO DE FUNDADOR: sin
      consultar my-access, un cliente antiguo vería los $899 de lista y
      solo descubriría su precio en la pantalla de pago. */
-  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026','todo_mensual'].includes(planId)){
+  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026','todo_mensual','tres_mensual'].includes(planId)){
     try{
       const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
       if(r.ok) acceso = await r.json();
@@ -1115,21 +1115,28 @@ async function renderSession(session){
     } else if(planId === 'combo_2026' && acceso.combo_2026_discount){
       pinta('$' + Number(acceso.combo_2026_price).toLocaleString('en-US'),
         'Precio especial: ya tienes uno de los modelos');
-    } else if(acceso.founder && acceso.founder.plan === planId){
-      /* Precio de fundador: se dice POR QUÉ lo tiene, que es el punto
-         de la oferta, y que no lo pierde al renovar. */
-      const f = acceso.founder;
-      pinta('$' + Number(f.price).toLocaleString('en-US'),
-        'Precio de fundador por ser cliente desde antes · cada mes, mientras no canceles');
+    } else if(acceso.ofertas && acceso.ofertas[planId]){
+      /* Precio especial de ESTE cliente. Se dice POR QUÉ lo tiene —que
+         es el punto de la oferta— y que no lo pierde al renovar. Lo
+         calcula el servidor (lib/plans.js → precioDe); aquí se pinta. */
+      const o = acceso.ofertas[planId];
+      const esFundador = o.motivo === 'fundador';
+      pinta('$' + Number(o.price).toLocaleString('en-US'),
+        (esFundador ? 'Precio de fundador por ser cliente desde antes' : 'Precio especial por ser cliente')
+          + ' · cada mes, mientras no canceles');
       const resumen = document.getElementById('summaryName');
       if(resumen && !document.getElementById('founderTag')){
         const tag = document.createElement('div');
         tag.id = 'founderTag';
         tag.style.cssText = 'margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.28);font-size:0.85rem;line-height:1.5;color:var(--ink)';
-        tag.innerHTML = '<strong>★ Tu precio de fundador</strong><br>' +
-          'Ya eras cliente de ' + (f.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos') +
-          ', así que pagas <strong>$' + Number(f.price).toLocaleString('en-US') + ' al mes</strong> en vez de ' + plan.price +
-          '. Lo conservas mientras no canceles.';
+        tag.innerHTML = esFundador
+          ? '<strong>★ Tu precio de fundador</strong><br>' +
+            'Ya eras cliente de ' + (o.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos') +
+            ', así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') + ' al mes</strong> en vez de ' + plan.price +
+            '. Lo conservas mientras no canceles.'
+          : '<strong>★ Tu precio por ser cliente</strong><br>' +
+            'Ya tienes un modelo con nosotros, así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') +
+            ' al mes</strong> en vez de ' + plan.price + '. Tu mensualidad actual se cancela sola al pagar y el precio se queda mientras no canceles.';
         const caja = resumen.closest('div[style*="background"]');
         if(caja) caja.insertAdjacentElement('afterend', tag);
       }

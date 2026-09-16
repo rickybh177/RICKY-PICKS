@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, FOUNDER_PLAN, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -141,11 +141,14 @@ module.exports = async function handler(req, res) {
        suscripción —no como cupón— para que valga en CADA renovación:
        un cupón de Stripe con duration 'once' solo abarataría el primer
        mes y al segundo le llegaría el cobro completo. */
-    const founder = plan === FOUNDER_PLAN ? founderPriceFor(ents) : null;
-    const precioBase = founder ? founder.price : def.price;
+    /* Precio para ESTE cliente (fundador o upgrade por tener un modelo).
+       lib/plans.js decide cuál le toca y elige el mejor; aquí solo se
+       cobra lo que diga. */
+    const oferta = precioDe(plan, ents);
+    const precioBase = oferta ? oferta.price : def.price;
     const p = {
       name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '')
-        + (founder ? ' — precio de fundador' : ''),
+        + (oferta ? (oferta.motivo === 'fundador' ? ' — precio de fundador' : ' — precio por ser cliente') : ''),
       price: precioBase * 100, currency: String(def.currency || 'MXN').toLowerCase(),
     };
     /* metadata que leen stripe-capture (alta) y stripe-webhook

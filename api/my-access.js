@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
+const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -68,6 +68,14 @@ module.exports = async function handler(req, res) {
        (o null). El front solo lo PINTA; el cobro lo vuelve a decidir el
        servidor en stripe-create / create-payment. */
     const founder = founderPriceFor(ents);
+    /* Ofertas vivas para este cliente, por plan: { price, motivo,
+       lista, ahorro }. El front solo las PINTA; el cobro lo vuelve a
+       decidir el servidor con la misma función. */
+    const ofertas = {};
+    for (const pl of ['tres_mensual', 'todo_mensual']) {
+      const o = precioDe(pl, ents);
+      if (o) ofertas[pl] = o;
+    }
 
     /* Lo vencido AGRUPADO POR PLAN, para poder hablarle a cada quien de
        lo que de verdad tenía. Antes el aviso decía "tu suscripción" a
@@ -147,6 +155,8 @@ module.exports = async function handler(req, res) {
       monthly_upgrade: upgrade,
       /* { plan, price, models, count } — precio de fundador o null. */
       founder,
+      /* { tres_mensual|todo_mensual: {price, motivo, lista, ahorro} } */
+      ofertas,
       /* Suscripciones/pases que YA VENCIERON, por producto:
          { mlb: { plan, title, expired_at }, … }. Vacío si no hay. */
       expirados,
