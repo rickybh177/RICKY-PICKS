@@ -1122,7 +1122,9 @@ async function renderSession(session){
       const o = acceso.ofertas[planId];
       const esFundador = o.motivo === 'fundador';
       pinta('$' + Number(o.price).toLocaleString('en-US'),
-        (esFundador ? 'Precio de fundador por ser cliente desde antes' : 'Precio especial por ser cliente')
+        (esFundador ? 'Precio de fundador por ser cliente desde antes'
+          : o.motivo === 'tres_modelos' ? 'Solo $' + Number(o.sube).toLocaleString('en-US') + ' más al mes de lo que ya pagas'
+          : 'Precio especial por ser cliente')
           + ' · cada mes, mientras no canceles');
       const resumen = document.getElementById('summaryName');
       if(resumen && !document.getElementById('founderTag')){
@@ -1134,6 +1136,10 @@ async function renderSession(session){
             'Ya eras cliente de ' + (o.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos') +
             ', así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') + ' al mes</strong> en vez de ' + plan.price +
             '. Lo conservas mientras no canceles.'
+          : o.motivo === 'tres_modelos'
+          ? '<strong>★ Tu upgrade</strong><br>' +
+            'Ya pagas $' + Number(o.price - o.sube).toLocaleString('en-US') + ' al mes por 3 modelos. Con <strong>$' +
+            Number(o.sube).toLocaleString('en-US') + ' más</strong> te llevas los 7. Tu plan actual se cancela solo al pagar.'
           : '<strong>★ Tu precio por ser cliente</strong><br>' +
             'Ya tienes un modelo con nosotros, así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') +
             ' al mes</strong> en vez de ' + plan.price + '. Tu mensualidad actual se cancela sola al pagar y el precio se queda mientras no canceles.';

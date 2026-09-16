@@ -617,6 +617,13 @@ function pintaAviso() {
       '<b>Tienes precio de fundador: ' + esc(money(o.price)) + ' al mes</b>' +
       '<span>Es tu descuento por haber sido cliente de ' + cuantos + ' antes. ' +
       'Lo conservas mientras no canceles.</span></span>';
+  } else if (o.motivo === 'tres_modelos') {
+    /* Ya trae tres: el mensaje va por lo que SUBE, no por el descuento
+       (su precio es casi el de lista, tacharlo se vería ridículo). */
+    box.innerHTML = '<span class="fn-ico">★</span><span>' +
+      '<b>Ya tienes 3 modelos. Te faltan 4.</b>' +
+      '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas los 7 — sin elegir, sin quedarte fuera de nada. ' +
+      'Tu plan de ahora se cancela solo al pagar.</span></span>';
   } else {
     /* Copy del upgrade: corto, concreto y con los dos precios. */
     const faltan = 7 - 1;
@@ -764,10 +771,18 @@ function pintaOpciones(p) {
     const oTodo = ofertaDe(todo.id);
     const precio = oTodo ? oTodo.price : todo.price;
     const ahorro = todo.anchor ? todo.anchor - precio : 0;
-    const etiqueta = !oTodo ? null : oTodo.motivo === 'fundador' ? 'Precio de fundador' : 'Tu precio';
-    const nota = !oTodo ? null : oTodo.motivo === 'fundador'
-      ? 'Tu precio de fundador se queda mientras no canceles'
-      : 'Tu precio por ser cliente — se queda mientras no canceles';
+    const etiqueta = !oTodo ? null
+      : oTodo.motivo === 'fundador' ? 'Precio de fundador'
+      : oTodo.motivo === 'tres_modelos' ? 'Tu upgrade'
+      : 'Tu precio';
+    const nota = !oTodo ? null
+      : oTodo.motivo === 'fundador' ? 'Tu precio de fundador se queda mientras no canceles'
+      : oTodo.motivo === 'tres_modelos'
+        ? 'Solo ' + money(oTodo.sube) + ' más al mes de lo que ya pagas · tu plan actual se cancela solo'
+        : 'Tu precio por ser cliente — se queda mientras no canceles';
+    /* Tachar "$899 → $898" se ve ridículo: el tachado solo si el ahorro
+       de verdad se nota. */
+    const tachado = oTodo && oTodo.ahorro >= 50 ? money(todo.price) : null;
     const bullets = BULLETS.todo()
       .concat(nota ? [nota] : [])
       .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
@@ -775,7 +790,7 @@ function pintaOpciones(p) {
     html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
       money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
       bullets, etiqueta,
-      oTodo ? money(todo.price) : (todo.anchor ? money(todo.anchor) : null));
+      tachado || (oTodo ? null : (todo.anchor ? money(todo.anchor) : null)));
   }
   $('opts').innerHTML = html;
   pintaChips();
