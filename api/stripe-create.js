@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -49,6 +49,10 @@ const PLAN_NAMES = {
   laliga_temporada: 'Modelo LaLiga — Temporada 2026-27 completa',
   bundesliga_temporada: 'Modelo Bundesliga — Temporada 2026-27 completa',
   ucl_temporada: 'Modelo Champions League — Temporada 2026-27 completa',
+  /* Paquete de las 4 ligas europeas (solo con código, p. ej. DAYOG).
+     Sin nombre aquí el checkout con TARJETA lo rechazaba por "Plan
+     inválido" y el cliente solo podía pagar con Mercado Pago. */
+  europa_temporada: 'Las 4 ligas de Europa — Temporadas completas',
 };
 
 /* Suscripción vs pago único = ÚNICA fuente de verdad en lib/plans.js
@@ -144,12 +148,22 @@ module.exports = async function handler(req, res) {
     /* Precio para ESTE cliente (fundador o upgrade por tener un modelo).
        lib/plans.js decide cuál le toca y elige el mejor; aquí solo se
        cobra lo que diga. */
-    const oferta = precioDe(plan, ents);
-    const precioBase = oferta ? oferta.price : def.price;
+    /* Stripe cobra en USD (Mercado Pago sigue en MXN, ver
+       create-payment). Si el plan no tiene precio en dólares se RECHAZA
+       la compra: cobrar el número de pesos en USD serían 17 veces de
+       más. */
+    const MONEDA = 'USD';
+    const listaUsd = montoDe(plan, MONEDA);
+    if (listaUsd == null) {
+      console.error('stripe-create: plan sin precio en USD —', plan);
+      return res.status(400).json({ error: 'Ese plan no está disponible con tarjeta ahora mismo. Paga con Mercado Pago.' });
+    }
+    const oferta = precioDe(plan, ents, MONEDA);
+    const precioBase = oferta ? oferta.price : listaUsd;
     const p = {
       name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '')
         + (oferta ? (oferta.motivo === 'fundador' ? ' — precio de fundador' : ' — precio por ser cliente') : ''),
-      price: precioBase * 100, currency: String(def.currency || 'MXN').toLowerCase(),
+      price: Math.round(precioBase * 100), currency: MONEDA.toLowerCase(),
     };
     /* metadata que leen stripe-capture (alta) y stripe-webhook
        (renovaciones): user_id, plan y, en "a elegir", los modelos. */
@@ -186,10 +200,10 @@ module.exports = async function handler(req, res) {
         /* Código de descuento sobre suscripción: cupón de UNA sola vez
            (solo el primer mes; las renovaciones van a precio completo).
            Redondeado a pesos para que coincida con lo que ve el cliente. */
-        const pesosOff = def.price - priceWith(discount, def.price);
+        const pesosOff = listaUsd - priceWith(discount, listaUsd, MONEDA);
         if (pesosOff > 0) {
           const coupon = await stripe.coupons.create({
-            amount_off: pesosOff * 100, currency: p.currency,
+            amount_off: Math.round(pesosOff * 100), currency: p.currency,
             duration: 'once', name: `Código ${discountCode}`,
           });
           sessionParams.discounts = [{ coupon: coupon.id }];
@@ -199,10 +213,10 @@ module.exports = async function handler(req, res) {
            se descuenta del primer mes del plan mensual con MLB. */
         const includesMlb = plan === 'mlb_fundador' || plan === 'combo_total';
         const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
-        const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
+        const credit = upgradeCreditFor(ent, MONEDA); // USD o 0
         if (credit > 0) {
           const coupon = await stripe.coupons.create({
-            amount_off: credit * 100, currency: p.currency,
+            amount_off: Math.round(credit * 100), currency: p.currency,
             duration: 'once', name: `Crédito de tu compra anterior ($${credit})`,
           });
           sessionParams.discounts = [{ coupon: coupon.id }];
@@ -213,7 +227,7 @@ module.exports = async function handler(req, res) {
     }
 
     /* ---- resto de planes: pago único ---- */
-    let finalPrice = priceWith(discount, precioBase) * 100; // Stripe cobra en centavos
+    let finalPrice = Math.round(priceWith(discount, precioBase, MONEDA) * 100); // Stripe cobra en centavos
     let productName = discount ? `${p.name} (${labelWith(discount)})` : p.name;
 
     /* Precios especiales de los pases completos (manda el más fuerte):
@@ -227,13 +241,13 @@ module.exports = async function handler(req, res) {
       const up = monthlyUpgradeFor(ents);
       if (up && up.target === plan) {
         upgrade = up;
-        finalPrice = up.price * 100;
-        productName = `${p.name} — upgrade de tu plan mensual ($${up.price}; tu mensualidad se cancela sola)`;
+        finalPrice = Math.round(up.usd * 100);
+        productName = `${p.name} — upgrade de tu plan mensual ($${up.usd} USD; tu mensualidad se cancela sola)`;
       } else if (plan === 'combo_2026') {
         permDisc = comboPermanentDiscount(ents);
         if (permDisc) {
-          finalPrice = permDisc.price * 100;
-          productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.price})`;
+          finalPrice = Math.round(permDisc.usd * 100);
+          productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.usd} USD)`;
         }
       }
     }
@@ -243,9 +257,9 @@ module.exports = async function handler(req, res) {
        encima con los precios especiales de arriba. */
     if (!permDisc && !upgrade && (plan === 'mlb_temporada' || plan === 'combo_2026')) {
       const ent = await getEntitlement(user.id, user.email, 'mlb');
-      const credit = upgradeCreditFor(ent); // MXN (149, 99) o 0
+      const credit = upgradeCreditFor(ent, MONEDA); // USD o 0
       if (credit > 0) {
-        finalPrice = Math.max(0, finalPrice - credit * 100);
+        finalPrice = Math.max(0, finalPrice - Math.round(credit * 100));
         productName += ` (crédito de tu Semana: -$${credit})`;
       }
     }

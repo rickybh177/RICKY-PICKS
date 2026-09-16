@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { PLANS, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
+const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -73,8 +73,13 @@ module.exports = async function handler(req, res) {
        decidir el servidor con la misma función. */
     const ofertas = {};
     for (const pl of ['tres_mensual', 'todo_mensual']) {
-      const o = precioDe(pl, ents);
-      if (o) ofertas[pl] = o;
+      const o = precioDe(pl, ents, 'USD');
+      if (!o) continue;
+      /* El mismo precio en pesos: es lo que le cobra Mercado Pago, y
+         el sitio lo enseña junto al de dólares para que nadie se
+         lleve una sorpresa en la pasarela. */
+      const mx = precioDe(pl, ents, 'MXN');
+      ofertas[pl] = { ...o, mxn: mx ? mx.price : null, lista_mxn: mx ? mx.lista : null };
     }
 
     /* Lo vencido AGRUPADO POR PLAN, para poder hablarle a cada quien de
@@ -99,8 +104,9 @@ module.exports = async function handler(req, res) {
           : 'temporada';
         /* Precio de volver: el de lista, salvo que tenga precio de
            fundador para ESE plan (hoy solo todo_mensual). */
-        const lista = def.price > 0 ? def.price : null;
-        const precio = (founder && founder.plan === g.plan) ? founder.price : lista;
+        const lista = montoDe(g.plan, 'USD');
+        const fundador = founder && founder.plan === g.plan ? founder.precios.USD : null;
+        const precio = fundador != null ? fundador : lista;
         /* A dónde mandarlo: si su plan sigue a la venta, al checkout de
            ese plan; si ya no existe (semanas, combos legado), a la
            página del primer modelo que tenía. */
@@ -148,13 +154,16 @@ module.exports = async function handler(req, res) {
          pinta — el cobro real lo decide el servidor de nuevo):
          $199 si su mensualidad hace upgrade al combo, $799 con un
          modelo completo pagado, el de lista si no. */
-      combo_2026_price: (upgrade && upgrade.target === 'combo_2026') ? upgrade.price
-        : (permDisc || PLANS.combo_2026).price,
+      /* USD: todo lo que devuelve este endpoint es para PINTARLO, y el
+         sitio publica en dólares (ver api/plans-public). El cobro lo
+         vuelve a decidir el servidor en stripe-create/create-payment. */
+      combo_2026_price: (upgrade && upgrade.target === 'combo_2026') ? upgrade.usd
+        : permDisc ? permDisc.usd : montoDe('combo_2026', 'USD'),
       combo_2026_discount: !!(permDisc || (upgrade && upgrade.target === 'combo_2026')),
-      /* Upgrade del plan mensual: { target, price, from } o null. */
-      monthly_upgrade: upgrade,
-      /* { plan, price, models, count } — precio de fundador o null. */
-      founder,
+      /* Upgrade del plan mensual: { target, price (USD), from } o null. */
+      monthly_upgrade: upgrade ? { ...upgrade, price: upgrade.usd } : null,
+      /* { plan, price (USD), models, count } — precio de fundador o null. */
+      founder: founder ? { ...founder, price: founder.precios.USD } : null,
       /* { tres_mensual|todo_mensual: {price, motivo, lista, ahorro} } */
       ofertas,
       /* Suscripciones/pases que YA VENCIERON, por producto:

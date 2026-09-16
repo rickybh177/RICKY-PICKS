@@ -10,6 +10,14 @@
    mientras el sitio publicaba $599. Cualquier página nueva debe leer
    de aquí, no copiar números.
 
+   MONEDA (16-sep-2026): el sitio PUBLICA en dólares. `price` y
+   `anchor` vienen en USD —es lo que el cliente lee— y el peso viaja
+   aparte en `price_mxn` / `anchor_mxn`, que es lo que cobra Mercado
+   Pago (una cuenta mexicana no procesa dólares; con tarjeta cobra
+   Stripe en USD). Un plan a la venta SIN precio en dólares no se
+   publica: enseñar el número de pesos con signo de dólar sería
+   cobrar-mostrar 17 veces de menos.
+
    No expone nada sensible: solo id, título, precio, moneda y vigencia
    de planes comprables (sin `retired`, sin `upcoming` y con precio
    > 0). Un plan `upcoming` (cableado pero todavía no a la venta —
@@ -26,15 +34,34 @@ module.exports = async function handler(req, res) {
   }
 
   const out = {};
+  /* Precios de TODOS los planes con precio, retirados incluidos. El
+     checkout necesita pintar en dólares un pase fuera del catálogo
+     (europa_temporada con un código), y `plans` no lo lista porque su
+     ausencia es justo lo que significa "ya no está a la venta". */
+  const precios = {};
   for (const [id, p] of Object.entries(PLANS)) {
-    if (!p || p.retired || p.upcoming || !(p.price > 0)) continue;
+    if (!p || !(p.price > 0)) continue;
+    precios[id] = {
+      usd: p.usd != null ? p.usd : null,
+      mxn: p.price,
+      anchor_usd: p.anchor_usd || null,
+      anchor_mxn: p.anchor || null,
+    };
+    if (p.retired || p.upcoming) continue;
+    if (p.usd == null) {                       // a la venta pero sin precio en dólares
+      console.error('plans-public: plan sin precio en USD, no se publica —', id);
+      continue;
+    }
     out[id] = {
       id,
       title: p.title,
-      price: p.price,
+      price: p.usd,
       /* Precio ancla (valor real pagando mes a mes) para el tachado. */
-      anchor: p.anchor || null,
-      currency: p.currency || 'MXN',
+      anchor: p.anchor_usd || null,
+      currency: 'USD',
+      /* Lo que cobra Mercado Pago, para poder decirlo junto al botón. */
+      price_mxn: p.price,
+      anchor_mxn: p.anchor || null,
       days: p.days || null,
       products: Array.isArray(p.products) ? p.products : null,
       choose: p.choose || null,   // "a elegir": cuántos modelos escoge el cliente
@@ -44,5 +71,5 @@ module.exports = async function handler(req, res) {
   /* Cache corto: los precios cambian poco, pero cuando cambian no
      queremos que una CDN los sirva viejos por horas. */
   res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300');
-  return res.status(200).json({ plans: out });
+  return res.status(200).json({ plans: out, precios, moneda: 'USD', moneda_mp: 'MXN' });
 };

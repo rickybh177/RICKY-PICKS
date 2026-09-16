@@ -126,11 +126,14 @@ module.exports = async function handler(req, res) {
   /* Precio de fundador: en Mercado Pago va en transaction_amount del
      preapproval, o sea el monto de TODOS los meses (MP cobra siempre lo
      mismo), que es justo lo que se quiere. */
-  const oferta = precioDe(planId, ents);
+  /* Mercado Pago cobra en MXN: una cuenta mexicana no procesa dólares.
+     El sitio muestra USD, pero aquí el importe es el de pesos. */
+  const MONEDA = 'MXN';
+  const oferta = precioDe(planId, ents, MONEDA);
   const precioBase = oferta ? oferta.price : plan.price;
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountFor(discountCode, planId);
-  let finalPrice = priceWith(discount, precioBase);
+  let finalPrice = priceWith(discount, precioBase, MONEDA);
   let finalTitle = `RICKY·PICKS — ${plan.title}`
     + (oferta ? (oferta.motivo === 'fundador' ? ' (precio de fundador)' : ' (precio por ser cliente)') : '')
     + (discount ? ` (${labelWith(discount)})` : '');
@@ -185,8 +188,12 @@ module.exports = async function handler(req, res) {
           auto_recurring: {
             frequency: 1,
             frequency_type: 'months',
-            transaction_amount: plan.price,
-            currency_id: plan.currency,
+            /* finalPrice, NO plan.price: aquí vive el precio de
+               fundador y el de upgrade. Con plan.price se le cobraba
+               a un fundador $899 en vez de $549 CADA MES —el precio
+               se calculaba arriba y nunca llegaba al preapproval. */
+            transaction_amount: finalPrice,
+            currency_id: MONEDA,
           },
           back_url: `${base}/${subDest}${sep(subDest)}pago=ok`,
           status: 'pending',
@@ -214,7 +221,7 @@ module.exports = async function handler(req, res) {
       title: finalTitle,
       quantity: 1,
       unit_price: finalPrice,
-      currency_id: plan.currency,
+      currency_id: MONEDA,
     }],
     payer: { email: user.email },
     // user_id:plan -> el webhook lo lee para otorgar el acceso correcto.

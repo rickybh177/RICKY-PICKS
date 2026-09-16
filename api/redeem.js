@@ -2,7 +2,7 @@
    Canjea un código de acceso (gratis) o valida un código de descuento. */
 const { getUserFromToken, grantEntitlement } = require('../lib/supabaseAdmin');
 const { DISCOUNTS, priceWith, labelWith } = require('../lib/discounts');
-const { PLANS } = require('../lib/plans');
+const { PLANS, montoDe } = require('../lib/plans');
 
 // Códigos válidos: código -> plan que otorga
 const CODES = {
@@ -60,11 +60,22 @@ module.exports = async function handler(req, res) {
     if (discount) {
       /* El precio final lo calcula el servidor (lib/plans.js es la
          fuente de verdad); el checkout solo lo pinta. */
-      const lista = (PLANS[discount.plan] || {}).price;
+      /* Las DOS monedas: el sitio publica en dólares (Stripe cobra eso)
+         y Mercado Pago cobra el equivalente en pesos. Mandar una sola
+         dejaría al checkout pintando un número que no corresponde a lo
+         que va a cobrar la pasarela que elija el cliente. */
+      const conCodigo = (M) => {
+        const lista = montoDe(discount.plan, M);
+        return lista != null ? priceWith({ ...discount, code }, lista, M) : null;
+      };
       return res.status(200).json({
         ok: true, type: 'discount', plan: discount.plan,
         pct: discount.pct || null,
-        price: lista != null ? priceWith({ ...discount, code }, lista) : null,
+        price: conCodigo('USD'),      // el precio que se publica
+        price_mxn: conCodigo('MXN'),  // el que cobra Mercado Pago
+        lista: montoDe(discount.plan, 'USD'),
+        lista_mxn: montoDe(discount.plan, 'MXN'),
+        currency: 'USD',
         label: labelWith({ ...discount, code }),
       });
     }

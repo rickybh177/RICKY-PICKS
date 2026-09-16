@@ -293,8 +293,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <button id="comboUpgradeClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:rgba(233,237,244,0.5);font-size:1rem;background:none;border:none;cursor:pointer">✕</button>
       <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8fb0f5;margin-bottom:8px">Tu combo puede crecer</div>
       <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">Agrega la NFL a tu combo 🏈</div>
-      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> con <strong style="color:#fff">un solo pago de <span class="combo-px">$1,199</span></strong> y llévate los 3 modelos, NFL incluida. Si tienes una suscripción mensual, cancélala en «Administrar suscripción» para no pagar doble.</div>
-      <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — <span class="combo-px">$1,199</span> pago único</a>
+      <div style="font-size:0.86rem;color:rgba(233,237,244,0.72);margin-bottom:14px">Ya tienes MLB + Liga MX. Súbete al <strong style="color:#fff">Combo Total</strong> con <strong style="color:#fff">un solo pago de <span class="combo-px">$64.99</span></strong> y llévate los 3 modelos, NFL incluida. Si tienes una suscripción mensual, cancélala en «Administrar suscripción» para no pagar doble.</div>
+      <a href="/checkout.html?plan=combo_2026" style="display:inline-block;text-decoration:none;background:#fff;color:#12203f;font-weight:700;font-size:0.88rem;padding:11px 22px;border-radius:10px">Combo Total — <span class="combo-px">$64.99</span> pago único</a>
     </div>
     <div class="guest-bar" id="guestBar" style="display:none">
       <span id="guestMsg">Estás viendo el <strong>pick gratis</strong> de la jornada. El resto de los partidos está bloqueado.</span>
@@ -312,9 +312,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Solo Liga MX por $349 al mes, tres modelos a elegir por $599 o los siete por $899. Cancela cuando quieras.</small></div>
+    <div class="txt">¿Vienes por el pick gratis… o por la jornada completa?<small>Solo Liga MX por $19.99 USD al mes, tres modelos a elegir por $34.99 o los siete por $49.99. Cancela cuando quieras.</small></div>
     <div class="acts">
-      <a class="day" href="/checkout.html?plan=mx_mensual">Solo Liga MX $349/mes</a>
+      <a class="day" href="/checkout.html?plan=mx_mensual">Solo Liga MX $19.99/mes</a>
       <a class="founder" href="/producto.html?m=mx">Ver los planes</a>
     </div>
   </div>
@@ -375,7 +375,7 @@ async function syncComboPrice() {
     if (!res.ok) return;
     const a = await res.json();
     if (!a.combo_2026_discount) return;
-    const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US');
+    const px = '$' + Number(a.combo_2026_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     spots.forEach(el => { el.textContent = px; });
   } catch (e) { /* si falla, se queda el precio de lista */ }
 }

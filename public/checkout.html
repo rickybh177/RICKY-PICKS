@@ -171,7 +171,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="plan-card" id="planCard">
       <div class="plan-eyebrow">Tu selección</div>
       <div class="plan-name" id="planName">Cargando…</div>
-      <div class="plan-price" id="planPrice"><span class="cur">MXN</span></div>
+      <div class="plan-price" id="planPrice"><span class="cur">USD</span></div>
       <div class="plan-period" id="planPeriod"></div>
       <ul class="plan-features" id="planFeatures"></ul>
       <div class="trust-note"><strong>Pago seguro.</strong> Procesado por Stripe. Tus datos bancarios nunca pasan por nuestros servidores.</div>
@@ -266,8 +266,8 @@ const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const PLANS = {
   mexico: {
     name: '🇲🇽 Partido de México',
-    price: '$199',
-    currency: 'MXN',
+    price: '$10.99',
+    currency: 'USD',
     period: 'Análisis completo del partido de México hoy',
     features: [
       '🇲🇽 México vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',
@@ -279,8 +279,8 @@ const PLANS = {
   },
   torneo: {
     name: 'Partidos finales del Mundial',
-    price: '$299',
-    currency: 'MXN',
+    price: '$16.99',
+    currency: 'USD',
     period: 'Los últimos 2 partidos del Mundial 2026',
     features: [
       '🇫🇷 Francia vs 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra · tercer lugar · sáb 18',
@@ -292,8 +292,8 @@ const PLANS = {
   },
   final: {
     name: 'La final del Mundial — Argentina vs España',
-    price: '$99',
-    currency: 'MXN',
+    price: '$5.99',
+    currency: 'USD',
     period: 'La gran final · domingo 19',
     features: [
       '🇦🇷 Argentina vs 🇪🇸 España · la final',
@@ -327,8 +327,8 @@ const PLANS = {
   },
   mlb_temporada: {
     name: 'Modelo MLB — Temporada 2026',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Pago único · toda la temporada + playoffs + Serie Mundial',
     features: [
       'Acceso total hasta el último out de la Serie Mundial',
@@ -371,12 +371,12 @@ const PLANS = {
   },
   combo_2026: {
     name: 'Combo Total — MLB + Liga MX + NFL',
-    price: '$1,199',
-    currency: 'MXN',
+    price: '$64.99',
+    currency: 'USD',
     period: 'Pago único · las tres temporadas completas',
     features: [
       'MLB, Liga MX y NFL completos, hasta el final de cada temporada',
-      'Por separado: $2,097 — ahorras $898',
+      'Por separado: $149.97 — ahorras $84.98',
       'Un solo pago. Sin suscripción, sin renovaciones',
     ],
   },
@@ -393,14 +393,14 @@ const PLANS = {
   },
   mx_apertura: {
     name: 'Modelo Liga MX — Apertura 2026 completo',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Las 17 jornadas + liguilla · pago único',
     features: [
       'Todo el torneo, hasta la final de la liguilla',
       'Todos los partidos, mercados y análisis',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $1,396 — ahorras $497',
+      'Mes a mes saldría en $79.96 — ahorras $29.97',
     ],
   },
   nfl_semana: {
@@ -429,22 +429,22 @@ const PLANS = {
   },
   nfl_temporada: {
     name: 'Modelo NFL — Temporada 26-27 completa',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'De la jornada 1 al Super Bowl · pago único',
     features: [
       'Temporada regular completa + playoffs + Super Bowl',
       'Extra por entrar ahora: la pretemporada completa, gratis',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $2,094 — ahorras $1,195',
+      'Mes a mes saldría en $119.94 — ahorras $69.95',
     ],
   },
 
   /* ---- Pricing por suscripción (28-ago-2026) ---- */
   mlb_mensual: {
     name: 'Modelo MLB — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Todos los juegos de MLB, todos los días',
@@ -454,8 +454,8 @@ const PLANS = {
   },
   mx_mensual: {
     name: 'Modelo Liga MX — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Toda la jornada de Liga MX, cada semana',
@@ -465,8 +465,8 @@ const PLANS = {
   },
   nfl_mensual: {
     name: 'Modelo NFL — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Los 16 juegos de cada jornada: spread, total, moneyline y props de QB',
@@ -492,8 +492,8 @@ const PLANS = {
      está a la venta" y aquí solo se ve la ficha. ---- */
   epl_mensual: {
     name: 'Modelo Premier League — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Las 38 jornadas de la Premier: todos los partidos, todos los mercados',
@@ -504,8 +504,8 @@ const PLANS = {
   },
   laliga_mensual: {
     name: 'Modelo LaLiga — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Las 38 jornadas de LaLiga: todos los partidos, todos los mercados',
@@ -516,8 +516,8 @@ const PLANS = {
   },
   bundesliga_mensual: {
     name: 'Modelo Bundesliga — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Las 34 jornadas de la Bundesliga: todos los partidos, todos los mercados',
@@ -528,8 +528,8 @@ const PLANS = {
   },
   ucl_mensual: {
     name: 'Modelo Champions League — Suscripción mensual',
-    price: '$349',
-    currency: 'MXN',
+    price: '$19.99',
+    currency: 'USD',
     period: 'Suscripción mensual · cancela cuando quieras',
     features: [
       'Todos los partidos de Champions League, jornada por jornada, todos los mercados',
@@ -540,75 +540,75 @@ const PLANS = {
   },
   tres_mensual: {
     name: 'Tres modelos a elegir — Suscripción mensual',
-    price: '$599',
-    currency: 'MXN',
+    price: '$34.99',
+    currency: 'USD',
     period: 'Suscripción mensual · tú eliges 3 de los 7 modelos',
     choose: 3,
     features: [
       'Los tres modelos que elijas, completos: todos los partidos y todos los mercados',
-      'Sale a $200 por modelo (por separado serían $1,047)',
+      'Sale a $11.66 por modelo (por separado serían $59.97)',
       'Puedes cambiar uno de tus tres modelos cada mes desde Mis modelos',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
   todo_mensual: {
     name: 'Todos los modelos — Suscripción mensual',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Suscripción mensual · los 7 modelos',
     features: [
-      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $128 por modelo',
-      'Por separado serían $2,443 al mes',
+      'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $7.14 por modelo',
+      'Por separado serían $139.93 al mes',
       'Beisbol a diario, fútbol cada fin de semana y entre semana, NFL cada jornada',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
   epl_temporada: {
     name: 'Modelo Premier League — Temporada 2026-27 completa',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Premier League completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $2,242',
+      'Mes a mes saldría en $179.91 — ahorras $129.92',
     ],
   },
   laliga_temporada: {
     name: 'Modelo LaLiga — Temporada 2026-27 completa',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'LaLiga completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $2,242',
+      'Mes a mes saldría en $179.91 — ahorras $129.92',
     ],
   },
   bundesliga_temporada: {
     name: 'Modelo Bundesliga — Temporada 2026-27 completa',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Bundesliga completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $2,242',
+      'Mes a mes saldría en $179.91 — ahorras $129.92',
     ],
   },
   ucl_temporada: {
     name: 'Modelo Champions League — Temporada 2026-27 completa',
-    price: '$899',
-    currency: 'MXN',
+    price: '$49.99',
+    currency: 'USD',
     period: 'Pago único · de agosto a la última jornada',
     features: [
       'Champions League completa hasta el final de la temporada 2026-27',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Mes a mes saldría en $3,141 — ahorras $2,242',
+      'Mes a mes saldría en $179.91 — ahorras $129.92',
     ],
   },
   /* Pase de las 4 ligas europeas: fuera del catálogo público, solo se
@@ -616,15 +616,15 @@ const PLANS = {
      la lista —la suma de las cuatro sueltas— y el código lo tacha. */
   europa_temporada: {
     name: 'Las 4 ligas de Europa — Temporada 2026-27 completa',
-    price: '$3,596',
-    currency: 'MXN',
+    price: '$199.99',
+    currency: 'USD',
     period: 'Pago único · las cuatro ligas hasta el final de la 2026-27',
     features: [
       'Premier League, LaLiga, Bundesliga y Champions, completas',
       'Hasta la última jornada y la final de la Champions',
       'Todos los partidos, mercados y análisis, sin límite',
       'Un solo pago: sin renovaciones ni cargos mensuales',
-      'Por separado son $3,596 — cuatro temporadas de $899',
+      'Por separado son $199.99 — cuatro temporadas de $899',
     ],
   },
 };
@@ -719,9 +719,61 @@ const plan = PLANS[planId];
    oferta prometida (upgrade $199 de un mensual fundador a su
    temporada, combo_2026 con descuento); a cualquier otro se le dice
    aquí que ya no se vende, en vez de descubrirlo al pagar. */
+/* MONEDA (16-sep-2026): el sitio publica en DÓLARES. Con tarjeta cobra
+   Stripe esos dólares; con Mercado Pago se cobra el equivalente en
+   pesos, que se enseña junto al botón para que nadie se lleve una
+   sorpresa en la pasarela. Los importes SIEMPRE salen del catálogo
+   (/api/plans-public → lib/plans.js); la tabla PLANS de arriba solo
+   pone nombres y bullets. */
+const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pesos = n => '$' + Number(n).toLocaleString('en-US') + ' MXN';
 let catalogo = null;
+let precios = null;   // TODOS los planes con precio, retirados incluidos
 const catalogoListo = fetch('/api/plans-public', { cache: 'no-store' })
-  .then(r => r.ok ? r.json() : null).then(d => { catalogo = (d && d.plans) || null; }).catch(() => {});
+  .then(r => r.ok ? r.json() : null).then(d => {
+    catalogo = (d && d.plans) || null;
+    precios = (d && d.precios) || null;
+    aplicaPrecios();
+  }).catch(() => {});
+
+/* Vuelca el precio del catálogo sobre el plan que se está comprando y
+   lo repinta. No toca nada si ya se pintó un precio especial (código o
+   precio de cliente): ese manda sobre el de lista. */
+let _precioEspecial = false;
+function aplicaPrecios(){
+  const def = PLANS[planId];
+  if(!def) return;
+  const c = catalogo && catalogo[planId];
+  const pr = precios && precios[planId];
+  const usd = c ? c.price : (pr ? pr.usd : null);
+  const mxn = c ? c.price_mxn : (pr ? pr.mxn : null);
+  if(usd != null){ def.usd = usd; def.price = money(usd); def.currency = 'USD'; }
+  if(mxn != null) def.mxn = mxn;
+  if(_precioEspecial) return;
+  const grande = document.getElementById('planPrice');
+  if(grande && usd != null) grande.innerHTML = `${def.price} <span class="cur">USD</span>`;
+  const resumen = document.getElementById('summaryPrice');
+  if(resumen && usd != null) resumen.textContent = `${def.price} USD`;
+  pintaMp();
+}
+
+/* Línea de Mercado Pago: cuánto se cobra en pesos si paga por ahí.
+   `mxn` explícito cuando el cliente tiene precio especial. */
+function pintaMp(mxn){
+  const def = PLANS[planId] || {};
+  const monto = mxn != null ? mxn : def.mxn;
+  let el = document.getElementById('mpNote');
+  const btn = document.getElementById('mpBtn');
+  if(!btn) return;
+  if(monto == null){ if(el) el.remove(); return; }
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'mpNote';
+    el.style.cssText = 'margin-top:8px;font-size:0.78rem;color:var(--muted);text-align:center;line-height:1.45';
+    btn.insertAdjacentElement('afterend', el);
+  }
+  el.textContent = 'Con tarjeta se cobra en dólares. Con Mercado Pago se cobra en pesos: ' + pesos(monto) + '.';
+}
 
 let _activeDiscount = null; // { code, pct, plan }
 
@@ -732,22 +784,27 @@ let _activeDiscount = null; // { code, pct, plan }
 function pintaDescuento(data, code){
   const def = PLANS[planId];
   if(!def) return null;
-  const original = def.price;
-  const numPrice = parseInt(String(original).replace(/[^0-9]/g, ''), 10);
+  /* Precio de lista en dólares: del catálogo (def.usd), no del texto
+     de la tarjeta — un parseInt de "$19.99" daría 1999. */
+  const lista = def.usd != null ? def.usd : data.lista;
+  if(lista == null) return null;
+  const original = money(lista);
   const discounted = data.price != null ? data.price
-    : Math.round(numPrice * (1 - data.pct / 100));
-  const px = '$' + discounted.toLocaleString('en-US');
+    : Math.round(lista * (1 - data.pct / 100) * 100) / 100;
+  const px = money(discounted);
   _activeDiscount = { code, pct: data.pct, plan: data.plan };
+  _precioEspecial = true;
+  pintaMp(data.price_mxn != null ? data.price_mxn : def.mxn);
   /* Los DOS precios de la página: el grande de la tarjeta azul y el del
      resumen de "Confirmar compra". Antes solo se tocaba el resumen, que
      está oculto hasta iniciar sesión — el cliente veía el precio de
      lista y solo descubría el descuento después de entrar. */
   const grande = document.getElementById('planPrice');
   if(grande) grande.innerHTML =
-    `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">${original}</span> ${px} <span class="cur">MXN</span>`;
+    `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">${original}</span> ${px} <span class="cur">USD</span>`;
   const resumen = document.getElementById('summaryPrice');
   if(resumen) resumen.innerHTML =
-    `<span style="text-decoration:line-through;color:var(--muted);font-size:0.85rem">${original}</span> <span style="color:#16a34a">${px} MXN</span>`;
+    `<span style="text-decoration:line-through;color:var(--muted);font-size:0.85rem">${original}</span> <span style="color:#16a34a">${px} USD</span>`;
   const periodo = document.getElementById('planPeriod');
   if(periodo && code) periodo.textContent = `Precio especial con tu código ${code} · pago único`;
   return discounted;
@@ -768,7 +825,8 @@ const codigoListo = !codigoUrl || !planId ? Promise.resolve(false) : fetch('/api
   const monto = pintaDescuento(d, codigoUrl);
   const msg = document.getElementById('redeemMsg');
   if(msg && monto != null){
-    msg.textContent = `✓ Código ${codigoUrl} aplicado: pagas $${monto.toLocaleString('en-US')} MXN.`;
+    msg.textContent = `✓ Código ${codigoUrl} aplicado: pagas ${money(monto)} USD con tarjeta` +
+      (d.price_mxn != null ? ` (${pesos(d.price_mxn)} con Mercado Pago).` : '.');
     msg.className = 'msg ok';
   }
   const btn = document.getElementById('redeemBtn');
@@ -820,7 +878,6 @@ function pintaReoferta(){
   const m = /^([a-z]+)_mensual$/.exec(planId || '');
   const tem = m && SEASON_OF[m[1]] && catalogo && catalogo[SEASON_OF[m[1]]];
   if(!tem || reofertaCerrada){ box.style.display = 'none'; return; }
-  const money = n => '$' + Number(n).toLocaleString('en-US');
   const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
   box.innerHTML = '<div class="su-eyebrow"><i></i>Antes de pagar · pago único</div>' +
     '<div class="su-row"><span class="su-name">¿Mejor la temporada completa de ' + MODEL_NAME[m[1]] + '?</span>' +
@@ -1056,7 +1113,7 @@ async function renderSession(session){
       entitledStep.insertAdjacentElement('afterend', box);
     }
     box.innerHTML = '<h2>Este plan ya no está a la venta</h2>' +
-      '<p class="sub">Hoy todo es suscripción: un modelo ($349), tres a elegir ($599) o todos ($899). Cancela cuando quieras.</p>' +
+      '<p class="sub">Hoy todo es suscripción: un modelo ($19.99 USD), tres a elegir ($34.99) o todos ($49.99). Cancela cuando quieras.</p>' +
       '<a href="/producto.html?m=' + encodeURIComponent((productsOf(planId)[0] === 'mundial' ? 'mlb' : productsOf(planId)[0])) + '" class="btn-pay" style="margin-top:20px;text-decoration:none">Ver los planes vigentes →</a>';
     box.style.display = 'block';
     return;
@@ -1101,19 +1158,21 @@ async function renderSession(session){
   }
 
   if(acceso){
-    const original = plan.price; // p.ej. '$1,199'
-    const pinta = (px, nota) => {
+    const original = plan.price; // p.ej. '$49.99'
+    const pinta = (px, nota, mxn) => {
+      _precioEspecial = true;
       document.getElementById('planPrice').innerHTML =
-        `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">${original}</span> ${px} <span class="cur">MXN</span>`;
+        `<span style="text-decoration:line-through;opacity:0.55;font-size:1.3rem">${original}</span> ${px} <span class="cur">USD</span>`;
       document.getElementById('planPeriod').textContent = nota;
       document.getElementById('summaryPrice').innerHTML =
-        `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">${original}</span> ${px} MXN`;
+        `<span style="text-decoration:line-through;opacity:0.55;font-size:0.85rem">${original}</span> ${px} USD`;
+      pintaMp(mxn);
     };
     if(esUpgradeMensual){
-      pinta('$' + Number(up.price).toLocaleString('en-US'),
+      pinta(money(up.price),
         'Upgrade de tu plan mensual — al pagar, tu mensualidad se cancela sola');
     } else if(planId === 'combo_2026' && acceso.combo_2026_discount){
-      pinta('$' + Number(acceso.combo_2026_price).toLocaleString('en-US'),
+      pinta(money(acceso.combo_2026_price),
         'Precio especial: ya tienes uno de los modelos');
     } else if(acceso.ofertas && acceso.ofertas[planId]){
       /* Precio especial de ESTE cliente. Se dice POR QUÉ lo tiene —que
@@ -1121,11 +1180,11 @@ async function renderSession(session){
          calcula el servidor (lib/plans.js → precioDe); aquí se pinta. */
       const o = acceso.ofertas[planId];
       const esFundador = o.motivo === 'fundador';
-      pinta('$' + Number(o.price).toLocaleString('en-US'),
+      pinta(money(o.price),
         (esFundador ? 'Precio de fundador por ser cliente desde antes'
-          : o.motivo === 'tres_modelos' ? 'Solo $' + Number(o.sube).toLocaleString('en-US') + ' más al mes de lo que ya pagas'
+          : o.motivo === 'tres_modelos' ? 'Solo ' + money(o.sube) + ' más al mes de lo que ya pagas'
           : 'Precio especial por ser cliente')
-          + ' · cada mes, mientras no canceles');
+          + ' · cada mes, mientras no canceles', o.mxn);
       const resumen = document.getElementById('summaryName');
       if(resumen && !document.getElementById('founderTag')){
         const tag = document.createElement('div');
@@ -1134,14 +1193,14 @@ async function renderSession(session){
         tag.innerHTML = esFundador
           ? '<strong>★ Tu precio de fundador</strong><br>' +
             'Ya eras cliente de ' + (o.count >= 2 ? 'varios de nuestros modelos' : 'uno de nuestros modelos') +
-            ', así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') + ' al mes</strong> en vez de ' + plan.price +
+            ', así que pagas <strong>' + money(o.price) + ' al mes</strong> en vez de ' + plan.price +
             '. Lo conservas mientras no canceles.'
           : o.motivo === 'tres_modelos'
           ? '<strong>★ Tu upgrade</strong><br>' +
-            'Ya pagas $' + Number(o.price - o.sube).toLocaleString('en-US') + ' al mes por 3 modelos. Con <strong>$' +
-            Number(o.sube).toLocaleString('en-US') + ' más</strong> te llevas los 7. Tu plan actual se cancela solo al pagar.'
+            'Ya pagas ' + money(o.price - o.sube) + ' al mes por 3 modelos. Con <strong>' +
+            money(o.sube) + ' más</strong> te llevas los 7. Tu plan actual se cancela solo al pagar.'
           : '<strong>★ Tu precio por ser cliente</strong><br>' +
-            'Ya tienes un modelo con nosotros, así que pagas <strong>$' + Number(o.price).toLocaleString('en-US') +
+            'Ya tienes un modelo con nosotros, así que pagas <strong>' + money(o.price) +
             ' al mes</strong> en vez de ' + plan.price + '. Tu mensualidad actual se cancela sola al pagar y el precio se queda mientras no canceles.';
         const caja = resumen.closest('div[style*="background"]');
         if(caja) caja.insertAdjacentElement('afterend', tag);
@@ -1201,7 +1260,8 @@ document.getElementById('redeemBtn').addEventListener('click', async () => {
       const discounted = pintaDescuento(data, code);
       msg.textContent = data.pct != null
         ? `✓ ${data.pct}% de descuento aplicado.`
-        : `✓ Código aplicado: pagas $${discounted.toLocaleString('en-US')} MXN.`;
+        : `✓ Código aplicado: pagas ${money(discounted)} USD con tarjeta` +
+          (data.price_mxn != null ? ` (${pesos(data.price_mxn)} con Mercado Pago).` : '.');
       msg.className = 'msg ok';
       btn.textContent = 'Aplicado';
     } else {
