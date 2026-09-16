@@ -21,9 +21,18 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <script src="/meta-purchase.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://rickypicks.com.mx/europa.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="description" content="Premier League, LaLiga y Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.">
+<meta property="og:site_name" content="Ricky Picks">
+<meta property="og:url" content="https://rickypicks.com.mx/europa.html">
+<meta property="og:image" content="https://rickypicks.com.mx/banner.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rickypicks.com.mx/banner.png">
 <!-- título y OG se ajustan por liga en JS (?liga=epl|laliga|bundesliga) -->
-<title>Modelos de Europa — RICKY·PICKS · Premier, LaLiga y Bundesliga, marcador por marcador</title>
-<meta property="og:title" id="ogTitle" content="Modelos de Europa — RICKY·PICKS">
+<title>Modelos de Europa — Ricky Picks · Premier, LaLiga y Bundesliga</title>
+<meta property="og:title" id="ogTitle" content="Modelos de Europa — Ricky Picks">
 <meta property="og:description" id="ogDesc" content="Premier League, LaLiga y Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -339,8 +348,8 @@ if (_params.get('liga') !== LIGA) {
   _params.set('liga', LIGA);
   history.replaceState(null, '', '/europa.html?' + _params.toString());
 }
-document.title = 'Modelo ' + L.nombre + ' — RICKY·PICKS · La temporada 2026-27, marcador por marcador';
-$('ogTitle').setAttribute('content', 'Modelo ' + L.nombre + ' — RICKY·PICKS');
+document.title = 'Modelo ' + L.nombre + ' — Ricky Picks · La temporada 2026-27, marcador por marcador';
+$('ogTitle').setAttribute('content', 'Modelo ' + L.nombre + ' — Ricky Picks');
 $('ogDesc').setAttribute('content', L.nombre + ' partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.');
 $('pageH1').textContent = L.nombre + ', resuelta marcador por marcador.';
 $('guestCta').href = '/producto.html?m=' + LIGA; // los planes de ESTA liga

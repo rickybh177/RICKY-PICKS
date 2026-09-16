@@ -1,0 +1,13 @@
+# Ricky Picks — rickypicks.com.mx
+User-agent: *
+Allow: /
+
+# Páginas privadas: no aportan nada en búsqueda
+Disallow: /admin.html
+Disallow: /admin-instagram.html
+Disallow: /checkout.html
+Disallow: /mis-modelos.html
+Disallow: /reset.html
+Disallow: /api/
+
+Sitemap: https://rickypicks.com.mx/sitemap.xml
