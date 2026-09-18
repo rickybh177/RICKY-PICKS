@@ -232,9 +232,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .opt-price s { color: var(--faint); font-weight: 600; font-size: 0.82rem; margin-right: 7px; }
   .opt-price small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--muted);
     letter-spacing: 0; margin-top: 1px; }
-  /* Lo que cobraría Mercado Pago en pesos: dato de apoyo, no el precio.
-     Se parte en varias líneas para no ensanchar la columna del precio y
-     dejar sin aire al nombre del plan. */
+  /* La alternativa en dólares: dato de apoyo, no el precio. Se parte en
+     varias líneas para no ensanchar la columna del precio y dejar sin
+     aire al nombre del plan. */
   .opt-price small.mxn { font-size: 0.66rem; color: var(--faint); white-space: normal;
     max-width: 150px; margin-left: auto; line-height: 1.25; }
   .opt-body { display: none; padding: 0 18px 17px 53px; background: var(--g1); border-top: 1px solid var(--line); }
@@ -486,12 +486,13 @@ const MX_TZ = 'America/Mexico_City';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
-/* Los precios se publican en DÓLARES (16-sep-2026): con tarjeta cobra
-   Stripe en USD y con Mercado Pago se cobra el equivalente en pesos,
-   que se enseña al lado para que nadie se lleve sorpresas. Siempre con
-   centavos: un "$19.9" se lee como precio a medio escribir. */
-const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pesos = n => n == null ? '' : '$' + Number(n).toLocaleString('en-US') + ' MXN';
+/* Los precios se publican en PESOS (17-sep-2026): es lo que se cobra
+   por default en las dos pasarelas. Con dólares, a la mayoría de los
+   clientes mexicanos su banco rechazaba el cargo o les sumaba comisión
+   por compra internacional; el dólar quedó como opción con tarjeta, que
+   se elige en el checkout. */
+const money = n => '$' + Number(n).toLocaleString('en-US');
+const dolares = n => n == null ? '' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
 /* Momio justo americano a partir de la probabilidad del modelo:
    el mismo cálculo que la página del modelo. */
 const amOdds = p => (!p || p <= 0 || p >= 1) ? '—'
@@ -592,7 +593,7 @@ const BULLETS = {
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
   tres: () => ([
-    'Tres modelos completos, los que tú elijas — sale a $11.66 por modelo',
+    'Tres modelos completos, los que tú elijas — sale a $200 por modelo',
     'Cambia uno de tus tres modelos cada mes desde Mis modelos',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
@@ -675,7 +676,7 @@ let elegidos = [M];
 
 /* div (no button): adentro va el selector de modelos, y un botón no
    puede contener otros botones. */
-function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla, extra, mxn) {
+function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla, extra, usd) {
   return '<div class="opt" role="button" tabindex="0" data-plan="' + esc(id) + '" aria-pressed="false">' +
     '<div class="opt-row">' +
       '<span class="radio"></span>' +
@@ -683,7 +684,7 @@ function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla, extra, mxn
         '<small>' + esc(sub) + '</small></span>' +
       '<span class="opt-price">' + (ancla ? '<s>' + esc(ancla) + '</s>' : '') + esc(precio) +
         (nota ? '<small>' + esc(nota) + '</small>' : '') +
-        (mxn ? '<small class="mxn">' + esc(pesos(mxn)) + ' con Mercado Pago</small>' : '') + '</span>' +
+        (usd ? '<small class="mxn">o ' + esc(dolares(usd)) + ' con tarjeta</small>' : '') + '</span>' +
     '</div>' +
     '<div class="opt-body"><ul>' + bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' + (extra || '') + '</div>' +
   '</div>';
@@ -746,7 +747,7 @@ function pintaOpciones(p) {
      derecha (se despliega al elegir el mensual). */
   html += '<div class="pair" id="pair">' +
     tarjeta(men.id, 'Un modelo · Solo ' + cfg.nombre, 'Cancela cuando quieras', money(men.price),
-      'al mes · USD', BULLETS.mensual(M), null, null, null, men.price_mxn);
+      'al mes', BULLETS.mensual(M), null, null, null, men.price_usd);
   if (tem) {
     const ahorro = tem.anchor ? tem.anchor - tem.price : 0;
     html += '<button type="button" class="side" id="side" data-plan="' + esc(tem.id) + '" aria-expanded="false">' +
@@ -756,8 +757,8 @@ function pintaOpciones(p) {
         '<span class="s-eyebrow"><i></i>Pago único · sin renovaciones</span>' +
         '<span class="s-name">Temporada completa de ' + esc(cfg.nombre) + '</span>' +
         '<span class="s-price">' + (tem.anchor ? '<s>' + esc(money(tem.anchor)) + '</s>' : '') + esc(money(tem.price)) +
-          '<small>una sola vez · USD' + (ahorro > 0 ? ' · ahorras ' + esc(money(ahorro)) : '') +
-          (tem.price_mxn ? '<br>' + esc(pesos(tem.price_mxn)) + ' con Mercado Pago' : '') + '</small></span>' +
+          '<small>una sola vez' + (ahorro > 0 ? ' · ahorras ' + esc(money(ahorro)) : '') +
+          (tem.price_usd ? '<br>o ' + esc(dolares(tem.price_usd)) + ' con tarjeta' : '') + '</small></span>' +
         '<span class="s-txt">' + esc(BULLETS.temporada(M)[0]) + '. Pagas una vez y te olvidas de la mensualidad.</span>' +
         '<span class="s-cta" id="sideCta">Mejor la temporada →</span>' +
       '</span>' +
@@ -771,16 +772,16 @@ function pintaOpciones(p) {
     const pTres = oTres ? oTres.price : tres.price;
     html += '<div class="sep">O bien</div>';
     html += tarjeta(tres.id, 'Tres modelos a elegir', 'Los 3 que tú escojas · cambia uno cada mes',
-      money(pTres), 'al mes · USD · ' + money(pTres / 3) + ' por modelo',
+      money(pTres), 'al mes · ' + money(Math.round(pTres / 3)) + ' por modelo',
       BULLETS.tres().concat(oTres ? ['Tu precio por ser cliente — se queda mientras no canceles'] : []),
       oTres ? 'Tu precio' : 'El más elegido',
       oTres ? money(tres.price) : null,
-      '<div id="picker"></div>', oTres ? oTres.mxn : tres.price_mxn);
+      '<div id="picker"></div>', oTres ? oTres.usd : tres.price_usd);
   }
   if (todo) {
     const n = (todo.products || []).length || 7;
     /* Precio especial (fundador o "ya tienes un modelo"): sustituye al de
-       lista y tacha los $49.99, no el ancla de "por separado". */
+       lista y tacha los $899, no el ancla de "por separado". */
     const oTodo = ofertaDe(todo.id);
     const precio = oTodo ? oTodo.price : todo.price;
     const ahorro = todo.anchor ? todo.anchor - precio : 0;
@@ -793,18 +794,18 @@ function pintaOpciones(p) {
       : oTodo.motivo === 'tres_modelos'
         ? 'Solo ' + money(oTodo.sube) + ' más al mes de lo que ya pagas · tu plan actual se cancela solo'
         : 'Tu precio por ser cliente — se queda mientras no canceles';
-    /* Tachar "$49.99 → $48.99" se ve ridículo: el tachado solo si el
-       ahorro de verdad se nota (3 dólares; antes eran 50 pesos). */
-    const tachado = oTodo && oTodo.ahorro >= 3 ? money(todo.price) : null;
+    /* Tachar "$899 → $898" se ve ridículo: el tachado solo si el ahorro
+       de verdad se nota. */
+    const tachado = oTodo && oTodo.ahorro >= 50 ? money(todo.price) : null;
     const bullets = BULLETS.todo()
       .concat(nota ? [nota] : [])
       .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
     html += '<div class="sep">O bien</div>';
     html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
-      money(precio), 'al mes · USD · ' + money(precio / n) + ' por modelo',
+      money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
       bullets, etiqueta,
       tachado || (oTodo ? null : (todo.anchor ? money(todo.anchor) : null)),
-      null, oTodo ? oTodo.mxn : todo.price_mxn);
+      null, oTodo ? oTodo.usd : todo.price_usd);
   }
   $('opts').innerHTML = html;
   pintaChips();

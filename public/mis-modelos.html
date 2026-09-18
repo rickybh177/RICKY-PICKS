@@ -323,9 +323,10 @@ function fechaLegible(ms){
    No es lo mismo una mensualidad que un pase de temporada de pago
    único o un código de cortesía: a los dos últimos decirles "tu
    suscripción" es falso, nunca tuvieron una. */
-/* Los precios se publican en dólares (16-sep-2026): con tarjeta cobra
-   Stripe en USD y con Mercado Pago se cobra el equivalente en pesos. */
-const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+/* Los precios se publican en pesos (17-sep-2026): es lo que se cobra
+   por default en las dos pasarelas. El dólar es una opción que se
+   elige en el checkout. */
+const money = n => '$' + Number(n).toLocaleString('en-US');
 
 function listaModelos(prods){
   const n = (prods || []).map(p => NOMBRE_MODELO[p]).filter(Boolean);

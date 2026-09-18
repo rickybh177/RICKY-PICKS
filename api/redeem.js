@@ -60,10 +60,10 @@ module.exports = async function handler(req, res) {
     if (discount) {
       /* El precio final lo calcula el servidor (lib/plans.js es la
          fuente de verdad); el checkout solo lo pinta. */
-      /* Las DOS monedas: el sitio publica en dólares (Stripe cobra eso)
-         y Mercado Pago cobra el equivalente en pesos. Mandar una sola
-         dejaría al checkout pintando un número que no corresponde a lo
-         que va a cobrar la pasarela que elija el cliente. */
+      /* Las DOS monedas: el sitio publica en pesos (lo que se cobra por
+         default en ambas pasarelas) y el dólar queda para quien lo
+         elija con tarjeta. Mandar una sola dejaría al checkout pintando
+         un número que no corresponde a lo que va a cobrar la pasarela. */
       const conCodigo = (M) => {
         const lista = montoDe(discount.plan, M);
         return lista != null ? priceWith({ ...discount, code }, lista, M) : null;
@@ -71,11 +71,11 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         ok: true, type: 'discount', plan: discount.plan,
         pct: discount.pct || null,
-        price: conCodigo('USD'),      // el precio que se publica
-        price_mxn: conCodigo('MXN'),  // el que cobra Mercado Pago
-        lista: montoDe(discount.plan, 'USD'),
-        lista_mxn: montoDe(discount.plan, 'MXN'),
-        currency: 'USD',
+        price: conCodigo('MXN'),      // el precio que se publica y se cobra
+        price_usd: conCodigo('USD'),  // si el cliente elige pagar en dólares
+        lista: montoDe(discount.plan, 'MXN'),
+        lista_usd: montoDe(discount.plan, 'USD'),
+        currency: 'MXN',
         label: labelWith({ ...discount, code }),
       });
     }

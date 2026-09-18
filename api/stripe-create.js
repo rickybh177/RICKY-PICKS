@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, normalizaMoneda, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -148,18 +148,25 @@ module.exports = async function handler(req, res) {
     /* Precio para ESTE cliente (fundador o upgrade por tener un modelo).
        lib/plans.js decide cuál le toca y elige el mejor; aquí solo se
        cobra lo que diga. */
-    /* Stripe cobra en USD (Mercado Pago sigue en MXN, ver
-       create-payment). Si el plan no tiene precio en dólares se RECHAZA
-       la compra: cobrar el número de pesos en USD serían 17 veces de
-       más. */
-    const MONEDA = 'USD';
-    const listaUsd = montoDe(plan, MONEDA);
-    if (listaUsd == null) {
-      console.error('stripe-create: plan sin precio en USD —', plan);
-      return res.status(400).json({ error: 'Ese plan no está disponible con tarjeta ahora mismo. Paga con Mercado Pago.' });
+    /* Moneda del cobro. PESOS por defecto (17-sep-2026): a la mayoría
+       de los clientes mexicanos su banco les rechazaba el cargo en
+       dólares o les sumaba comisión por compra internacional. El dólar
+       sigue disponible si el cliente lo pide (`moneda: 'USD'`, el
+       selector del checkout), y es la única pasarela que puede darlo:
+       Mercado Pago México solo procesa pesos.
+
+       normalizaMoneda deja fuera cualquier valor raro cayendo al peso;
+       si aun así el plan no tuviera precio en esa moneda se RECHAZA la
+       compra en vez de cobrar el número de la otra (un $499 de pesos
+       cobrado en dólares serían 17 veces de más). */
+    const MONEDA = normalizaMoneda(body && body.moneda, 'stripe');
+    const lista = montoDe(plan, MONEDA);
+    if (lista == null) {
+      console.error('stripe-create: plan sin precio en', MONEDA, '—', plan);
+      return res.status(400).json({ error: 'Ese plan no está disponible en esa moneda. Intenta de nuevo o paga con Mercado Pago.' });
     }
     const oferta = precioDe(plan, ents, MONEDA);
-    const precioBase = oferta ? oferta.price : listaUsd;
+    const precioBase = oferta ? oferta.price : lista;
     const p = {
       name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '')
         + (oferta ? (oferta.motivo === 'fundador' ? ' — precio de fundador' : ' — precio por ser cliente') : ''),
@@ -200,7 +207,7 @@ module.exports = async function handler(req, res) {
         /* Código de descuento sobre suscripción: cupón de UNA sola vez
            (solo el primer mes; las renovaciones van a precio completo).
            Redondeado a pesos para que coincida con lo que ve el cliente. */
-        const pesosOff = listaUsd - priceWith(discount, listaUsd, MONEDA);
+        const pesosOff = lista - priceWith(discount, lista, MONEDA);
         if (pesosOff > 0) {
           const coupon = await stripe.coupons.create({
             amount_off: Math.round(pesosOff * 100), currency: p.currency,
@@ -213,7 +220,7 @@ module.exports = async function handler(req, res) {
            se descuenta del primer mes del plan mensual con MLB. */
         const includesMlb = plan === 'mlb_fundador' || plan === 'combo_total';
         const ent = includesMlb ? await getEntitlement(user.id, user.email, 'mlb') : null;
-        const credit = upgradeCreditFor(ent, MONEDA); // USD o 0
+        const credit = upgradeCreditFor(ent, MONEDA); // en la moneda del cobro, o 0
         if (credit > 0) {
           const coupon = await stripe.coupons.create({
             amount_off: Math.round(credit * 100), currency: p.currency,
@@ -241,13 +248,15 @@ module.exports = async function handler(req, res) {
       const up = monthlyUpgradeFor(ents);
       if (up && up.target === plan) {
         upgrade = up;
-        finalPrice = Math.round(up.usd * 100);
-        productName = `${p.name} — upgrade de tu plan mensual ($${up.usd} USD; tu mensualidad se cancela sola)`;
+        const montoUp = MONEDA === 'USD' ? up.usd : up.price;
+        finalPrice = Math.round(montoUp * 100);
+        productName = `${p.name} — upgrade de tu plan mensual ($${montoUp} ${MONEDA}; tu mensualidad se cancela sola)`;
       } else if (plan === 'combo_2026') {
         permDisc = comboPermanentDiscount(ents);
         if (permDisc) {
-          finalPrice = Math.round(permDisc.usd * 100);
-          productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${permDisc.usd} USD)`;
+          const montoPerm = MONEDA === 'USD' ? permDisc.usd : permDisc.price;
+          finalPrice = Math.round(montoPerm * 100);
+          productName = `${p.name} — precio especial: ya tienes uno de los modelos ($${montoPerm} ${MONEDA})`;
         }
       }
     }
@@ -257,7 +266,7 @@ module.exports = async function handler(req, res) {
        encima con los precios especiales de arriba. */
     if (!permDisc && !upgrade && (plan === 'mlb_temporada' || plan === 'combo_2026')) {
       const ent = await getEntitlement(user.id, user.email, 'mlb');
-      const credit = upgradeCreditFor(ent, MONEDA); // USD o 0
+      const credit = upgradeCreditFor(ent, MONEDA); // en la moneda del cobro, o 0
       if (credit > 0) {
         finalPrice = Math.max(0, finalPrice - Math.round(credit * 100));
         productName += ` (crédito de tu Semana: -$${credit})`;

@@ -1002,7 +1002,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       </details>
       <details>
         <summary>¿Qué incluyen los planes de las ligas europeas?</summary>
-        <p>Premier League, LaLiga, Bundesliga y Champions League son cuatro modelos independientes. Cada uno se contrata solo ($19.99 USD al mes), dentro de los tres modelos a elegir ($34.99 al mes) o con todos los modelos ($49.99 al mes). Todo es suscripción mensual: se renueva sola y se cancela cuando quieras. Los precios se publican en dólares; si pagas con Mercado Pago se te cobra el equivalente en pesos, que ves antes de pagar.</p>
+        <p>Premier League, LaLiga, Bundesliga y Champions League son cuatro modelos independientes. Cada uno se contrata solo ($349 al mes), dentro de los tres modelos a elegir ($599 al mes) o con todos los modelos ($899 al mes). Todo es suscripción mensual: se renueva sola y se cancela cuando quieras. Los precios son en pesos mexicanos; si prefieres pagar en dólares con tarjeta, puedes elegirlo en el checkout.</p>
       </details>
     </div>
   </div>
@@ -1015,7 +1015,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <h3>Términos</h3>
       <dl>
         <dt>Planes vigentes (desde el 8 de septiembre de 2026)</dt>
-        <dd>Tres planes, todos de suscripción mensual con precios en dólares (USD): <strong>Un modelo</strong> ($19.99 al mes; el modelo que elijas: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga o Champions League), <strong>Tres modelos a elegir</strong> ($34.99 al mes; eliges tres de los siete al contratar y puedes cambiar uno de ellos por otro una vez por periodo de cobro desde <em>Mis modelos</em>) y <strong>Todos los modelos</strong> ($49.99 al mes; los siete). Cada suscripción se renueva sola cada mes al precio del plan vigente y se cancela cuando quieras desde <em>Administrar suscripción</em>; al cancelar conservas el acceso hasta el final del periodo ya pagado. Además, cada modelo ofrece su <strong>Temporada completa</strong> ($49.99 USD, pago único): cubre ese modelo hasta el final de su temporada en curso (MLB hasta la Serie Mundial 2026, Liga MX hasta la final del Apertura 2026, NFL hasta el Super Bowl 26-27, las ligas europeas hasta su última jornada 2026-27) y no se renueva ni se cobra otra vez; al comprarla, la mensualidad de ese modelo se cancela sola. El pick destacado de cada modelo es gratuito y no requiere plan. Con tarjeta el cobro es en dólares; con Mercado Pago se cobra el equivalente en pesos mexicanos, que se muestra antes de pagar.</dd>
+        <dd>Tres planes, todos de suscripción mensual en pesos mexicanos: <strong>Un modelo</strong> ($349 al mes; el modelo que elijas: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga o Champions League), <strong>Tres modelos a elegir</strong> ($599 al mes; eliges tres de los siete al contratar y puedes cambiar uno de ellos por otro una vez por periodo de cobro desde <em>Mis modelos</em>) y <strong>Todos los modelos</strong> ($899 al mes; los siete). Cada suscripción se renueva sola cada mes al precio del plan vigente y se cancela cuando quieras desde <em>Administrar suscripción</em>; al cancelar conservas el acceso hasta el final del periodo ya pagado. Además, cada modelo ofrece su <strong>Temporada completa</strong> ($899 MXN, pago único): cubre ese modelo hasta el final de su temporada en curso (MLB hasta la Serie Mundial 2026, Liga MX hasta la final del Apertura 2026, NFL hasta el Super Bowl 26-27, las ligas europeas hasta su última jornada 2026-27) y no se renueva ni se cobra otra vez; al comprarla, la mensualidad de ese modelo se cancela sola. El pick destacado de cada modelo es gratuito y no requiere plan. El cobro es en pesos mexicanos con Mercado Pago y con tarjeta; quien lo prefiera puede pagar con tarjeta en dólares eligiéndolo en el checkout.</dd>
         <dt>Planes anteriores (legado)</dt>
         <dd>El Combo Total, los planes semanales y los mensuales anteriores (Mensual Fundador, Combo mensual, Círculo Fundador) ya no se venden. Quienes los contrataron conservan su acceso, su precio y sus beneficios mientras su plan siga vigente: una suscripción anterior se sigue renovando a su precio hasta que la cancelen, y las temporadas compradas antes a otro precio valen igual hasta su fin.</dd>
         <dt>General</dt>
@@ -1658,14 +1658,14 @@ async function openFree(){
           Todavía hay <strong>3 partidos más hoy</strong> con análisis completo.<br>El modelo sigue corriendo.
         </div>
       </div>`;
-    modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear el torneo completo por $16.99 USD →</a>';
+    modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear el torneo completo por $300 MXN →</a>';
     overlay.classList.add('open');
     return;
   }
 
   modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
   picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo por $16.99 USD →</a>';
+  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo por $300 MXN →</a>';
   const hosts = (CONFIG && CONFIG.hosts) || [];
   const isHost = hosts.includes(f.home);
   const neutralWrap = document.getElementById('tNeutralWrap');

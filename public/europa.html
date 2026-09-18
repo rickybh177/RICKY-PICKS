@@ -377,9 +377,9 @@ function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
 function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
 function am(v) { return v == null ? '—' : (v > 0 ? '+' + v : String(v)); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-/* Precios en dólares (lib/plans.js → /api/plans-public). Con tarjeta se
-   cobran en USD; con Mercado Pago, el equivalente en pesos. */
-function money(n) { return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+/* Precios en pesos (lib/plans.js → /api/plans-public), que es como se
+   cobra por default; el dólar se elige en el checkout. */
+function money(n) { return '$' + Number(n).toLocaleString('en-US'); }
 
 async function authHeader() {
   if (!sb) return {};
@@ -409,7 +409,6 @@ async function loadPlans() {
     if (liga) partes.push('solo ' + L.corto + ' por ' + money(liga.price) + ' al mes');
     if (tres) partes.push('tres modelos a elegir por ' + money(tres.price));
     if (todo) partes.push('los siete por ' + money(todo.price));
-    if (partes.length) partes[partes.length - 1] += ' (USD)';
     $('plansSub').textContent = partes.length
       ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1) + (partes.length > 1 ? ', ' + partes.slice(1).join(' o ') : '') + '. Cancela cuando quieras.'
       : '';
