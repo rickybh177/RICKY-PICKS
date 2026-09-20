@@ -142,6 +142,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     .models { grid-template-columns: 1fr; }
     .page-hero { padding: 36px 0 4px; }
   }
+  /* Logotipo partido: DAT en tinta, TIP en azul. La marca se escribe
+     así en todo el sitio — si cambia el color, cambia aquí y en ningún
+     otro lado. */
+  .logo .tip { color: var(--blue); }
 </style>
 </head>
 <body>
@@ -150,7 +154,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <a href="/" class="logo">
       <img src="/img/avatar.png" alt="" width="32" height="32">
-      DATTIP
+      <span class="brand-word">DAT<span class="tip">TIP</span></span>
     </a>
     <div class="nav-right">
       <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>

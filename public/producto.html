@@ -403,13 +403,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+  /* Logotipo partido: DAT en tinta, TIP en azul. La marca se escribe
+     así en todo el sitio — si cambia el color, cambia aquí y en ningún
+     otro lado. */
+  .logo .tip { color: var(--blue); }
 </style>
 </head>
 <body>
 
 <nav>
   <div class="wrap">
-    <a href="/" class="logo"><span class="mark">D·T</span>DATTIP</a>
+    <a href="/" class="logo"><span class="mark">D·T</span><span class="brand-word">DAT<span class="tip">TIP</span></span></a>
     <div class="nav-actions">
       <a class="nav-btn" href="/mis-modelos.html">Mis modelos</a>
       <button class="nav-btn" id="authBtn">Entrar</button>
