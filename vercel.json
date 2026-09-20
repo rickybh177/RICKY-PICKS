@@ -4,5 +4,13 @@
     "api/*.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:ruta((?!api/).*)",
+      "has": [{ "type": "host", "value": "rickypicks.com.mx" }],
+      "destination": "https://dattip.com/:ruta",
+      "permanent": true
+    }
+  ]
 }
