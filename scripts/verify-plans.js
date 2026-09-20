@@ -153,7 +153,7 @@ const ok = msg => console.log('  ✓ ' + msg);
     t(validChoice('tres_mensual', 'mlb,mx,foo') === null, 'validChoice rechaza un modelo inexistente');
     t(validChoice('todo_mensual', 'mlb,mx,nfl') === null, 'validChoice solo aplica a planes a elegir');
     t(choiceFromReason('tres_mensual', reasonWith('Tres modelos a elegir — Suscripción mensual', ['mlb', 'mx', 'epl'])).join(',') === 'mlb,mx,epl', 'el concepto de Mercado Pago lleva y devuelve la elección');
-    t(choiceFromReason('tres_mensual', 'RICKY·PICKS — Tres modelos') === null, 'sin corchetes no se adivina nada');
+    t(choiceFromReason('tres_mensual', 'DATTIP — Tres modelos') === null, 'sin corchetes no se adivina nada');
     const ahora = Date.now(), reciente = new Date(ahora - 5 * 86400e3).toISOString();
     const ents = [{ plan: 'mlb_temporada', product: 'mlb', active: true, updated_at: reciente }];
     t(productsAlreadyCovered(ents, 'tres_mensual', ahora, ['mlb', 'mx', 'nfl']).join(',') === 'mlb', 'con mlb_temporada, un tres [mlb,mx,nfl] ya tiene cubierto mlb (la compra sigue: agrega mx y nfl)');

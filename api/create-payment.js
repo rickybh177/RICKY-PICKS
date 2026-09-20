@@ -134,7 +134,7 @@ module.exports = async function handler(req, res) {
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountFor(discountCode, planId);
   let finalPrice = priceWith(discount, precioBase, MONEDA);
-  let finalTitle = `RICKY·PICKS — ${plan.title}`
+  let finalTitle = `DATTIP — ${plan.title}`
     + (oferta ? (oferta.motivo === 'fundador' ? ' (precio de fundador)' : ' (precio por ser cliente)') : '')
     + (discount ? ` (${labelWith(discount)})` : '');
 
@@ -147,12 +147,12 @@ module.exports = async function handler(req, res) {
     const up = monthlyUpgradeFor(ents);
     if (up && up.target === planId) {
       finalPrice = up.price;
-      finalTitle = `RICKY·PICKS — ${plan.title} (upgrade de tu plan mensual; tu mensualidad se cancela sola)`;
+      finalTitle = `DATTIP — ${plan.title} (upgrade de tu plan mensual; tu mensualidad se cancela sola)`;
     } else if (planId === 'combo_2026') {
       const permDisc = comboPermanentDiscount(ents);
       if (permDisc) {
         finalPrice = permDisc.price;
-        finalTitle = `RICKY·PICKS — ${plan.title} (precio especial: ya tienes uno de los modelos)`;
+        finalTitle = `DATTIP — ${plan.title} (precio especial: ya tienes uno de los modelos)`;
       }
     }
   }
@@ -182,7 +182,7 @@ module.exports = async function handler(req, res) {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           // "a elegir": la elección también va en el concepto (respaldo del webhook)
-          reason: models ? reasonWith(plan.title, models) : `RICKY·PICKS — ${plan.title}`,
+          reason: models ? reasonWith(plan.title, models) : `DATTIP — ${plan.title}`,
           external_reference: `${user.id}:${plan.id}`,
           payer_email: user.email,
           auto_recurring: {
@@ -237,7 +237,10 @@ module.exports = async function handler(req, res) {
     // auto_return solo funciona con URLs HTTPS públicas (no localhost)
     ...(base.startsWith('https://') ? { auto_return: 'approved' } : {}),
     notification_url: `${base}/api/mp-webhook`,
-    statement_descriptor: 'RICKYPICKS',
+    /* Lo que aparece en el estado de cuenta del cliente. Si no coincide
+       con el nombre que conoce, la primera reacción es desconocer el
+       cargo — por eso el cambio de marca se avisa ANTES de tocarlo. */
+    statement_descriptor: 'DATTIP',
   };
 
   try {

@@ -379,7 +379,7 @@ async function actualizarCreativo() {
 
   const imagen = opcion('imagen');
   const video = opcion('video');
-  const link = opcion('link') || specActual.link || 'https://rickypicks.com.mx';
+  const link = opcion('link') || specActual.link || 'https://dattip.com';
   const texto = opcion('texto') || specActual.message;
   const titular = opcion('titular') || specActual.name;
   const descripcion = opcion('descripcion') || specActual.description;
@@ -530,7 +530,7 @@ async function cambiarEstado(estado) {
 
 function ayuda() {
   console.log(`
-Meta Ads — RICKY·PICKS
+Meta Ads — DATTIP
 
   PRIMERO, el token (una sola vez):
     1. developers.facebook.com → tu app (la misma del bot de IG sirve)

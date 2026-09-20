@@ -1,4 +1,4 @@
-# Ricky Picks — rickypicks.com.mx
+# Dattip — dattip.com
 User-agent: *
 Allow: /
 
@@ -10,4 +10,4 @@ Disallow: /mis-modelos.html
 Disallow: /reset.html
 Disallow: /api/
 
-Sitemap: https://rickypicks.com.mx/sitemap.xml
+Sitemap: https://dattip.com/sitemap.xml

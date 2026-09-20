@@ -15,9 +15,9 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
    se desincronizó (mlb_temporada subió a $599 en plans.js y aquí quedó
    en $549) — Stripe cobraba distinto de lo publicado. */
 const PLAN_NAMES = {
-  mexico:        'RICKY-PICKS — Partido de México',
-  torneo:        'RICKY-PICKS — Partidos finales del Mundial',
-  final:         'RICKY-PICKS — La final: Argentina vs España',
+  mexico:        'DATTIP — Partido de México',
+  torneo:        'DATTIP — Partidos finales del Mundial',
+  final:         'DATTIP — La final: Argentina vs España',
   mlb_pase:      'Modelo MLB — Pase del día',
   mlb_semana:    'Modelo MLB — Semana de prueba',
   mlb_fundador:  'Modelo MLB — Mensual Fundador',

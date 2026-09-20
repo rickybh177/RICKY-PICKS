@@ -12,7 +12,7 @@
           ids reales y se descarta.
 
    Registrar en Meta → App → Webhooks → Instagram:
-     URL:      https://rickypicks.com.mx/api/ig-webhook
+     URL:      https://dattip.com/api/ig-webhook
      Campos:   messages, comments
    ============================================================ */
 const { getAdmin } = require('../lib/supabaseAdmin');

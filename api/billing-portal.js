@@ -33,7 +33,7 @@ function siteUrl(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const proto = req.headers['x-forwarded-proto'] || 'https';
   if (host && !host.includes('localhost')) return `${proto}://${host}`;
-  return process.env.SITE_URL || 'https://rickypicks.com.mx';
+  return process.env.SITE_URL || 'https://dattip.com';
 }
 
 module.exports = async function handler(req, res) {

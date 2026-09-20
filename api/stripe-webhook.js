@@ -14,7 +14,7 @@
    un payload falsificado no puede otorgar nada.
 
    Configurar en Stripe → Developers → Webhooks:
-     URL:     https://rickypicks.com.mx/api/stripe-webhook
+     URL:     https://dattip.com/api/stripe-webhook
      Eventos: invoice.paid, checkout.session.completed
    ============================================================ */
 const Stripe = require('stripe');
