@@ -23,560 +23,255 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <link rel="canonical" href="https://dattip.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:site_name" content="Dattip">
-<meta property="og:title" content="Dattip — Modelos de Liga MX, NFL y MLB: picks con valor real">
-<meta property="og:description" content="El modelo simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
+<meta property="og:title" content="Dattip — La data le gana al tipster">
+<meta property="og:description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. Liga MX, NFL, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dattip.com/">
 <meta property="og:image" content="https://dattip.com/banner.png">
 <meta property="og:locale" content="es_MX">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://dattip.com/banner.png">
-<title>Dattip — Modelos de Liga MX, NFL y MLB: picks con valor real</title>
-<meta name="description" content="El modelo simula cada juego 10,000 veces antes del primer lanzamiento y te dice a qué apostar — y a qué no. Récord público, calificado contra marcadores reales.">
+<title>Dattip — La data le gana al tipster</title>
+<meta name="description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. Liga MX, NFL, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ED·T%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+  /* ============================================================
+     LANDING (21-sep-2026) — una columna, una idea por pantalla, un
+     solo botón que se repite y el precio visible desde el hero.
+     El pick gratis en vivo ES el hero; el visitante prueba el
+     producto antes de que se le pida nada.
+     ============================================================ */
   :root {
-    --g0: #0a0d13;
-    --g1: #0e131c;
-    --g2: #141b27;
-    --line: #1e2634;
-    --line-2: #2b3547;
-    --text: #e9edf4;
-    --muted: #8b96a8;
-    --faint: #5f6a7d;
-    --blue: #4c7df0;
-    --blue-deep: #2b57c9;
-    --blue-tint: rgba(76,125,240,0.12);
-    --bet: #2fd57b;
-    --bet-bg: rgba(47,213,123,0.1);
-    --skip: #f2695c;
-    --skip-bg: rgba(242,105,92,0.1);
-    --win: #2fd57b;
-    --loss: #f2695c;
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --ink: #0b1e3f;
+    --blue: #2f7bff; --blue-deep: #1d4ed8; --blue-tint: rgba(47,123,255,0.08);
+    --bet: #16a34a; --bet-bg: rgba(22,163,74,0.1);
+    --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
+    --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
+    --col: 640px;
   }
-  /* ============ ZONA CLARA — todo después del hero ============
-     Mismos nombres de variable; al redefinirlos aquí, todo lo que
-     está DENTRO de .light-zone (record, método, en vivo, precios,
-     mundial, faq, footer, modales) hereda el tema claro sin tocar
-     cada regla una por una. El hero (fuera de este wrapper) sigue
-     oscuro con los tokens del :root de arriba. */
-  .light-zone {
-    --g0: #ffffff;
-    --g1: #f5f7fa;
-    --g2: #eef2f7;
-    --line: #e7ebf1;
-    --line-2: #d8dfe9;
-    --text: #14181e;
-    --muted: #667084;
-    --faint: #8a93a3;
-    --blue: #2f7bff;
-    --blue-deep: #1d4ed8;
-    --blue-tint: rgba(47,123,255,0.08);
-    --bet: #16a34a;
-    --bet-bg: rgba(22,163,74,0.1);
-    --skip: #dc2626;
-    --skip-bg: rgba(220,38,38,0.08);
-    --win: #16a34a;
-    --loss: #dc2626;
-    background: var(--g0);
-    color: var(--text);
-  }
-  /* El hero pasó a fondo BLANCO, así que el nav ya no arranca oscuro:
-     usa el tema claro desde el inicio y .scrolled solo marca el borde. */
-  nav { background: rgba(255,255,255,0.78) !important; }
-  nav .logo { color: #14181e; }
-  nav .logo .mark { border-color: #2f7bff; color: #2f7bff; }
-  nav .nav-link { color: #667084; }
-  nav .nav-link:hover { color: #14181e; background: #eef2f7; }
-  nav .nav-ghost { color: #14181e; border-color: #d8dfe9; }
-  nav .nav-ghost:hover { border-color: #2f7bff; }
-  nav.scrolled { border-bottom-color: #e7ebf1; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body {
-    background: var(--g0); color: var(--text);
+  body { background: var(--g0); color: var(--text);
     font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    line-height: 1.55; -webkit-font-smoothing: antialiased; font-size: 16.5px;
-  }
-  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
-  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
-  img, video { max-width: 100%; }
-  button { font: inherit; cursor: pointer; }
+    line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: 16px;
+    /* espacio para la barra pegada abajo */
+    padding-bottom: 84px; }
   a { color: var(--blue); }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .wrap { max-width: var(--col); margin: 0 auto; padding: 0 20px; }
 
-  /* ============ NAV ============ */
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 80; background: rgba(10,13,19,0.72); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid transparent; transition: border-color .3s ease; }
+  /* ---- NAV ---- */
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.86);
+    backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border-bottom: 1px solid transparent; transition: border-color .2s; }
   nav.scrolled { border-bottom-color: var(--line); }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; color: var(--text); }
-  .logo .mark { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; }
-  .logo .dot { color: var(--blue); }
-  .nav-right { display: flex; align-items: center; gap: 6px; }
-  .nav-link { font-size: 0.84rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 8px 13px; border-radius: 9px; transition: color .15s, background .15s; background: none; border: none; }
-  .nav-link:hover { color: var(--text); background: var(--g2); }
-  .nav-ghost { font-size: 0.84rem; font-weight: 600; color: var(--text); background: none; border: 1px solid var(--line-2); padding: 8px 15px; border-radius: 10px; transition: border-color .15s; }
-  .nav-ghost:hover { border-color: var(--blue); }
-  .nav-cta { font-size: 0.84rem; font-weight: 600; color: #fff; background: var(--blue-deep); padding: 9px 16px; border-radius: 10px; border: none; text-decoration: none; transition: background .15s; }
-  .nav-cta:hover { background: var(--blue); }
-  .nav-link.soon { position: relative; cursor: pointer; }
-  .nav-link.soon .toast { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; padding: 7px 12px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6); }
-  .nav-link.soon .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .nav-link.soon .toast::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: var(--line-2); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 10px; max-width: 1180px; }
+  .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
+  .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue);
+    color: var(--blue); display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
+  /* Logotipo partido: DAT en tinta, TIP en azul. La marca se escribe
+     así en todo el sitio — si cambia el color, cambia aquí y en ningún
+     otro lado. */
+  .logo .tip { color: var(--blue); }
+  .nav-actions { display: flex; align-items: center; gap: 8px; }
+  .nav-btn { font-size: 0.82rem; font-weight: 600; color: var(--text); border: 1px solid var(--line-2);
+    padding: 9px 15px; border-radius: 10px; white-space: nowrap; transition: border-color .15s; text-decoration: none; }
+  .nav-btn:hover { border-color: var(--blue); }
 
-  /* ============ HERO — dos columnas (referencia: AG1) ============
-     Izquierda: promesa + CTAs. Derecha: el histograma de 10,000
-     simulaciones dentro de un panel, que es la prueba visual de que
-     detrás hay un modelo y no una opinión. */
-  .hero { position: relative; min-height: 100vh; min-height: 100dvh;
-    /* 'auto' en la 2ª columna: el panel define su ancho a partir de su
-       ALTURA, así llena el alto del hero en vez de quedar limitado por
-       el ancho de la columna (dejaba 23% muerto arriba y 18% abajo). */
-    display: grid; grid-template-columns: 1fr auto; align-items: center;
-    gap: clamp(22px, 3vw, 64px);
-    padding-top: calc(58px + 1vh); padding-bottom: 2.5vh;
-    /* El contenido se centra con un tope de 1480px y el fondo sigue de
-       orilla a orilla. Sin el tope, en un monitor ancho la columna de
-       la izquierda se estiraba y dejaba un hueco muerto en medio,
-       porque el texto no pasa de 660px. */
-    padding-inline: max(clamp(20px, 3vw, 44px), calc((100% - 1480px) / 2));
-    background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 45%, #eef3ff 100%); }
-
-  .hero-copy { max-width: 660px; }
-  .hero-title { font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 800; letter-spacing: -0.042em; line-height: 1.0;
-    font-size: clamp(3rem, 6.4vw, 5.8rem); text-wrap: balance; color: #0b1e3f; }
-  /* el acento va subrayado, como en el boceto */
-  .hero-title em { font-style: normal; color: var(--blue); }
-  .hero-sub { color: #3d4759; font-size: clamp(1.12rem, 1.8vw, 1.45rem);
-    font-weight: 500; line-height: 1.45; margin-top: 24px; max-width: 40ch; }
-
-  /* CTAs apilados, como en el boceto */
-  .hero-ctas { display: grid; gap: 13px; margin-top: 42px; max-width: 420px; }
-  .hero-cta { display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    text-decoration: none; font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 1.1rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
-    padding: 20px 26px; border-radius: 14px;
-    background: #ffffff; color: #14181e; border: 1px solid rgba(11,30,63,0.10);
-    box-shadow: 0 10px 30px -12px rgba(11,30,63,0.28), 0 2px 6px -2px rgba(11,30,63,0.10);
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
-  .hero-cta::after { content: '→'; font-size: 1.15rem; color: var(--blue); transition: transform .15s ease; }
-  .hero-cta:hover { transform: translateY(-2px); border-color: rgba(47,123,255,0.55);
-    box-shadow: 0 16px 38px -14px rgba(29,78,216,0.45); }
-  .hero-cta:hover::after { transform: translateX(3px); }
-
-  /* Panel derecho: el histograma con su rótulo */
-  .hero-panel { position: relative; border-radius: 24px; overflow: hidden;
-    aspect-ratio: 1 / 1; height: min(79vh, 700px); align-self: center;
-    background: linear-gradient(180deg, #f7f9ff 0%, #e9f0ff 100%);
-    border: 1px solid rgba(11,30,63,0.07);
-    box-shadow: 0 34px 80px -34px rgba(11,30,63,0.34); }
-  /* La imagen es 16:9 y el panel es vertical, así que no lo llena: su
-     borde superior se marcaría como una línea. Con el ancho en % y el
-     aspect-ratio fijos, la proporción imagen/panel es CONSTANTE: al
-     165% sobre un panel cuadrado ocupa el 92%, o sea que su borde
-     SIEMPRE cae en el 8% — ahí se alinea el difuminado y funciona a
-     cualquier tamaño de pantalla. */
-  .hero-panel::before { content: ''; position: absolute; inset: 0;
-    background: url('/img/hero-dist.webp') center bottom / 165% auto no-repeat;
-    -webkit-mask-image: linear-gradient(180deg, transparent 7%, #000 24%);
-    mask-image: linear-gradient(180deg, transparent 7%, #000 24%); }
-  .hero-panel-label { position: absolute; left: 0; right: 0; top: 5%; z-index: 2;
-    padding: 0 clamp(16px, 3.4vw, 30px); text-align: center;
-    /* El panel se dimensiona por ALTURA (height: min(79vh,700px)), así
-       que el rótulo también va en vh: si fuera en vw dejarían de
-       escalar juntos y el texto se quedaría chico dentro del recuadro. */
-    font-weight: 800; letter-spacing: -0.04em; line-height: 1.02;
-    font-size: clamp(1.85rem, 9.8vh, 5.9rem); color: #0b1e3f; }
-  .hero-panel-label em { font-style: normal; color: var(--blue); }
-
-  @media (max-width: 900px) {
-    /* En vertical se apila: primero la promesa, luego la prueba. */
-    .hero { grid-template-columns: 1fr; align-content: center; gap: 30px;
-      padding: calc(56px + 3vh) 22px 5vh; }
-    .hero-copy { max-width: none; }
-    .hero-ctas { max-width: none; }
-    /* En escritorio el panel se dimensiona por ALTURA (height + aspect
-       1/1). Aquí hay que devolverlo a ancho completo: si no, esos
-       700px de lado desbordan la pantalla horizontalmente. Se queda
-       CUADRADO —no 5/4— porque con el rótulo grande un panel bajo no
-       daba espacio para el texto y la gráfica a la vez. */
-    .hero-panel { height: auto; width: 100%; aspect-ratio: 1 / 1; }
-    /* en vertical el panel manda por ANCHO: el rótulo vuelve a vw */
-    .hero-panel-label { font-size: clamp(1.9rem, 11vw, 4rem); }
-    /* al 150% sobre panel cuadrado la imagen ocupa el 84%: su borde
-       cae en el 16% y ahí se alinea el difuminado */
-    .hero-panel::before { background-size: 150% auto; background-position: center bottom;
-      -webkit-mask-image: linear-gradient(180deg, transparent 15%, #000 32%);
-      mask-image: linear-gradient(180deg, transparent 15%, #000 32%); }
-  }
-
-  .scroll-hint { position: absolute; bottom: 2.2vh; left: 50%; transform: translateX(-50%); color: var(--faint); font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .scroll-hint::after { content: ''; width: 1px; height: 32px; background: linear-gradient(180deg, var(--muted), transparent); animation: drip 1.8s ease-in-out infinite; }
-  @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: top; } 100% { transform: scaleY(0); transform-origin: bottom; } }
-
-  /* ---- la card del pick que se ensambla (terminal) ---- */
-  .pickstage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .pickcard { width: min(440px, calc(100vw - 36px)); pointer-events: auto; }
-  .pc-piece { will-change: transform, opacity; opacity: 0; }
-  .pc-shell { background: rgba(14,19,28,0.82); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3); border: 1px solid var(--line-2); border-radius: 16px; padding: 20px; box-shadow: 0 40px 120px -30px rgba(0,0,0,0.85); }
-  .pc-tag { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; }
-  .pc-tag .t1 { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); display: flex; align-items: center; gap: 8px; }
-  .pc-tag .t1::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--bet); box-shadow: 0 0 8px var(--bet); animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 50% { opacity: 0.4; } }
-  .pc-tag .t2 { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.08em; color: var(--faint); }
-  .pc-team { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; }
-  .pc-team img { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
-  .pc-team .tn { font-weight: 700; font-size: 1.06rem; letter-spacing: -0.015em; line-height: 1.2; color: var(--text); }
-  .pc-team .tn small { display: block; font-size: 0.7rem; font-weight: 500; color: var(--faint); letter-spacing: 0; }
-  .pc-team .pr { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.3rem; letter-spacing: -0.02em; color: var(--faint); font-variant-numeric: tabular-nums; }
-  .pc-team.fav .pr { color: var(--blue); }
-  .pc-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; background: var(--g2); margin: 12px 0 4px; }
-  .pc-bar .a { background: var(--line-2); }
-  .pc-bar .h { background: var(--blue); }
-  /* hero (Liga MX): la primera fila/segmento es el LOCAL → azul */
-  #pickcard .pc-bar .a { background: var(--blue); }
-  #pickcard .pc-bar .h { background: var(--line-2); }
-  .pc-pick { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bet-bg); border: 1px solid rgba(47,213,123,0.35); border-radius: 12px; padding: 12px 14px; }
-  .pc-pick .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; padding: 4px 9px; border-radius: 6px; background: var(--bet); color: #06251545; color: #052816; }
-  /* el chip toma el color del veredicto real: verde PICK, azul MAYBE */
-  .pc-pick .vchip.is-maybe { background: var(--blue); color: #041233; }
-  .pc-pick .vchip.is-skip  { background: var(--skip); color: #2b0606; }
-  .pc-pick .sel { font-weight: 700; font-size: 0.96rem; letter-spacing: -0.01em; flex: 1; color: var(--text); }
-  .pc-pick .odds { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.74rem; color: var(--muted); }
-  .pc-foot { display: flex; justify-content: space-between; margin-top: 13px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); letter-spacing: 0.04em; }
-  .pc-cta { margin-top: 16px; text-align: center; }
-  .pc-cta .pc-cta-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
-  .pc-cta a { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.98rem; padding: 15px 32px; border-radius: 12px; box-shadow: 0 16px 44px -14px rgba(76,125,240,0.6); transition: transform .15s ease, background .15s ease; }
-  .pc-cta a:hover { transform: translateY(-2px); background: var(--blue); }
-  .pc-cta a.pc-cta-ghost { background: rgba(255,255,255,0.06); color: var(--text, #fff); border: 1px solid rgba(255,255,255,0.22); box-shadow: none; }
-  .pc-cta a.pc-cta-ghost:hover { background: rgba(255,255,255,0.12); }
-  .pc-cta .mini { display: block; margin-top: 10px; color: var(--faint); font-size: 0.74rem; font-weight: 500; }
-
-  /* ============ SECCIONES ============
-     Un solo estilo para todas: mismo fondo, mismo padding base, y
-     un separador delgado consistente entre secciones consecutivas
-     (en vez de que cada una tenga su propia franja/borde suelto). */
-  section { padding: 100px 0; }
+  /* ---- SECCIONES ---- */
+  section { padding: 64px 0; }
   section + section { border-top: 1px solid var(--line); }
-  .sec-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
-  .sec-title { font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; font-size: clamp(1.9rem, 5.6vw, 3.2rem); max-width: 20ch; text-wrap: balance; }
-  .sec-lede { color: var(--muted); font-size: 1.04rem; max-width: 56ch; margin-top: 16px; font-weight: 450; }
+  .eyebrow { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.24em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; }
+  h1, h2 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; text-wrap: balance; }
+  h1 { font-size: clamp(2.1rem, 7.4vw, 3rem); color: var(--ink); margin-bottom: 22px; }
+  h1 em { font-style: normal; color: var(--blue); }
+  h2 { font-size: clamp(1.7rem, 5.6vw, 2.3rem); margin-bottom: 14px; }
+  .lede { color: var(--muted); font-size: 1.02rem; margin-bottom: 18px; max-width: 58ch; }
+  .lede strong { color: var(--text); font-weight: 600; }
 
-  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .65s cubic-bezier(.2,.65,.25,1), transform .65s cubic-bezier(.2,.65,.25,1); }
-  .reveal.in { opacity: 1; transform: none; }
+  /* ---- BOTÓN ÚNICO ---- */
+  .cta { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+    padding: 16px 18px; border-radius: 14px; font-weight: 700; font-size: 1rem;
+    background: var(--blue); color: #fff; text-decoration: none; transition: background .15s, transform .15s; }
+  .cta:hover { background: var(--blue-deep); }
+  .cta:active { transform: translateY(1px); }
+  .under { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted);
+    text-align: center; margin-top: 10px; letter-spacing: 0.02em; }
 
-  /* ---- RÉCORD ---- */
-  #record { padding-top: 70px; padding-bottom: 70px; }
-  .rec-big { font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; font-size: clamp(2.4rem, 7vw, 4.6rem); text-align: center; text-wrap: balance; }
-  .rec-big em { font-style: normal; color: var(--blue); }
+  /* ---- HERO: el pick gratis en vivo ---- */
+  .hero { padding: 34px 0 56px; background: linear-gradient(180deg, #ffffff 0%, #f4f7ff 45%, #eaf0ff 100%); }
+  .hero .wrap { max-width: 600px; }
 
-  /* ---- MÉTODO ---- */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 44px; }
-  .step { background: var(--g0); border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; }
-  .step .ico { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); }
-  .step .ico svg { width: 20px; height: 20px; stroke: var(--blue); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .step h3 { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.015em; margin-bottom: 8px; }
-  .step p { color: var(--muted); font-size: 0.9rem; font-weight: 450; }
-  /* Tarjetas de veredicto: reusan .steps/.step y cambian el icono por
-     el MISMO chip que el cliente ve dentro del modelo, con los colores
-     semánticos del sitio (verde=PICK, azul=MAYBE, rojo=SKIP). */
-  /* Mismo lenguaje visual que los botones del hero (caja blanca,
-     esquina suave, sombra difusa), pero el color semántico de cada
-     veredicto va en el texto, el borde y el tinte de la sombra. */
-  .step .vchip { display: inline-block; font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 13px 26px; border-radius: 12px; margin-bottom: 20px; background: #ffffff;
-    /* la tarjeta es flex: sin esto el chip se estiraba a todo el ancho
-       y el texto quedaba perdido a la izquierda */
-    align-self: flex-start; }
-  /* Ojo: aquí el chip blanco cae sobre una tarjeta TAMBIÉN blanca (en
-     el hero los botones resaltan porque el fondo es azul claro), así
-     que el borde y la sombra van más marcados para que igual floten. */
-  .step.v-bet   .vchip { color: var(--bet);        border: 1px solid rgba(22,163,74,0.34);  box-shadow: 0 12px 26px -10px rgba(22,163,74,0.42),  0 2px 5px -1px rgba(22,163,74,0.22); }
-  .step.v-maybe .vchip { color: var(--blue-deep);  border: 1px solid rgba(47,123,255,0.34); box-shadow: 0 12px 26px -10px rgba(47,123,255,0.42), 0 2px 5px -1px rgba(47,123,255,0.22); }
-  .step.v-skip  .vchip { color: var(--skip);       border: 1px solid rgba(220,38,38,0.32);  box-shadow: 0 12px 26px -10px rgba(220,38,38,0.40),  0 2px 5px -1px rgba(220,38,38,0.20); }
-  /* Los umbrales se anclan al fondo: los cuerpos no miden lo mismo
-     (el de PICK ocupa 3 líneas y los otros 4) y si no quedaban a
-     distinta altura entre tarjeta y tarjeta. */
-  #metodo .step { display: flex; flex-direction: column; }
-  #metodo .step .vsub { margin-top: auto; padding-top: 14px; }
-  .step .vsub { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; color: var(--faint); margin-top: 10px; }
-  .strange { margin-top: 28px; border-left: 2px solid var(--blue); padding: 4px 0 4px 20px; color: var(--muted); font-size: 1rem; font-weight: 450; max-width: 62ch; }
-  .strange strong { color: var(--text); font-weight: 600; }
+  /* Selector de liga: el mismo de producto.html, pero cambia el pick en
+     su sitio en vez de navegar. Se desliza a los lados en el celular. */
+  .model-toggle { display: flex; background: var(--g2); border: 1px solid var(--line);
+    border-radius: 980px; padding: 4px; gap: 2px; margin-bottom: 22px;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .model-toggle::-webkit-scrollbar { display: none; }
+  .model-toggle button { display: flex; align-items: center; justify-content: center; gap: 7px; flex: none;
+    font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 16px; border-radius: 980px;
+    transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle button:hover { color: var(--text); }
+  .model-toggle button[aria-selected="true"] { background: var(--g0); color: var(--blue-deep);
+    box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
 
-  /* ---- EN VIVO ---- */
-  .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; margin-top: 10px; }
-  .live-card-holder { display: flex; justify-content: center; }
-  /* Esta card vive sobre fondo blanco (no el video del hero), así que
-     necesita un fondo oscuro SÓLIDO — la versión translúcida de
-     .pc-shell se ve lavada/opaca aquí porque el blanco se transparenta. */
-  .live-card-holder .pc-shell { background: #0e131c; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 30px 70px -20px rgba(14,19,28,0.35); }
-  /* la card es oscura aunque viva en la zona clara: fija el texto claro */
-  .live-card-holder .pc-team .tn { color: #e9edf4; }
-  .live-card-holder .pc-team .pr { color: #8b96a8; }
-  .live-card-holder .pc-team.fav .pr { color: #4c7df0; }
-  .live-card-holder .pc-pick .sel { color: #e9edf4; }
-  .live-cta { margin-top: 26px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .btn-primary { display: inline-block; background: var(--blue-deep); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.96rem; padding: 14px 26px; border-radius: 12px; border: none; transition: background .15s, transform .15s; }
-  .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
-  .btn-ghost { display: inline-block; background: none; color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.94rem; padding: 13px 24px; border-radius: 12px; border: 1px solid var(--line-2); transition: border-color .15s; }
-  .btn-ghost:hover { border-color: var(--blue); }
+  .live-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bet);
+    box-shadow: 0 0 8px var(--bet); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .live-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--bet); }
+  .live-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600;
+    letter-spacing: 0.06em; color: var(--faint); margin-left: auto; white-space: nowrap; }
 
-  /* CTA del pick gratis. Sustituye al párrafo explicativo: la card ya
-     enseña el pick, así que la acción real de la sección es entrar al
-     análisis — por eso pesa más que un .btn-primary normal. */
-  .btn-analisis { display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%); color: #fff;
-    text-decoration: none; font-weight: 700; font-size: 1rem; letter-spacing: -0.01em;
-    padding: 16px 28px; border-radius: 14px; border: none; line-height: 1.2;
-    box-shadow: 0 12px 28px -12px rgba(47,123,255,0.7);
-    transition: transform .16s ease, box-shadow .16s ease; }
-  .btn-analisis:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -12px rgba(47,123,255,0.8); }
-  .btn-analisis:active { transform: translateY(0); }
-  .btn-analisis svg { width: 17px; height: 17px; flex: 0 0 auto; fill: none; stroke: currentColor;
-    stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .16s ease; }
-  .btn-analisis:hover svg { transform: translateX(4px); }
+  /* ---- LO QUE VES ADENTRO ---- */
+  .wow { display: grid; gap: 14px; padding: 26px 0; border-top: 1px solid var(--line); }
+  .wow:first-of-type { border-top: 0; }
+  .wow-txt b { display: block; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 6px; color: var(--ink); }
+  .wow-txt span { color: var(--muted); font-size: 0.95rem; }
+  .wow-card { background: #0e131c; border-radius: 16px; padding: 16px 18px; color: #e9edf4;
+    box-shadow: 0 24px 60px -30px rgba(11,30,63,0.55); }
+  .wc-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #8b96a8; margin-bottom: 10px; }
+  .wc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 0;
+    border-top: 1px solid #1e2634; font-size: 0.9rem; }
+  .wc-row:first-of-type { border-top: 0; }
+  .wc-row span { color: #b9c3d3; }
+  /* Sobre la card oscura los chips van sólidos, como el chip de la card del pick. */
+  .wow-card .vchip { display: inline-block; border: 0; padding: 6px 12px; }
+  .wow-card .vchip.bet { background: #16a34a; color: #04220f; }
+  .wow-card .vchip.maybe { background: #2f7bff; color: #04122e; }
+  .wow-card .vchip.skip { background: #f2695c; color: #2b0606; }
+  .wc-row b { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .wc-row.hi b { color: #6ea2ff; font-size: 1.15rem; }
+  .wc-bar { position: relative; height: 6px; border-radius: 4px; background: #1e2634; margin: 14px 0 26px; }
+  .wc-bar i { display: block; height: 100%; border-radius: 4px; background: #46536b; }
+  .wc-bar em { position: absolute; top: 10px; transform: translateX(-50%); font-style: normal;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #8b96a8; }
+  .wc-bar u { position: absolute; top: -5px; width: 16px; height: 16px; border-radius: 50%; background: #2f7bff;
+    transform: translateX(-50%); box-shadow: 0 0 0 4px rgba(47,123,255,0.25); }
+  .wc-pick { display: flex; align-items: center; gap: 10px; background: rgba(22,163,74,0.1);
+    border: 1px solid rgba(22,163,74,0.32); border-radius: 10px; padding: 10px 12px; font-weight: 700; font-size: 0.92rem; }
+  .wc-pick .pk-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+    padding: 4px 8px; border-radius: 6px; background: #16a34a; color: #04220f; }
+  .wc-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+  .wc-scores div { border: 1px solid #1e2634; border-radius: 10px; padding: 10px 6px; text-align: center; }
+  .wc-scores div.on { border-color: #2f7bff; background: rgba(47,123,255,0.12); }
+  .wc-scores b { display: block; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em; }
+  .wc-scores span { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: #8b96a8; }
+  .wc-scores div.on span { color: #6ea2ff; }
+  .wc-hist { display: flex; align-items: flex-end; gap: 4px; height: 64px; margin: 4px 0 12px; }
+  .wc-hist i { flex: 1; background: #46536b; border-radius: 2px 2px 0 0; }
+  .wc-hist i.h { background: #2f7bff; }
+  @media (min-width: 700px) { .wow { grid-template-columns: 1fr 1fr; align-items: center; } }
 
-  /* ---- PRECIOS ---- */
-  .cur-toggle { display: inline-flex; background: var(--g2); border: 1px solid var(--line); border-radius: 980px; padding: 4px; gap: 2px; margin-top: 26px; }
-  .cur-toggle button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--muted); background: none; border: none; padding: 8px 20px; border-radius: 980px; cursor: pointer; transition: color .15s, background .15s; }
-  .cur-toggle button:hover { color: var(--text); }
-  .cur-toggle button.active { background: var(--g0); color: var(--blue); box-shadow: 0 2px 10px -4px rgba(0,0,0,0.35); }
-  /* Banda del combo de 3 modelos: aparece al final de CADA sección de
-     precios, así el visitante la ve venga por donde venga. */
-  .combo3 { margin-top: 18px; background: linear-gradient(135deg, #12203f 0%, #0e1729 100%); color: #e9edf4; border: 1px solid rgba(120,160,255,0.25); border-radius: 16px; padding: 26px 30px; display: flex; gap: 26px; align-items: center; justify-content: space-between; }
-  .combo3-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #8fb0f5; margin-bottom: 9px; }
-  .combo3 h3 { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
-  .combo3 p { color: rgba(233,237,244,0.74); font-size: 0.9rem; font-weight: 450; margin-top: 7px; max-width: 54ch; }
-  .combo3 p strong { color: #fff; }
-  .combo3-buy { flex-shrink: 0; text-align: center; display: flex; flex-direction: column; gap: 9px; align-items: center; }
-  .combo3-was { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: rgba(233,237,244,0.45); text-decoration: line-through; }
-  .combo3-price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.95rem; letter-spacing: -0.03em; line-height: 1; }
-  .combo3-price small { font-size: 0.7rem; font-weight: 500; color: rgba(233,237,244,0.6); letter-spacing: 0; }
-  .combo3-btn { display: inline-block; background: #fff; color: #12203f; text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 13px 26px; border-radius: 11px; transition: transform .15s ease; white-space: nowrap; }
-  .combo3-btn:hover { transform: translateY(-2px); }
-  .combo3-mini { font-size: 0.68rem; color: rgba(233,237,244,0.5); }
-  .tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; align-items: stretch; }
-  .tiers.tiers-3 { grid-template-columns: repeat(3, 1fr); max-width: 940px; }
-  .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); max-width: 640px; }
-  .tier { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display: flex; flex-direction: column; position: relative; transition: border-color .2s ease, transform .2s ease; }
-  .tier:hover { border-color: var(--line-2); transform: translateY(-3px); }
-  .tier.featured { border: 1.5px solid var(--blue); background: linear-gradient(180deg, rgba(47,123,255,0.08), var(--g1) 40%); }
-  .tier .flag { position: absolute; top: -11px; left: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--blue); color: #fff; padding: 4px 10px; border-radius: 6px; }
-  /* misma etiqueta en un tier no destacado: verde, para que no compita
-     con el azul del plan recomendado */
-  .tier .flag.flag-alt { background: var(--bet); }
-  .tier h3 { font-weight: 700; font-size: 0.98rem; letter-spacing: -0.01em; }
-  .tier .was { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--faint); text-decoration: line-through; margin-top: 14px; min-height: 1.1em; }
-  .tier .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 2.1rem; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
-  .tier .amt small { font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
-  .tier .per { font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-top: 7px; }
-  .tier ul { list-style: none; margin: 18px 0 22px; flex: 1; }
-  .tier li { font-size: 0.84rem; font-weight: 450; color: var(--muted); padding: 6px 0 6px 20px; position: relative; }
-  .tier li::before { content: ''; position: absolute; left: 2px; top: 13px; width: 6px; height: 6px; border-radius: 2px; background: var(--blue); }
-  .tier li strong { color: var(--text); font-weight: 600; }
-  .tier .btn { width: 100%; text-align: center; font-weight: 700; font-size: 0.9rem; padding: 13px; border-radius: 11px; border: none; text-decoration: none; display: block; transition: background .15s, transform .15s; }
-  .btn-blue { background: var(--blue-deep); color: #fff; }
-  .btn-blue:hover { background: var(--blue); }
-  .btn-dim { background: var(--g2); color: var(--text); }
-  .btn-dim:hover { background: var(--line); }
+  /* ---- Y EL TIPSTER: franja azul marino, el único quiebre de la página ---- */
+  .tipster { background: var(--ink); color: #fff; border-top: 0; }
+  .tipster .eyebrow { color: #8fb3ff; }
+  .tipster h2 { color: #fff; }
+  .tipster .lede { color: #b9c6e0; }
+  .li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .li:first-of-type { border-top: 0; }
+  .li b { display: block; font-weight: 700; letter-spacing: -0.01em; }
+  .li span { color: var(--muted); font-size: 0.92rem; display: block; }
+  .li span strong { color: var(--text); font-weight: 700; }
+  .li .n { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--blue); font-weight: 700; padding-top: 3px; }
+  .li .x { width: 22px; height: 22px; border-radius: 50%; background: rgba(242,105,92,0.2); color: #ff8a7a;
+    display: grid; place-items: center; font-weight: 800; font-size: 0.8rem; }
+  .tipster .li { border-top-color: rgba(255,255,255,0.12); }
+  .tipster .li .vs { display: block; margin-top: 4px; color: #8fb3ff; font-weight: 600; font-size: 0.92rem; }
 
-  .guarantee { margin-top: 40px; border: 1px solid rgba(22,163,74,0.3); background: var(--bet-bg); border-radius: 14px; padding: 26px 28px; display: flex; gap: 18px; align-items: flex-start; }
-  .guarantee .g-ico { flex-shrink: 0; width: 42px; height: 42px; border-radius: 11px; background: rgba(22,163,74,0.15); display: flex; align-items: center; justify-content: center; }
-  .guarantee .g-ico svg { width: 20px; height: 20px; stroke: var(--bet); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .guarantee h3 { font-weight: 700; font-size: 1.12rem; letter-spacing: -0.015em; margin-bottom: 5px; }
-  .guarantee p { color: var(--muted); font-size: 0.92rem; font-weight: 450; max-width: 68ch; }
-  .guarantee p strong { color: var(--text); }
-  .launch-note { color: var(--faint); font-size: 0.78rem; font-weight: 450; margin-top: 18px; text-align: center; }
+  /* ---- CÓMO FUNCIONA ---- */
+  .ligas { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 4px; }
+  .liga { border: 1.5px solid var(--line-2); border-radius: 12px; padding: 7px 12px; font-weight: 700;
+    font-size: 0.82rem; color: var(--text); text-decoration: none; transition: border-color .15s, color .15s; }
+  .liga:hover { border-color: var(--blue); color: var(--blue-deep); }
 
-  /* ---- MUNDIAL ---- */
-  #mundial .panel { background: var(--g1); border: 1px solid var(--line); border-radius: 16px; padding: 34px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; align-items: center; }
-  #mundial .sec-title { font-size: clamp(1.6rem, 3.2vw, 2.3rem); max-width: none; }
-  #mundial .sub { color: var(--muted); font-size: 0.9rem; font-weight: 450; margin-top: 8px; }
-  #mundial .sub button { background: none; border: none; color: var(--blue); font-weight: 600; font-size: 0.9rem; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
-  .mini-tier { background: var(--g0); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
-  .mini-tier h4 { font-weight: 700; font-size: 0.92rem; }
-  .mini-tier .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; margin: 8px 0 12px; }
-  .mini-tier .amt small { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
-  .mini-tier ul { list-style: none; margin: 0 0 14px; }
-  .mini-tier li { font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 4px 0; }
-  .mini-tier a { display: block; text-align: center; font-weight: 700; font-size: 0.82rem; padding: 10px; border-radius: 9px; text-decoration: none; background: var(--g2); color: var(--text); transition: background .15s; }
-  .mini-tier a:hover { background: var(--line); }
-  .mini-or { text-align: center; font-size: 0.72rem; font-weight: 600; color: var(--faint); text-transform: uppercase; letter-spacing: 0.08em; margin: 12px 0 8px; }
-  .mini-tier a.mini-final { background: var(--blue); color: #fff; }
-  .mini-tier a.mini-final:hover { background: var(--blue-deep); }
-  .mini-tier a.mini-final small { font-size: 0.7rem; opacity: 0.85; font-weight: 600; }
+  /* Los mismos chips de veredicto que la página del modelo. */
+  .li .vline { display: flex; align-items: flex-start; gap: 14px; margin-top: 12px; }
+  .vchip { flex: none; font-style: normal; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; margin-top: 2px; }
+  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
+  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
+  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
+
+  /* ---- COMPARA ---- */
+  .cmp { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .cmp th { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; letter-spacing: 0.16em; text-transform: uppercase;
+    text-align: left; padding: 8px 6px; color: var(--muted); border-bottom: 1px solid var(--line); font-weight: 700; }
+  .cmp th.d { color: var(--blue); }
+  .cmp td { padding: 11px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cmp td:first-child { color: var(--muted); width: 32%; }
+  .cmp td.d { font-weight: 600; }
+
+  /* ---- RÉCORD + PRECIOS ---- */
+  .big { font-family: 'JetBrains Mono', monospace; font-size: clamp(3.4rem, 14vw, 4.6rem); font-weight: 700;
+    letter-spacing: -0.04em; line-height: 1; color: var(--blue); margin: 0 0 34px; }
+  .big small { font-size: 1rem; color: var(--muted); font-weight: 500; letter-spacing: 0; display: block;
+    margin-top: 8px; font-family: 'Inter Tight', sans-serif; max-width: 34ch; }
+  .price { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .price:first-of-type { border-top: 0; }
+  .price b { display: block; font-weight: 700; }
+  .price span { color: var(--muted); font-size: 0.84rem; }
+  .price .amt { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 1.05rem; }
+  .price .amt i { font-style: normal; color: var(--muted); font-weight: 500; font-size: 0.72rem; }
+  .price.hot { background: var(--blue-tint); margin: 0 -12px; padding: 14px 12px; border-radius: 12px; border-top: 0; }
+  .price.hot + .price { border-top: 0; }
+  .precios-note { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); margin-top: 12px; letter-spacing: 0.02em; }
+
+  /* ---- RESEÑAS: capturas de Instagram en carril horizontal ---- */
+  .reviews { margin: 0 0 40px; }
+  .rv-title { color: var(--blue); }
+  .rv-track { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 0 10px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .rv-track::-webkit-scrollbar { display: none; }
+  .rv-track img { flex: none; width: 210px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 16px;
+    border: 1px solid var(--line); scroll-snap-align: start; background: var(--g1); }
+  .rv-track:empty { display: none; }
+  .rv-more { display: inline-block; margin-top: 6px; font-size: 0.9rem; font-weight: 700; color: var(--blue); text-decoration: none; }
 
   /* ---- FAQ ---- */
-  #faq details { border-bottom: 1px solid var(--line); }
-  #faq summary { list-style: none; cursor: pointer; padding: 20px 0; font-weight: 600; font-size: 1.02rem; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
-  #faq summary::-webkit-details-marker { display: none; }
-  #faq summary::after { content: '+'; font-family: 'JetBrains Mono', monospace; color: var(--blue); font-size: 1.1rem; transition: transform .2s; }
-  #faq details[open] summary::after { transform: rotate(45deg); }
-  #faq details p { color: var(--muted); font-size: 0.94rem; font-weight: 450; padding-bottom: 20px; max-width: 64ch; }
+  details { border-top: 1px solid var(--line); padding: 13px 0; }
+  details:first-of-type { border-top: 0; }
+  summary { font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  details[open] summary::after { content: "–"; }
+  details p { margin-top: 8px; color: var(--muted); font-size: 0.92rem; }
+
+  /* ---- CIERRE ---- */
+  .final h2 { margin-bottom: 8px; }
+
+  /* ---- BARRA PEGADA ABAJO: aparece cuando el botón del hero sale de cuadro ---- */
+  .sticky-cta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 16px 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0), #fff 40%);
+    transform: translateY(110%); transition: transform .25s ease; }
+  .sticky-cta.on { transform: none; }
+  .sticky-cta .cta { max-width: var(--col); margin: 0 auto; box-shadow: 0 12px 30px -12px rgba(47,123,255,0.6); }
 
   /* ---- FOOTER ---- */
-  /* Asterisco que ancla un claim a los términos (obligación de divulgación) */
-  .tc-ref { color: var(--blue); text-decoration: none; font-weight: 700; padding-left: 1px; }
-  .tc-ref:hover { text-decoration: underline; }
-  /* TÉRMINOS */
-  #terminos { padding: 56px 0 0; scroll-margin-top: 70px; }
-  #terminos .tc-box { border: 1px solid var(--line); border-radius: 14px; padding: 24px 26px; background: var(--g1); }
-  #terminos h3 { font-size: 0.96rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 12px; }
-  #terminos dl { font-size: 0.84rem; color: var(--muted); line-height: 1.62; }
-  #terminos dt { font-weight: 650; color: var(--text); margin-top: 14px; }
-  #terminos dt:first-child { margin-top: 0; }
-  #terminos dd { margin-left: 0; }
-  footer { border-top: 1px solid var(--line); padding: 50px 0 64px; color: var(--faint); font-size: 0.82rem; font-weight: 450; }
-  footer .wrap { display: flex; justify-content: space-between; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
-  footer .logo { color: var(--text); }
-  footer .brand-col { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
-  footer .social { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-size: 0.84rem; font-weight: 500; transition: color .15s; }
-  footer .social:hover { color: var(--text); }
-  footer .social svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  footer .resp { max-width: 48ch; line-height: 1.6; }
-  footer .resp strong { color: var(--muted); }
+  footer { border-top: 1px solid var(--line); padding: 34px 0 30px; }
+  footer .wrap { display: flex; flex-direction: column; gap: 14px; }
+  .social { display: inline-flex; align-items: center; gap: 7px; font-size: 0.86rem; font-weight: 600;
+    color: var(--muted); text-decoration: none; }
+  .social svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .resp { font-size: 0.74rem; color: var(--faint); line-height: 1.55; }
+  .resp strong { color: var(--muted); }
 
-  /* ============ MODALES (auth + pick gratis Mundial) ============ */
-  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(6,8,12,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-start; justify-content: center; padding: 24px 14px; overflow-y: auto; }
-  .overlay.open { display: flex; }
-  .modal { background: var(--g1); border: 1px solid var(--line-2); border-radius: 16px; width: 100%; max-width: 560px; margin: auto; box-shadow: 0 50px 120px -30px rgba(0,0,0,0.8); animation: pop .25s cubic-bezier(.2,.65,.25,1) both; }
-  @keyframes pop { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
-  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 12px; }
-  .modal-head h3 { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.02em; }
-  .modal-head .day { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--faint); margin-top: 3px; }
-  .modal-close { border: none; background: var(--g2); width: 34px; height: 34px; border-radius: 9px; font-size: 0.95rem; color: var(--muted); line-height: 1; }
-  .modal-close:hover { background: var(--line); color: var(--text); }
-  .modal-body { padding: 4px 24px 24px; }
-  .modal-note { font-size: 0.86rem; color: var(--muted); margin-bottom: 16px; font-weight: 450; }
-  .modal-foot { font-size: 0.78rem; color: var(--faint); margin-top: 16px; text-align: center; line-height: 1.5; }
-  .modal-foot a { color: var(--blue); }
-
-  .analysis { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; overflow: hidden; background: var(--g0); }
-  .an-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-  .an-match { font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; }
-  .an-xg { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--faint); margin-bottom: 12px; }
-  .an-conf { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
-  .an-conf.alta { color: var(--bet); background: var(--bet-bg); }
-  .an-conf.media { color: var(--blue); background: var(--blue-tint); }
-  .an-conf.baja { color: var(--skip); background: var(--skip-bg); }
-  table.antab { width: 100%; min-width: 0; border-collapse: collapse; font-size: 0.82rem; table-layout: fixed; }
-  table.antab th { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); }
-  table.antab th:first-child { text-align: left; }
-  table.antab td { padding: 8px 4px; border-bottom: 1px solid var(--line); text-align: right; word-break: break-word; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
-  table.antab td:first-child { text-align: left; font-family: 'Inter Tight', sans-serif; line-height: 1.3; font-weight: 500; }
-  table.antab th:first-child, table.antab td:first-child { width: 38%; }
-  table.antab tr:last-child td { border-bottom: none; }
-  .edge-pos { color: var(--bet); font-weight: 700; }
-  .edge-neg { color: var(--faint); }
-  td.mut { color: var(--faint); }
-  .mk { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .mk.bet { background: var(--bet-bg); color: var(--bet); }
-  .mk.skip { background: var(--g2); color: var(--muted); }
-  .mk.fade { background: var(--skip-bg); color: var(--skip); }
-  .an-subhead { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin: 14px 0 4px; }
-  .an-note { font-size: 0.72rem; color: var(--faint); margin-top: 8px; line-height: 1.5; }
-  .scores-wrap { display: flex; gap: 10px; margin: 14px 0 4px; }
-  .score-card { flex: 1; background: var(--g2); border-radius: 10px; padding: 13px 10px 11px; text-align: center; }
-  .score-card.top1 { background: var(--blue-tint); border: 1px solid rgba(76,125,240,0.35); }
-  .score-card .sc-rank { font-family: 'JetBrains Mono', monospace; font-size: 0.54rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--faint); margin-bottom: 6px; }
-  .score-card.top1 .sc-rank { color: var(--blue); }
-  .score-card .sc-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.4rem; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
-  .score-card.top1 .sc-score { font-size: 1.6rem; }
-  .score-card .sc-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; color: var(--muted); margin-top: 6px; }
-  .tool-block { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; background: var(--g0); }
-  .tool-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--faint); margin-bottom: 12px; }
-  .tlab { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 5px; }
-  .tlab2 { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.54rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); margin-bottom: 4px; }
-  .tool-block select, .tool-block input { width: 100%; background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 0.9rem; padding: 10px 12px; border-radius: 9px; outline: none; }
-  .tool-block select:focus, .tool-block input:focus { border-color: var(--blue); }
-  .tool-row { display: flex; gap: 10px; margin-top: 10px; }
-  .tool-row > div { flex: 1; }
-  .tool-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-top: 12px; cursor: pointer; }
-  .tool-toggle input { width: auto; accent-color: var(--blue); }
-  .odds-mode { display: flex; gap: 6px; margin-bottom: 12px; }
-  .om { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 600; padding: 6px 11px; border: 1px solid var(--line-2); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all .15s ease; }
-  .om.active { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
-  .odds3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .tool-run { margin-top: 16px; width: 100%; font-weight: 700; font-size: 0.94rem; padding: 13px; border-radius: 11px; border: none; background: var(--blue-deep); color: #fff; transition: background .15s ease; }
-  .tool-run:hover:not(:disabled) { background: var(--blue); }
-  .tool-run:disabled { opacity: 0.6; cursor: default; }
-  .tool-loading { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 500; color: var(--muted); padding: 14px 2px; }
-  .spinner { width: 16px; height: 16px; border: 2px solid var(--line-2); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .auth-input { width: 100%; background: var(--g2); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 0.95rem; padding: 12px 14px; border-radius: 10px; outline: none; }
-  .auth-input:focus { border-color: var(--blue); }
-  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; font-weight: 500; color: var(--blue); cursor: pointer; }
-  .auth-toggle:hover { text-decoration: underline; }
-  .redeem-msg { margin-top: 18px; padding: 13px 15px; border-radius: 10px; font-size: 0.88rem; display: none; line-height: 1.5; font-weight: 500; }
-  .redeem-msg.ok { display: block; background: var(--bet-bg); color: var(--bet); }
-  .redeem-msg.bad { display: block; background: var(--skip-bg); color: var(--skip); }
-
-  /* ============ RESPONSIVE ============ */
-  @media (max-width: 900px) {
-    .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: repeat(2, 1fr); }
-    .live-grid { grid-template-columns: 1fr; gap: 28px; }
-    #mundial .panel { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 560px) {
-    body { font-size: 15.5px; }
-    .wrap { padding: 0 16px; }
-    section { padding: 68px 0; }
-    .tiers, .tiers.tiers-3, .tiers.tiers-2 { grid-template-columns: 1fr; }
-    .combo3 { flex-direction: column; align-items: stretch; padding: 22px 20px; gap: 18px; }
-    .combo3-buy { align-items: stretch; }
-    /* En vertical solo cabe un botón en el nav. Manda el de SESIÓN:
-       .nav-ghost (que es #authBtn) estaba escondido y no había forma de
-       entrar a tu cuenta desde el celular. Toma el look primario que
-       tenía "Pick gratis"; el pick gratis sigue a un toque desde los
-       tres CTA del hero. */
-    .nav-link, .nav-ghost { display: none; }
-    #navFreeBtn { display: none; }
-    #authBtn { display: inline-block; font-size: 0.84rem; font-weight: 600;
-      color: #fff; background: var(--blue-deep); border: none;
-      padding: 9px 16px; border-radius: 10px; }
-    .pc-shell { padding: 16px; }
-    .modal-head, .modal-body { padding-left: 16px; padding-right: 16px; }
-    .odds3 { grid-template-columns: 1fr; }
-    .tool-row { flex-direction: column; }
-    /* Los dos botones de cada pick gratis: siempre en dos columnas
-       iguales (antes uno se iba a la siguiente línea según el largo del
-       texto y cada sección se veía distinta). */
-    .live-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .live-cta .btn-primary, .live-cta .btn-ghost { text-align: center; padding-left: 12px; padding-right: 12px; font-size: 0.9rem; white-space: nowrap; }
-    /* "Ver el análisis completo" no cabe a media columna: ocupa el
-       ancho y el de planes queda debajo, con área táctil cómoda */
-    .live-cta .btn-analisis { grid-column: 1 / -1; width: 100%; padding: 17px 20px; font-size: 1rem; }
-    /* menos aire entre secciones en vertical */
-    section { padding: 56px 0; }
-    footer .wrap { flex-direction: column; }
-    .guarantee { flex-direction: column; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
-    .reveal { opacity: 1 !important; transform: none !important; }
-    .stage { height: auto; }
-    .stage-sticky { position: relative; height: 100vh; }
-    .pc-piece { opacity: 1 !important; transform: none !important; }
-  }
-  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
-
-  /* ============ FREE PICK — carrusel (portado de producto.html) ============
-     Tres vistas del pick gratis: la card, sus mercados con veredicto y
-     el detalle con momio justo + distribución. Todo va scopeado bajo
-     .freepick con la paleta en duro: la landing tiene zonas claras y
-     oscuras y sus variables no coinciden con las de producto.html. */
+  /* ---- CARRUSEL DEL PICK GRATIS (el mismo de producto.html) ----
+     Paleta en duro: la card es oscura sobre un hero claro. */
   .freepick { min-width: 0; width: 100%; }
-  /* Sin min-width:0 un item de grid/flex nunca baja del ancho mínimo de
-     su contenido — el mismo bug que sacaba de cuadro la card en
-     producto.html. El holder era flex para centrar la card fija vieja;
-     el carrusel debe LLENAR la columna. */
-  .live-grid > * { min-width: 0; }
   .freepick .deck { position: relative; min-width: 0; }
   .freepick .viewport { overflow: hidden; min-width: 0; transition: height .3s ease; }
   .freepick .slides { display: flex; align-items: flex-start; gap: 16px;
@@ -584,28 +279,27 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .freepick .slide { flex: 0 0 100%; min-width: 0; }
   .freepick .dots-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
   .freepick .arrow { width: 34px; height: 34px; border-radius: 50%; background: #fff;
-    border: 1px solid #d8dfe9; flex: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; color: #0b1e3f;
+    border: 1px solid #d8dfe9; flex: none; display: flex; align-items: center; justify-content: center; color: #0b1e3f;
     transition: opacity .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
   .freepick .arrow:hover { background: #2f7bff; border-color: #2f7bff; color: #fff; }
   .freepick .arrow.off { opacity: 0.25; pointer-events: none; }
   .freepick .arrow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2;
     stroke-linecap: round; stroke-linejoin: round; }
   .freepick .dots { display: flex; justify-content: center; gap: 7px; }
-  .freepick .dots button { width: 7px; height: 7px; border-radius: 50%; background: #d8dfe9;
-    border: none; padding: 0; cursor: pointer; transition: all .18s; }
+  .freepick .dots button { width: 7px; height: 7px; border-radius: 50%; background: #d8dfe9; transition: all .18s; }
   .freepick .dots button.on { background: #2f7bff; width: 20px; border-radius: 4px; }
-  .freepick .slide-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; color: #8a93a3; margin-bottom: 10px; }
-  @media (min-width: 901px) {
+  /* En pantallas anchas las flechas viven a los lados de la card, a la
+     altura del porcentaje grande, como en producto.html. */
+  @media (min-width: 700px) {
+    .hero .wrap { max-width: 690px; }
     .freepick { position: relative; padding: 0 44px; }
-    .freepick .dots-row .arrow { position: absolute; top: var(--flechaY, 45%); transform: translateY(-50%);
-      z-index: 5; width: 38px; height: 38px; box-shadow: 0 12px 28px -10px rgba(11,30,63,0.35); }
+    .live-head, .cta, .under, .model-toggle, h1 { margin-left: 44px; margin-right: 44px; }
+    .freepick .dots-row .arrow { position: absolute; top: 45%; transform: translateY(-50%); z-index: 5;
+      box-shadow: 0 12px 28px -10px rgba(11,30,63,0.35); }
     .freepick .arrow.off { opacity: 0; }
     .freepick .arrow.prev { left: 0; } .freepick .arrow.next { right: 0; }
   }
 
-  /* la card oscura del pick */
   .freepick .pk { background: #0e131c; border-radius: 18px; padding: 22px; color: #e9edf4;
     box-shadow: 0 30px 70px -34px rgba(11,30,63,0.55); }
   .freepick .pk-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600;
@@ -633,434 +327,345 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .freepick .pk-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px;
     font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em;
     text-transform: uppercase; color: #5f6a7d; }
+  .freepick .pk-beta { text-align: center; padding: 26px 10px; }
+  .freepick .pk-beta .pk-sel { font-size: 1.05rem; }
+  .freepick .pk-beta small { display: block; color: #8b96a8; font-size: 0.82rem; font-weight: 450; margin-top: 8px; line-height: 1.5; }
   .freepick .fp-skeleton { height: 300px; border-radius: 18px;
-    background: linear-gradient(100deg, #f5f7fa 30%, #eef2f7 50%, #f5f7fa 70%);
+    background: linear-gradient(100deg, #e9eef7 30%, #dfe6f2 50%, #e9eef7 70%);
     background-size: 200% 100%; animation: fpshine 1.3s linear infinite; }
   @keyframes fpshine { to { background-position: -200% 0; } }
 
-  /* mercados con veredicto */
-  .freepick .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    background: #fff; border: 1px solid #e7ebf1; border-radius: 12px; padding: 12px 15px; margin-bottom: 8px; }
-  .freepick .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; min-width: 0; color: #14181e; }
-  .freepick .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
-    font-weight: 500; color: #8a93a3; margin-top: 2px; }
-  .freepick .vrow.skip .vl { color: #8a93a3; font-weight: 500; }
-  .freepick .vrow .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
-    letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
-  .freepick .vrow .vchip.bet { background: rgba(22,163,74,0.1); color: #16a34a; border: 1px solid rgba(22,163,74,0.3); }
-  .freepick .vrow .vchip.maybe { background: rgba(47,123,255,0.08); color: #2f7bff; border: 1px solid rgba(47,123,255,0.3); }
-  .freepick .vrow .vchip.skip { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.25); }
 
-  /* detalle: momio justo + distribución */
-  .freepick .det-rows { border: 1px solid #e7ebf1; border-radius: 12px; overflow: hidden; background: #fff; }
-  .freepick .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: 11px 15px; font-size: 0.82rem; border-bottom: 1px solid #e7ebf1; }
-  .freepick .det-row:last-child { border-bottom: none; }
-  .freepick .det-row .dl { font-weight: 500; min-width: 0; color: #14181e; }
-  .freepick .det-row .dv { font-family: 'JetBrains Mono', monospace; color: #667084; font-weight: 500;
-    white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.74rem; }
-  .freepick .dist { margin-top: 14px; }
-  .freepick .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase; color: #8a93a3; margin-bottom: 6px;
-    display: flex; justify-content: space-between; gap: 10px; }
-  .freepick .dist svg { width: 100%; height: 52px; display: block; }
-  /* Logotipo partido: DAT en tinta, TIP en azul. La marca se escribe
-     así en todo el sitio — si cambia el color, cambia aquí y en ningún
-     otro lado. */
-  .logo .tip { color: var(--blue); }
+  /* ---- MODAL DE SESIÓN ---- */
+  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(6,8,12,0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: flex-start;
+    justify-content: center; padding: 24px 14px; overflow-y: auto; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--g0); border: 1px solid var(--line-2); border-radius: 16px; width: 100%; max-width: 420px;
+    margin: auto; box-shadow: 0 50px 120px -30px rgba(0,0,0,0.5); animation: pop .25s cubic-bezier(.2,.65,.25,1) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.98); } }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 12px; }
+  .modal-head h3 { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.02em; }
+  .modal-head .day { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--faint); margin-top: 3px; }
+  .modal-close { background: var(--g2); width: 34px; height: 34px; border-radius: 9px; font-size: 0.95rem; color: var(--muted); line-height: 1; }
+  .modal-close:hover { background: var(--line); color: var(--text); }
+  .modal-body { padding: 4px 24px 24px; }
+  .tlab { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 5px; }
+  .auth-input { width: 100%; background: var(--g1); border: 1px solid var(--line-2); color: var(--text); font: inherit;
+    font-size: 0.95rem; padding: 12px 14px; border-radius: 10px; outline: none; }
+  .auth-input:focus { border-color: var(--blue); }
+  .tool-run { margin-top: 16px; width: 100%; font-weight: 700; font-size: 0.94rem; padding: 13px; border-radius: 11px;
+    background: var(--blue-deep); color: #fff; transition: background .15s ease; }
+  .tool-run:hover:not(:disabled) { background: var(--blue); }
+  .tool-run:disabled { opacity: 0.6; cursor: default; }
+  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.85rem; font-weight: 500; color: var(--blue); cursor: pointer; }
+  .auth-toggle:hover { text-decoration: underline; }
+  .redeem-msg { margin-top: 18px; padding: 13px 15px; border-radius: 10px; font-size: 0.88rem; display: none; line-height: 1.5; font-weight: 500; }
+  .redeem-msg.ok { display: block; background: var(--bet-bg); color: var(--bet); }
+  .redeem-msg.bad { display: block; background: var(--skip-bg); color: var(--skip); }
+
+  /* ---- REVELADO SUAVE: solo con JS, y solo si el visitante no pidió menos movimiento ---- */
+  html.js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s ease; }
+  html.js .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    html.js .reveal { opacity: 1; transform: none; }
+  }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+
+  /* ---- ESCRITORIO: misma columna, más aire; las reseñas se abren a lo
+     ancho y la barra pegada se vuelve una píldora discreta. ---- */
+  @media (min-width: 1000px) {
+    section { padding: 88px 0; }
+    .hero { padding: 56px 0 72px; }
+    .hero .wrap { max-width: 760px; }
+    h1 { font-size: 3.4rem; }
+    h2 { font-size: 2.5rem; }
+    .lede { font-size: 1.08rem; }
+    /* Se abre más allá de la columna sin transform: un transform deja
+       el ancho original en el scroll y la página se desliza a los lados. */
+    .reviews { --rvw: min(1060px, 100vw - 40px); width: var(--rvw); margin-left: calc(50% - var(--rvw) / 2); }
+    .rv-track img { width: 240px; }
+    .wow { padding: 34px 0; gap: 40px; }
+    .sticky-cta { padding: 0 16px 22px; background: none; pointer-events: none; }
+    .sticky-cta .cta { max-width: 380px; padding: 14px 18px; pointer-events: auto;
+      box-shadow: 0 16px 40px -12px rgba(11,30,63,0.45); }
+    footer .wrap { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 20px 32px; }
+    footer .resp { flex-basis: 100%; }
+  }
+
+  @media (max-width: 600px) {
+    section { padding: 52px 0; }
+    .hero { padding: 22px 0 46px; }
+    nav .wrap { height: 54px; }
+  }
 </style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://dattip.com/#organization",
-      "name": "Dattip",
-      "alternateName": ["Dattip", "Dattip MX"],
-      "url": "https://dattip.com/",
-      "logo": "https://dattip.com/img/favicon.png",
-      "image": "https://dattip.com/banner.png",
-      "description": "Modelos estadísticos de Liga MX, NFL, MLB y Europa que simulan cada partido miles de veces y publican su récord contra marcadores reales.",
-      "areaServed": "MX",
-      "sameAs": ["https://www.instagram.com/ricky__picks"]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://dattip.com/#website",
-      "name": "Dattip",
-      "url": "https://dattip.com/",
-      "inLanguage": "es-MX",
-      "publisher": { "@id": "https://dattip.com/#organization" }
-    }
-  ]
-}
-</script>
 </head>
 <body>
 
 <nav id="topnav">
   <div class="wrap">
     <a href="/" class="logo" aria-label="Dattip"><span class="mark">D·T</span><span class="brand-word">DAT<span class="tip">TIP</span></span></a>
-    <div class="nav-right">
-      <!-- Sin enlaces a cada modelo (decisión del dueño, 8-sep-2026):
-           arriba solo "Mis modelos", que es la puerta a los siete. Se
-           muestra con o sin sesión; sin ella, esa página pide entrar. -->
-      <a href="/producto.html" class="nav-link">Planes</a>
-      <a href="/mis-modelos.html" class="nav-link" id="misModelosLink">Mis modelos</a>
-      <button id="authBtn" class="nav-ghost">Entrar</button>
-      <button id="navFreeBtn" class="nav-cta">Pick gratis</button>
+    <div class="nav-actions">
+      <a class="nav-btn" href="/mis-modelos.html">Mis modelos</a>
+      <button class="nav-btn" id="authBtn">Entrar</button>
     </div>
   </div>
 </nav>
 
-<!-- ============ HERO ============ -->
-<section class="hero">
-  <div class="hero-copy">
-    <h1 class="hero-title">La IA que te <em>hará ganar</em></h1>
-    <p class="hero-sub">Deja de inventar parlays. Juega con cabeza.</p>
-    <!-- Van a la página de compra de cada modelo (antes solo hacían
-         scroll a la sección de abajo). -->
-    <div class="hero-ctas">
-      <a href="/producto.html?m=mx" class="hero-cta">Liga MX</a>
-      <a href="/producto.html?m=nfl" class="hero-cta">NFL</a>
-      <a href="/producto.html?m=mlb" class="hero-cta">MLB</a>
-      <a href="/producto.html?m=epl" class="hero-cta">Premier</a>
-      <a href="/producto.html?m=laliga" class="hero-cta">LaLiga</a>
-      <a href="/producto.html?m=bundesliga" class="hero-cta">Bundesliga</a>
-      <a href="/producto.html?m=ucl" class="hero-cta">Champions</a>
+<main>
+
+<!-- ============ HERO: el pick gratis en vivo ============ -->
+<section class="hero" id="inicio">
+  <div class="wrap">
+    <h1>Los datos <em>no mienten.</em></h1>
+
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de liga" id="ligaTabs">
+      <button type="button" role="tab" data-m="mx" aria-selected="false">⚽ Liga MX</button>
+      <button type="button" role="tab" data-m="nfl" aria-selected="false">🏈 NFL</button>
+      <button type="button" role="tab" data-m="mlb" aria-selected="false">⚾ MLB</button>
+      <button type="button" role="tab" data-m="epl" aria-selected="false">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</button>
+      <button type="button" role="tab" data-m="laliga" aria-selected="false">🇪🇸 LaLiga</button>
+      <button type="button" role="tab" data-m="bundesliga" aria-selected="false">🇩🇪 Bundesliga</button>
+      <button type="button" role="tab" data-m="ucl" aria-selected="false">🏆 Champions</button>
     </div>
-  </div>
-  <div class="hero-panel">
-    <div class="hero-panel-label">Cada juego<br>simulado<br><em>10,000 veces</em></div>
-  </div>
-</section>
 
-<!-- A partir de aquí, todo el sitio usa el tema claro (ver .light-zone) -->
-<div class="light-zone">
+    <div class="live-head">
+      <span class="live-dot"></span>
+      <span class="live-lbl">Pick gratis</span>
+      <span class="live-sub" id="liveSub"></span>
+    </div>
 
-<!-- ============ RÉCORD ============ -->
-<section id="record">
-  <div class="wrap">
-    <h2 class="rec-big reveal">El modelo acierta <em>7/10</em> picks.</h2>
-  </div>
-</section>
-
-<!-- ============ MÉTODO ============ -->
-<section id="metodo">
-  <div class="wrap">
-    <h2 class="sec-title reveal">Cómo funciona.</h2>
-    <div class="steps">
-      <div class="step v-bet reveal">
-        <span class="vchip">PICK</span>
-        <h3>Entra</h3>
-        <p>El casino paga más de lo que debería. Ahí está el valor: son los picks en los que sí conviene poner tu dinero.</p>
-        <span class="vsub">Ventaja de 4 puntos o más</span>
+    <div class="freepick" id="fp" tabindex="0" aria-label="Pick gratis de la jornada">
+      <div class="deck">
+        <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
       </div>
-      <div class="step v-maybe reveal">
-        <span class="vchip">MAYBE</span>
-        <h3>Tú decides</h3>
-        <p>Hay ventaja, pero no es suficiente. Sirve si la quieres para una combinada o para arriesgar poco — no es donde va tu apuesta fuerte de la jornada.</p>
-        <span class="vsub">Ventaja de 1.5 a 4 puntos</span>
-      </div>
-      <div class="step v-skip reveal">
-        <span class="vchip">SKIP</span>
-        <h3>Déjala pasar</h3>
-        <p>El casino paga menos de lo que debería. Puede que tenga buena probabilidad, pero no hay valor. No vale la pena arriesgar tu dinero.</p>
-        <span class="vsub">Sin ventaja sobre el mercado</span>
+      <div class="dots-row">
+        <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="dots"></div>
+        <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
     </div>
-    <p class="strange reveal">Debajo de cada partido se abre la tabla completa: todos los mercados con la probabilidad que les da el modelo y su momio justo, el precio que esa apuesta debería pagar. Doble oportunidad, totales alternativos, ambos anotan, props del QB. Ahí no ponemos veredicto a propósito — <strong>es la data cruda, para que la interpretes tú contra los momios de tu casa.</strong></p>
+
+
+    <a class="cta" id="ctaHero" style="margin-top:22px" href="/producto.html?m=mx">Quiero el de mi liga</a>
+    <p class="under" id="underHero">Sin contrato · Cancelas cuando quieras</p>
   </div>
 </section>
 
-<!-- ============ NFL (pick gratis de la jornada) ============ -->
-<section id="vivo-nfl">
+<!-- ============ LO QUE VES ADENTRO ============ -->
+<section id="adentro">
   <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · NFL 26-27</div>
-        <h2 class="sec-title reveal">Free pick NFL.</h2>
-        <p class="sec-lede reveal">El mismo modelo, ahora en fútbol americano: 10,000 simulaciones por juego, spread, total, moneyline y props del QB. Este es el pick gratis de la jornada — la cartelera completa vive en tu plan.</p>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/nfl.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=nfl">Ver planes NFL</a>
-        </div>
+    <span class="eyebrow reveal">Lo que te da el modelo</span>
+    <h2 class="reveal">Todos ven el partido. Tú ves lo que va a pasar.</h2>
+
+    <div class="wow reveal">
+      <div class="wow-txt">
+        <b>Las yardas exactas.</b>
+        <span>Cuántas va a lanzar el quarterback, cuántas va a correr el running back. Cuando tu casa pone la línea, tú ya sabes de qué lado cae.</span>
       </div>
-      <div class="live-card-holder reveal" id="nflCardHolder">
-        <div class="freepick" id="fpNfl">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
+      <div class="wow-card">
+        <div class="wc-meta">NFL · Props del QB</div>
+        <div class="wc-row"><span>Yardas de pase · Mahomes</span><b>Línea 267.5</b></div>
+        <div class="wc-row hi"><span>El modelo espera</span><b>294</b></div>
+        <div class="wc-bar"><i style="width:58%"></i><em style="left:58%">267.5</em><u style="left:74%"></u></div>
+        <div class="wc-pick"><span class="pk-chip">PICK</span>Más de 267.5 yardas</div>
       </div>
     </div>
-  </div>
-</section>
 
-
-
-
-<!-- ============ EN VIVO ============ -->
-<section id="vivo">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">En vivo ahora</div>
-        <h2 class="sec-title reveal">Free pick MLB.</h2>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/mlb.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=mlb">Ver planes MLB</a>
-        </div>
+    <div class="wow reveal">
+      <div class="wow-txt">
+        <b>El marcador antes del silbatazo.</b>
+        <span>2–1, 1–0, 0–0. El modelo juega el partido 10,000 veces y te dice qué marcadores salen más. Tú eliges el tuyo con el número en la mano.</span>
       </div>
-      <div class="live-card-holder reveal" id="mlbCardHolder">
-        <div class="freepick" id="fpMlb">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
+      <div class="wow-card">
+        <div class="wc-meta">Liga MX · Marcadores más probables</div>
+        <div class="wc-scores">
+          <div class="on"><b>2–1</b><span>13%</span></div>
+          <div><b>1–1</b><span>12%</span></div>
+          <div><b>1–0</b><span>11%</span></div>
+          <div><b>2–0</b><span>9%</span></div>
         </div>
+        <div class="wc-row"><span>Ambos anotan</span><b>57%</b></div>
+        <div class="wc-row"><span>Más de 2.5 goles</span><b>54%</b></div>
+      </div>
+    </div>
+
+    <div class="wow reveal">
+      <div class="wow-txt">
+        <b>Los mercados que tu casa esconde.</b>
+        <span>Córners, hándicaps, primera mitad, totales alternativos. Donde nadie mira es donde más se paga de más. Ahí es donde el modelo brilla.</span>
+      </div>
+      <div class="wow-card">
+        <div class="wc-meta">Premier · Mercados secundarios</div>
+        <div class="wc-row"><span>Córners · más de 9.5</span><b><em class="vchip bet">PICK</em></b></div>
+        <div class="wc-row"><span>Doble oportunidad · 1X</span><b><em class="vchip maybe">MAYBE</em></b></div>
+        <div class="wc-row"><span>Hándicap −1.5</span><b><em class="vchip skip">SKIP</em></b></div>
+        <div class="wc-row"><span>Primera mitad · menos de 1.5</span><b><em class="vchip bet">PICK</em></b></div>
+      </div>
+    </div>
+
+    <div class="wow reveal">
+      <div class="wow-txt">
+        <b>10,000 futuros en tu bolsillo.</b>
+        <span>Cada juego se juega diez mil veces en la computadora. Tú ves cómo caen. Es como tener la repetición antes del partido.</span>
+      </div>
+      <div class="wow-card">
+        <div class="wc-meta">MLB · Cómo caen las carreras en 10,000 futuros</div>
+        <div class="wc-hist"><i style="height:12%"></i><i style="height:26%"></i><i style="height:48%"></i><i style="height:72%"></i><i style="height:100%"></i><i style="height:88%"></i><i style="height:66%"></i><i class="h" style="height:50%"></i><i class="h" style="height:34%"></i><i class="h" style="height:22%"></i><i class="h" style="height:12%"></i><i class="h" style="height:6%"></i></div>
+        <div class="wc-row"><span>Línea de la casa 8.5 · el modelo</span><b>Más · 56%</b></div>
       </div>
     </div>
   </div>
 </section>
 
-
-
-<!-- ============ LIGA MX (pick gratis de la jornada) ============ -->
-<section id="vivo-mx">
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section id="como">
   <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · Liga MX</div>
-        <h2 class="sec-title reveal">Free pick Liga MX.</h2>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/mx.html">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=mx">Ver planes Liga MX</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="mxCardHolder">
-        <div class="freepick" id="fpMx">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-<!-- ============ EUROPA (pick gratis de la jornada) ============
-     Mientras el modelo esté en beta privada, /api/euro-free contesta
-     403 {beta:true} y el JS (carga) QUITA esta sección entera del DOM:
-     nada debe verse roto ni a medias. -->
-<section id="vivo-epl">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · Premier League</div>
-        <h2 class="sec-title reveal">Free pick Premier League.</h2>
-        <p class="sec-lede reveal">La Premier League, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/europa.html?liga=epl">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=epl">Ver planes Premier</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="eplCardHolder">
-        <div class="freepick" id="fpEpl">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section id="vivo-laliga">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · LaLiga</div>
-        <h2 class="sec-title reveal">Free pick LaLiga.</h2>
-        <p class="sec-lede reveal">LaLiga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 38 jornadas completas viven en tu plan.</p>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/europa.html?liga=laliga">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=laliga">Ver planes LaLiga</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="laligaCardHolder">
-        <div class="freepick" id="fpLaliga">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section id="vivo-bundesliga">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · Bundesliga</div>
-        <h2 class="sec-title reveal">Free pick Bundesliga.</h2>
-        <p class="sec-lede reveal">La Bundesliga, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — las 34 jornadas completas viven en tu plan.</p>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/europa.html?liga=bundesliga">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=bundesliga">Ver planes Bundesliga</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="bundesligaCardHolder">
-        <div class="freepick" id="fpBundesliga">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section id="vivo-ucl">
-  <div class="wrap">
-    <div class="live-grid">
-      <div>
-        <div class="sec-eyebrow reveal">Nuevo · Champions League</div>
-        <h2 class="sec-title reveal">Free pick Champions League.</h2>
-        <p class="sec-lede reveal">La Champions League, de la fase de liga a la final, marcador por marcador: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto claro contra los momios reales. Este es el pick gratis de la jornada — la Champions completa vive en tu plan.</p>
-        <div class="live-cta reveal">
-          <a class="btn-analisis" href="/europa.html?liga=ucl">Ver el análisis completo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-          <a class="btn-ghost" href="/producto.html?m=ucl">Ver planes Champions</a>
-        </div>
-      </div>
-      <div class="live-card-holder reveal" id="uclCardHolder">
-        <div class="freepick" id="fpUcl">
-          <div class="deck">
-            <div class="viewport"><div class="slides"><div class="slide"><div class="fp-skeleton"></div></div></div></div>
-          </div>
-          <div class="dots-row">
-            <button class="arrow prev off" type="button" aria-label="Ver lo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="dots"></div>
-            <button class="arrow next off" type="button" aria-label="Ver lo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-<!-- ============ FAQ ============ -->
-<section id="faq" style="padding-top:20px">
-  <div class="wrap" style="max-width:760px">
-    <div class="sec-eyebrow reveal">Preguntas directas</div>
+    <span class="eyebrow reveal">Cómo funciona</span>
     <div class="reveal">
-      <details>
-        <summary>¿Esto es una casa de apuestas?</summary>
-        <p>No. Dattip es un modelo de análisis estadístico. No recibimos apuestas ni manejamos tu dinero de juego — te decimos dónde el modelo ve valor y tú decides en tu casa de apuestas.</p>
-      </details>
-      <details>
-        <summary>¿Cómo recibo los picks?</summary>
-        <p>Entras a tu cuenta y el modelo ya corrió: todos los juegos del día con su veredicto y análisis, actualizados con las alineaciones y el clima de ese día. Nada que descargar.</p>
-      </details>
-      <details>
-        <summary>¿Por qué "Fundador"?</summary>
-        <p>Porque estás entrando antes que nadie: tu precio se congela mientras sigas activo. Los que se unan después pagarán más.</p>
-      </details>
-      <details>
-        <summary>¿Qué incluyen los planes de las ligas europeas?</summary>
-        <p>Premier League, LaLiga, Bundesliga y Champions League son cuatro modelos independientes. Cada uno se contrata solo ($349 al mes), dentro de los tres modelos a elegir ($599 al mes) o con todos los modelos ($899 al mes). Todo es suscripción mensual: se renueva sola y se cancela cuando quieras. Los precios son en pesos mexicanos; si prefieres pagar en dólares con tarjeta, puedes elegirlo en el checkout.</p>
-      </details>
+      <div class="li"><span class="n">01</span><div><b>Eliges tu liga</b><span>Cada liga tiene su propio modelo.</span>
+        <div class="ligas">
+          <a class="liga" href="/producto.html?m=mx">Liga MX</a>
+          <a class="liga" href="/producto.html?m=nfl">NFL</a>
+          <a class="liga" href="/producto.html?m=mlb">MLB</a>
+          <a class="liga" href="/producto.html?m=epl">Premier</a>
+          <a class="liga" href="/producto.html?m=laliga">LaLiga</a>
+          <a class="liga" href="/producto.html?m=bundesliga">Bundesliga</a>
+          <a class="liga" href="/producto.html?m=ucl">Champions</a>
+        </div>
+      </div></div>
+      <div class="li"><span class="n">02</span><div><b>La computadora juega cada partido 10,000 veces</b><span>Con la forma de cada equipo, sus lesiones y su calendario. No con lo que dijo alguien en redes.</span></div></div>
+      <div class="li"><span class="n">03</span><div><b>Te marca:</b>
+        <span class="vline"><em class="vchip bet">PICK</em>Tu casa te paga más de lo que debería. Entra.</span>
+        <span class="vline"><em class="vchip maybe">MAYBE</em>Las probabilidades están a la par con lo que paga. Tú decides.</span>
+        <span class="vline"><em class="vchip skip">SKIP</em>Tu casa te paga menos de lo que debería. Déjala pasar.</span>
+      </div></div>
     </div>
   </div>
 </section>
 
-<!-- ============ TÉRMINOS ============ -->
-<section id="terminos">
+<!-- ============ Y EL TIPSTER ============ -->
+<section class="tipster" id="tipster">
   <div class="wrap">
-    <div class="tc-box">
-      <h3>Términos</h3>
-      <dl>
-        <dt>Planes vigentes (desde el 8 de septiembre de 2026)</dt>
-        <dd>Tres planes, todos de suscripción mensual en pesos mexicanos: <strong>Un modelo</strong> ($349 al mes; el modelo que elijas: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga o Champions League), <strong>Tres modelos a elegir</strong> ($599 al mes; eliges tres de los siete al contratar y puedes cambiar uno de ellos por otro una vez por periodo de cobro desde <em>Mis modelos</em>) y <strong>Todos los modelos</strong> ($899 al mes; los siete). Cada suscripción se renueva sola cada mes al precio del plan vigente y se cancela cuando quieras desde <em>Administrar suscripción</em>; al cancelar conservas el acceso hasta el final del periodo ya pagado. Además, cada modelo ofrece su <strong>Temporada completa</strong> ($899 MXN, pago único): cubre ese modelo hasta el final de su temporada en curso (MLB hasta la Serie Mundial 2026, Liga MX hasta la final del Apertura 2026, NFL hasta el Super Bowl 26-27, las ligas europeas hasta su última jornada 2026-27) y no se renueva ni se cobra otra vez; al comprarla, la mensualidad de ese modelo se cancela sola. El pick destacado de cada modelo es gratuito y no requiere plan. El cobro es en pesos mexicanos con Mercado Pago y con tarjeta; quien lo prefiera puede pagar con tarjeta en dólares eligiéndolo en el checkout.</dd>
-        <dt>Planes anteriores (legado)</dt>
-        <dd>El Combo Total, los planes semanales y los mensuales anteriores (Mensual Fundador, Combo mensual, Círculo Fundador) ya no se venden. Quienes los contrataron conservan su acceso, su precio y sus beneficios mientras su plan siga vigente: una suscripción anterior se sigue renovando a su precio hasta que la cancelen, y las temporadas compradas antes a otro precio valen igual hasta su fin.</dd>
-        <dt>General</dt>
-        <dd>Las predicciones son análisis estadístico y no garantizan resultados de ninguna apuesta. Lo que contratas es el acceso al modelo, nunca el dinero que apuestes por tu cuenta.</dd>
-      </dl>
+    <h2 class="reveal">Los tipsters son del pasado. Lo de hoy es la data.</h2>
+    <p class="lede reveal">Un tipster es una persona con una opinión. Esto son estadísticas y datos duros.</p>
+    <div class="reveal">
+      <div class="li"><span class="x">×</span><div><b>Opina</b><span class="vs">Dattip cuenta.</span></div></div>
+      <div class="li"><span class="x">×</span><div><b>Te dice a quién</b><span class="vs">Dattip te dice cuánto vale.</span></div></div>
+      <div class="li"><span class="x">×</span><div><b>Cobra el grupo VIP</b><span class="vs">Dattip cuesta menos que una cena.</span></div></div>
+      <div class="li"><span class="x">×</span><div><b>Nunca te dice que no</b><span class="vs">Dattip marca SKIP cuando no vale.</span></div></div>
     </div>
   </div>
 </section>
+
+<!-- ============ COMPARA ============ -->
+<section id="compara">
+  <div class="wrap">
+    <span class="eyebrow reveal">Compara</span>
+    <h2 class="reveal">Dos formas de decidir.</h2>
+    <table class="cmp reveal">
+      <thead><tr><th></th><th>Tipster</th><th class="d">Dattip</th></tr></thead>
+      <tbody>
+        <tr><td>Decide con</td><td>Lo que él cree</td><td class="d">10,000 partidos jugados</td></tr>
+        <tr><td>Te dice por qué</td><td>No</td><td class="d">Sí, con el número</td></tr>
+        <tr><td>Partidos</td><td>Los que le convienen</td><td class="d">Todos, cada jornada</td></tr>
+        <tr><td>Te dice cuándo NO</td><td>Nunca</td><td class="d">SKIP en cada partido</td></tr>
+        <tr><td>Precio</td><td>Grupo VIP, $1,500+</td><td class="d" id="cmpPrecio">Desde $349</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ RÉCORD + PRECIOS ============ -->
+<section id="precios">
+  <div class="wrap">
+    <p class="big reveal">7/10<small>de los picks del modelo se cobran.</small></p>
+    <!-- Reseñas reales: capturas de las historias destacadas de Instagram.
+         Van en /img/reviews/1.jpg, 2.jpg, … (formato vertical 9:16). Una
+         imagen que no exista se esconde sola. -->
+    <div class="reviews reveal" id="reviews">
+      <h2 class="rv-title">Lo que dicen los clientes.</h2>
+      <div class="rv-track">
+        <img src="/img/reviews/1.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/2.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/3.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/4.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/5.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/6.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/7.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/8.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/9.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/10.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/11.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+        <img src="/img/reviews/12.jpg" alt="Reseña de un cliente" loading="lazy" onerror="this.remove()">
+      
+      <a class="rv-more" href="https://www.instagram.com/stories/highlights/17926258743363733/" target="_blank" rel="noopener noreferrer">Ver todas en Instagram →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PREGUNTAS ============ -->
+<section id="faq">
+  <div class="wrap">
+    <span class="eyebrow reveal">Preguntas</span>
+    <div class="reveal">
+      <details><summary>¿Tengo que saber de estadística?</summary><p>No. Ves el chip: PICK entra, MAYBE tú decides, SKIP la dejas pasar.</p></details>
+      <details><summary>¿Esto es una casa de apuestas?</summary><p>No. Dattip no recibe apuestas. Te da el análisis y tú juegas donde ya juegas.</p></details>
+      <details><summary>¿Cómo recibo los picks?</summary><p>Entras a dattip.com desde tu celular. Cada jornada aparece sola, sin grupo de Telegram.</p></details>
+      <details><summary>¿Y si el modelo se pasa?</summary><p>Se pasa 3 de cada 10. Por eso te dice cuánto vale cada pick y cuándo dejarla pasar.</p></details>
+      <details><summary>¿Puedo cambiar de liga?</summary><p>Sí. En el plan de tres cambias un modelo cada mes desde tu cuenta.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CIERRE ============ -->
+<section class="final" id="final">
+  <div class="wrap">
+    <h2 class="reveal">Hay uno así en cada partido.</h2>
+    <p class="lede reveal" id="finalLede">El de hoy es gratis. Los de tu liga, con tu plan.</p>
+    <a class="cta reveal" href="/producto.html?m=mx" data-cta>Quiero el de mi liga</a>
+  </div>
+</section>
+
+</main>
 
 <footer>
   <div class="wrap">
-    <div class="brand-col">
-      <a href="/" class="logo" aria-label="Dattip"><span class="mark">D·T</span><span class="brand-word">DAT<span class="tip">TIP</span></span></a>
-      <a class="social" href="https://www.instagram.com/ricky__picks/" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>
-        @ricky__picks
-      </a>
-    </div>
+    <a href="/" class="logo" aria-label="Dattip"><span class="mark">D·T</span><span class="brand-word">DAT<span class="tip">TIP</span></span></a>
+    <a class="social" href="https://www.instagram.com/dattip.ai/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>
+      @dattip.ai
+    </a>
     <div class="resp">
       <strong>Juega con responsabilidad. Solo +18.</strong><br>
-      Las predicciones son análisis estadístico basado en datos históricos; no constituyen consejo financiero ni garantía de resultado. Apuesta solo lo que puedas permitirte perder.
+      Dattip no es una casa de apuestas ni recibe apuestas. Las predicciones son análisis estadístico basado en datos históricos; no constituyen consejo financiero ni garantía de resultado. Apuesta solo lo que puedas permitirte perder.
     </div>
   </div>
 </footer>
 
+<!-- Barra pegada abajo: el mismo botón del hero, cuando ese ya no se ve. -->
+<div class="sticky-cta" id="stickyCta">
+  <a class="cta" href="/producto.html?m=mx" data-cta>Quiero el de mi liga</a>
+</div>
+
 <!-- AUTH MODAL -->
 <div class="overlay" id="authOverlay">
-  <div class="modal" style="max-width:420px">
+  <div class="modal">
     <div class="modal-head">
       <div>
         <h3 id="authTitle">Inicia sesión</h3>
-        <div class="day">Para guardar tu acceso</div>
+        <div class="day">Para entrar a tus modelos</div>
       </div>
       <button class="modal-close" id="authClose" aria-label="Cerrar">✕</button>
     </div>
     <div class="modal-body">
-      <label class="tlab">Correo</label>
+      <label class="tlab" for="authEmail">Correo</label>
       <input id="authEmail" type="email" class="auth-input" placeholder="tu@correo.com" autocomplete="email">
-      <label class="tlab" style="margin-top:12px">Contraseña</label>
+      <label class="tlab" for="authPass" style="margin-top:12px">Contraseña</label>
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
-      <button class="tool-run" id="authSubmit" style="margin-top:16px">Entrar</button>
+      <button class="tool-run" id="authSubmit">Entrar</button>
       <div class="auth-toggle" id="authToggle">¿No tienes cuenta? Crea una</div>
       <div id="forgotWrap" style="text-align:center;margin-top:8px;display:none"><a href="#" id="forgotLink" style="font-size:13px;color:var(--faint);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
       <div class="redeem-msg" id="authMsg"></div>
@@ -1068,65 +673,45 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </div>
 
-<!-- PICKS MODAL (pick gratis Mundial) -->
-<div class="overlay" id="overlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-head">
-      <div>
-        <h3 id="modalTitle">Pick gratis del Mundial</h3>
-        <div class="day" id="modalDay"></div>
-      </div>
-      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
-    </div>
-    <div class="modal-body">
-      <p class="modal-note" id="modalNote"></p>
-      <div id="picksList"></div>
-      <div class="modal-foot" id="modalFoot"></div>
-    </div>
-  </div>
-</div>
-
-</div><!-- /.light-zone -->
-
 <script>
+document.documentElement.classList.add('js');
+
 /* ============================================================
    NAV — marca el borde al hacer scroll.
-   Antes aquí vivía el "director" del hero de 420vh (crossfade de
-   paneles + la card que se ensamblaba). Ese hero se reemplazó por uno
-   estático, así que del director solo queda esto.
    ============================================================ */
 (function () {
   const nav = document.getElementById('topnav');
-  if (!nav) return;
   const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 30);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 })();
 
-
-
-
-
-
-
-
 /* ============================================================
-   FREE PICK — carrusel por modelo (portado de producto.html).
-   Tres vistas del MISMO pick gratis: la card, todos sus mercados
-   con veredicto y el detalle con momio justo + distribución.
+   PICK GRATIS — la misma card de producto.html, una por liga, en un
+   carrusel: deslizar o las flechas cambian de liga, y las pestañas de
+   arriba van sincronizadas. Las siete se piden en paralelo; cada una
+   pinta su diapositiva en cuanto llega.
    ============================================================ */
+const LIGAS = [
+  { m: 'mx',         nombre: 'Liga MX',        api: '/api/mx-free' },
+  { m: 'nfl',        nombre: 'NFL',            api: '/api/nfl-picks?as=guest' },
+  { m: 'mlb',        nombre: 'MLB',            api: '/api/mlb-free' },
+  { m: 'epl',        nombre: 'Premier League', api: '/api/euro-free?liga=epl', euro: true },
+  { m: 'laliga',     nombre: 'LaLiga',         api: '/api/euro-free?liga=laliga', euro: true },
+  { m: 'bundesliga', nombre: 'Bundesliga',     api: '/api/euro-free?liga=bundesliga', euro: true },
+  { m: 'ucl',        nombre: 'Champions',      api: '/api/euro-free?liga=ucl', euro: true },
+];
+let ligaActual = 'mx';
+
 (function () {
   const E = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pct = p => (p == null ? '—' : Math.round(p * 100) + '%');
-  const amOdds = p => (!p || p <= 0 || p >= 1) ? '—'
-    : (p > 0.5 ? '-' + Math.round(100 * p / (1 - p)) : '+' + Math.round(100 * (1 - p) / p));
   const MX_TZ = 'America/Mexico_City';
   /* Etiqueta visible del veredicto: la llave sigue siendo el dato que
-   manda el modelo ('bet'); lo que lee el cliente es PICK. */
-const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
-const chipTxt = v => VCHIP[v] || String(v || '').toUpperCase();
-
-const ORDEN = { bet: 3, maybe: 2, skip: 1 };
+     manda el modelo ('bet'); lo que lee el cliente es PICK. */
+  const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
+  const chipTxt = v => VCHIP[v] || String(v || '').toUpperCase();
+  const ORDEN = { bet: 3, maybe: 2, skip: 1 };
   const mejorVeredicto = vs => {
     const l = (vs || []).filter(v => v && v.label);
     if (!l.length) return null;
@@ -1135,8 +720,8 @@ const ORDEN = { bet: 3, maybe: 2, skip: 1 };
       return d !== 0 ? d : (b.prob || 0) - (a.prob || 0);
     })[0];
   };
-
   const chipClase = v => v === 'bet' ? '' : ' is-' + v;
+
   function cardHTML(o) {
     const fila = (t, favorito) =>
       '<div class="pk-team' + (favorito ? ' fav' : '') + '">' +
@@ -1144,7 +729,7 @@ const ORDEN = { bet: 3, maybe: 2, skip: 1 };
         '<span class="tn">' + E(t.name) + (t.sub ? '<small>' + E(t.sub) + '</small>' : '') + '</span>' +
         '<span class="pr">' + E(t.prob) + '</span>' +
       '</div>';
-    return '<div class="slide"><div class="pk">' +
+    return '<div class="pk">' +
       '<div class="pk-meta">' + E(o.meta) + '</div>' +
       fila(o.away, o.favAway) + fila(o.home, !o.favAway) +
       '<div class="pk-bar"><i class="a" style="width:' + o.barA + '%"></i><i class="h" style="width:' + (100 - o.barA) + '%"></i></div>' +
@@ -1154,226 +739,209 @@ const ORDEN = { bet: 3, maybe: 2, skip: 1 };
         '<span class="pk-odds">' + E(o.odds) + '</span>' +
       '</div>' +
       '<div class="pk-foot"><span>10,000 simulaciones</span><span>' + E(o.venue) + '</span></div>' +
-    '</div></div>';
+    '</div>';
   }
-
-  function veredictosHTML(vs) {
-    if (!vs || !vs.length) return '';
-    const filas = vs.map(v => {
-      const bits = [];
-      if (v.prob != null) bits.push((v.prob * 100).toFixed(1) + '%');
-      if (v.line_txt) bits.push(E(v.line_txt));
-      return '<div class="vrow ' + E(v.verdict) + '">' +
-        '<span class="vl">' + E(v.label) +
-          (bits.length ? '<small>' + bits.join(' · ') + '</small>' : '') + '</span>' +
-        '<span class="vchip ' + E(v.verdict) + '">' + E(chipTxt(v.verdict)) + '</span>' +
-      '</div>';
-    }).join('');
-    return '<div class="slide"><div class="slide-lbl">Todos los mercados de este partido</div>' + filas + '</div>';
-  }
-
-  function detalleHTML(vs, extra, dist) {
-    const filas = (vs || []).map(v =>
-      '<div class="det-row"><span class="dl">' + E(v.label) + '</span>' +
-      '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
-    ).join('');
-    const cola = (extra || []).map(e =>
-      '<div class="det-row"><span class="dl">' + E(e[0]) + '</span><span class="dv">' + E(e[1]) + '</span></div>'
-    ).join('');
-    if (!filas && !cola) return '';
-    return '<div class="slide"><div class="slide-lbl">Lo que dice el modelo, mercado por mercado</div>' +
-      '<div class="det-rows">' + filas + cola + '</div>' + distHTML(dist) + '</div>';
-  }
-
-  function distHTML(d) {
-    if (!d || !d.valores || !d.valores.length) return '';
-    const v = d.valores, n = v.length, W = 720, H = 52;
-    const gap = n > 30 ? 2 : n > 12 ? 3 : 6;
-    const bw = (W - gap * (n - 1)) / n;
-    const max = Math.max.apply(null, v.concat([0.001]));
-    let bars = '';
-    for (let i = 0; i < n; i++) {
-      const h = Math.max(1.5, (v[i] / max) * (H - 16));
-      const x = i * (bw + gap);
-      let color;
-      if (d.tipo === 'margen') {
-        const m = i - d.centro;
-        color = m > 0 ? '#2f7bff' : m < 0 ? '#d8dfe9' : '#b8922e';
-      } else {
-        color = i > d.linea ? '#2f7bff' : '#d8dfe9';
-      }
-      bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h + '" rx="1.5" fill="' + color + '"></rect>';
-      const et = d.tipo === 'margen'
-        ? ((i - d.centro) === 0 ? (d.empate || '0') : ((i - d.centro) > 0 ? '+' + (i - d.centro) : String(i - d.centro)))
-        : (i === n - 1 ? (n - 1) + '+' : String(i));
-      const mostrar = d.tipo === 'margen' ? (n <= 12 || (i - d.centro + 21) % 7 === 0) : (i % 5 === 0 || i === n - 1);
-      if (mostrar) {
-        bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3"' +
-          ' font-family="JetBrains Mono,monospace">' + E(et) + '</text>';
-      }
-    }
-    if (d.tipo !== 'margen' && d.linea != null) {
-      const lx = (d.linea + 0.5) * (bw + gap) - gap / 2;
-      bars += '<line x1="' + lx + '" y1="0" x2="' + lx + '" y2="' + (H - 12) + '" stroke="#d9b34a" stroke-width="1" stroke-dasharray="3 3"></line>';
-    }
-    return '<div class="dist"><div class="dist-lbl"><span>' + E(d.etiqueta) + '</span>' +
-      (d.nota ? '<span>' + E(d.nota) + '</span>' : '') + '</div>' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución de 10,000 simulaciones">' + bars + '</svg></div>';
-  }
-
-  /* La diapositiva visible es una variable, no algo deducido del
-     scroll (con transform el navegador no tiene scroll que medir). */
-  function montaFreepick(root, html) {
-    const track = root.querySelector('.slides');
-    track.innerHTML = html;
-    const slides = [...track.querySelectorAll('.slide')];
-    const dots = root.querySelector('.dots');
-    const prev = root.querySelector('.arrow.prev'), next = root.querySelector('.arrow.next');
-    let i = 0;
-    dots.innerHTML = slides.length > 1
-      ? slides.map((_, k) => '<button type="button" aria-label="Ver ' + (k + 1) + ' de ' + slides.length + '"></button>').join('')
-      : '';
-    function ajustaAlto() {
-      const v = track.parentElement;
-      if (slides[i]) v.style.height = slides[i].offsetHeight + 'px';
-    }
-    function pinta() {
-      track.style.transform = 'translateX(calc(' + (-i * 100) + '% - ' + (i * 16) + 'px))';
-      prev.classList.toggle('off', i === 0);
-      next.classList.toggle('off', i >= slides.length - 1);
-      [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
-      slides.forEach((sl, k) => sl.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
-      ajustaAlto();
-    }
-    function irA(k) { i = Math.max(0, Math.min(slides.length - 1, k)); pinta(); }
-    prev.onclick = () => irA(i - 1);
-    next.onclick = () => irA(i + 1);
-    [...dots.children].forEach((b, k) => b.addEventListener('click', () => irA(k)));
-    let x0 = null;
-    track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', e => {
-      if (x0 == null) return;
-      const dx = e.changedTouches[0].clientX - x0;
-      x0 = null;
-      if (Math.abs(dx) > 45) irA(i + (dx < 0 ? 1 : -1));
-    }, { passive: true });
-    /* flechas laterales a la altura del porcentaje grande (escritorio) */
-    function alineaFlechas() {
-      const filas = track.querySelectorAll('.pk-team');
-      const fila = filas[1] || filas[0];
-      if (!fila) return;
-      const y = fila.getBoundingClientRect().top + fila.getBoundingClientRect().height / 2
-        - root.getBoundingClientRect().top;
-      root.style.setProperty('--flechaY', Math.round(y) + 'px');
-    }
-    alineaFlechas();
-    addEventListener('resize', () => { alineaFlechas(); ajustaAlto(); });
-    if (window.ResizeObserver) {
-      const ro = new ResizeObserver(ajustaAlto);
-      slides.forEach(sl => ro.observe(sl));
-    }
-    pinta();
-  }
+  const cardVacia = (titulo, texto) =>
+    '<div class="pk pk-beta"><div class="pk-meta">' + E(titulo) + '</div><div class="pk-sel">' + E(texto) + '</div></div>';
 
   const fecha = iso => new Date(iso).toLocaleString('es-MX',
     { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: MX_TZ }).toUpperCase();
 
-  /* Liga europea en beta privada (403 {beta:true}), sin partido o con
-     error: se quita SU sección completa — un bloque "Nuevo" a medias
-     vende menos que ninguno. Los demás modelos solo esconden su card. */
-  const EURO = new Set(['epl', 'laliga', 'bundesliga', 'ucl']);
-  function quitaEuropa(m) {
-    if (!EURO.has(m)) return false;
-    const s = document.getElementById('vivo-' + m);
-    if (s) s.remove();
-    return true;
-  }
-
-  async function carga(m, rootId, api) {
-    const root = document.getElementById(rootId);
-    if (!root) return;
-    try {
-      const r = await fetch(api);
-      if (!r.ok) { if (quitaEuropa(m)) return; throw new Error('sin datos'); }
-      const d = await r.json();
-      let o = null, vs = [], extra = [], dist = null;
-      if (m === 'mlb' && d.game) {
-        const g = d.game, v = g.verdict || null;
-        const favH = (g.moneyline.home || 0) >= (g.moneyline.away || 0);
-        o = { meta: fecha(g.game_date),
-          away: { name: g.away.name, sub: g.pitchers && g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '', prob: pct(g.moneyline.away), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.away.id + '.svg' },
-          home: { name: g.home.name, sub: g.pitchers && g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '', prob: pct(g.moneyline.home), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.home.id + '.svg' },
-          favAway: !favH, barA: Math.round((g.moneyline.away || 0.5) * 100),
-          verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
-          odds: v ? pct(v.prob) : '', venue: g.venue || '' };
-        vs = g.verdicts || [];
-        if (g.expected) extra.push(['Carreras esperadas', g.away.abbr + ' ' + g.expected.away_runs + ' — ' + g.home.abbr + ' ' + g.expected.home_runs]);
-        dist = { tipo: 'conteo', valores: g.total_dist || [], linea: g.total_line,
-          etiqueta: 'Cómo caen las carreras en 10,000 futuros',
-          nota: g.total_line != null ? 'línea ' + g.total_line : '' };
-      } else if (m === 'mx' && d.game) {
-        const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
+  /* De la respuesta de cada API a la card. */
+  function arma(cfg, d) {
+    const m = cfg.m;
+    let o = null, sub = '';
+    if (m === 'mlb' && d.game) {
+      const g = d.game, v = g.verdict || null;
+      const favH = (g.moneyline.home || 0) >= (g.moneyline.away || 0);
+      o = { meta: fecha(g.game_date),
+        away: { name: g.away.name, sub: g.pitchers && g.pitchers.away ? 'Abre ' + g.pitchers.away.name : '', prob: pct(g.moneyline.away), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.away.id + '.svg' },
+        home: { name: g.home.name, sub: g.pitchers && g.pitchers.home ? 'Abre ' + g.pitchers.home.name : '', prob: pct(g.moneyline.home), logo: 'https://www.mlbstatic.com/team-logos/team-cap-on-light/' + g.home.id + '.svg' },
+        favAway: !favH, barA: Math.round((g.moneyline.away || 0.5) * 100),
+        verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+        odds: v ? pct(v.prob) : '', venue: g.venue || '' };
+      sub = 'HOY';
+    } else if ((m === 'mx' || cfg.euro) && d.game) {
+      /* /api/euro-free trae la MISMA forma que /api/mx-free (más
+         league_id / league_name): card idéntica. */
+      const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
+      const favH = (ml.home || 0) >= (ml.away || 0);
+      o = { meta: fecha(g.date),
+        away: { name: g.away.name, sub: 'Visitante', prob: pct(ml.away), logo: g.away.logo },
+        home: { name: g.home.name, sub: 'Local', prob: pct(ml.home), logo: g.home.logo },
+        favAway: !favH, barA: Math.round((ml.away || 0.33) * 100),
+        verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
+        odds: v ? pct(v.prob) : '', venue: g.venue || '' };
+      sub = cfg.euro
+        ? ((d.league_name || cfg.nombre) + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase()
+        : (d.jornada ? 'JORNADA ' + d.jornada : '');
+    } else if (m === 'nfl') {
+      const g = (d.games || []).find(x => x.id === d.featured_id);
+      if (g) {
+        /* El servidor puede fijar qué mercado enseña la card (override
+           manual); si no lo manda, se calcula aquí como siempre. */
+        const v = d.featured_pick || mejorVeredicto(g.verdicts);
+        const mk = g.markets || {};
+        const ml = mk.moneyline || {};
         const favH = (ml.home || 0) >= (ml.away || 0);
         o = { meta: fecha(g.date),
-          away: { name: g.away.name, sub: 'Visitante', prob: pct(ml.away), logo: g.away.logo },
-          home: { name: g.home.name, sub: 'Local', prob: pct(ml.home), logo: g.home.logo },
-          favAway: !favH, barA: Math.round((ml.away || 0.33) * 100),
+          away: { name: g.away.name, sub: g.away.city || '', prob: pct(ml.away), logo: g.away.logo },
+          home: { name: g.home.name, sub: g.home.city || '', prob: pct(ml.home), logo: g.home.logo },
+          favAway: !favH, barA: Math.round((ml.away || 0.5) * 100),
           verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
           odds: v ? pct(v.prob) : '', venue: g.venue || '' };
-        vs = g.verdicts || [];
-        dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
-          etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
-      } else if (EURO.has(m) && d.game) {
-        /* /api/euro-free trae la MISMA forma que /api/mx-free (más
-           league_id / league_name): card idéntica, margen de goles. */
-        const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
-        const favH = (ml.home || 0) >= (ml.away || 0);
-        o = { meta: fecha(g.date) + (d.league_name ? ' · ' + d.league_name : ''),
-          away: { name: g.away.name, sub: 'Visitante', prob: pct(ml.away), logo: g.away.logo },
-          home: { name: g.home.name, sub: 'Local', prob: pct(ml.home), logo: g.home.logo },
-          favAway: !favH, barA: Math.round((ml.away || 0.33) * 100),
-          verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
-          odds: v ? pct(v.prob) : '', venue: g.venue || '' };
-        vs = g.verdicts || [];
-        dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
-          etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
-      } else if (m === 'nfl') {
-        const g = (d.games || []).find(x => x.id === d.featured_id);
-        if (g) {
-          /* El servidor puede fijar qué mercado enseña la card (override
-             manual); si no lo manda, se calcula aquí como siempre. */
-          const v = d.featured_pick || mejorVeredicto(g.verdicts);
-          const mk = g.markets || {};
-          const ml = mk.moneyline || {};
-          const favH = (ml.home || 0) >= (ml.away || 0);
-          o = { meta: fecha(g.date),
-            away: { name: g.away.name, sub: g.away.city || '', prob: pct(ml.away), logo: g.away.logo },
-            home: { name: g.home.name, sub: g.home.city || '', prob: pct(ml.home), logo: g.home.logo },
-            favAway: !favH, barA: Math.round((ml.away || 0.5) * 100),
-            verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
-            odds: v ? pct(v.prob) : '', venue: g.venue || '' };
-          vs = g.verdicts || [];
-          if (mk.total) extra.push(['Puntos esperados', 'el modelo espera ' + mk.total.model_total + ' (línea ' + mk.total.line + ')']);
-          dist = { tipo: 'margen', valores: mk.margin_dist || [], centro: 21,
-            etiqueta: 'Cómo cae el margen (' + g.home.abbr + ' positivo) en 10,000 futuros' };
-        }
+        sub = (g.preseason ? 'PRETEMP ' : 'SEMANA ') + (d.week || '');
       }
-      if (!o) { if (quitaEuropa(m)) return; root.closest('.live-card-holder').style.display = 'none'; return; }
-      montaFreepick(root, cardHTML(o) + veredictosHTML(vs) + detalleHTML(vs, extra, dist));
-    } catch (e) {
-      if (quitaEuropa(m)) return;
-      const h = root.closest('.live-card-holder');
-      if (h) h.style.display = 'none';
     }
+    if (!o) return { html: cardVacia(cfg.nombre + ' · Sin partidos ahora mismo', 'Vuelve cuando arranque la jornada.'), sub: '' };
+    return { html: cardHTML(o), sub };
   }
 
-  carga('nfl', 'fpNfl', '/api/nfl-picks?as=guest');
-  carga('mlb', 'fpMlb', '/api/mlb-free');
-  carga('mx',  'fpMx',  '/api/mx-free');
-  carga('epl', 'fpEpl', '/api/euro-free?liga=epl');
-  carga('laliga', 'fpLaliga', '/api/euro-free?liga=laliga');
-  carga('bundesliga', 'fpBundesliga', '/api/euro-free?liga=bundesliga');
-  carga('ucl', 'fpUcl', '/api/euro-free?liga=ucl');
+  /* ---- el carrusel: una diapositiva por liga ---- */
+  const root = document.getElementById('fp');
+  const track = root.querySelector('.slides');
+  const dots = root.querySelector('.dots');
+  const prev = root.querySelector('.arrow.prev'), next = root.querySelector('.arrow.next');
+  const liveSub = document.getElementById('liveSub');
+  const tabs = [...document.querySelectorAll('#ligaTabs button')];
+  const subs = {};
+  let i = 0;
+
+  track.innerHTML = LIGAS.map(l => '<div class="slide" data-m="' + l.m + '"><div class="fp-skeleton"></div></div>').join('');
+  const slides = [...track.querySelectorAll('.slide')];
+  dots.innerHTML = LIGAS.map((l, k) => '<button type="button" aria-label="Ver ' + E(l.nombre) + '"></button>').join('');
+
+  function ajustaAlto() {
+    if (slides[i]) track.parentElement.style.height = slides[i].offsetHeight + 'px';
+  }
+  function pinta() {
+    const m = LIGAS[i].m;
+    ligaActual = m;
+    track.style.transform = 'translateX(calc(' + (-i * 100) + '% - ' + (i * 16) + 'px))';
+    prev.classList.toggle('off', i === 0);
+    next.classList.toggle('off', i >= slides.length - 1);
+    [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
+    slides.forEach((sl, k) => sl.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+    tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.m === m ? 'true' : 'false'));
+    liveSub.textContent = subs[m] || '';
+    /* El botón único siempre lleva a los planes de la liga que se está
+       viendo. Los atajos de cliente (más abajo) se recalculan. */
+    document.querySelectorAll('#ctaHero, [data-cta]').forEach(a => {
+      a.href = '/producto.html?m=' + m;
+      a.textContent = 'Quiero ' + LIGAS[i].nombre;
+      delete a.dataset.plansHref; delete a.dataset.plansText;
+    });
+    if (window.recalculaAtajos) window.recalculaAtajos();
+    ajustaAlto();
+  }
+  function irA(k, scrollTab) {
+    i = Math.max(0, Math.min(slides.length - 1, k));
+    pinta();
+    const on = tabs[i];
+    if (on && scrollTab) on.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  prev.onclick = () => irA(i - 1, true);
+  next.onclick = () => irA(i + 1, true);
+  [...dots.children].forEach((b, k) => b.addEventListener('click', () => irA(k, true)));
+  tabs.forEach(b => b.addEventListener('click', () => irA(LIGAS.findIndex(l => l.m === b.dataset.m), true)));
+  /* Deslizar con el dedo, que en el celular es como se navega. */
+  let x0 = null;
+  track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 45) irA(i + (dx < 0 ? 1 : -1), true);
+  }, { passive: true });
+  root.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') irA(i + 1, true);
+    if (e.key === 'ArrowLeft') irA(i - 1, true);
+  });
+  /* Los escudos cambian de alto al terminar de cargar. */
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(ajustaAlto);
+    slides.forEach(sl => ro.observe(sl));
+  }
+  addEventListener('resize', ajustaAlto);
+
+  /* ---- carga de las siete, en paralelo ---- */
+  LIGAS.forEach(async (cfg, k) => {
+    let out;
+    try {
+      const r = await fetch(cfg.api);
+      const d = await r.json().catch(() => null);
+      /* Liga europea en beta privada: el servidor contesta 403 {beta:true}
+         a quien no es admin. No es un error — se muestra como tal. */
+      if (r.status === 403 && d && d.beta) {
+        out = { html: cardVacia(cfg.nombre + ' · Beta privada', 'El modelo ya corre, pero todavía en privado.'), sub: 'BETA' };
+      } else if (!r.ok || !d) {
+        throw new Error('sin datos');
+      } else {
+        out = arma(cfg, d);
+      }
+    } catch (e) {
+      out = { html: cardVacia(cfg.nombre, 'No pudimos cargar el pick. Intenta en un momento.'), sub: '' };
+    }
+    subs[cfg.m] = out.sub;
+    slides[k].innerHTML = out.html;
+    if (k === i) { liveSub.textContent = out.sub || ''; ajustaAlto(); }
+  });
+
+  const q = new URLSearchParams(location.search).get('m');
+  const k0 = LIGAS.findIndex(l => l.m === q);
+  irA(k0 >= 0 ? k0 : 0, k0 >= 0);
+})();
+
+/* ============================================================
+   PRECIOS — de /api/plans-public, nunca escritos a mano.
+   ============================================================ */
+(function () {
+  const money = n => '$' + Number(n).toLocaleString('en-US');
+  fetch('/api/plans-public', { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const plans = d && d.plans;
+      if (!plans) throw new Error('sin planes');
+      const lista = Array.isArray(plans) ? plans : Object.values(plans);
+      /* "Un modelo": el más barato de los mensuales por liga. Hoy todos
+         cuestan lo mismo; si algún día no, "desde" sigue siendo cierto. */
+      const mensuales = lista.filter(p => p && p.recurring && /_mensual$/.test(p.id) && !p.choose && !/^(tres|todo)_/.test(p.id));
+      const uno = mensuales.length ? Math.min.apply(null, mensuales.map(p => p.price)) : null;
+            if (uno != null) {
+        document.getElementById('underHero').textContent = 'Desde ' + money(uno) + ' al mes · Sin contrato · Cancelas cuando quieras';
+        document.getElementById('cmpPrecio').textContent = 'Desde ' + money(uno);
+        document.getElementById('finalLede').textContent = 'El de hoy es gratis. Los de tu liga, desde ' + money(uno) + ' al mes.';
+      }
+    })
+    .catch(() => {
+      /* Sin catálogo no se inventa ningún número. */
+      document.getElementById('cmpPrecio').textContent = 'Menos que un grupo VIP';
+    });
+})();
+
+/* ============================================================
+   BARRA PEGADA ABAJO — aparece cuando el botón del hero ya salió de
+   cuadro por arriba, y se esconde cuando el botón final está a la
+   vista. Se mide en cada scroll (un IntersectionObserver aquí se
+   quedaba sin disparar en algunos navegadores tras el primer aviso).
+   ============================================================ */
+(function () {
+  const bar = document.getElementById('stickyCta');
+  const hero = document.getElementById('ctaHero');
+  const fin = document.querySelector('#final [data-cta]');
+  let tick = false;
+  function mide() {
+    tick = false;
+    const h = hero.getBoundingClientRect();
+    const f = fin.getBoundingClientRect();
+    const heroFuera = h.bottom < 0;
+    const finVisible = f.top < window.innerHeight - 40;
+    bar.classList.toggle('on', heroFuera && !finVisible);
+  }
+  const onScroll = () => { if (!tick) { tick = true; requestAnimationFrame(mide); } };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  mide();
 })();
 
 /* ============================================================
@@ -1386,380 +954,18 @@ const ORDEN = { bet: 3, maybe: 2, skip: 1 };
       e.target.classList.add('in');
       io.unobserve(e.target);
     }
-  }, { threshold: 0.15 });
+  }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
-
-
 </script>
 
 <script>
 /* ============================================================
-   CONFIG
+   SESIÓN — mismo comportamiento que el resto del sitio.
    ============================================================ */
 const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
 
-let CONFIG = null;
-async function loadConfig(){
-  if (CONFIG) return CONFIG;
-  const res = await fetch('/api/config');
-  if (!res.ok) throw new Error('No se pudo cargar la configuración.');
-  CONFIG = await res.json();
-  return CONFIG;
-}
-
-function teamLabel(name){
-  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
-  return t ? (t[0] + ' ' + t[1]) : name;
-}
-const teamShort = name => {
-  const t = CONFIG && CONFIG.teams ? CONFIG.teams[name] : null;
-  return t ? t[1] : name;
-};
-
-/* ============================================================
-   CANJE DE CÓDIGO
-   ============================================================ */
-async function callRpc(fn, body) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: 'POST',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error('Supabase error ' + res.status);
-  return res.json();
-}
-
-
-/* ============================================================
-   MODELO — solo para el pick gratis (modal)
-   ============================================================ */
-async function fetchMarkets(home, away, neutral){
-  const headers = { 'Content-Type': 'application/json' };
-  if (sb) {
-    try {
-      const { data } = await sb.auth.getSession();
-      const tok = data && data.session && data.session.access_token;
-      if (tok) headers['Authorization'] = 'Bearer ' + tok;
-    } catch(e) {}
-  }
-  const res = await fetch('/api/picks', { method: 'POST', headers, body: JSON.stringify({ home, away, neutral }) });
-  let data = {};
-  try { data = await res.json(); } catch(e) {}
-  if (!res.ok) throw new Error(data.error || 'No se pudo calcular el pick.');
-  return data.markets;
-}
-
-function implied(dec){ return dec ? 1/dec : null; }
-function devig(probs){ const s = probs.reduce((x,y) => x+(y||0), 0); return s>0 ? probs.map(p => p?p/s:null) : probs; }
-function pct(p){ return (p*100).toFixed(1)+'%'; }
-let oddsMode = 'american';
-let _freeMode = false;
-
-function parseOdds(raw){
-  if(!raw) return null; raw=(''+raw).trim().replace(',','.'); if(!raw) return null;
-  let dec;
-  if(oddsMode==='american'){ let n=parseFloat(raw); if(isNaN(n)) return null; dec = n>0 ? 1+n/100 : 1+100/Math.abs(n); }
-  else { dec=parseFloat(raw); if(isNaN(dec)||dec<=1) return null; }
-  return dec;
-}
-function mkPick(edge){
-  if(edge===null) return '<span class="mk skip">—</span>';
-  if(edge>=0.04) return '<span class="mk bet">bet</span>';
-  if(edge<=-0.06) return '<span class="mk fade">fade</span>';
-  return '<span class="mk skip">skip</span>';
-}
-function rowHTML(name, mp, dec){
-  const imp = dec ? implied(dec) : null;
-  let edge = imp !== null ? mp - imp : null;
-  let edgeTxt = edge !== null ? (edge>=0?'+':'')+(edge*100).toFixed(1)+'%' : '—';
-  let edgeCls = edge !== null ? (edge>=0.04?'edge-pos':'edge-neg') : 'edge-neg';
-  return `<tr><td>${name}</td><td class="num">${pct(mp)}</td><td class="${edgeCls}">${edgeTxt}</td><td>${mkPick(edge)}</td></tr>`;
-}
-
-function toolHTML(opts){
-  let matchBlock;
-  if(opts.fixed){
-    matchBlock = `<div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px">${teamLabel(opts.home)} <span style="color:var(--muted);font-weight:400">vs</span> ${teamLabel(opts.away)}</div>
-      <input type="hidden" id="tHome" value="${opts.home}"><input type="hidden" id="tAway" value="${opts.away}">`;
-  }
-  return `
-    <div class="tool-block">
-      <div class="tool-label">Partido</div>
-      ${matchBlock}
-      <label class="tool-toggle" id="tNeutralWrap"><input type="checkbox" id="tNeutral" checked> Sede neutral</label>
-    </div>
-    <div class="tool-block">
-      <div class="tool-label">Cuotas de tu casa <span style="color:var(--muted);font-weight:400">(para un resultado más personalizado)</span></div>
-      <div class="odds-mode">
-        <div class="om active" data-mode="american">Americano (-110)</div>
-        <div class="om" data-mode="decimal">Decimal (1.91)</div>
-      </div>
-      <label class="tlab">Resultado 1X2</label>
-      <div class="odds3">
-        <div><label class="tlab2">Local (1)</label><input id="o_h" placeholder="-150"></div>
-        <div><label class="tlab2">Empate (X)</label><input id="o_d" placeholder="+260"></div>
-        <div><label class="tlab2">Visitante (2)</label><input id="o_a" placeholder="+420"></div>
-      </div>
-      <label class="tlab" style="margin-top:10px">Goles y BTTS</label>
-      <div class="odds3">
-        <div><label class="tlab2">Over 2.5</label><input id="o_ov" placeholder="-105"></div>
-        <div><label class="tlab2">Under 2.5</label><input id="o_un" placeholder="-115"></div>
-        <div><label class="tlab2">BTTS Sí</label><input id="o_bt" placeholder="+100"></div>
-      </div>
-      <button class="tool-run" id="tRun">Calcular picks</button>
-    </div>
-    <div id="tResult"></div>`;
-}
-
-function wireTool(){
-  const $=id=>document.getElementById(id);
-  document.querySelectorAll('.om').forEach(b => b.onclick = () => {
-    document.querySelectorAll('.om').forEach(x => x.classList.remove('active'));
-    b.classList.add('active'); oddsMode = b.dataset.mode;
-  });
-  $('tRun').onclick = async () => {
-    const home=$('tHome').value, away=$('tAway').value, neutral=$('tNeutral').checked;
-    const out=$('tResult');
-    const runBtn=$('tRun');
-    runBtn.disabled=true; runBtn.textContent='Calculando…';
-    out.innerHTML='<div class="tool-loading"><span class="spinner"></span> Corriendo el modelo…</div>';
-    let m;
-    try { m = await fetchMarkets(home, away, neutral); }
-    catch(e) { out.innerHTML=`<div class="an-note">${e.message}</div>`; runBtn.disabled=false; runBtn.textContent='Calcular picks'; return; }
-    runBtn.disabled=false; runBtn.textContent='Calcular picks';
-    if(!m){ out.innerHTML='<div class="an-note">Sin datos para ese equipo.</div>'; return; }
-
-    const dH=parseOdds($('o_h').value),dD=parseOdds($('o_d').value),dA=parseOdds($('o_a').value);
-    let impH=implied(dH),impD=implied(dD),impA=implied(dA);
-    if(impH!==null&&impD!==null&&impA!==null){ [impH,impD,impA]=devig([impH,impD,impA]); }
-    const favProb=Math.max(m.home_win,m.away_win);
-    let conf='alta',confTxt='Confianza alta',cmsg='Partido parejo: el modelo es comparativamente fiable aquí.';
-    if(favProb>0.78){ conf='baja';confTxt='Confianza baja'; cmsg='Partido disparejo: el modelo subestima la brecha. Confía en el mercado, no en el edge del underdog.'; }
-    else if(favProb>0.65){ conf='media';confTxt='Confianza media'; cmsg='Favorito claro: trata cualquier edge sobre el underdog con escepticismo.'; }
-    const lowConf=(conf==='baja');
-    function rowWithVig(name,mp,imp2){
-      if(imp2!==null){ let html=rowHTML(name,mp,1/imp2); if(lowConf) html=html.replace('mk bet">bet','mk skip">ver línea'); return html; }
-      return rowHTML(name,mp,null);
-    }
-    let rows='';
-    rows+=rowWithVig(`Gana ${teamLabel(home)} (1)`, m.home_win, impH);
-    rows+=rowWithVig('Empate (X)', m.draw, impD);
-    rows+=rowWithVig(`Gana ${teamLabel(away)} (2)`, m.away_win, impA);
-    const lockedRow = name => `<tr style="opacity:0.6">
-      <td>${name}</td>
-      <td class="num" style="filter:blur(4px);user-select:none">??%</td>
-      <td style="filter:blur(4px);user-select:none">??%</td>
-      <td><a href="/checkout.html?plan=torneo" style="font-size:0.72rem;color:var(--blue);font-weight:600;white-space:nowrap;text-decoration:none">Ver →</a></td>
-    </tr>`;
-    if(_freeMode){
-      rows+=lockedRow('Over 2.5 goles');
-      rows+=lockedRow('Under 2.5 goles');
-      rows+=lockedRow('Ambos anotan (Sí)');
-    } else {
-      rows+=rowHTML('Over 2.5 goles', m.over25, parseOdds($('o_ov').value));
-      rows+=rowHTML('Under 2.5 goles', m.under25, parseOdds($('o_un').value));
-      rows+=rowHTML('Ambos anotan (Sí)', m.btts_yes, parseOdds($('o_bt').value));
-    }
-    const totXg=m.xg_home+m.xg_away;
-    const corners=(8.6+totXg*0.95), cornH=corners*(m.xg_home/totXg), cornA=corners-cornH;
-    const tight=1-Math.abs(m.home_win-m.away_win), cards=3.6+tight*1.6;
-    const sotH=m.xg_home*3.1, sotA=m.xg_away*3.1;
-    const nh=teamShort(home), na=teamShort(away);
-    const sec=[
-      ['Córners totales',corners.toFixed(1),'~9.5',corners>9.5?'Over':'Under'],
-      [`Córners ${nh}/${na}`,`${cornH.toFixed(1)} / ${cornA.toFixed(1)}`,'—',cornH>cornA?nh:na],
-      ['Tarjetas amarillas',cards.toFixed(1),'~4.5',cards>4.5?'Over':'Under'],
-      ['Tiros a puerta '+nh,sotH.toFixed(1),'—','—'],
-      ['Tiros a puerta '+na,sotA.toFixed(1),'—','—'],
-    ];
-    const secRows=sec.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="mut">${r[2]}</td><td class="mut">${r[3]}</td></tr>`).join('');
-    out.innerHTML=`
-      <div class="analysis">
-        <div class="an-head">
-          <div class="an-match">${teamLabel(home)} vs ${teamLabel(away)}</div>
-          <span class="an-conf ${conf}">${confTxt}</span>
-        </div>
-        <div class="an-xg">xG modelo ${m.xg_home.toFixed(2)} – ${m.xg_away.toFixed(2)} · ${neutral?'sede neutral':'con ventaja local'}</div>
-        ${(()=>{
-          if(!m.top_scores||!m.top_scores.length) return '';
-          const top3=m.top_scores.slice(0,3);
-          const visible=_freeMode?top3.slice(0,1):top3;
-          const lockedCards=_freeMode?`
-            ${[2,3].map(n=>`
-            <a href="/checkout.html?plan=torneo" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#f4f6fa;border:1.5px dashed #c5cfe0;border-radius:12px;padding:18px 14px;flex:1;min-width:110px;cursor:pointer;opacity:0.7">
-              <div style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:#8a9ab5;letter-spacing:0.05em">#${n}</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.6rem;color:#c5cfe0;filter:blur(3px);user-select:none">?–?</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#c5cfe0;filter:blur(3px);user-select:none">??%</div>
-              <div style="font-size:0.68rem;color:var(--blue);font-weight:600;margin-top:2px">Ver →</div>
-            </a>`).join('')}`:'';
-          const visibleCards=visible.map((s,i)=>`
-            <div class="score-card${i===0?' top1':''}">
-              <div class="sc-rank">${i===0?'Más probable':`#${i+1}`}</div>
-              <div class="sc-score">${s.h} – ${s.a}</div>
-              <div class="sc-pct">${(s.p*100).toFixed(1)}%</div>
-            </div>`).join('');
-          return `<div class="an-subhead" style="margin-top:14px">Marcadores exactos más probables</div>
-            <div class="scores-wrap">${visibleCards}${lockedCards}</div>
-            <div class="an-note" style="margin-bottom:14px">Probabilidades Dixon-Coles. Usar como contexto, no como apuesta directa.</div>`;
-        })()}
-        <div class="an-note" style="margin:0 0 12px">${cmsg}</div>
-        <table class="antab"><thead><tr><th>Mercado</th><th>Probabilidad</th><th>Edge</th><th>Pick</th></tr></thead><tbody>${rows}</tbody></table>
-        <div class="an-subhead" style="margin-top:16px">Mercados secundarios · heurístico</div>
-        ${_freeMode?`
-        <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>
-          ${['Córners totales','Córners local/visit.','Tarjetas amarillas','Tiros a puerta local','Tiros a puerta visit.'].map(name=>`
-          <tr style="opacity:0.6">
-            <td>${name}</td>
-            <td style="filter:blur(4px);user-select:none">??.?</td>
-            <td style="filter:blur(4px);user-select:none">~?.?</td>
-            <td><a href="/checkout.html?plan=torneo" style="font-size:0.72rem;color:var(--blue);font-weight:600;white-space:nowrap;text-decoration:none">Ver →</a></td>
-          </tr>`).join('')}
-        </tbody></table>`:`
-        <table class="antab"><thead><tr><th>Mercado</th><th>Estimación</th><th>Línea</th><th>Lean</th></tr></thead><tbody>${secRows}</tbody></table>
-        <div class="an-note">Edge = probabilidad del modelo − probabilidad del mercado (sin vig). PICK aparece con edge ≥ 4%.</div>`}
-      </div>`;
-  };
-}
-
-/* ============================================================
-   PICK GRATIS
-   ============================================================ */
-const overlay    = document.getElementById('overlay');
-const modalDay   = document.getElementById('modalDay');
-const modalNote  = document.getElementById('modalNote');
-const picksList  = document.getElementById('picksList');
-const modalFoot  = document.getElementById('modalFoot');
-
-function closeModal(){ overlay.classList.remove('open'); _freeMode = false; }
-document.getElementById('modalClose').addEventListener('click', closeModal);
-overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeModal(); closeAuth(); } });
-
-async function openFree(){
-  try { await loadConfig(); } catch(e){}
-  const today = (CONFIG && CONFIG.today_fixtures) || [];
-  const f = (CONFIG && CONFIG.free_fixture) || today[(CONFIG && CONFIG.free_index) || 0];
-  if(!f) return;
-  modalDay.textContent = (CONFIG && CONFIG.today_date) || '';
-
-  if(CONFIG && CONFIG.free_done){
-    const hl = teamLabel(f.home), al = teamLabel(f.away);
-    modalNote.textContent = '';
-    picksList.innerHTML = `
-      <div style="text-align:center;padding:28px 16px 20px">
-        <div style="font-size:2rem;margin-bottom:10px">⏱️</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.25rem;color:var(--text);margin-bottom:6px">Partido terminado</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--muted);margin-bottom:18px">${hl} vs ${al}</div>
-        <div style="display:inline-flex;align-items:center;gap:10px;background:var(--text);border-radius:14px;padding:14px 28px;margin-bottom:22px">
-          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;color:#fff;letter-spacing:-0.02em">3</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:rgba(255,255,255,0.35)">/</span>
-          <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;color:rgba(255,255,255,0.4)">5</span>
-          <span style="font-family:'Inter',sans-serif;font-size:0.78rem;color:rgba(255,255,255,0.5);margin-left:4px;line-height:1.3">picks<br>acertados</span>
-        </div>
-        <div style="font-family:'Inter',sans-serif;font-size:0.92rem;color:var(--text);line-height:1.6;margin-bottom:6px">
-          Todavía hay <strong>3 partidos más hoy</strong> con análisis completo.<br>El modelo sigue corriendo.
-        </div>
-      </div>`;
-    modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear el torneo completo por $300 MXN →</a>';
-    overlay.classList.add('open');
-    return;
-  }
-
-  modalNote.textContent = 'Análisis del partido gratis de hoy. Ingresa los momios de tu casa para detectar valor.';
-  picksList.innerHTML = toolHTML({ fixed: true, home: f.home, away: f.away });
-  modalFoot.innerHTML = '<a href="/checkout.html?plan=torneo" style="display:block;background:var(--blue-deep);color:#fff;font-family:\'Space Grotesk\',sans-serif;font-weight:600;font-size:0.95rem;padding:13px;border-radius:10px;text-decoration:none;text-align:center">Desbloquear modelo completo por $300 MXN →</a>';
-  const hosts = (CONFIG && CONFIG.hosts) || [];
-  const isHost = hosts.includes(f.home);
-  const neutralWrap = document.getElementById('tNeutralWrap');
-  if(neutralWrap) { neutralWrap.style.display = isHost ? 'none' : ''; document.getElementById('tNeutral').checked = !isHost; }
-  _freeMode = true;
-  wireTool();
-  const rb = document.getElementById('tRun'); if(rb) rb.click();
-  overlay.classList.add('open');
-}
-
-/* "Pick gratis": el Mundial ya terminó, así que ahora lleva al juego
-   destacado gratis del modelo MLB, que se publica solo cada día y no
-   necesita sesión (mlb.html tiene su propio candado para el resto). */
-document.getElementById('navFreeBtn').addEventListener('click', e => {
-  e.preventDefault();
-  window.location.href = '/mlb.html';
-});
-/* Nav "MLB": va directo a /mlb.html, igual que Liga MX y NFL. Antes
-   mandaba a #precios a quien no tuviera plan; ahora todos entran al
-   pick gratis y el candado del resto vive en la propia página —
-   primero el producto, después el precio. */
-document.querySelectorAll('[data-scroll]').forEach(b => {
-  b.addEventListener('click', () => {
-    const target = document.getElementById(b.dataset.scroll);
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-});
-
-/* Anclas internas (#vivo-nfl, #precios, …) resueltas por JS y NO por
-   el salto nativo: el hero es un escenario pineado de varias
-   pantallas y las secciones aparecen con reveal, así que la altura
-   del documento cambia mientras el navegador anima — el salto nativo
-   aterrizaba corto y se quedaba ahí (medido: "Ver NFL" dejaba el
-   scroll en 170px de 3878). Por eso se corrige la posición una vez
-   que el layout se asienta, salvo que el usuario ya tomara el
-   control del scroll. */
-/* OJO: se usa scrollIntoView, NO window.scrollTo — en esta página
-   window.scrollTo(...) no mueve nada (medido: se queda en 0 con
-   'auto' y con número plano), mientras que scrollIntoView llega
-   exacto. Si se cambia, volver a medirlo. */
-function goToSection(target) {
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  /* El scroll suave se CORTA a media animación: al bajar, las
-     imágenes lazy de las secciones entran en vista, cargan y cambian
-     la altura del documento — Chrome aborta la animación y el scroll
-     se queda corto (medido: quedaba a 854px del destino). Por eso se
-     reajusta hasta que el layout se asienta, y se abandona en cuanto
-     el usuario toma el control. */
-  let cancelled = false, tries = 0;
-  const cancel = () => { cancelled = true; };
-  const stop = () => {
-    window.removeEventListener('wheel', cancel);
-    window.removeEventListener('touchstart', cancel);
-  };
-  window.addEventListener('wheel', cancel, { passive: true });
-  window.addEventListener('touchstart', cancel, { passive: true });
-  const settle = () => {
-    if (cancelled || ++tries > 12) return stop();
-    if (Math.abs(target.getBoundingClientRect().top) > 6) {
-      // 'instant', NO 'auto': 'auto' hereda el scroll-behavior:smooth
-      // del CSS, así que la corrección se animaba y se cortaba igual
-      target.scrollIntoView({ behavior: 'instant', block: 'start' });
-    }
-    setTimeout(settle, 140);
-  };
-  setTimeout(settle, 650);
-}
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const id = a.getAttribute('href').slice(1);
-    const target = id && document.getElementById(id);
-    if (!target) return;
-    e.preventDefault();
-    history.replaceState(null, '', '#' + id);
-    goToSection(target);
-  });
-});
-
-/* Llegar con hash en la URL (enlace compartido, o volver desde otra
-   página): reposicionar cuando el layout ya se asentó. */
-if (location.hash.length > 1) {
-  window.addEventListener('load', () => setTimeout(() => {
-    const target = document.getElementById(location.hash.slice(1));
-    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
-  }, 80));
-}
-
-/* ============================================================
-   AUTH
-   ============================================================ */
 let sb = null;
 function initSupabase(){
   if (sb) return true;
@@ -1785,10 +991,10 @@ function openAuth(mode){ authMode = mode||'login'; renderAuthMode(); authMsg.cla
 function closeAuth(){ authOverlay.classList.remove('open'); }
 document.getElementById('authClose').addEventListener('click', closeAuth);
 authOverlay.addEventListener('click', e => { if(e.target===authOverlay) closeAuth(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuth(); });
 
-/* Los errores de Supabase llegan en inglés; los traducimos para que
-   el cliente entienda qué hacer en vez de ver "Invalid login
-   credentials" y quedarse atorado. */
+/* Los errores de Supabase llegan en inglés; se traducen para que el
+   cliente entienda qué hacer. */
 function authErrMsg(e){
   const m = (e && e.message) || '';
   const t = m.toLowerCase();
@@ -1812,14 +1018,10 @@ function renderAuthMode(){
     authSubmit.textContent='Entrar';
     authToggle.textContent='¿No tienes cuenta? Crea una';
   }
-  /* "¿Olvidaste tu contraseña?" SOLO al iniciar sesión. Mostrarlo al
-     registrarse hacía que la gente pidiera un correo de recuperación
-     durante el alta y tratara de meter ESE código en el formulario de
-     registro — que no espera ningún código. */
+  /* "¿Olvidaste tu contraseña?" SOLO al iniciar sesión. */
   const fw = document.getElementById('forgotWrap');
   if(fw) fw.style.display = signup ? 'none' : 'block';
-  const pw = document.getElementById('authPass');
-  if(pw) pw.setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+  authPass.setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
 }
 authToggle.addEventListener('click', () => { authMode = authMode==='signup'?'login':'signup'; renderAuthMode(); authMsg.className='redeem-msg'; authMsg.textContent=''; });
 
@@ -1849,8 +1051,6 @@ authSubmit.addEventListener('click', async () => {
         authMode='login'; renderAuthMode();
         throw new Error('Ese correo ya tiene cuenta. Escribe tu contraseña para entrar.');
       }
-      /* Normalmente el alta ya deja sesión. Si no, entramos con la
-         contraseña recién creada: nunca pedimos un código. */
       if(!(data && data.session)){
         const {error:e2}=await sb.auth.signInWithPassword({email,password:pass});
         if(e2) throw e2;
@@ -1869,57 +1069,51 @@ authSubmit.addEventListener('click', async () => {
 });
 
 let _session = null;
-
-
-async function refreshUI(){
-  /* "Mis modelos" vive siempre en el nav; lo único que cambia con la
-     sesión es el botón de entrar/salir. */
-  authBtn.textContent = _session && _session.user ? 'Salir' : 'Iniciar sesión';
+function refreshUI(){
+  authBtn.textContent = _session && _session.user ? 'Salir' : 'Entrar';
   atajosDeCliente();
 }
 
 /* ---- Atajos para clientes con modelo (8-sep-2026) ----
-   Solo para quien tiene sesión Y acceso vigente a un modelo: los CTA
-   de la landing que hoy llevan a los planes de ese modelo lo mandan
-   directo a su modelo. Sin sesión, o sin ese modelo, todo sigue igual
-   (a /producto.html?m=…). Lo decide /api/my-access, nunca el navegador. */
+   Solo para quien tiene sesión Y acceso vigente a un modelo: los
+   botones que llevan a los planes de ese modelo lo mandan directo a su
+   modelo. Sin sesión, o sin ese modelo, todo sigue igual. Lo decide
+   /api/my-access, nunca el navegador. */
 const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl' };
 const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
-let _atajosDe = null; // user_id con el que se pintaron los atajos
+let _acceso = null, _accesoDe = null;
 async function atajosDeCliente(){
   const links = [...document.querySelectorAll('a[href^="/producto.html?m="], a[data-plans-href]')];
   const uid = _session && _session.user ? _session.user.id : null;
   if(!uid){
-    /* sin sesión: restaurar los enlaces a planes si se habían cambiado */
-    links.forEach(a => { if(a.dataset.plansHref){ a.href = a.dataset.plansHref; if(a.dataset.plansText) a.textContent = a.dataset.plansText; } });
-    _atajosDe = null;
+    links.forEach(a => { if(a.dataset.plansHref){ a.href = a.dataset.plansHref; if(a.dataset.plansText) a.textContent = a.dataset.plansText; delete a.dataset.plansHref; delete a.dataset.plansText; } });
+    _acceso = null; _accesoDe = null;
     return;
   }
-  if(_atajosDe === uid) return;
-  let acc = null;
-  try{
-    const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
-    if(r.ok) acc = await r.json();
-  }catch(e){}
-  if(!acc) return;
-  _atajosDe = uid;
+  if(_accesoDe !== uid){
+    try{
+      const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + _session.access_token } });
+      if(r.ok){ _acceso = await r.json(); _accesoDe = uid; }
+    }catch(e){}
+  }
+  if(!_acceso) return;
   links.forEach(a => {
     const href = a.dataset.plansHref || a.getAttribute('href');
     const m = /[?&]m=([a-z]+)/.exec(href);
     if(!m || !MODEL_PAGE[m[1]]) return;
     a.dataset.plansHref = href;
     if(!a.dataset.plansText) a.dataset.plansText = a.textContent;
-    if(acc[m[1]]){
+    if(_acceso[m[1]]){
       a.href = MODEL_PAGE[m[1]];
-      if(a.classList.contains('btn-ghost')) a.textContent = 'Abrir mi modelo ' + MODEL_NAME[m[1]];
+      if(a.classList.contains('cta')) a.textContent = 'Abrir mi modelo ' + MODEL_NAME[m[1]];
     } else {
       a.href = href; a.textContent = a.dataset.plansText;
     }
   });
 }
-
-
-
+/* Al cambiar de pestaña, el botón único cambia de liga y hay que volver
+   a decidir si ese cliente ya la tiene. */
+window.recalculaAtajos = () => { if(_session) atajosDeCliente(); };
 
 function startAuth(){
   if(!sb && !initSupabase()){ setTimeout(startAuth, 150); return; }
@@ -1927,19 +1121,11 @@ function startAuth(){
 }
 startAuth();
 
-document.addEventListener('click', async (ev) => {
-  const authClick = ev.target.closest('#authBtn');
-  if(authClick){
-    if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
-    return;
-  }
+authBtn.addEventListener('click', async () => {
+  if(_session){ if(sb) await sb.auth.signOut(); } else { openAuth('login'); }
 });
 
-window.addEventListener('pageshow', (e) => {
-  if(e.persisted) window.location.reload();
-});
-
-loadConfig().catch(() => {});
+window.addEventListener('pageshow', (e) => { if(e.persisted) window.location.reload(); });
 </script>
 </body>
 </html>
