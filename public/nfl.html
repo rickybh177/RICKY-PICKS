@@ -143,7 +143,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
   .det-row:last-child { border-bottom: none; }
   .det-row .dl { font-weight: 500; }
-  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.76rem; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: normal; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.76rem;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  /* Veredicto en cada fila de la tabla completa (mismo chip, más chico). */
+  .det-row .vchip { font-size: 0.55rem; padding: 4px 8px; }
+  .det-note { padding: 10px 14px; font-size: 0.74rem; color: var(--faint); line-height: 1.45; border-top: 1px solid var(--line); }
+  /* En el celular cada fila se apila: etiqueta arriba, dato y veredicto abajo. */
+  @media (max-width: 600px) {
+    .det-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .det-row .dv { width: 100%; justify-content: space-between; text-align: left; }
+  }
   .det-row .dv b { color: var(--bet); }
   .dist { margin-top: 12px; }
   .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
@@ -488,6 +497,16 @@ function moreDetails(g) {
   const fo = m.fair_odds || {};
   const mo = m.market_odds;
   const px = v => (v != null ? ' (' + am(v) + ')' : '');
+  const sv = k => (g.verdicts || []).find(x => x.market === k) || null;
+  const vml = sv('moneyline'), vsp = sv('spread'), vto = sv('total'), vh1 = sv('h1_total');
+  /* ML: el lado que eligió el servidor lleva su veredicto; el otro, por
+     probabilidad con tope MAYBE (no es el de mejor valor). */
+  const mlV = (team, p) => (vml && vml.label.indexOf(team) >= 0) ? vml.verdict : barV(p, 1.01, 0.60);
+  const ttV = tt => { const p = tt.over >= 0.5 ? tt.over : 1 - tt.over; return [barV(p, 0.60, 0.55), tt.over >= 0.5 ? 'Más' : 'Menos']; };
+  const tth = ttV(m.team_totals.home), tta = ttV(m.team_totals.away);
+  const h1p = m.first_half.home_win >= 0.5 ? m.first_half.home_win : 1 - m.first_half.home_win;
+  const h1side = m.first_half.home_win >= 0.5 ? g.home.name : g.away.name;
+  const h1t = m.first_half.over >= 0.5 ? ['Más', m.first_half.over] : ['Menos', 1 - m.first_half.over];
   const marketRows = mo
     ? '<div class="det-h">Momios del mercado (' + esc(mo.source || '') + ')</div>' +
       (mo.spread != null
@@ -500,18 +519,25 @@ function moreDetails(g) {
   const rows =
     marketRows +
     '<div class="det-h">Mercados de equipo (modelo)</div>' +
-    det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home)) +
-    det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away)) +
-    det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line) +
-    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total) +
-    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean) +
-    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean) +
-    det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win)) +
-    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total);
+    det('Ganan los ' + g.home.name + ' (ML)', pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home), mlV(g.home.name, m.moneyline.home)) +
+    det('Ganan los ' + g.away.name + ' (ML)', pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away), mlV(g.away.name, m.moneyline.away)) +
+    det('Spread ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line + (vsp ? ' · modelo: ' + esc(vsp.label) : ''), vsp ? vsp.verdict : null) +
+    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total + (vto ? ' · modelo: ' + esc(vto.label) : ''), vto ? vto.verdict : null) +
+    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean + ' · modelo: ' + tth[1], tth[0]) +
+    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean + ' · modelo: ' + tta[1], tta[0]) +
+    det('1ª mitad: gana ' + g.home.name, pct1(m.first_half.home_win) + ' · modelo: ' + esc(h1side), barV(h1p, 0.62, 0.56)) +
+    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total + ' · modelo: ' + h1t[0], vh1 ? vh1.verdict : barV(h1t[1], 0.58, 0.54));
   return '<details class="more"><summary>Todos los mercados y props</summary>' +
-    '<div class="det-rows">' + rows + '</div>' + propsBlock(g) + distChart(m, g) + '</details>';
+    '<div class="det-rows">' + rows + DET_NOTE + '</div>' + propsBlock(g) + distChart(m, g) + '</details>';
 }
-function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
+/* Veredicto en cada fila de la tabla completa. Donde el servidor ya
+   calculó uno con momio publicado se usa ese; donde no hay precio, la
+   probabilidad del modelo contra una barra (la misma idea que usa el
+   servidor para los mercados sin momio). */
+const barV = (p, bet, maybe) => (p == null ? null : p >= bet ? 'bet' : p >= maybe ? 'maybe' : 'skip');
+const chipV = v => (v ? '<span class="vchip ' + v + '">' + VCHIP[v] + '</span>' : '');
+function det(l, v, verdict) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv"><span>' + v + '</span>' + chipV(verdict) + '</span></div>'; }
+const DET_NOTE = '<div class="det-note">Donde no hay momio publicado, el veredicto va por la probabilidad del modelo: compáralo con lo que paga tu casa.</div>';
 
 /* ---- props de jugador: bajo demanda (cuestan momios), por juego ---- */
 function propsBlock(g) {

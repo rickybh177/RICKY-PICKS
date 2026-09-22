@@ -140,7 +140,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
   .det-row:last-child { border-bottom: none; }
   .det-row .dl { font-weight: 500; }
-  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.76rem; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: normal; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.76rem;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  /* Veredicto en cada fila de la tabla completa (mismo chip, más chico). */
+  .det-row .vchip { font-size: 0.55rem; padding: 4px 8px; }
+  .det-note { padding: 10px 14px; font-size: 0.74rem; color: var(--faint); line-height: 1.45; border-top: 1px solid var(--line); }
+  /* En el celular cada fila se apila: etiqueta arriba, dato y veredicto abajo. */
+  @media (max-width: 600px) {
+    .det-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .det-row .dv { width: 100%; justify-content: space-between; text-align: left; }
+  }
   .scores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; padding: 10px 14px 14px; }
   .score-cell { background: var(--g1); border: 1px solid var(--line); border-radius: 8px; text-align: center; padding: 8px 4px; }
   .score-cell b { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; display: block; }
@@ -648,7 +657,15 @@ function field(id, key, label, value) {
     '<input id="uo-' + id + '-' + key + '" inputmode="text" placeholder="-110" value="' + esc(value || '') + '"></div>';
 }
 
-function det(l, v) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv">' + v + '</span></div>'; }
+/* Veredicto en cada fila de la tabla completa. Donde el servidor ya
+   calculó uno con momio publicado se usa ese; donde no hay precio, la
+   probabilidad del modelo contra una barra (la misma idea que usa el
+   servidor para los mercados sin momio). */
+const barV = (p, bet, maybe) => (p == null ? null : p >= bet ? 'bet' : p >= maybe ? 'maybe' : 'skip');
+const chipV = v => (v ? '<span class="vchip ' + v + '">' + VCHIP[v] + '</span>' : '');
+function det(l, v, verdict) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv"><span>' + v + '</span>' + chipV(verdict) + '</span></div>'; }
+const DET_NOTE = '<div class="det-note">Donde no hay momio publicado, el veredicto va por la probabilidad del modelo: compáralo con lo que paga tu casa.</div>';
+const ev1x2 = (p, amOdd, mk) => evOf(p, amOdd, mk, EVP.x2);
 
 function moreDetails(g) {
   const m = g.markets;
@@ -656,36 +673,58 @@ function moreDetails(g) {
   const H = g.home.name, A = g.away.name;
   const ml = m.moneyline, fair = ml.fair || {};
   const mo = m.market_odds || {};
+  const sv = k => (g.verdicts || []).find(x => x.market === k) || null;
+  const v1 = sv('1x2'), vdc = sv('double_chance'), vt = sv('total'), vb = sv('btts');
   // momio real del mercado + el que calcula el modelo, lado a lado
   const vs = (mkt, fairAm) => (mkt != null ? 'mercado ' + am(mkt) + ' · ' : '') + 'modelo ' + am(fairAm);
+  /* 1X2: el lado que eligió el servidor lleva su veredicto; los otros
+     dos, EV con el momio publicado o barra si no lo hay. */
+  const has3 = mo.ml_home != null && mo.ml_draw != null && mo.ml_away != null;
+  const dv3 = has3 ? devigN([mo.ml_home, mo.ml_draw, mo.ml_away]) : [null, null, null];
+  const side1 = (label, p, amOdd, mk) => {
+    if (v1 && v1.label === label) return v1.verdict;
+    if (amOdd != null) { const r = ev1x2(p, amOdd, mk); return r ? r.verdict : 'skip'; }
+    return barV(p, 1.01, 0.52);
+  };
+  const dcV = (label, p) => (vdc && vdc.label === label) ? vdc.verdict : barV(p, 0.76, 0.70);
+  /* Totales: la línea que eligió el servidor lleva su veredicto (si
+     eligió "Menos", el "Más" de esa línea es SKIP); las demás, barra. */
+  const totV = t => {
+    if (vt && vt.line_txt && vt.line_txt.indexOf(' ' + t.line + ' ') >= 0) return vt.line_txt.charAt(0) === 'O' ? vt.verdict : 'skip';
+    return barV(t.over, 1.01, 0.575);
+  };
+  const best3 = (h, d, a) => { const arr = [[h, H], [d, 'empate'], [a, A]].sort((x, y) => (y[0] || 0) - (x[0] || 0))[0]; return arr; };
+  const ht = best3(m.first_half.home, m.first_half.draw, m.first_half.away);
+  const cSide = m.corners.over >= 0.5 ? 'Más' : 'Menos';
+  const cP = m.corners.over >= 0.5 ? m.corners.over : 1 - m.corners.over;
   let rows =
     '<div class="det-h">Resultado (momios: mercado vs modelo)</div>' +
-    det('Gana ' + H, pct1(ml.home) + ' · ' + vs(mo.ml_home, fair.home)) +
-    det('Empate', pct1(ml.draw) + ' · ' + vs(mo.ml_draw, fair.draw)) +
-    det('Gana ' + A, pct1(ml.away) + ' · ' + vs(mo.ml_away, fair.away)) +
-    det(H + ' o empate (1X)', pct1(m.double_chance.home_draw)) +
-    det(A + ' o empate (X2)', pct1(m.double_chance.away_draw)) +
-    det('No hay empate (12)', pct1(m.double_chance.home_away)) +
-    det('Empate no acción: ' + H, pct1(m.dnb.home)) +
+    det('Gana ' + H, pct1(ml.home) + ' · ' + vs(mo.ml_home, fair.home), side1('Gana ' + H, ml.home, mo.ml_home, dv3[0])) +
+    det('Empate', pct1(ml.draw) + ' · ' + vs(mo.ml_draw, fair.draw), side1('Empate', ml.draw, mo.ml_draw, dv3[1])) +
+    det('Gana ' + A, pct1(ml.away) + ' · ' + vs(mo.ml_away, fair.away), side1('Gana ' + A, ml.away, mo.ml_away, dv3[2])) +
+    det(H + ' o empate (1X)', pct1(m.double_chance.home_draw), dcV(H + ' o empate (1X)', m.double_chance.home_draw)) +
+    det(A + ' o empate (X2)', pct1(m.double_chance.away_draw), dcV(A + ' o empate (X2)', m.double_chance.away_draw)) +
+    det('No hay empate (12)', pct1(m.double_chance.home_away), barV(m.double_chance.home_away, 0.76, 0.70)) +
+    det('Empate no acción: ' + H, pct1(m.dnb.home), barV(m.dnb.home, 0.62, 0.56)) +
     (m.asian_handicap && m.asian_handicap.line != null
-      ? det('Hándicap ' + H + ' ' + (m.asian_handicap.line > 0 ? '+' : '') + m.asian_handicap.line, pct1(m.asian_handicap.home_cover) + ' cubre')
+      ? det('Hándicap ' + H + ' ' + (m.asian_handicap.line > 0 ? '+' : '') + m.asian_handicap.line, pct1(m.asian_handicap.home_cover) + ' cubre', barV(m.asian_handicap.home_cover, 0.58, 0.54))
       : '') +
     '<div class="det-h">Goles</div>' +
     (mo.total_line != null
-      ? det('Total del mercado O/U ' + mo.total_line, 'Más ' + am(mo.total_over) + ' · Menos ' + am(mo.total_under))
+      ? det('Total del mercado O/U ' + mo.total_line, 'Más ' + am(mo.total_over) + ' · Menos ' + am(mo.total_under) + (vt ? ' · modelo: ' + esc(vt.label) : ''), vt ? vt.verdict : null)
       : '') +
-    m.totals.map(t => det('Más de ' + t.line + ' goles', pct1(t.over))).join('') +
-    det('Ambos anotan', 'Sí ' + pct1(m.btts.yes) + ' · No ' + pct1(m.btts.no)) +
-    det('Goles de ' + H, 'esperado ' + m.team_totals.home.mean + ' · anota ' + pct1(m.team_totals.home.over_05) + ' · 2+ ' + pct1(m.team_totals.home.over_15)) +
-    det('Goles de ' + A, 'esperado ' + m.team_totals.away.mean + ' · anota ' + pct1(m.team_totals.away.over_05) + ' · 2+ ' + pct1(m.team_totals.away.over_15)) +
-    det('Portería en cero ' + H, pct1(m.clean_sheet.home)) +
-    det('Portería en cero ' + A, pct1(m.clean_sheet.away)) +
+    m.totals.map(t => det('Más de ' + t.line + ' goles', pct1(t.over), totV(t))).join('') +
+    det('Ambos anotan', 'Sí ' + pct1(m.btts.yes) + ' · No ' + pct1(m.btts.no) + (vb ? ' · modelo: ' + (vb.label.indexOf('SÍ') >= 0 ? 'sí' : 'no') : ''), vb ? vb.verdict : barV(Math.max(m.btts.yes, m.btts.no), 0.555, 0.535)) +
+    det('Anota ' + H, 'esperado ' + m.team_totals.home.mean + ' goles · anota ' + pct1(m.team_totals.home.over_05) + ' · 2+ ' + pct1(m.team_totals.home.over_15), barV(m.team_totals.home.over_05, 0.82, 0.75)) +
+    det('Anota ' + A, 'esperado ' + m.team_totals.away.mean + ' goles · anota ' + pct1(m.team_totals.away.over_05) + ' · 2+ ' + pct1(m.team_totals.away.over_15), barV(m.team_totals.away.over_05, 0.82, 0.75)) +
+    det('Portería en cero ' + H, pct1(m.clean_sheet.home), barV(m.clean_sheet.home, 0.58, 0.52)) +
+    det('Portería en cero ' + A, pct1(m.clean_sheet.away), barV(m.clean_sheet.away, 0.58, 0.52)) +
     '<div class="det-h">1ª mitad</div>' +
-    det('Al descanso: ' + H + ' / empate / ' + A, pct1(m.first_half.home) + ' / ' + pct1(m.first_half.draw) + ' / ' + pct1(m.first_half.away)) +
-    det('Gol antes del descanso (O 0.5)', pct1(m.first_half.over_05)) +
-    det('1ª mitad: más de 1.5 goles', pct1(m.first_half.over_15)) +
+    det('Al descanso: ' + H + ' / empate / ' + A, pct1(m.first_half.home) + ' / ' + pct1(m.first_half.draw) + ' / ' + pct1(m.first_half.away) + ' · modelo: ' + esc(ht[1]), barV(ht[0], 0.55, 0.48)) +
+    det('Gol antes del descanso (O 0.5)', pct1(m.first_half.over_05), barV(m.first_half.over_05, 0.80, 0.72)) +
+    det('1ª mitad: más de 1.5 goles', pct1(m.first_half.over_15), barV(m.first_half.over_15, 0.60, 0.55)) +
     '<div class="det-h">Córneres</div>' +
-    det('Total de córneres O/U ' + m.corners.line, 'Más ' + pct1(m.corners.over) + ' · modelo espera ' + m.corners.model_total);
+    det('Total de córneres O/U ' + m.corners.line, 'Más ' + pct1(m.corners.over) + ' · modelo espera ' + m.corners.model_total + ' · modelo: ' + cSide, barV(cP, 0.60, 0.55));
 
   const scores = (m.exact_scores || []).map(e =>
     '<div class="score-cell"><b>' + esc(e.score) + '</b><span>' + pct1(e.p) + '</span></div>'
@@ -694,7 +733,7 @@ function moreDetails(g) {
   return '<details class="more"><summary>Todos los mercados</summary>' +
     '<div class="det-rows">' + rows +
     '<div class="det-h">Marcadores más probables (' + esc(g.home.abbr) + '-' + esc(g.away.abbr) + ')</div>' +
-    '<div class="scores-grid">' + scores + '</div>' +
+    '<div class="scores-grid">' + scores + '</div>' + DET_NOTE +
     '</div>' + distChart(m, g) + '</details>';
 }
 

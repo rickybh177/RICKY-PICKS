@@ -144,7 +144,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
   .det-row:last-child { border-bottom: none; }
   .det-row .dl { font-weight: 500; }
-  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.76rem; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: normal; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.76rem;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  /* Veredicto en cada fila de la tabla completa (mismo chip, más chico). */
+  .det-row .vchip { font-size: 0.55rem; padding: 4px 8px; }
+  .det-note { padding: 10px 14px; font-size: 0.74rem; color: var(--faint); line-height: 1.45; border-top: 1px solid var(--line); }
+  /* En el celular cada fila se apila: etiqueta arriba, dato y veredicto abajo. */
+  @media (max-width: 600px) {
+    .det-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .det-row .dv { width: 100%; justify-content: space-between; text-align: left; }
+  }
   .dist { margin-top: 12px; }
   .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
   .dist svg { width: 100%; height: 50px; display: block; }
@@ -539,12 +548,18 @@ function lockedCard(g, i, day) {
   '</div>';
 }
 
+/* Veredicto en cada fila de la tabla completa: las filas de arriba ya
+   traen el del servidor; el hándicap a la línea real usa las mismas
+   barras del modelo (favorito −1.5: 0.46 · no favorito +1.5: 0.72;
+   PICK a +4 puntos, MAYBE a −3). */
+const chipV = v => (v ? '<span class="vchip ' + v + '">' + VCHIP[v] + '</span>' : '');
+const rlV = (p, point) => { const bar = point < 0 ? 0.46 : 0.72; return p == null ? null : p >= bar + 0.04 ? 'bet' : p >= bar - 0.03 ? 'maybe' : 'skip'; };
 function moreDetails(g) {
   const m = g.markets;
   if (!m) return '';
   const rows = (g.verdicts || []).map(v =>
     '<div class="det-row"><span class="dl">' + esc(v.label) + '</span>' +
-    '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
+    '<span class="dv"><span>' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span>' + chipV(v.verdict) + '</span></div>'
   ).join('');
   /* Handicap: con línea REAL del mercado se muestran los dos lados en
      esa línea exacta; sin mercado, el resumen ±1.5 del modelo. */
@@ -554,9 +569,9 @@ function moreDetails(g) {
     const fmtPt = p => (p > 0 ? '+' + p : '' + p);
     rlRows =
       '<div class="det-row"><span class="dl">' + esc(g.home.name) + ' ' + fmtPt(rlm.point) + '</span>' +
-      '<span class="dv">' + pct(rlm.home_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.home_cover) + '</span></div>' +
+      '<span class="dv"><span>' + pct(rlm.home_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.home_cover) + '</span>' + chipV(rlV(rlm.home_cover, rlm.point)) + '</span></div>' +
       '<div class="det-row"><span class="dl">' + esc(g.away.name) + ' ' + fmtPt(-rlm.point) + '</span>' +
-      '<span class="dv">' + pct(rlm.away_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.away_cover) + '</span></div>';
+      '<span class="dv"><span>' + pct(rlm.away_cover) + ' · MOMIO JUSTO ' + amOdds(rlm.away_cover) + '</span>' + chipV(rlV(rlm.away_cover, -rlm.point)) + '</span></div>';
   } else {
     // sin mercado el veredicto RL de arriba ya muestra el ±1.5 del modelo
     rlRows = '';
