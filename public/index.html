@@ -449,7 +449,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     </div>
 
 
-    <a class="cta" id="ctaHero" style="margin-top:22px" href="/producto.html?m=mx">Quiero el de mi liga</a>
+    <a class="cta" id="ctaHero" style="margin-top:22px" href="/producto.html?m=mx">Ver Liga MX</a>
     <p class="under" id="underHero">Sin contrato · Cancelas cuando quieras</p>
   </div>
 </section>
@@ -625,7 +625,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <h2 class="reveal">Hay uno así en cada partido.</h2>
     <p class="lede reveal" id="finalLede">El de hoy es gratis. Los de tu liga, con tu plan.</p>
-    <a class="cta reveal" href="/producto.html?m=mx" data-cta>Quiero el de mi liga</a>
+    <a class="cta reveal" href="/producto.html?m=mx" data-cta>Ver Liga MX</a>
   </div>
 </section>
 
@@ -647,7 +647,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <!-- Barra pegada abajo: el mismo botón del hero, cuando ese ya no se ve. -->
 <div class="sticky-cta" id="stickyCta">
-  <a class="cta" href="/producto.html?m=mx" data-cta>Quiero el de mi liga</a>
+  <a class="cta" href="/producto.html?m=mx" data-cta>Ver Liga MX</a>
 </div>
 
 <!-- AUTH MODAL -->
@@ -828,7 +828,7 @@ let ligaActual = 'mx';
        viendo. Los atajos de cliente (más abajo) se recalculan. */
     document.querySelectorAll('#ctaHero, [data-cta]').forEach(a => {
       a.href = '/producto.html?m=' + m;
-      a.textContent = 'Quiero ' + LIGAS[i].nombre;
+      a.textContent = 'Ver ' + LIGAS[i].nombre;
       delete a.dataset.plansHref; delete a.dataset.plansText;
     });
     if (window.recalculaAtajos) window.recalculaAtajos();
@@ -1105,7 +1105,6 @@ async function atajosDeCliente(){
     if(!a.dataset.plansText) a.dataset.plansText = a.textContent;
     if(_acceso[m[1]]){
       a.href = MODEL_PAGE[m[1]];
-      if(a.classList.contains('cta')) a.textContent = 'Abrir mi modelo ' + MODEL_NAME[m[1]];
     } else {
       a.href = href; a.textContent = a.dataset.plansText;
     }

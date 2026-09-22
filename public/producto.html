@@ -204,7 +204,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
   /* ---- DERECHA: la oferta ---- */
   .buy-head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
-    font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--ink); }
+    font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--ink); text-transform: uppercase; }
+  .buy-head h1 em { font-style: normal; color: var(--blue); display: block; }
   .buy-head .lede { color: #3d4759; font-size: 0.98rem; font-weight: 500; margin-top: 12px; max-width: 46ch; }
 
   .opts { margin-top: 24px; }
@@ -325,6 +326,9 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     padding: 18px 22px; border-radius: 14px; text-decoration: none;
     box-shadow: 0 16px 36px -16px rgba(29,78,216,0.75); transition: transform .15s ease, background .15s ease; }
   .go:hover { transform: translateY(-2px); background: var(--blue); }
+  /* El aviso nace vacío y oculto; sin esta regla el display:flex le
+     ganaba al atributo hidden y se veía una barra verde vacía. */
+  .founder-note[hidden] { display: none; }
   .founder-note { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 16px;
     background: linear-gradient(135deg, rgba(22,163,74,0.09), rgba(47,123,255,0.07));
     border: 1px solid rgba(22,163,74,0.28); border-radius: 14px; padding: 14px 16px; }
@@ -456,8 +460,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
       <!-- DERECHA: la oferta -->
       <header class="buy-head">
-        <h1 id="buyTitle">Elige tu plan</h1>
-        <p class="lede" id="buyLede">Todos los partidos, todos los mercados, con veredicto claro en cada uno.</p>
+        <!-- Copy visual, sin descripción: FREE PICK + la liga en azul. -->
+        <h1 id="buyTitle">Free pick</h1>
       </header>
       <section class="buy">
         <!-- Aviso de precio especial: fundador, o "ya tienes un modelo".
@@ -542,8 +546,7 @@ const cfg = MODELOS[M];
 
 /* nav + toggle + enlaces al modelo */
 document.title = 'Dattip — Plan ' + cfg.nombre;
-$('buyTitle').textContent = cfg.titulo;
-$('buyLede').textContent = cfg.lede;
+$('buyTitle').innerHTML = 'FREE PICK <em>' + esc(cfg.nombre).toUpperCase() + '</em>';
 $('verTodos').href = cfg.pagina;
 document.querySelectorAll('.model-toggle a').forEach(a => {
   if (a.dataset.m === M) {
