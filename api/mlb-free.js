@@ -19,21 +19,10 @@ function todayET() {
   }).format(new Date());
 }
 
-/* Prioridad de veredictos para la card del landing. */
-const ORDEN = { bet: 3, maybe: 2, skip: 1 };
-function mejorVeredicto(verdicts) {
-  const list = (verdicts || []).filter(v => v && v.label);
-  if (!list.length) return null;
-  /* Se ordena en vez de reducir: la versión con reduce tenía un error
-     de precedencia (`a || b > 0 ? x : y` agrupa como `(a || (b>0)) ? …`)
-     y devolvía el ÚLTIMO veredicto siempre que el orden difería — por
-     eso la card mostraba un MAYBE teniendo el juego un BET. */
-  const v = list.slice().sort((a, b) => {
-    const d = (ORDEN[b.verdict] || 0) - (ORDEN[a.verdict] || 0);
-    return d !== 0 ? d : (b.prob || 0) - (a.prob || 0);
-  })[0];
-  return { verdict: v.verdict, label: v.label, prob: v.prob };
-}
+/* El veredicto de la card lo decide lib/free-pick (veredictoDeCard):
+   el forzado por override si lo hay, y si no el mejor de los mercados
+   REGALABLES. Aquí vivía una copia del mismo criterio; se quitó para
+   que la regla de qué se puede regalar tenga un solo dueño. */
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -86,8 +75,8 @@ module.exports = async function handler(req, res) {
                veredicto por rango y probabilidad. */
             verdict: (() => {
               const ov = overrideDe(best, date);
-              const v = ov && ov.mercado ? veredictoDeCard(best.verdicts, ov.mercado) : null;
-              return v ? { verdict: v.verdict, label: v.label, prob: v.prob } : mejorVeredicto(best.verdicts);
+              const v = veredictoDeCard(best.verdicts, ov && ov.mercado);
+              return v ? { verdict: v.verdict, label: v.label, prob: v.prob } : null;
             })(),
             /* La cartelera COMPLETA del pick gratis: todos sus mercados
                con veredicto y la distribución de carreras. No es nada

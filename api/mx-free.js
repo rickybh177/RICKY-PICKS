@@ -34,10 +34,12 @@ module.exports = async function handler(req, res) {
         /* Si el partido está fijado a mano con `mercado`, la card enseña
            ESE veredicto; si no, el mejor BET (y de último, el primero). */
         const ov = overrideDe(best);
-        const topPick = (ov && ov.mercado ? veredictoDeCard(best.verdicts, ov.mercado) : null)
-          || (best.verdicts || []).filter(v => v.verdict === 'bet')
-            .sort((a, b) => (b.prob || 0) - (a.prob || 0))[0]
-          || (best.verdicts || [])[0] || null;
+        /* UNA sola función decide el veredicto de la card (lib/free-pick):
+           el forzado por override si lo hay, y si no el mejor de los
+           REGALABLES —la doble oportunidad queda fuera por regla—. Antes
+           este endpoint tenía su propia cadena y se habría saltado la
+           regla en cuanto cambiara la de allá. */
+        const topPick = veredictoDeCard(best.verdicts, ov && ov.mercado);
         value = {
           jornada: board.jornada,
           tournament: board.tournament,
