@@ -170,6 +170,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
 
   /* Mismos veredictos que la página del modelo. */
+  /* Props de jugador (3ª diapositiva de NFL) */
+  .props-load { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted);
+    padding: 18px 2px; text-align: center; letter-spacing: 0.04em; }
+  .props-mas { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--faint);
+    letter-spacing: 0.06em; text-transform: uppercase; text-align: center; margin-top: 10px; }
   .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px;
     background: var(--g0); border: 1px solid var(--line); border-radius: 12px; padding: 12px 15px; margin-bottom: 8px; }
   .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; min-width: 0; }
@@ -874,7 +879,7 @@ fetch('/api/plans-public', { cache: 'no-store' })
 
 /* Etiqueta visible del veredicto: la llave sigue siendo el dato que
    manda el modelo ('bet'); lo que lee el cliente es PICK. */
-const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP', lectura: 'LECTURA' };
 const chipTxt = v => VCHIP[v] || String(v || '').toUpperCase();
 
 /* ---- IZQUIERDA: el pick gratis, con los datos reales de cada modelo ---- */
@@ -917,7 +922,7 @@ function veredictosHTML(vs) {
 }
 
 /* ---- Diapositiva 3: momio justo de cada mercado + distribución ---- */
-function detalleHTML(vs, extra, dist) {
+function detalleInner(vs, extra, dist) {
   const filas = (vs || []).map(v =>
     '<div class="det-row"><span class="dl">' + esc(v.label) + '</span>' +
     '<span class="dv">' + pct(v.prob) + ' · MOMIO JUSTO ' + amOdds(v.prob) + '</span></div>'
@@ -926,9 +931,95 @@ function detalleHTML(vs, extra, dist) {
     '<div class="det-row"><span class="dl">' + esc(e[0]) + '</span><span class="dv">' + esc(e[1]) + '</span></div>'
   ).join('');
   if (!filas && !cola) return '';
-  return '<div class="slide"><div class="slide-lbl">Lo que dice el modelo, mercado por mercado</div>' +
-    '<div class="det-rows">' + filas + cola + '</div>' + distHTML(dist) + '</div>';
+  return '<div class="slide-lbl">Lo que dice el modelo, mercado por mercado</div>' +
+    '<div class="det-rows">' + filas + cola + '</div>' + distHTML(dist);
 }
+function detalleHTML(vs, extra, dist) {
+  const dentro = detalleInner(vs, extra, dist);
+  return dentro ? '<div class="slide">' + dentro + '</div>' : '';
+}
+
+/* ---- Diapositiva 3 de NFL: PROPS DE JUGADOR ----
+   En NFL la tercera vista no es el detalle de mercados sino los props
+   (decisión del dueño, 24-sep-2026): es lo que de verdad distingue al
+   modelo y lo que nadie más enseña gratis.
+
+   El endpoint deja pasar a INVITADOS, pero solo para el juego del pick
+   gratis de la semana, así que la página de compra puede pedirlo sin
+   sesión. Se pinta en dos tiempos —primero el esqueleto, luego los
+   datos— porque calcular props tarda: proyecta a cada titular contra
+   su historial y lo mide contra los momios de props del consenso. */
+function propsSlideHTML() {
+  return '<div class="slide" id="propsSlide">' +
+    '<div class="slide-lbl">Props de jugador · historial real contra la línea de las casas</div>' +
+    '<div class="det-rows" id="propsBody"><div class="props-load">Proyectando a cada titular…</div></div>' +
+  '</div>';
+}
+
+const PROPS_RANGO = { bet: 3, maybe: 2, lectura: 1, skip: 0 };
+async function cargaProps(ctx, respaldo) {
+  const caja = document.getElementById('propsBody');
+  if (!caja) return;
+  const fin = html => { caja.innerHTML = html; if (window.__midePick) window.__midePick(); };
+  let d = null;
+  try {
+    const q = new URLSearchParams({ game: ctx.game, st: ctx.st, week: ctx.week });
+    const r = await fetch('/api/nfl-props?' + q.toString());
+    if (r.ok) d = await r.json();
+  } catch (e) { /* sin conexión: abajo cae al respaldo */ }
+
+  const jug = (d && d.players) || [];
+  /* Si no hay props (pretemporada, juego sin líneas, error), la slide
+     no se queda vacía: enseña el detalle de mercados de siempre. */
+  if (!jug.length) {
+    const s = document.getElementById('propsSlide');
+    if (s && respaldo) { s.innerHTML = respaldo; if (window.__midePick) window.__midePick(); }
+    else fin('<div class="props-load">Los props de este juego se ven dentro del modelo.</div>');
+    return;
+  }
+
+  /* Del escaparate se enseña lo mejor, no todo: las filas con más
+     convicción primero y con la ventaja más alta dentro de cada grupo. */
+  const filas = [];
+  for (const p of jug) {
+    for (const mk of (p.markets || [])) {
+      if (!mk.line && mk.key !== 'anytime_td') continue;
+      filas.push({ p, mk, r: PROPS_RANGO[mk.verdict] != null ? PROPS_RANGO[mk.verdict] : 1, ev: mk.ev == null ? -9 : mk.ev });
+    }
+  }
+  filas.sort((a, b) => (b.r - a.r) || (b.ev - a.ev));
+  const TOPE = 6;
+  const muestra = filas.slice(0, TOPE);
+
+  const corto = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[0][0] + '. ' + t.slice(1).join(' ') : String(n || ''); };
+  const html = muestra.map(({ p, mk }) => {
+    const v = mk.verdict || 'lectura';
+    const bits = [];
+    if (mk.key === 'anytime_td') {
+      bits.push('modelo ' + pct(mk.p));
+      if (mk.line) bits.push('paga ' + amFmt(mk.line.price));
+    } else {
+      const m = mk.model || {};
+      if (m.mu != null) bits.push('modelo ' + m.mu + (m.sd ? ' ± ' + m.sd : ''));
+      if (mk.line) bits.push((mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
+      if (mk.p != null) bits.push(pct(mk.p));
+    }
+    if (mk.ev != null) bits.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+    return '<div class="vrow ' + esc(v) + '">' +
+      '<span class="vl">' + esc(corto(p.name)) + ' · ' + esc(mk.label) +
+        '<small>' + esc(bits.join(' · ')) + '</small></span>' +
+      '<span class="vchip ' + esc(v) + '">' + esc(chipTxt(v)) + '</span></div>';
+  }).join('');
+
+  const restantes = filas.length - muestra.length;
+  const pie = '<div class="props-mas">' +
+    (restantes > 0 ? restantes + ' mercados más de ' + jug.length + ' jugadores, dentro del modelo' : jug.length + ' jugadores proyectados') +
+    (d.odds_books ? ' · momios de ' + d.odds_books + ' casas' : '') + '</div>';
+  fin(html + pie);
+}
+
+/* Momio americano ya formateado (los props traen el precio del libro). */
+const amFmt = n => n == null ? '—' : (n > 0 ? '+' + n : String(n));
 
 /* Histograma de 10,000 simulaciones. Dos formas: 'conteo' (carreras,
    con la línea del total marcada) y 'margen' (centrado en el empate). */
@@ -1035,6 +1126,10 @@ function montaCarrusel(html) {
   }
   alineaFlechas();
   addEventListener('resize', () => { alineaFlechas(); ajustaAlto(); });
+  /* Los props llegan después de montar el carrusel y cambian el alto de
+     su diapositiva: esto deja que quien los pinte pida una re-medición
+     en vez de dejar la caja con el alto del esqueleto. */
+  window.__midePick = () => { alineaFlechas(); ajustaAlto(); };
   /* Los escudos y el histograma cambian de alto al terminar de cargar. */
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(ajustaAlto);
@@ -1069,7 +1164,7 @@ async function cargaPick() {
       return;
     }
     if (!r.ok || !d) throw new Error('sin datos');
-    let o = null, vs = [], extra = [], dist = null;
+    let o = null, vs = [], extra = [], dist = null, propsCtx = null;
 
     if (M === 'mlb' && d.game) {
       const g = d.game, v = g.verdict || null;
@@ -1142,6 +1237,10 @@ async function cargaPick() {
         if (mk.total) extra.push(['Puntos esperados', 'el modelo espera ' + mk.total.model_total + ' (línea ' + mk.total.line + ')']);
         dist = { tipo: 'margen', valores: mk.margin_dist || [], centro: 21,
           etiqueta: 'Cómo cae el margen (' + g.home.abbr + ' positivo) en 10,000 futuros' };
+        /* Con qué pedirle los props a /api/nfl-props. El endpoint solo
+           se los da a un invitado si es EXACTAMENTE el juego del pick
+           gratis de la semana, que es justo este. */
+        propsCtx = { game: g.id, st: d.seasontype || (g.preseason ? 1 : 2), week: d.week };
       }
     }
 
@@ -1151,9 +1250,12 @@ async function cargaPick() {
       return;
     }
     /* Tres vistas del MISMO pick gratis, las mismas que vería dentro del
-       modelo: la card, sus mercados con veredicto y el detalle con
-       momios justos y la distribución. */
-    montaCarrusel(cardHTML(o) + veredictosHTML(vs) + detalleHTML(vs, extra, dist));
+       modelo: la card, sus mercados con veredicto y —en NFL— los props
+       de jugador; en el resto, el detalle con momios justos y la
+       distribución. */
+    const tercera = propsCtx ? propsSlideHTML() : detalleHTML(vs, extra, dist);
+    montaCarrusel(cardHTML(o) + veredictosHTML(vs) + tercera);
+    if (propsCtx) cargaProps(propsCtx, detalleInner(vs, extra, dist));
   } catch (e) {
     montaCarrusel('<div class="slide"><div class="pk"><div class="pk-meta">Pick gratis</div>' +
       '<div class="pk-sel">No pudimos cargarlo. Míralo en el modelo.</div></div></div>');
