@@ -126,7 +126,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .player-h .pp { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--faint); font-weight: 600; }
   .prow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
   .prow .pl { font-weight: 600; font-size: 0.84rem; }
-  .prow .pl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 500; color: var(--faint); margin-top: 2px; }
+  /* pick · probabilidad · edge, separados por aire en vez de puntos:
+     se leen como tres datos y no como una frase */
+  .prow .pl small { display: flex; flex-wrap: wrap; gap: 2px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); margin-top: 3px; }
+  .prow .pl small span { white-space: nowrap; }
   .prow.skip .pl, .prow.lectura .pl { color: var(--muted); font-weight: 500; }
 
   .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--beta); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
@@ -568,21 +571,23 @@ async function loadProps(det) {
     html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos) + ' · ' + esc(p.team) + '</span>' +
       (p.questionable ? ' <span class="badge wx">Questionable</span>' : '') +
       (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
+    /* Bajo el nombre del jugador va SOLO: qué pick es, su
+       probabilidad y su edge. La proyección del modelo (mu ± sd) y el
+       momio se quitaron a propósito — eran cuatro números por renglón
+       y la gente no sabía cuál era el pick. */
     for (const mk of p.markets) {
-      const m = mk.model;
-      let proj, mercado, prob;
-      if (mk.key === 'anytime_td') {
-        proj = 'modelo ' + pct1(mk.p);
-        mercado = mk.line ? 'Sí ' + am(mk.line.price) : 'sin línea';
-        prob = '';
-      } else {
-        proj = 'modelo ' + m.mu + (m.sd ? ' ± ' + m.sd : '');
-        mercado = mk.line ? (mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point + ' (' + am(mk.line.price) + ')' : 'sin línea';
-        prob = mk.p != null ? ' · ' + pct1(mk.p) : '';
-      }
       const v = mk.verdict || 'lectura';
+      const partes = [];
+      if (mk.line) {
+        partes.push(mk.key === 'anytime_td' ? 'Sí anota TD'
+          : (mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
+        if (mk.p != null) partes.push(pct1(mk.p));
+        if (mk.ev != null) partes.push('edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+      } else {
+        partes.push('Aún sin línea publicada');
+      }
       html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
-        '<small>' + esc(proj) + ' · ' + esc(mercado) + prob + (mk.ev != null ? ' · edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%' : '') + '</small></span>' +
+        '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }
     html += '</div>';
