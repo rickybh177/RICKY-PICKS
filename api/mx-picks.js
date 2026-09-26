@@ -1,6 +1,6 @@
 /* ============================================================
    GET /api/mx-picks
-   Doctor Liga MX — corre el modelo en el servidor y devuelve SOLO
+   Modelo Liga MX — corre el modelo en el servidor y devuelve SOLO
    probabilidades/veredictos. FREEMIUM con paywall server-side
    (mismo esquema que /api/mlb-picks):
 

@@ -1,6 +1,6 @@
 /* ============================================================
    GET /api/mlb-picks?date=YYYY-MM-DD
-   Doctor MLB — corre el modelo en el servidor y devuelve SOLO
+   Modelo MLB — corre el modelo en el servidor y devuelve SOLO
    probabilidades/veredictos. FREEMIUM con paywall server-side:
 
    - Invitado (sin sesión o sin plan): el juego DESTACADO del día
