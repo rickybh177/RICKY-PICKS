@@ -1006,16 +1006,31 @@ async function cargaProps(ctx, respaldo) {
   const TOPE = 4;
   const MEZCLA = [['bet', 2], ['maybe', 1], ['skip', 1]];
   const porEv = (a, b) => b.ev - a.ev;
-  const usadas = new Set();
+  /* Y cada fila de un JUGADOR DISTINTO (pedido del dueño): cuatro filas
+     del mismo quarterback no enseñan que el modelo proyecta a toda la
+     plantilla. Se llena en orden —PICK, MAYBE, SKIP— y a cada paso se
+     salta a quien ya salió. */
+  const usadas = new Set(), jugadores = new Set();
+  const idDe = f => f.p.id || f.p.name;
   let muestra = [];
+  const toma = f => { muestra.push(f); usadas.add(f); jugadores.add(idDe(f)); };
   for (const [veredicto, n] of MEZCLA) {
     const grupo = filas.filter(f => f.v === veredicto);
     grupo.sort(veredicto === 'skip' ? (a, b) => a.ev - b.ev : porEv);
-    for (const f of grupo.slice(0, n)) { muestra.push(f); usadas.add(f); }
+    let k = 0;
+    for (const f of grupo) {
+      if (k >= n) break;
+      if (jugadores.has(idDe(f))) continue;
+      toma(f); k++;
+    }
   }
   if (muestra.length < TOPE) {
     const resto = filas.filter(f => !usadas.has(f)).sort((a, b) => (b.r - a.r) || porEv(a, b));
-    muestra = muestra.concat(resto.slice(0, TOPE - muestra.length));
+    for (const f of resto) {
+      if (muestra.length >= TOPE) break;
+      if (jugadores.has(idDe(f))) continue;
+      toma(f);
+    }
   }
   /* Se leen en orden de convicción: primero los PICK, al final el SKIP. */
   muestra.sort((a, b) => (b.r - a.r) || porEv(a, b));
