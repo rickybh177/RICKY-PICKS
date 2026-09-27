@@ -16,7 +16,7 @@ const { buildWeek } = require('../lib/nfl/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
 const { kvGet, kvPut } = require('../lib/odds/theoddsapi');
-const { pickBest, pickDeCard } = require('../lib/nfl/featured');
+const { pickBest, pickDeCard, forzado } = require('../lib/nfl/featured');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
@@ -52,6 +52,16 @@ async function resolveFeatured(value) {
   const kvKey = `nfl-free-${value.season}-st${value.seasontype}-w${value.week}`;
   const saved = await kvGet(kvKey);
   const savedGame = saved && saved.id ? games.find(g => g.id === saved.id) : null;
+  /* Un override manual manda por encima de todo, incluido el congelado
+     de abajo: es una decisión explícita del dueño ("ponlo YA") y no
+     debe esperar a que termine el partido que estaba destacado. Se
+     guarda en el KV para que /api/nfl-props le abra los props de ESTE
+     juego al invitado. Un override de un juego ya terminado no cuenta. */
+  const fijado = forzado(games.filter(g => g.state !== 'post'));
+  if (fijado) {
+    if (!savedGame || savedGame.id !== fijado.id) await kvPut(kvKey, { id: fijado.id });
+    return fijado.id;
+  }
   // en juego: congelado (aunque sus momios ya hayan desaparecido)
   if (savedGame && savedGame.state === 'in') return savedGame.id;
   const pool = games.filter(g => g.state === 'pre');
