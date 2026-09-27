@@ -208,6 +208,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .live-note a:hover { text-decoration: underline; }
 
   /* ---- DERECHA: la oferta ---- */
+  /* Título a la izquierda y la marca a la derecha, centrada con él. */
+  .buy-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo-head { font-size: 1.35rem; gap: 12px; flex: none; }
+  .logo-head .mark { width: 40px; height: 40px; border-radius: 11px; border-width: 2px; font-size: 0.8rem; }
   .buy-head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
     font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--ink); text-transform: uppercase; }
   .buy-head h1 em { font-style: normal; color: var(--blue); display: block; }
@@ -467,6 +471,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <header class="buy-head">
         <!-- Copy visual, sin descripción: FREE PICK + la liga en azul. -->
         <h1 id="buyTitle">Free pick</h1>
+        <!-- La marca otra vez, a la altura del título (pedido del dueño,
+             27-sep-2026). Es decorativa: el logo del menú ya lleva al
+             inicio, así que esta copia no es enlace ni la lee un lector
+             de pantalla. -->
+        <div class="logo logo-head" aria-hidden="true"><span class="mark">D·T</span><span class="brand-word">DAT<span class="tip">TIP</span></span></div>
       </header>
       <section class="buy">
         <!-- Aviso de precio especial: fundador, o "ya tienes un modelo".
@@ -978,18 +987,38 @@ async function cargaProps(ctx, respaldo) {
     return;
   }
 
-  /* Del escaparate se enseña lo mejor, no todo: las filas con más
-     convicción primero y con la ventaja más alta dentro de cada grupo. */
+  /* Del escaparate se enseñan CUATRO filas y VARIADAS: 2 PICK, 1 MAYBE
+     y 1 SKIP (regla del dueño, 27-sep-2026). Seis PICK seguidos se
+     veían a propaganda; con un SKIP a la vista se nota que el modelo
+     también dice "no", que es justo lo que lo separa de un tipster.
+
+     Los PICK y el MAYBE son los de más ventaja de su grupo. El SKIP es
+     el más claro (la ventaja más negativa): se enseña un "no" que se
+     entiende, no uno dudoso. Si a un grupo le faltan filas, el hueco se
+     llena con lo mejor que sobre, para que siempre salgan cuatro. */
   const filas = [];
   for (const p of jug) {
     for (const mk of (p.markets || [])) {
       if (!mk.line && mk.key !== 'anytime_td') continue;
-      filas.push({ p, mk, r: PROPS_RANGO[mk.verdict] != null ? PROPS_RANGO[mk.verdict] : 1, ev: mk.ev == null ? -9 : mk.ev });
+      filas.push({ p, mk, v: mk.verdict || 'lectura', r: PROPS_RANGO[mk.verdict] != null ? PROPS_RANGO[mk.verdict] : 1, ev: mk.ev == null ? -9 : mk.ev });
     }
   }
-  filas.sort((a, b) => (b.r - a.r) || (b.ev - a.ev));
-  const TOPE = 6;
-  const muestra = filas.slice(0, TOPE);
+  const TOPE = 4;
+  const MEZCLA = [['bet', 2], ['maybe', 1], ['skip', 1]];
+  const porEv = (a, b) => b.ev - a.ev;
+  const usadas = new Set();
+  let muestra = [];
+  for (const [veredicto, n] of MEZCLA) {
+    const grupo = filas.filter(f => f.v === veredicto);
+    grupo.sort(veredicto === 'skip' ? (a, b) => a.ev - b.ev : porEv);
+    for (const f of grupo.slice(0, n)) { muestra.push(f); usadas.add(f); }
+  }
+  if (muestra.length < TOPE) {
+    const resto = filas.filter(f => !usadas.has(f)).sort((a, b) => (b.r - a.r) || porEv(a, b));
+    muestra = muestra.concat(resto.slice(0, TOPE - muestra.length));
+  }
+  /* Se leen en orden de convicción: primero los PICK, al final el SKIP. */
+  muestra.sort((a, b) => (b.r - a.r) || porEv(a, b));
 
   const corto = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[0][0] + '. ' + t.slice(1).join(' ') : String(n || ''); };
   const html = muestra.map(({ p, mk }) => {
