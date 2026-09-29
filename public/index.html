@@ -24,7 +24,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:site_name" content="Dattip">
 <meta property="og:title" content="Dattip — La data le gana al tipster">
-<meta property="og:description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. Liga MX, NFL, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
+<meta property="og:description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, Liga MX, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dattip.com/">
 <meta property="og:image" content="https://dattip.com/og-dattip.png">
@@ -32,7 +32,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://dattip.com/og-dattip.png">
 <title>Dattip — La data le gana al tipster</title>
-<meta name="description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. Liga MX, NFL, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
+<meta name="description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, Liga MX, MLB, Premier, LaLiga, Bundesliga y Champions. Pick gratis cada jornada.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -422,8 +422,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <h1>Los datos <em>no mienten.</em></h1>
 
     <div class="model-toggle" role="tablist" aria-label="Cambiar de liga" id="ligaTabs">
-      <button type="button" role="tab" data-m="mx" aria-selected="false">⚽ Liga MX</button>
       <button type="button" role="tab" data-m="nfl" aria-selected="false">🏈 NFL</button>
+      <button type="button" role="tab" data-m="mx" aria-selected="false">⚽ Liga MX</button>
       <button type="button" role="tab" data-m="mlb" aria-selected="false">⚾ MLB</button>
       <button type="button" role="tab" data-m="epl" aria-selected="false">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</button>
       <button type="button" role="tab" data-m="laliga" aria-selected="false">🇪🇸 LaLiga</button>
@@ -449,7 +449,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     </div>
 
 
-    <a class="cta" id="ctaHero" style="margin-top:22px" href="/producto.html?m=mx">Ver Liga MX</a>
+    <a class="cta" id="ctaHero" style="margin-top:22px" href="/producto.html?m=nfl">Ver NFL</a>
     <p class="under" id="underHero">Sin contrato · Cancelas cuando quieras</p>
   </div>
 </section>
@@ -527,8 +527,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="reveal">
       <div class="li"><span class="n">01</span><div><b>Eliges tu liga</b><span>Cada liga tiene su propio modelo.</span>
         <div class="ligas">
-          <a class="liga" href="/producto.html?m=mx">Liga MX</a>
           <a class="liga" href="/producto.html?m=nfl">NFL</a>
+          <a class="liga" href="/producto.html?m=mx">Liga MX</a>
           <a class="liga" href="/producto.html?m=mlb">MLB</a>
           <a class="liga" href="/producto.html?m=epl">Premier</a>
           <a class="liga" href="/producto.html?m=laliga">LaLiga</a>
@@ -625,7 +625,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   <div class="wrap">
     <h2 class="reveal">Hay uno así en cada partido.</h2>
     <p class="lede reveal" id="finalLede">El de hoy es gratis. Los de tu liga, con tu plan.</p>
-    <a class="cta reveal" href="/producto.html?m=mx" data-cta>Ver Liga MX</a>
+    <a class="cta reveal" href="/producto.html?m=nfl" data-cta>Ver NFL</a>
   </div>
 </section>
 
@@ -647,7 +647,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <!-- Barra pegada abajo: el mismo botón del hero, cuando ese ya no se ve. -->
 <div class="sticky-cta" id="stickyCta">
-  <a class="cta" href="/producto.html?m=mx" data-cta>Ver Liga MX</a>
+  <a class="cta" href="/producto.html?m=nfl" data-cta>Ver NFL</a>
 </div>
 
 <!-- AUTH MODAL -->
@@ -693,15 +693,15 @@ document.documentElement.classList.add('js');
    pinta su diapositiva en cuanto llega.
    ============================================================ */
 const LIGAS = [
-  { m: 'mx',         nombre: 'Liga MX',        api: '/api/mx-free' },
   { m: 'nfl',        nombre: 'NFL',            api: '/api/nfl-picks?as=guest' },
+  { m: 'mx',         nombre: 'Liga MX',        api: '/api/mx-free' },
   { m: 'mlb',        nombre: 'MLB',            api: '/api/mlb-free' },
   { m: 'epl',        nombre: 'Premier League', api: '/api/euro-free?liga=epl', euro: true },
   { m: 'laliga',     nombre: 'LaLiga',         api: '/api/euro-free?liga=laliga', euro: true },
   { m: 'bundesliga', nombre: 'Bundesliga',     api: '/api/euro-free?liga=bundesliga', euro: true },
   { m: 'ucl',        nombre: 'Champions',      api: '/api/euro-free?liga=ucl', euro: true },
 ];
-let ligaActual = 'mx';
+let ligaActual = 'nfl';
 
 (function () {
   const E = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
