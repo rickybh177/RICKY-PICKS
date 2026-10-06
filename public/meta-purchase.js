@@ -6,8 +6,20 @@
    y dispara fbq('track','Purchase') UNA sola vez por compra.
 
    Cómo llega el plan, según la pasarela:
-     Mercado Pago -> ?pago=ok&plan=<id>   (back_urls en api/create-payment.js)
-     Stripe       -> ?pago=<id>           (redirect de checkout.html)
+     Mercado Pago -> ?pago=ok&plan=<id>&payment_id=<id>  (back_urls en
+                     api/create-payment.js; MP agrega payment_id solo)
+     Stripe       -> ?pago=<id>&tx=<session_id>[&cur=USD] (redirect de
+                     checkout.html)
+
+   Solo cuenta si la URL trae el identificador del cobro (tx /
+   payment_id). Sin él no hubo pago: un código canjeado también regresa
+   con ?pago=<plan> y antes se reportaba como compra a precio completo.
+   Cada cobro se cuenta UNA vez por navegador (localStorage, no
+   sessionStorage: abrir la misma URL otro día ya no vuelve a sumar) y
+   viaja como eventID para que Meta también lo deduplique.
+
+   Se carga SIN defer, en el <head>: mlb.html limpia la URL mientras
+   se arma la página y un script diferido ya no alcanzaba a leerla.
 
    El precio de aquí es SOLO para el reporte de Meta. El cobro real y
    el acceso los decide el servidor (lib/plans.js + el webhook); si
@@ -64,17 +76,23 @@
   var val = parseFloat(params.get('val'));
   if (!Number.isFinite(val) || val <= 0) val = PRICES[plan];
 
-  /* Una recarga de la página no debe volver a contar la compra. */
-  var mark = 'fbq_purchase:' + plan;
+  var tx = params.get('tx') || params.get('payment_id') || params.get('collection_id');
+  if (!tx || tx === 'null') return;
+
+  /* Stripe cobra también en dólares; Mercado Pago siempre en pesos. */
+  var currency = (params.get('cur') || '').toUpperCase() === 'USD' ? 'USD' : 'MXN';
+
+  /* Recargar, volver con "atrás" o abrir la URL guardada no recuenta. */
+  var mark = 'fbq_purchase:' + tx;
   try {
-    if (sessionStorage.getItem(mark)) return;
-    sessionStorage.setItem(mark, '1');
-  } catch (e) { /* sessionStorage bloqueado: preferimos contar a no contar */ }
+    if (localStorage.getItem(mark)) return;
+    localStorage.setItem(mark, '1');
+  } catch (e) { /* storage bloqueado: el eventID deduplica del lado de Meta */ }
 
   fbq('track', 'Purchase', {
     value: val,
-    currency: 'MXN',
+    currency: currency,
     content_ids: [plan],
     content_type: 'product',
-  });
+  }, { eventID: 'purchase_' + tx });
 })();

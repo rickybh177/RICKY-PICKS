@@ -759,6 +759,25 @@ function listaDe(m){
   return c ? c.price : (pr ? pr.mxn : null);
 }
 
+/* Meta Pixel — InitiateCheckout: alguien llegó a pagar un plan.
+   No cuenta el modo "entrar", el regreso de Stripe (session_id) ni
+   el de un pago fallido; una recarga en la misma sesión tampoco. */
+catalogoListo.then(() => {
+  if(typeof fbq !== 'function' || ENTRAR || !PLANS[planId]) return;
+  if(params.get('session_id') || payoErr) return;
+  const mark = 'fbq_ic:' + planId;
+  try {
+    if(sessionStorage.getItem(mark)) return;
+    sessionStorage.setItem(mark, '1');
+  } catch(e) {}
+  const val = Number(listaDe(MONEDA));
+  fbq('track', 'InitiateCheckout', Object.assign({
+    content_ids: [planId],
+    content_type: 'product',
+    num_items: 1,
+  }, val > 0 ? { value: val, currency: MONEDA } : {}));
+});
+
 /* Precio especial de ESTE cliente, en las dos monedas: { price, usd,
    nota } — lo pone el bloque de my-access. */
 let _oferta = null;
@@ -1445,9 +1464,12 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
       });
       const out = await res.json();
       if (out.ok) {
-        // `val` viaja para que el Pixel reporte el importe real cobrado.
+        // `val`/`cur` viajan para que el Pixel reporte el importe real
+        // cobrado; `tx` es el cobro (sin él, meta-purchase.js no cuenta).
         const dest = conQuery(modelUrl(out.plan), 'pago=' + out.plan
-          + (out.value > 0 ? '&val=' + out.value : ''));
+          + (out.value > 0 ? '&val=' + out.value : '')
+          + (out.currency === 'USD' ? '&cur=USD' : '')
+          + '&tx=' + encodeURIComponent(session_id));
         history.replaceState(null, '', dest);
         window.location.href = dest;
         return;
