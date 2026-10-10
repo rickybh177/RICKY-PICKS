@@ -2,9 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/*.js": {
-      "maxDuration": 60
-    },
-    "api/ig-daily.js": {
       "maxDuration": 300
     }
   },
@@ -17,7 +14,12 @@
   "redirects": [
     {
       "source": "/:ruta((?!api/).*)",
-      "has": [{ "type": "host", "value": "rickypicks.com.mx" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "rickypicks.com.mx"
+        }
+      ],
       "destination": "https://dattip.com/:ruta",
       "permanent": true
     }
