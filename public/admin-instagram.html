@@ -363,7 +363,16 @@ function initSb(){
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+/* El JWT de Supabase vive una hora: se renueva antes de cada llamada
+   para que el panel no se quede en "Acceso no autorizado" tras un rato. */
+async function freshTok(){
+  try{
+    if(sb){ const {data} = await sb.auth.getSession(); if(data && data.session) TOK = data.session.access_token; }
+  }catch{}
+  return TOK;
+}
 async function api(action, opts){
+  await freshTok();
   const url = '/api/ig-admin?action=' + encodeURIComponent(action) + (opts && opts.qs ? '&' + opts.qs : '');
   const res = await fetch(url, {
     method: opts && opts.body ? 'POST' : 'GET',
@@ -606,6 +615,7 @@ $('commentsRefresh').addEventListener('click', loadComments);
 
 /* ================= POST DIARIO ================= */
 async function apiDaily(action, body){
+  await freshTok();
   const res = await fetch('/api/ig-daily?action=' + encodeURIComponent(action), {
     method: body ? 'POST' : 'GET',
     headers: Object.assign({ 'Authorization': 'Bearer ' + TOK }, body ? {'Content-Type':'application/json'} : {}),
