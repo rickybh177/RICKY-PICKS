@@ -112,7 +112,7 @@ post manual del 27-sep-2026 (Eagles @ Bears):
    cambiar desde el panel). La regla de respuesta en ig_rules debe reaccionar a esa palabra.
 
 Caption: picks del día siguiente + "Comenta MODELO" + **5 hashtags máximo** (sportsbetting,
-picks, uno por liga, relleno con pronosticos/apuestas/deportes).
+picks, uno por liga, relleno con pronosticos/parlay/deportes).
 
 Reglas:
 - Los datos salen de los **mismos endpoints públicos** que pinta el landing (`/api/mx-free`,
