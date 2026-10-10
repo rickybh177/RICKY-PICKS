@@ -99,7 +99,7 @@ pasa a la primera.
 ## Post diario de free picks (`/api/ig-daily`)
 
 Cada día a las **9:00 CDMX** (cron de Vercel, `0 15 * * *` UTC, en `vercel.json`) se publica
-un **carrusel** con el pick gratis de cada liga que juega hoy o mañana, con el formato del
+un **carrusel** con el pick gratis de cada liga que juega **mañana** (el post sale siempre un día antes del partido), con el formato del
 post manual del 27-sep-2026 (Eagles @ Bears):
 
 1. **Portada** "FREE PICK(S)": escudos sobre los colores de cada equipo + insignia de la liga.
@@ -111,11 +111,14 @@ post manual del 27-sep-2026 (Eagles @ Bears):
 5. **COMENTA MODELO** para analizar todos los partidos (siempre `MODELO`; se puede
    cambiar desde el panel). La regla de respuesta en ig_rules debe reaccionar a esa palabra.
 
+Caption: picks del día siguiente + "Comenta MODELO" + **5 hashtags máximo** (sportsbetting,
+picks, uno por liga, relleno con pronosticos/apuestas/deportes).
+
 Reglas:
 - Los datos salen de los **mismos endpoints públicos** que pinta el landing (`/api/mx-free`,
   `/api/euro-free`, `/api/mlb-free`, `/api/nfl-picks` como invitado): overrides y clavado
   del KV incluidos. Lo que enseña el post es lo que ve quien entra a dattip.com.
-- Entra una liga si su pick gratis **no ha empezado y arranca en las próximas 40 h**.
+- Entra una liga si su pick gratis **se juega mañana** (fecha de CDMX). Lo de hoy ya no se publica; lo de pasado mañana saldrá mañana.
 - **Un partido se publica una sola vez** (registro en el KV `ig-daily-posted`, 45 días).
 - Cupo de Instagram: 10 láminas. Orden del landing (NFL, Liga MX, Champions, MLB, Premier,
   LaLiga, Bundesliga); los props NFL se quitan primero si no caben.
