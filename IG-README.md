@@ -29,7 +29,8 @@ Instagram Login").
 3. En el dashboard de la app, agrega el producto **Instagram** → "API setup with Instagram login".
 4. En **Generate access tokens**: agrega tu cuenta de Instagram y genera el token.
    Autoriza los permisos `instagram_business_basic`,
-   `instagram_business_manage_messages`, `instagram_business_manage_comments`.
+   `instagram_business_manage_messages`, `instagram_business_manage_comments`
+   y **`instagram_business_content_publish`** (este último es el del post diario).
    Copia el **token de larga duración** (dura 60 días).
 
 > En modo desarrollo la app solo funciona con tu propia cuenta — exactamente lo que
@@ -46,6 +47,7 @@ Supabase → SQL Editor → pegar y correr `scripts/ig-schema.sql`.
 | `IG_ACCESS_TOKEN` | El token de larga duración del paso 2 |
 | `IG_VERIFY_TOKEN` | Un string inventado por ti (p. ej. `ricky-ig-2026-xyz`) |
 | `IG_ID` | (Opcional) id numérico de la cuenta; si falta se resuelve solo |
+| `CRON_SECRET` | Cualquier string largo. Vercel lo manda solo al disparar el cron del post diario; sin él, `/api/ig-daily` rechaza al cron |
 
 Después de agregarlas: **Redeploy**.
 
@@ -53,7 +55,7 @@ Después de agregarlas: **Redeploy**.
 
 En la app de Meta → producto Instagram → **Set up webhooks**:
 
-- **Callback URL:** `https://rickypicks.com.mx/api/ig-webhook`
+- **Callback URL:** `https://dattip.com/api/ig-webhook`
 - **Verify token:** el mismo string de `IG_VERIFY_TOKEN`
 - Suscribirse a los campos: **`messages`** y **`comments`**
 
@@ -75,9 +77,11 @@ pasa a la primera.
   comentario es un **private reply**: 1 por comentario, dentro de 7 días.
 - **Ventana de 24 h**: tras el último mensaje del usuario tienes 24 h para responder
   libremente. Pasada la ventana, Instagram rechaza el envío (el inbox lo indica).
-- **El token dura 60 días.** Renovarlo antes de que venza:
-  `GET https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=EL_TOKEN`
-  y actualizar `IG_ACCESS_TOKEN` en Vercel. (Se puede automatizar con un cron después.)
+- **El token dura 60 días.** El post diario lo **refresca solo cada 7 días** y guarda el
+  vigente en el KV (`ig-token`, bucket `odds-cache`); `IG_ACCESS_TOKEN` en Vercel es solo
+  el de arranque. Si pegas un token nuevo en Vercel, ese vuelve a mandar. Renovación a mano:
+  botón "refresh-token" vía `POST /api/ig-daily {action:'refresh-token'}` o
+  `GET https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=EL_TOKEN`.
 
 ## Seguridad
 
@@ -89,6 +93,49 @@ pasa a la primera.
 - Las tablas `ig_*` tienen RLS activado sin políticas: solo el backend (service role)
   puede tocarlas.
 - `/api/ig-admin` exige sesión de Supabase del correo admin.
+
+---
+
+## Post diario de free picks (`/api/ig-daily`)
+
+Cada día a las **9:00 CDMX** (cron de Vercel, `0 15 * * *` UTC, en `vercel.json`) se publica
+un **carrusel** con el pick gratis de cada liga que juega hoy o mañana, con el formato del
+post manual del 27-sep-2026 (Eagles @ Bears):
+
+1. **Portada** "FREE PICK(S)": escudos sobre los colores de cada equipo + insignia de la liga.
+   Con una sola liga es la réplica exacta del post; con varias se apilan las franjas.
+2. **PICK PRINCIPAL** por liga: la card oscura del landing (fecha, equipos, probabilidades,
+   barra, chip PICK/MAYBE/SKIP, estadio).
+3. **PICKS ALTERNATIVOS** por liga: todos los mercados con su veredicto, probabilidad y edge.
+4. **PROPS JUGADOR** (solo NFL, si cabe): los dos jugadores con más que decir.
+5. **COMENTA MODELO** para analizar todos los partidos (siempre `MODELO`; se puede
+   cambiar desde el panel). La regla de respuesta en ig_rules debe reaccionar a esa palabra.
+
+Reglas:
+- Los datos salen de los **mismos endpoints públicos** que pinta el landing (`/api/mx-free`,
+  `/api/euro-free`, `/api/mlb-free`, `/api/nfl-picks` como invitado): overrides y clavado
+  del KV incluidos. Lo que enseña el post es lo que ve quien entra a dattip.com.
+- Entra una liga si su pick gratis **no ha empezado y arranca en las próximas 40 h**.
+- **Un partido se publica una sola vez** (registro en el KV `ig-daily-posted`, 45 días).
+- Cupo de Instagram: 10 láminas. Orden del landing (NFL, Liga MX, Champions, MLB, Premier,
+  LaLiga, Bundesliga); los props NFL se quitan primero si no caben.
+- Si no hay nada que publicar, no publica (queda en la bitácora).
+- Las láminas se dibujan en la lambda (satori + sharp, fuentes en `lib/ig/fonts/`) y se
+  suben al bucket público `ig-media` de Supabase Storage (se crea solo); Instagram las
+  descarga de ahí. Carpeta `daily/<fecha>/` lo publicado, `preview/<fecha>/` las vistas previas.
+- Candado de 10 min contra corridas dobles (Vercel reintenta crons).
+
+Panel: `/admin-instagram.html` → pestaña **Post diario**: estado (token, cron, pausa, último
+post), **Vista previa de hoy** (arma y enseña las láminas y el caption sin publicar),
+**Publicar ahora**, pausa, palabra clave y bitácora.
+
+Puesta en marcha (una vez): el token del paso 2 con `instagram_business_content_publish`,
+`CRON_SECRET` en Vercel y redeploy. Probar con "Vista previa de hoy" y luego "Publicar ahora".
+El cron solo corre en producción (dominio principal), no en previews.
+
+Archivos: `api/ig-daily.js` (cron + acciones del panel), `lib/ig/plan.js` (qué ligas entran,
+láminas y caption), `lib/ig/render.js` (dibujo de las láminas), `lib/ig/publish.js`
+(Storage + Content Publishing API + registro en KV).
 
 ## Archivos
 

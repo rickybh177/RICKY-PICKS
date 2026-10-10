@@ -81,6 +81,14 @@
   .refresh-btn.primary { background: var(--blue-bright); border-color: var(--blue-bright); color: var(--white); }
   .refresh-btn.primary:hover { background: var(--blue); color: var(--white); }
 
+  /* ---- post diario ---- */
+  .daily-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 14px 0 18px; }
+  .daily-grid img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); }
+  .daily-caption { white-space: pre-wrap; font-size: 0.86rem; line-height: 1.5; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+  .daily-cfg { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; font-size: 0.86rem; }
+  .daily-cfg input { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; padding: 6px 10px; border: 1.5px solid var(--line); border-radius: 8px; width: 150px; text-transform: uppercase; }
+  .daily-note { color: var(--muted); font-size: 0.8rem; margin: -8px 0 16px; }
+  .ok-dot { color: #1a9a52; } .bad-dot { color: #d93a3a; }
   .table-wrap { background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
   .data-table { width: 100%; border-collapse: collapse; }
   .data-table thead th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--paper); font-weight: 500; white-space: nowrap; }
@@ -214,6 +222,7 @@
       <div class="main-tab active" data-tab="rules">Automatizaciones</div>
       <div class="main-tab" data-tab="inbox">Inbox <span class="unread-pill" id="unreadPill"></span></div>
       <div class="main-tab" data-tab="comments">Comentarios</div>
+      <div class="main-tab" data-tab="daily">Post diario</div>
     </div>
 
     <!-- ===== AUTOMATIZACIONES ===== -->
@@ -304,6 +313,32 @@
         <table class="data-table">
           <thead><tr><th>Usuario</th><th>Comentario</th><th>Acciones</th><th>Fecha</th></tr></thead>
           <tbody id="commentsBody"><tr><td colspan="4" class="empty-state">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== POST DIARIO (free picks) ===== -->
+    <div class="tab-panel" id="panel-daily">
+      <div class="toolbar">
+        <h2>Post diario de free picks</h2>
+        <button class="refresh-btn" id="dailyRefresh">↻ Actualizar</button>
+        <button class="refresh-btn" id="dailyPreview">Vista previa de hoy</button>
+        <button class="refresh-btn primary" id="dailyPublish">Publicar ahora</button>
+      </div>
+      <p class="daily-note">Cada día a las 9:00 (CDMX) se publica un carrusel con el pick gratis de cada liga que juega hoy o mañana — el mismo que enseña dattip.com. Un partido nunca se publica dos veces. Si ese día ya hiciste el post a mano con ese partido, publícalo desde aquí primero o pausa el automático.</p>
+      <div class="conn-bar" id="dailyBar"><span id="dailyBarText">Cargando estado…</span></div>
+      <div class="daily-cfg">
+        <label><input type="checkbox" id="dailyPaused"> Pausar el post automático</label>
+        <span style="color:var(--muted)">·</span>
+        <label>Palabra para comentar <input id="dailyKeyword" placeholder="MODELO"></label>
+        <button class="refresh-btn" id="dailySaveCfg">Guardar</button>
+        <span id="dailyCfgMsg" style="color:var(--muted)"></span>
+      </div>
+      <div id="dailyPreviewBox"></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Cuándo</th><th>Resultado</th><th>Detalle</th><th>Modo</th></tr></thead>
+          <tbody id="dailyLog"><tr><td colspan="4" class="empty-state">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -568,6 +603,76 @@ async function loadComments(){
 }
 $('commentsRefresh').addEventListener('click', loadComments);
 
+
+/* ================= POST DIARIO ================= */
+async function apiDaily(action, body){
+  const res = await fetch('/api/ig-daily?action=' + encodeURIComponent(action), {
+    method: body ? 'POST' : 'GET',
+    headers: Object.assign({ 'Authorization': 'Bearer ' + TOK }, body ? {'Content-Type':'application/json'} : {}),
+    body: body ? JSON.stringify(Object.assign({action}, body)) : undefined,
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || ('Error ' + res.status));
+  return data;
+}
+async function loadDaily(){
+  try{
+    const d = await apiDaily('status');
+    const c = d.config || {};
+    $('dailyPaused').checked = !!c.paused;
+    $('dailyKeyword').value = c.keyword || '';
+    const ultimo = (d.log||[]).find(l=>l.ok && l.media_id);
+    const tok = d.token && d.token.ok
+      ? '<span class="ok-dot">●</span> Token OK' + (d.token.expires_at ? ' (vence ' + new Date(d.token.expires_at).toLocaleDateString('es-MX') + ')' : ' (se refresca solo)')
+      : '<span class="bad-dot">●</span> Sin token de Instagram';
+    const cron = d.cron === 'configurado' ? '<span class="ok-dot">●</span> Cron activo' : '<span class="bad-dot">●</span> Falta CRON_SECRET en Vercel';
+    $('dailyBarText').innerHTML = tok + ' &nbsp;·&nbsp; ' + cron + ' &nbsp;·&nbsp; ' + (c.paused ? '<b style="color:#d93a3a">PAUSADO</b>' : '<b>Automático</b>') +
+      (ultimo ? ' &nbsp;·&nbsp; Último post: ' + fmtTime(ultimo.at) + (ultimo.permalink ? ' <a href="'+esc(ultimo.permalink)+'" target="_blank">ver</a>' : '') : ' &nbsp;·&nbsp; Aún no se ha publicado nada');
+    const log = d.log || [];
+    $('dailyLog').innerHTML = log.length ? log.map(l=>`<tr>
+      <td class="date-cell">${fmtTime(l.at)}</td>
+      <td>${l.ok ? (l.skipped ? '<span style="color:var(--muted)">Sin publicar · '+esc(l.skipped)+'</span>' : '<span class="ok-dot">Publicado</span>') : '<span class="bad-dot">Error</span>'}</td>
+      <td>${l.error ? esc(l.error) : (l.entradas||[]).map(e=>'<span class="kw-badge">'+esc(e)+'</span>').join('') + (l.permalink ? ' <a href="'+esc(l.permalink)+'" target="_blank">abrir</a>' : '') + (l.saltadas ? '<div style="color:var(--muted);font-size:.78rem">'+esc(l.saltadas.map(x=>x.liga+': '+x.motivo).join(' · '))+'</div>' : '')}</td>
+      <td>${esc(l.modo||'')}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">Todavía no hay corridas.</td></tr>';
+  }catch(e){
+    $('dailyBarText').textContent = e.message;
+  }
+}
+$('dailyRefresh').addEventListener('click', loadDaily);
+$('dailySaveCfg').addEventListener('click', async ()=>{
+  try{
+    await apiDaily('config', { paused: $('dailyPaused').checked, keyword: $('dailyKeyword').value });
+    $('dailyCfgMsg').textContent = 'Guardado.'; setTimeout(()=>{ $('dailyCfgMsg').textContent=''; }, 2500);
+    loadDaily();
+  }catch(e){ $('dailyCfgMsg').textContent = e.message; }
+});
+$('dailyPreview').addEventListener('click', async ()=>{
+  const box = $('dailyPreviewBox');
+  box.innerHTML = '<div class="empty-state">Armando las láminas de hoy… corre los modelos de las 7 ligas, puede tardar 1-2 minutos.</div>';
+  $('dailyPreview').disabled = true;
+  try{
+    const d = await apiDaily('preview');
+    if(d.vacio){
+      box.innerHTML = '<div class="empty-state">Hoy no hay nada que publicar.<br><small>' + esc((d.saltadas||[]).map(x=>x.liga+': '+x.motivo).join(' · ')) + '</small></div>';
+    }else{
+      box.innerHTML = '<div class="daily-grid">' + d.urls.map(u=>'<a href="'+esc(u)+'" target="_blank"><img src="'+esc(u)+'" alt=""></a>').join('') + '</div>' +
+        '<div class="daily-caption">' + esc(d.caption) + '</div>' +
+        ((d.saltadas||[]).length ? '<p class="daily-note">Se saltan: ' + esc(d.saltadas.map(x=>x.liga+' ('+x.motivo+')').join(', ')) + '</p>' : '');
+    }
+  }catch(e){ box.innerHTML = '<div class="empty-state">'+esc(e.message)+'</div>'; }
+  $('dailyPreview').disabled = false;
+});
+$('dailyPublish').addEventListener('click', async ()=>{
+  if(!confirm('¿Publicar ahora en Instagram el carrusel de hoy? (Se publica tal cual lo arma el modelo en este momento.)')) return;
+  $('dailyPublish').disabled = true; $('dailyPublish').textContent = 'Publicando…';
+  try{
+    const d = await apiDaily('publish', {});
+    alert(d.skipped ? 'No se publicó: ' + d.skipped : 'Publicado ✓' + (d.permalink ? '\n' + d.permalink : ''));
+  }catch(e){ alert('Error: ' + e.message); }
+  $('dailyPublish').disabled = false; $('dailyPublish').textContent = 'Publicar ahora';
+  loadDaily();
+});
+
 /* ================= TABS ================= */
 document.querySelectorAll('.main-tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
@@ -577,6 +682,7 @@ document.querySelectorAll('.main-tab').forEach(tab=>{
     $('panel-'+tab.dataset.tab).classList.add('active');
     if(tab.dataset.tab==='inbox') loadConvs();
     if(tab.dataset.tab==='comments') loadComments();
+    if(tab.dataset.tab==='daily') loadDaily();
   });
 });
 

@@ -3,8 +3,17 @@
   "functions": {
     "api/*.js": {
       "maxDuration": 60
+    },
+    "api/ig-daily.js": {
+      "maxDuration": 300
     }
   },
+  "crons": [
+    {
+      "path": "/api/ig-daily",
+      "schedule": "0 15 * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/:ruta((?!api/).*)",
