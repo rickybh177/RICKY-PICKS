@@ -325,7 +325,7 @@
         <button class="refresh-btn" id="dailyPreview">Vista previa de hoy</button>
         <button class="refresh-btn primary" id="dailyPublish">Publicar ahora</button>
       </div>
-      <p class="daily-note">Cada día a las 9:00 (CDMX) se publica un carrusel con el pick gratis de cada liga que juega MAÑANA — el mismo que enseña dattip.com. El post sale siempre un día antes del partido y un partido nunca se publica dos veces. Si ese día ya hiciste el post a mano con ese partido, publícalo desde aquí primero o pausa el automático.</p>
+      <p class="daily-note">Cada día a las 9:00 (CDMX) se publica UN carrusel POR LIGA con el pick gratis de cada liga que juega MAÑANA — el mismo que enseña dattip.com. Si mañana juegan cuatro ligas, salen cuatro posts. El post sale siempre un día antes del partido y un partido nunca se publica dos veces. Si ese día ya hiciste el post a mano con ese partido, publícalo desde aquí primero o pausa el automático.</p>
       <div class="conn-bar" id="dailyBar"><span id="dailyBarText">Cargando estado…</span></div>
       <div class="daily-cfg">
         <label><input type="checkbox" id="dailyPaused"> Pausar el post automático</label>
@@ -665,19 +665,22 @@ $('dailyPreview').addEventListener('click', async ()=>{
     if(d.vacio){
       box.innerHTML = '<div class="empty-state">Hoy no hay nada que publicar.<br><small>' + esc((d.saltadas||[]).map(x=>x.liga+': '+x.motivo).join(' · ')) + '</small></div>';
     }else{
-      box.innerHTML = '<div class="daily-grid">' + d.urls.map(u=>'<a href="'+esc(u)+'" target="_blank"><img src="'+esc(u)+'" alt=""></a>').join('') + '</div>' +
-        '<div class="daily-caption">' + esc(d.caption) + '</div>' +
+      box.innerHTML = '<p class="daily-note" style="margin-top:0"><b>' + d.posts.length + ' post' + (d.posts.length===1?'':'s') + '</b> para mañana, uno por liga.</p>' +
+        d.posts.map(p => '<h3 style="font-size:.95rem;margin:6px 0 0">' + esc(p.nombre) + ' · ' + esc(p.partido) + '</h3>' +
+          '<div class="daily-grid">' + p.urls.map(u=>'<a href="'+esc(u)+'" target="_blank"><img src="'+esc(u)+'" alt=""></a>').join('') + '</div>' +
+          '<div class="daily-caption">' + esc(p.caption) + '</div>').join('') +
         ((d.saltadas||[]).length ? '<p class="daily-note">Se saltan: ' + esc(d.saltadas.map(x=>x.liga+' ('+x.motivo+')').join(', ')) + '</p>' : '');
     }
   }catch(e){ box.innerHTML = '<div class="empty-state">'+esc(e.message)+'</div>'; }
   $('dailyPreview').disabled = false;
 });
 $('dailyPublish').addEventListener('click', async ()=>{
-  if(!confirm('¿Publicar ahora en Instagram el carrusel de hoy? (Se publica tal cual lo arma el modelo en este momento.)')) return;
+  if(!confirm('¿Publicar ahora en Instagram los carruseles de hoy (uno por liga)? Se publican tal cual los arma el modelo en este momento.')) return;
   $('dailyPublish').disabled = true; $('dailyPublish').textContent = 'Publicando…';
   try{
     const d = await apiDaily('publish', {});
-    alert(d.skipped ? 'No se publicó: ' + d.skipped : 'Publicado ✓' + (d.permalink ? '\n' + d.permalink : ''));
+    alert(d.skipped ? 'No se publicó: ' + d.skipped
+      : (d.posts||[]).map(p => (p.ok ? '✓ ' : '✗ ') + p.liga + ' · ' + p.partido + (p.permalink ? '\n' + p.permalink : p.error ? '\n' + p.error : '')).join('\n\n'));
   }catch(e){ alert('Error: ' + e.message); }
   $('dailyPublish').disabled = false; $('dailyPublish').textContent = 'Publicar ahora';
   loadDaily();

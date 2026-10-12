@@ -2,8 +2,8 @@
    /api/ig-daily — el POST DIARIO de free picks en Instagram.
 
    Lo dispara el cron de Vercel (vercel.json) una vez al día y
-   publica un carrusel con el pick gratis de cada liga que juega
-   hoy o mañana, en el formato del post manual del dueño
+   publica UN carrusel POR LIGA con el pick gratis de cada liga que
+   juega mañana, en el formato del post manual del dueño
    (portada FREE PICK → pick principal → picks alternativos →
    props NFL → "comenta PICKS"). Lo que no hace el dueño a mano
    un día, lo hace esto; lo que sí hace, no estorba: un partido ya
@@ -16,9 +16,9 @@
 
    GET  (sin action)          → corre el post del día (cron)
    GET  ?action=status        → config, token, bitácora
-   GET  ?action=preview       → arma y renderiza el carrusel de hoy
-                                SIN publicar (sube las láminas a
-                                preview/ y regresa las URLs)
+   GET  ?action=preview       → arma y renderiza los carruseles de
+                                hoy (uno por liga) SIN publicar
+                                (sube las láminas a preview/)
    POST {action:'publish'}    → publica ahora (respeta "ya publicado"
                                 salvo force:true)
    POST {action:'config', paused, keyword}
@@ -46,11 +46,11 @@ async function quien(req) {
   return null;
 }
 
-/* Renderiza todas las láminas del plan (en serie: satori + sharp
-   usan CPU; en paralelo no gana nada en una lambda). */
-async function renderiza(plan) {
+/* Renderiza las láminas de un post (en serie: satori + sharp usan
+   CPU; en paralelo no gana nada en una lambda). */
+async function renderiza(post) {
   const jpegs = [];
-  for (const s of plan.slides) jpegs.push(await renderSlide(s));
+  for (const s of post.slides) jpegs.push(await renderSlide(s));
   return jpegs;
 }
 
@@ -69,8 +69,9 @@ async function refrescaSiToca() {
   }
 }
 
-/* La corrida completa. `modo`: 'cron' | 'manual'. */
-async function corre({ modo, force = false, dry = false }) {
+/* La corrida completa: UN carrusel por liga, uno tras otro. Si uno
+   falla, los demás salen igual; cada uno queda en la bitácora. */
+async function corre({ modo, force = false }) {
   const cfg = await pub.config();
   if (cfg.paused && modo === 'cron') {
     await pub.anota({ ok: true, skipped: 'pausado', modo });
@@ -78,21 +79,31 @@ async function corre({ modo, force = false, dry = false }) {
   }
   if (!(await pub.tomaCandado())) return { ok: false, error: 'Ya hay una corrida en curso.' };
   try {
-    const token = dry ? null : await refrescaSiToca();
+    const token = await refrescaSiToca();
     const ya = force ? new Set() : await pub.yaPublicados();
     const plan = await armaPlan({ yaPublicados: ya, keyword: cfg.keyword || undefined });
     if (plan.vacio) {
       await pub.anota({ ok: true, skipped: 'nada que publicar', modo, saltadas: plan.saltadas });
       return { ok: true, skipped: 'nada que publicar', saltadas: plan.saltadas };
     }
-    const jpegs = await renderiza(plan);
-    const urls = await pub.subirLaminas(jpegs, `${dry ? 'preview' : 'daily'}/${plan.fecha}`);
-    if (dry) return { ok: true, dry: true, plan: sinLaminas(plan), urls };
-    const res = await pub.publicar(urls, plan.caption);
-    await pub.marcaPublicados(plan.claves, plan.fecha);
-    await pub.anota({ ok: true, modo, media_id: res.id, permalink: res.permalink, fecha: plan.fecha,
-      entradas: plan.entradas.map(e => `${e.nombre}: ${e.partido}`), slides: urls.length, token });
-    return { ok: true, media_id: res.id, permalink: res.permalink, entradas: plan.entradas, slides: urls.length };
+    const resultados = [];
+    for (const post of plan.posts) {
+      try {
+        const jpegs = await renderiza(post);
+        const urls = await pub.subirLaminas(jpegs, `daily/${plan.fecha}/${post.liga}`);
+        const res = await pub.publicar(urls, post.caption);
+        await pub.marcaPublicados([post.clave], plan.fecha);
+        await pub.anota({ ok: true, modo, media_id: res.id, permalink: res.permalink, fecha: plan.fecha,
+          entradas: [`${post.nombre}: ${post.partido}`], slides: urls.length, token });
+        resultados.push({ ok: true, liga: post.liga, partido: post.partido, media_id: res.id, permalink: res.permalink, slides: urls.length });
+      } catch (e) {
+        console.error('ig-daily:', post.liga, e);
+        await pub.anota({ ok: false, modo, entradas: [`${post.nombre}: ${post.partido}`], error: e.message });
+        resultados.push({ ok: false, liga: post.liga, partido: post.partido, error: e.message });
+      }
+    }
+    const ok = resultados.every(r => r.ok);
+    return { ok, posts: resultados, saltadas: plan.saltadas, error: ok ? undefined : 'Falló al menos un post.' };
   } catch (e) {
     console.error('ig-daily:', e);
     await pub.anota({ ok: false, modo, error: e.message });
@@ -100,12 +111,6 @@ async function corre({ modo, force = false, dry = false }) {
   } finally {
     await pub.sueltaCandado();
   }
-}
-
-/* El plan sin los data-URI de los escudos (pesan y no sirven en JSON). */
-function sinLaminas(plan) {
-  return { fecha: plan.fecha, keyword: plan.keyword, entradas: plan.entradas, saltadas: plan.saltadas, caption: plan.caption,
-           slides: plan.slides.map(s => s.kind) };
 }
 
 module.exports = async function handler(req, res) {
@@ -122,7 +127,7 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === 'GET' && !action) {
       /* el cron */
-      const out = await corre({ modo: rol === 'cron' ? 'cron' : 'manual', dry: !!(req.query && req.query.dry) });
+      const out = await corre({ modo: rol === 'cron' ? 'cron' : 'manual' });
       return res.status(out.ok ? 200 : 500).json(out);
     }
 
@@ -143,9 +148,14 @@ module.exports = async function handler(req, res) {
       const ya = req.query && req.query.all ? new Set() : await pub.yaPublicados();
       const plan = await armaPlan({ yaPublicados: ya, keyword: cfg.keyword || undefined });
       if (plan.vacio) return res.status(200).json({ vacio: true, saltadas: plan.saltadas, fecha: plan.fecha });
-      const jpegs = await renderiza(plan);
-      const urls = await pub.subirLaminas(jpegs, `preview/${plan.fecha}`);
-      return res.status(200).json({ vacio: false, ...sinLaminas(plan), urls });
+      const posts = [];
+      for (const post of plan.posts) {
+        const jpegs = await renderiza(post);
+        const urls = await pub.subirLaminas(jpegs, `preview/${plan.fecha}/${post.liga}`);
+        posts.push({ liga: post.liga, nombre: post.nombre, partido: post.partido, fecha: post.fecha, pick: post.pick,
+                     caption: post.caption, slides: post.slides.map(s => s.kind), urls });
+      }
+      return res.status(200).json({ vacio: false, fecha: plan.fecha, keyword: plan.keyword, posts, saltadas: plan.saltadas });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido.' });

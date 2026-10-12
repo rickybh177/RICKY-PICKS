@@ -99,20 +99,21 @@ pasa a la primera.
 ## Post diario de free picks (`/api/ig-daily`)
 
 Cada día a las **9:00 CDMX** (cron de Vercel, `0 15 * * *` UTC, en `vercel.json`) se publica
-un **carrusel** con el pick gratis de cada liga que juega **mañana** (el post sale siempre un día antes del partido), con el formato del
-post manual del 27-sep-2026 (Eagles @ Bears):
+**un carrusel por liga** con el pick gratis de cada liga que juega **mañana** (el post sale
+siempre un día antes del partido; si mañana juegan cuatro ligas, salen cuatro posts seguidos),
+con el formato del post manual del 27-sep-2026 (Eagles @ Bears):
 
-1. **Portada** "FREE PICK(S)": escudos sobre los colores de cada equipo + insignia de la liga.
-   Con una sola liga es la réplica exacta del post; con varias se apilan las franjas.
-2. **PICK PRINCIPAL** por liga: la card oscura del landing (fecha, equipos, probabilidades,
-   barra, chip PICK/MAYBE/SKIP, estadio).
-3. **PICKS ALTERNATIVOS** por liga: todos los mercados con su veredicto, probabilidad y edge.
-4. **PROPS JUGADOR** (solo NFL, si cabe): los dos jugadores con más que decir.
+1. **Portada** "FREE PICK": escudos sobre los colores de cada equipo + insignia de la liga
+   (réplica exacta del post manual).
+2. **PICK PRINCIPAL**: la card oscura del landing (fecha, equipos, probabilidades, barra,
+   chip PICK/MAYBE/SKIP, estadio).
+3. **PICKS ALTERNATIVOS**: todos los mercados con su veredicto, probabilidad y edge.
+4. **PROPS JUGADOR** (solo NFL): los dos jugadores con más que decir.
 5. **COMENTA MODELO** para analizar todos los partidos (siempre `MODELO`; se puede
    cambiar desde el panel). La regla de respuesta en ig_rules debe reaccionar a esa palabra.
 
-Caption: picks del día siguiente + "Comenta MODELO" + **5 hashtags máximo** (sportsbetting,
-picks, uno por liga, relleno con pronosticos/parlay/deportes).
+Caption: el pick del día siguiente + "Comenta MODELO" + **5 hashtags** (sportsbetting,
+picks, el de la liga, pronosticos, parlay).
 
 Reglas:
 - Los datos salen de los **mismos endpoints públicos** que pinta el landing (`/api/mx-free`,
@@ -120,12 +121,12 @@ Reglas:
   del KV incluidos. Lo que enseña el post es lo que ve quien entra a dattip.com.
 - Entra una liga si su pick gratis **se juega mañana** (fecha de CDMX). Lo de hoy ya no se publica; lo de pasado mañana saldrá mañana.
 - **Un partido se publica una sola vez** (registro en el KV `ig-daily-posted`, 45 días).
-- Cupo de Instagram: 10 láminas. Orden del landing (NFL, Liga MX, Champions, MLB, Premier,
-  LaLiga, Bundesliga); los props NFL se quitan primero si no caben.
+- Orden de publicación: el del landing (NFL, Liga MX, Champions, MLB, Premier, LaLiga,
+  Bundesliga). Si un post falla, los demás salen igual; cada uno queda en la bitácora.
 - Si no hay nada que publicar, no publica (queda en la bitácora).
 - Las láminas se dibujan en la lambda (satori + sharp, fuentes en `lib/ig/fonts/`) y se
   suben al bucket público `ig-media` de Supabase Storage (se crea solo); Instagram las
-  descarga de ahí. Carpeta `daily/<fecha>/` lo publicado, `preview/<fecha>/` las vistas previas.
+  descarga de ahí. Carpeta `daily/<fecha>/<liga>/` lo publicado, `preview/<fecha>/<liga>/` las vistas previas.
 - Candado de 10 min contra corridas dobles (Vercel reintenta crons).
 
 Panel: `/admin-instagram.html` → pestaña **Post diario**: estado (token, cron, pausa, último
