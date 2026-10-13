@@ -674,15 +674,30 @@ $('dailyPreview').addEventListener('click', async ()=>{
   }catch(e){ box.innerHTML = '<div class="empty-state">'+esc(e.message)+'</div>'; }
   $('dailyPreview').disabled = false;
 });
+/* Publicar: confirmación en la propia página (sin confirm()/alert()
+   nativos, que bloquean la ventana) — primer clic arma, segundo publica. */
+let publishArmed = null;
 $('dailyPublish').addEventListener('click', async ()=>{
-  if(!confirm('¿Publicar ahora en Instagram los carruseles de hoy (uno por liga)? Se publican tal cual los arma el modelo en este momento.')) return;
-  $('dailyPublish').disabled = true; $('dailyPublish').textContent = 'Publicando…';
+  const btn = $('dailyPublish');
+  if(!publishArmed){
+    btn.textContent = '¿Seguro? Sí, publicar';
+    btn.style.background = '#d93a3a'; btn.style.borderColor = '#d93a3a';
+    publishArmed = setTimeout(()=>{ publishArmed = null; btn.textContent = 'Publicar ahora'; btn.style.background = ''; btn.style.borderColor = ''; }, 8000);
+    return;
+  }
+  clearTimeout(publishArmed); publishArmed = null;
+  btn.style.background = ''; btn.style.borderColor = '';
+  btn.disabled = true; btn.textContent = 'Publicando…';
+  const box = $('dailyPreviewBox');
+  box.innerHTML = '<div class="empty-state">Publicando en Instagram… un carrusel por liga, puede tardar 1-2 minutos.</div>';
   try{
     const d = await apiDaily('publish', {});
-    alert(d.skipped ? 'No se publicó: ' + d.skipped
-      : (d.posts||[]).map(p => (p.ok ? '✓ ' : '✗ ') + p.liga + ' · ' + p.partido + (p.permalink ? '\n' + p.permalink : p.error ? '\n' + p.error : '')).join('\n\n'));
-  }catch(e){ alert('Error: ' + e.message); }
-  $('dailyPublish').disabled = false; $('dailyPublish').textContent = 'Publicar ahora';
+    box.innerHTML = d.skipped
+      ? '<div class="empty-state">No se publicó: ' + esc(d.skipped) + '</div>'
+      : '<div class="daily-caption">' + (d.posts||[]).map(p => (p.ok ? '✓ ' : '✗ ') + esc(p.liga) + ' · ' + esc(p.partido) +
+          (p.permalink ? ' · <a href="'+esc(p.permalink)+'" target="_blank">ver en Instagram</a>' : p.error ? ' · ' + esc(p.error) : '')).join('<br>') + '</div>';
+  }catch(e){ box.innerHTML = '<div class="empty-state">Error: ' + esc(e.message) + '</div>'; }
+  btn.disabled = false; btn.textContent = 'Publicar ahora';
   loadDaily();
 });
 
