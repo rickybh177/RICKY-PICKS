@@ -334,6 +334,17 @@
         <button class="refresh-btn" id="dailySaveCfg">Guardar</button>
         <span id="dailyCfgMsg" style="color:var(--muted)"></span>
       </div>
+      <div class="daily-cfg">
+        <b style="font-size:.84rem">Un partido específico</b>
+        <select id="gameLiga" class="form-input" style="width:auto;padding:6px 10px">
+          <option value="nfl">NFL</option><option value="mx">Liga MX</option><option value="ucl">Champions</option><option value="mlb">MLB</option>
+          <option value="epl">Premier</option><option value="laliga">LaLiga</option><option value="bundesliga">Bundesliga</option>
+        </select>
+        <input id="gameEquipo" placeholder="equipo (p. ej. Roma)" style="text-transform:none;width:190px">
+        <button class="refresh-btn" id="gamePreview">Vista previa</button>
+        <button class="refresh-btn primary" id="gamePublish">Publicar ese partido</button>
+        <span style="color:var(--muted);font-size:.78rem">No cambia el pick gratis del sitio.</span>
+      </div>
       <div id="dailyPreviewBox"></div>
       <div class="table-wrap">
         <table class="data-table">
@@ -698,6 +709,37 @@ $('dailyPublish').addEventListener('click', async ()=>{
           (p.permalink ? ' · <a href="'+esc(p.permalink)+'" target="_blank">ver en Instagram</a>' : p.error ? ' · ' + esc(p.error) : '')).join('<br>') + '</div>';
   }catch(e){ box.innerHTML = '<div class="empty-state">Error: ' + esc(e.message) + '</div>'; }
   btn.disabled = false; btn.textContent = 'Publicar ahora';
+  loadDaily();
+});
+
+/* ---- un partido específico, sin tocar el pick gratis del sitio ---- */
+$('gamePreview').addEventListener('click', async ()=>{
+  const box = $('dailyPreviewBox');
+  box.innerHTML = '<div class="empty-state">Armando el carrusel de ese partido… puede tardar 1-2 minutos.</div>';
+  try{
+    const d = await apiDaily('preview-game&liga=' + encodeURIComponent($('gameLiga').value) + '&equipo=' + encodeURIComponent($('gameEquipo').value.trim()));
+    box.innerHTML = '<h3 style="font-size:.95rem;margin:6px 0 0">' + esc(d.partido) + ' · ' + esc(new Date(d.fecha).toLocaleString('es-MX',{timeZone:'America/Mexico_City'})) + '</h3>' +
+      '<div class="daily-grid">' + d.urls.map(u=>'<a href="'+esc(u)+'" target="_blank"><img src="'+esc(u)+'" alt=""></a>').join('') + '</div>' +
+      '<div class="daily-caption">' + esc(d.caption) + '</div>';
+  }catch(e){ box.innerHTML = '<div class="empty-state">'+esc(e.message)+'</div>'; }
+});
+let gameArmed = null;
+$('gamePublish').addEventListener('click', async ()=>{
+  const btn = $('gamePublish');
+  if(!gameArmed){
+    btn.textContent = '¿Seguro? Sí, publicar'; btn.style.background = '#d93a3a'; btn.style.borderColor = '#d93a3a';
+    gameArmed = setTimeout(()=>{ gameArmed = null; btn.textContent = 'Publicar ese partido'; btn.style.background = ''; btn.style.borderColor = ''; }, 8000);
+    return;
+  }
+  clearTimeout(gameArmed); gameArmed = null; btn.style.background = ''; btn.style.borderColor = '';
+  btn.disabled = true; btn.textContent = 'Publicando…';
+  const box = $('dailyPreviewBox');
+  box.innerHTML = '<div class="empty-state">Publicando ese partido en Instagram…</div>';
+  try{
+    const d = await apiDaily('publish-game', { liga: $('gameLiga').value, equipo: $('gameEquipo').value.trim() });
+    box.innerHTML = '<div class="daily-caption">✓ ' + esc(d.liga) + ' · ' + esc(d.partido) + (d.permalink ? ' · <a href="'+esc(d.permalink)+'" target="_blank">ver en Instagram</a>' : '') + '</div>';
+  }catch(e){ box.innerHTML = '<div class="empty-state">Error: '+esc(e.message)+'</div>'; }
+  btn.disabled = false; btn.textContent = 'Publicar ese partido';
   loadDaily();
 });
 

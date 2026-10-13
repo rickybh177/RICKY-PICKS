@@ -21,10 +21,16 @@
                                 (sube las láminas a preview/)
    POST {action:'publish'}    → publica ahora (respeta "ya publicado"
                                 salvo force:true)
+   POST {action:'publish-game', liga, equipo|game}
+                              → publica UN partido concreto (el que
+                                sea, aunque no sea el pick gratis),
+                                sin tocar la plataforma; GET
+                                ?action=preview-game&liga=&equipo=
+                                lo arma sin publicar
    POST {action:'config', paused, keyword}
    POST {action:'refresh-token'}
    ============================================================ */
-const { armaPlan } = require('../lib/ig/plan');
+const { armaPlan, armaPostDe } = require('../lib/ig/plan');
 const { renderSlide } = require('../lib/ig/render');
 const pub = require('../lib/ig/publish');
 const ig = require('../lib/instagram');
@@ -33,6 +39,8 @@ const { getUserFromToken } = require('../lib/supabaseAdmin');
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 const REFRESH_DAYS = 7;
+const { hoyMx } = require('../lib/ig/plan');
+const hoy = () => hoyMx(Date.now());
 
 async function quien(req) {
   const h = req.headers.authorization || '';
@@ -156,6 +164,24 @@ module.exports = async function handler(req, res) {
                      caption: post.caption, slides: post.slides.map(s => s.kind), urls });
       }
       return res.status(200).json({ vacio: false, fecha: plan.fecha, keyword: plan.keyword, posts, saltadas: plan.saltadas });
+    }
+
+    /* Un partido concreto, sin tocar el pick gratis del sitio. */
+    if (action === 'publish-game' || action === 'preview-game') {
+      const cfg = await pub.config();
+      const post = await armaPostDe({ liga: body.liga || (req.query && req.query.liga), gameId: body.game || (req.query && req.query.game),
+        equipo: body.equipo || (req.query && req.query.equipo), auth: req.headers.authorization, keyword: cfg.keyword || undefined });
+      const jpegs = await renderiza(post);
+      if (action === 'preview-game' || req.method !== 'POST') {
+        const urls = await pub.subirLaminas(jpegs, `preview/${hoy()}/${post.liga}-${post.clave.split(':')[1]}`);
+        return res.status(200).json({ ok: true, liga: post.liga, partido: post.partido, fecha: post.fecha, caption: post.caption, urls });
+      }
+      const urls = await pub.subirLaminas(jpegs, `daily/${hoy()}/${post.liga}-${post.clave.split(':')[1]}`);
+      const out = await pub.publicar(urls, post.caption);
+      await pub.marcaPublicados([post.clave], hoy());
+      await pub.anota({ ok: true, modo: 'manual (partido elegido)', media_id: out.id, permalink: out.permalink, fecha: hoy(),
+        entradas: [`${post.nombre}: ${post.partido}`], slides: urls.length });
+      return res.status(200).json({ ok: true, liga: post.liga, partido: post.partido, media_id: out.id, permalink: out.permalink });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido.' });
