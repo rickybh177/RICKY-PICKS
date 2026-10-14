@@ -100,9 +100,13 @@ module.exports = async function handler(req, res) {
 
   // ---- nivel de acceso ----
   let access = 'guest';
+  /* Llamada interna de la cola de Instagram (api/ig-queue.js): el cron
+     no tiene sesión de Supabase, se identifica con el CRON_SECRET en
+     x-internal-auth y recibe el tablero completo, como el admin. */
+  if (process.env.CRON_SECRET && req.headers['x-internal-auth'] === process.env.CRON_SECRET) access = 'full';
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
-  if (token) {
+  if (token && access !== 'full') {
     const user = await getUserFromToken(token);
     if (user) {
       if (ADMIN_EMAILS.includes(user.email)) access = 'full';

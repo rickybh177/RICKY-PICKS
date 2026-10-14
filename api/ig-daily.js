@@ -27,6 +27,11 @@
                                 sin tocar la plataforma; GET
                                 ?action=preview-game&liga=&equipo=
                                 lo arma sin publicar
+   GET  ?action=queue           → la cola de programados
+   POST {action:'schedule-game', liga, equipo|game, at}
+                                → programa un partido para esa hora
+                                  (api/ig-queue.js lo publica)
+   POST {action:'unschedule', id}
    POST {action:'config', paused, keyword}
    POST {action:'refresh-token'}
    ============================================================ */
@@ -121,6 +126,20 @@ async function corre({ modo, force = false }) {
   }
 }
 
+/* Publica UN partido concreto (lo usan el botón del panel y la cola).
+   `headers`: Authorization del admin o x-internal-auth del cron. */
+async function publicaPartido(sel, headers, modo) {
+  const cfg = await pub.config();
+  const post = await armaPostDe({ ...sel, headers, keyword: cfg.keyword || undefined });
+  const jpegs = await renderiza(post);
+  const urls = await pub.subirLaminas(jpegs, `daily/${hoy()}/${post.liga}-${post.clave.split(':')[1]}`);
+  const out = await pub.publicar(urls, post.caption);
+  await pub.marcaPublicados([post.clave], hoy());
+  await pub.anota({ ok: true, modo, media_id: out.id, permalink: out.permalink, fecha: hoy(),
+    entradas: [`${post.nombre}: ${post.partido}`], slides: urls.length });
+  return { ok: true, liga: post.liga, partido: post.partido, media_id: out.id, permalink: out.permalink };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'no-store');
@@ -168,20 +187,33 @@ module.exports = async function handler(req, res) {
 
     /* Un partido concreto, sin tocar el pick gratis del sitio. */
     if (action === 'publish-game' || action === 'preview-game') {
-      const cfg = await pub.config();
-      const post = await armaPostDe({ liga: body.liga || (req.query && req.query.liga), gameId: body.game || (req.query && req.query.game),
-        equipo: body.equipo || (req.query && req.query.equipo), auth: req.headers.authorization, keyword: cfg.keyword || undefined });
-      const jpegs = await renderiza(post);
+      const sel = { liga: body.liga || (req.query && req.query.liga), gameId: body.game || (req.query && req.query.game),
+                    equipo: body.equipo || (req.query && req.query.equipo) };
       if (action === 'preview-game' || req.method !== 'POST') {
+        const cfg = await pub.config();
+        const post = await armaPostDe({ ...sel, auth: req.headers.authorization, keyword: cfg.keyword || undefined });
+        const jpegs = await renderiza(post);
         const urls = await pub.subirLaminas(jpegs, `preview/${hoy()}/${post.liga}-${post.clave.split(':')[1]}`);
         return res.status(200).json({ ok: true, liga: post.liga, partido: post.partido, fecha: post.fecha, caption: post.caption, urls });
       }
-      const urls = await pub.subirLaminas(jpegs, `daily/${hoy()}/${post.liga}-${post.clave.split(':')[1]}`);
-      const out = await pub.publicar(urls, post.caption);
-      await pub.marcaPublicados([post.clave], hoy());
-      await pub.anota({ ok: true, modo: 'manual (partido elegido)', media_id: out.id, permalink: out.permalink, fecha: hoy(),
-        entradas: [`${post.nombre}: ${post.partido}`], slides: urls.length });
-      return res.status(200).json({ ok: true, liga: post.liga, partido: post.partido, media_id: out.id, permalink: out.permalink });
+      const out = await publicaPartido(sel, { Authorization: req.headers.authorization }, 'manual (partido elegido)');
+      return res.status(200).json(out);
+    }
+
+    /* Cola: programar un partido para una hora concreta. */
+    if (action === 'queue') {
+      return res.status(200).json({ queue: await pub.cola() });
+    }
+    if (action === 'schedule-game' && req.method === 'POST') {
+      const at = new Date(body.at || '');
+      if (isNaN(at.getTime())) return res.status(400).json({ error: 'Hora no válida.' });
+      if (!body.liga) return res.status(400).json({ error: 'Falta la liga.' });
+      const item = await pub.encola({ liga: body.liga, equipo: body.equipo || null, game: body.game || null, at: at.toISOString() });
+      return res.status(200).json({ ok: true, item });
+    }
+    if (action === 'unschedule' && req.method === 'POST') {
+      await pub.quitaDeCola(body.id);
+      return res.status(200).json({ ok: true });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido.' });
@@ -206,3 +238,5 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: e.message || 'Error interno.' });
   }
 };
+
+module.exports.publicaPartido = publicaPartido;

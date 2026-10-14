@@ -343,8 +343,12 @@
         <input id="gameEquipo" placeholder="equipo (p. ej. Roma)" style="text-transform:none;width:190px">
         <button class="refresh-btn" id="gamePreview">Vista previa</button>
         <button class="refresh-btn primary" id="gamePublish">Publicar ese partido</button>
+        <span style="color:var(--muted)">·</span>
+        <label>a las <input type="datetime-local" id="gameAt" style="text-transform:none;width:auto"></label>
+        <button class="refresh-btn" id="gameSchedule">Programar</button>
         <span style="color:var(--muted);font-size:.78rem">No cambia el pick gratis del sitio.</span>
       </div>
+      <div id="queueBox" class="daily-note" style="margin-top:-10px"></div>
       <div id="dailyPreviewBox"></div>
       <div class="table-wrap">
         <table class="data-table">
@@ -743,6 +747,29 @@ $('gamePublish').addEventListener('click', async ()=>{
   loadDaily();
 });
 
+/* ---- programados (la cola la publica /api/ig-queue cada 5 min) ---- */
+async function loadQueue(){
+  try{
+    const d = await apiDaily('queue');
+    const q = (d.queue||[]).filter(i=>i.status!=='done').sort((a,b)=>a.at.localeCompare(b.at));
+    $('queueBox').innerHTML = q.length ? '<b>Programados:</b> ' + q.map(i =>
+      esc(i.liga.toUpperCase()) + ' · ' + esc(i.equipo||i.game) + ' · ' + esc(new Date(i.at).toLocaleString('es-MX',{timeZone:'America/Mexico_City',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})) +
+      (i.status==='error' ? ' · <span class="bad-dot">error: '+esc(i.error)+'</span>' : i.status==='running' ? ' · publicando…' : '') +
+      ' <a href="#" data-unq="'+esc(i.id)+'">quitar</a>').join(' &nbsp;|&nbsp; ') : '';
+    $('queueBox').querySelectorAll('[data-unq]').forEach(a=>a.addEventListener('click', async ev=>{
+      ev.preventDefault(); await apiDaily('unschedule', { id: a.dataset.unq }); loadQueue();
+    }));
+  }catch(e){ $('queueBox').textContent = e.message; }
+}
+$('gameSchedule').addEventListener('click', async ()=>{
+  const at = $('gameAt').value;
+  if(!at){ $('queueBox').textContent = 'Elige la hora.'; return; }
+  try{
+    await apiDaily('schedule-game', { liga: $('gameLiga').value, equipo: $('gameEquipo').value.trim(), at: new Date(at).toISOString() });
+    loadQueue();
+  }catch(e){ $('queueBox').textContent = e.message; }
+});
+
 /* ================= TABS ================= */
 document.querySelectorAll('.main-tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
@@ -752,7 +779,7 @@ document.querySelectorAll('.main-tab').forEach(tab=>{
     $('panel-'+tab.dataset.tab).classList.add('active');
     if(tab.dataset.tab==='inbox') loadConvs();
     if(tab.dataset.tab==='comments') loadComments();
-    if(tab.dataset.tab==='daily') loadDaily();
+    if(tab.dataset.tab==='daily'){ loadDaily(); loadQueue(); }
   });
 });
 

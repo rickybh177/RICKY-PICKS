@@ -73,9 +73,12 @@ module.exports = async function handler(req, res) {
   const simulate = IS_DEV && req.query && (req.query.as === 'guest' || req.query.as === 'beta') ? req.query.as : null;
   let isAdmin = false;
   let access = 'guest';
+  /* Llamada interna de la cola de Instagram (api/ig-queue.js): se
+     identifica con el CRON_SECRET en x-internal-auth, como el admin. */
+  if (process.env.CRON_SECRET && req.headers['x-internal-auth'] === process.env.CRON_SECRET) { isAdmin = true; access = 'full'; }
   const h = req.headers.authorization || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : null;
-  if (token && !simulate) {
+  if (token && !simulate && !isAdmin) {
     const user = await getUserFromToken(token);
     if (user) {
       if (ADMIN_EMAILS.includes(user.email)) { isAdmin = true; access = 'full'; }
