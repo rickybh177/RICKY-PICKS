@@ -16,7 +16,8 @@
    dice claro (p. ej. compró un plan de pago único, no recurrente).
    ============================================================ */
 const Stripe = require('stripe');
-const { getUserFromToken } = require('../lib/supabaseAdmin');
+const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
+const { accesoHasta, marcaCancelada, cancelacionVigente, fechaMX } = require('../lib/cancelaciones');
 const { PLANS, isSubscription } = require('../lib/plans');
 
 /* Estados de Stripe en los que una suscripción todavía puede cobrar. */
@@ -128,10 +129,30 @@ module.exports = async function handler(req, res) {
     }
   } catch (e) { console.error('cancel-subscription mp:', e); }
 
+  /* La fecha que se le dice al cliente sale de sus accesos, no de la
+     pasarela: es cuando de verdad se le apagan los modelos. */
+  const ents = await getEntitlements(user.id, user.email).catch(() => []);
+  const hasta = accesoHasta(ents);
+  const hastaTxt = hasta && Date.parse(hasta) > Date.now() ? `Conservas tu acceso hasta el ${fechaMX(hasta)}.` : null;
+
   if (cancelled > 0) {
+    /* Se guarda para que Mis modelos lo recuerde al recargar: sin esto el
+       aviso salía una sola vez y el botón de cancelar volvía a aparecer. */
+    await marcaCancelada(user.id, { hasta, via: 'boton' }).catch(e => console.error('cancel-subscription kv:', e.message));
     return res.status(200).json({
-      ok: true, cancelled,
-      message: 'Listo: tu suscripción quedó cancelada y no se te volverá a cobrar. ' + (notes[0] || ''),
+      ok: true, cancelled, hasta,
+      message: 'Listo: cancelaste tu suscripción y no se te volverá a cobrar. ' + (hastaTxt || notes[0] || ''),
+    });
+  }
+
+  /* Ya la había cancelado (él mismo o el dueño desde el panel): decirle
+     eso, con su fecha, en vez de "no encontramos una suscripción". */
+  const previa = await cancelacionVigente(user.id, ents).catch(() => null);
+  if (previa) {
+    return res.status(200).json({
+      ok: true, cancelled: 0, hasta: previa.hasta,
+      message: 'Tu suscripción ya está cancelada: no se te volverá a cobrar.' +
+        (previa.hasta ? ` Conservas tu acceso hasta el ${fechaMX(previa.hasta)}.` : ''),
     });
   }
   return res.status(200).json({

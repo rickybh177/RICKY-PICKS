@@ -5,6 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
+const { cancelacionVigente } = require('../lib/cancelaciones');
 const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
@@ -176,6 +177,9 @@ module.exports = async function handler(req, res) {
          codigo), precio para volver y a dónde mandarlo. Es lo que usa
          el aviso para hablarle a cada quien de SU plan. */
       expirados_plan,
+      /* { at, hasta, via } si canceló y todavía no se le acaba el acceso;
+         Mis modelos le dice hasta cuándo y deja de ofrecerle "cancelar". */
+      cancelada: await cancelacionVigente(user.id, ents).catch(() => null),
     });
   } catch (e) {
     console.error('my-access:', e);

@@ -267,8 +267,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     </div>
 
     <div class="sub-box">
-      <div class="sb-txt"><strong>Tu suscripción.</strong> Actualiza tu método de pago, revisa tus cobros o cancela cuando quieras — sin llamadas ni correos.</div>
-      <div class="sb-acts">
+      <div class="sb-txt" id="subTxt"><strong>Tu suscripción.</strong> Actualiza tu método de pago, revisa tus cobros o cancela cuando quieras — sin llamadas ni correos.</div>
+      <div class="sb-acts" id="subActs">
         <button id="manageBtn">Administrar pagos</button>
         <button id="cancelBtn" class="danger">Cancelar suscripción</button>
       </div>
@@ -458,6 +458,7 @@ async function boot(){
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
     pintaTres(acc.tres);
     pintaFinAviso(acc);
+    pintaCancelada(acc.cancelada);
   }
   showMain();
 }
@@ -500,6 +501,19 @@ function pintaTres(tres){
     acts.innerHTML = '';
   }
   box.style.display = 'flex';
+}
+
+/* ---- suscripción ya cancelada (17-oct-2026) ----
+   Si canceló —él con el botón o el dueño desde el panel— la caja lo
+   dice con su fecha y deja de ofrecer "Cancelar": volver a apretarlo
+   solo le contestaba "no encontramos una suscripción", que asusta. */
+function pintaCancelada(c){
+  if(!c) return;
+  const fecha = c.hasta ? fechaMX(c.hasta) : '';
+  document.getElementById('subTxt').innerHTML = '<strong>Cancelaste tu suscripción.</strong> No se te volverá a cobrar.' +
+    (fecha ? ' Tienes acceso a tus modelos hasta el <strong>' + fecha + '</strong>.' : ' Conservas tu acceso hasta el final del periodo que ya pagaste.');
+  document.getElementById('subActs').style.display = 'none';
+  document.getElementById('subConfirm').classList.remove('open');
 }
 
 /* ---- gestión de suscripción ----
@@ -549,6 +563,7 @@ document.getElementById('confirmCancel').addEventListener('click', async () => {
     msg.textContent = out.message || 'Listo.';
     msg.className = 'sub-msg ' + (out.ok ? 'ok' : 'bad');
     document.getElementById('subConfirm').classList.remove('open');
+    if(out.ok) pintaCancelada({ hasta: out.hasta || null });
   }catch(e){
     msg.textContent = 'No se pudo procesar la cancelación. Intenta de nuevo o escríbenos y lo resolvemos.';
     msg.className = 'sub-msg bad';
