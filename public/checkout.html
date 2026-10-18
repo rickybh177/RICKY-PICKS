@@ -789,7 +789,11 @@ let _descuento = null;
    pasarelas. Antes cada caso (lista, código, fundador, upgrade) pintaba
    por su cuenta y cambiar de moneda los habría dejado desfasados. */
 function pintaPrecios(){
-  const lista = listaDe(MONEDA);
+  /* Con la oferta de regreso se tacha SU precio de siempre (lo que va a
+     pagar después), no el de lista: tachar $899 a quien pagaba $699
+     sería prometerle un ahorro que no es. */
+  const listaOferta = _oferta && (MONEDA === 'USD' ? _oferta.listaUsd : _oferta.lista);
+  const lista = listaOferta != null ? listaOferta : listaDe(MONEDA);
   if(lista == null) return;
   let paga = lista, nota = null;
   if(_descuento){
@@ -890,6 +894,9 @@ function pintaDescuento(data, code){
    fuera del catálogo público: la pantalla de "ya no está a la venta"
    corre antes que el recuadro del código, así que sin esto el cliente
    nunca llegaría a poder aplicarlo. */
+/* ?regreso=1: viene de la oferta "vuelve con tu primer mes al 50%"
+   (lib/retencion). El servidor la vuelve a validar al cobrar. */
+const REGRESO = params.get('regreso') === '1';
 const codigoUrl = (params.get('codigo') || params.get('code') || '').trim().toUpperCase();
 const codigoListo = !codigoUrl || !planId ? Promise.resolve(false) : fetch('/api/redeem', {
   method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1177,6 +1184,10 @@ async function renderSession(session){
     }catch(e){}
   }
   const up = acceso && acceso.monthly_upgrade;
+  /* Oferta de regreso válida para ESTE plan. Quien canceló sigue con
+     acceso hasta fin de su periodo, así que sin esta excepción el
+     checkout le diría "ya tienes este plan" y no lo dejaría volver. */
+  const esRegreso = !!(REGRESO && acceso && acceso.regreso && acceso.regreso.plan === planId);
   const esUpgradeMensual = !!(up && up.target === planId);
 
   /* Plan retirado sin oferta prometida: no se vende. Un código válido
@@ -1224,7 +1235,7 @@ async function renderSession(session){
   const want = productsOf(planId);
   const cubiertos = want.filter(p => _entRows.some(r => (TOP[p]||[]).includes(r.plan)));
   const covered = ent && !buyingCombo && !esUpgradeMensual && cubiertos.length === want.length;
-  if(ent && !esUpgradeMensual && (ent.plan === planId || covered)){
+  if(ent && !esUpgradeMensual && !esRegreso && (ent.plan === planId || covered)){
     authStep.style.display='none'; payStep.style.display='none'; entitledStep.style.display='block';
     return;
   }
@@ -1239,7 +1250,13 @@ async function renderSession(session){
     showMsg(payMsg, 'info', `Ya tienes ${lista(cubiertos)} con un pase completo: se conserva tal cual. Esta compra te agrega ${lista(resto)}.`);
   }
 
-  if(acceso){
+  if(esRegreso){
+    const r = acceso.regreso;
+    _oferta = { price: r.precioOferta, usd: r.usd && r.usd.precioOferta,
+      lista: r.precio, listaUsd: r.usd && r.usd.precio,
+      nota: 'Tu regreso: el primer mes a mitad de precio, después tu precio de siempre' };
+    pintaPrecios();
+  } else if(acceso){
     /* Precio especial de ESTE cliente, en las DOS monedas: se guarda en
        _oferta y pinta pintaPrecios(), para que cambiar de moneda no
        deje el número viejo en pantalla. Lo calcula el servidor
@@ -1396,7 +1413,7 @@ document.getElementById('mpBtn').addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(tok ? { Authorization: `Bearer ${tok}` } : {}) },
       /* sin `moneda`: Mercado Pago México solo procesa pesos */
-      body: JSON.stringify({ plan: planId, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
+      body: JSON.stringify({ plan: planId, regreso: REGRESO ? 1 : undefined, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.checkout_url) {
@@ -1423,7 +1440,7 @@ document.getElementById('stripeBtn').addEventListener('click', async () => {
     const res = await fetch('/api/stripe-create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ plan: planId, moneda: MONEDA, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
+      body: JSON.stringify({ plan: planId, moneda: MONEDA, regreso: REGRESO ? 1 : undefined, discount_code: _activeDiscount ? _activeDiscount.code : undefined, models: CHOOSE_N ? chosen : undefined }),
     });
     const out = await res.json();
     if (!res.ok || !out.url) {

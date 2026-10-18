@@ -6,6 +6,7 @@ const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
 const { isSubscription, normalizaMoneda, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
+const { regresoPara, marcaOfertaUsada } = require('../lib/retencion');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -184,6 +185,14 @@ module.exports = async function handler(req, res) {
        del día se aplica como cupón de una sola vez en los planes que
        incluyen MLB. */
     if (isSubscription(plan)) {
+      /* Oferta de regreso (lib/retencion): mismo plan que se le ofrece →
+         su precio de antes como base y un cupón de 50% `once`, que Stripe
+         aplica a UN cobro y después cobra normal. */
+      const regreso = body && body.regreso
+        ? await regresoPara(user.id, ents, MONEDA).catch(e => { console.error('stripe-create regreso:', e.message); return null; })
+        : null;
+      const conRegreso = regreso && regreso.plan === plan ? regreso : null;
+      if (conRegreso) p.price = Math.round(conRegreso.precio * 100);
       const sessionParams = {
         payment_method_types: ['card'],
         mode: 'subscription',
@@ -203,7 +212,11 @@ module.exports = async function handler(req, res) {
         metadata: META,
         customer_email: user.email,
       };
-      if (discount) {
+      if (conRegreso) {
+        const cupon = await stripe.coupons.create({ percent_off: 50, duration: 'once', name: 'Tu regreso: primer mes al 50%' });
+        sessionParams.discounts = [{ coupon: cupon.id }];
+        await marcaOfertaUsada(user.id, { tipo: 'regreso', via: 'stripe', ...conRegreso });
+      } else if (discount) {
         /* Código de descuento sobre suscripción: cupón de UNA sola vez
            (solo el primer mes; las renovaciones van a precio completo).
            Redondeado a pesos para que coincida con lo que ve el cliente. */

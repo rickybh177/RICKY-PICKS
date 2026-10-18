@@ -130,6 +130,14 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .sub-msg.ok { display: block; background: rgba(22,163,74,0.08); color: var(--win); }
   .sub-msg.bad { display: block; background: rgba(220,38,38,0.06); color: #b42323; }
   /* confirmación inline (dos pasos: nada de cancelar con un solo clic) */
+  /* Oferta de retención (50% en el siguiente cobro): va ARRIBA de la
+     confirmación, en verde — es la salida buena, no la de peligro. */
+  .ret-oferta { border: 1px solid rgba(22,163,74,0.35); background: rgba(22,163,74,0.06); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; font-size: 0.88rem; color: var(--ink); line-height: 1.55; }
+  .ret-oferta b { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+  .ret-oferta button, .ret-oferta a.btn { margin-top: 10px; font: inherit; font-size: 0.85rem; font-weight: 650; padding: 10px 18px;
+    border-radius: 980px; border: 0; background: var(--win); color: #fff; cursor: pointer; text-decoration: none; display: inline-block; }
+  .ret-oferta button:disabled { opacity: 0.6; cursor: default; }
   .sub-confirm { display: none; border: 1px solid rgba(220,38,38,0.3); background: rgba(220,38,38,0.04); border-radius: 14px; padding: 18px 20px; margin: -40px 0 56px; }
   .sub-confirm.open { display: block; }
   .sub-confirm p { font-size: 0.88rem; color: var(--ink); margin-bottom: 14px; }
@@ -274,6 +282,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       </div>
     </div>
     <div class="sub-confirm" id="subConfirm">
+      <div class="ret-oferta" id="retOferta" hidden></div>
       <p><strong>¿Seguro que quieres cancelar?</strong> No se te volverá a cobrar y conservas tu acceso hasta el final del periodo que ya pagaste.</p>
       <div class="row">
         <button class="yes" id="confirmCancel">Sí, cancelar mi suscripción</button>
@@ -395,8 +404,11 @@ function pintaFinAviso(acc){
   const titulo = grupos.length === 1 ? (TITULO[grupos[0].tipo] || 'Tu acceso se terminó')
     : 'Tu acceso se terminó';
 
+  /* Si le toca volver con 50% (y no canceló: a ese se le ofrece en la
+     caja de su suscripción), la oferta va aquí mismo. */
+  const oferta = acc && acc.regreso && !acc.cancelada ? ofertaRegresoHTML(acc.regreso, 'Te extrañamos.') : '';
   box.innerHTML = '<span class="fa-ico">!</span><span>' +
-    '<b>' + titulo + '</b><span>' + cuerpo + '</span></span>';
+    '<b>' + titulo + '</b><span>' + cuerpo + '</span>' + oferta + '</span>';
   box.hidden = false;
 }
 
@@ -456,9 +468,10 @@ async function boot(){
     paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga', fin.laliga);
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
+    window.__acc = acc; // para la oferta de regreso del plan de tres
     pintaTres(acc.tres);
     pintaFinAviso(acc);
-    pintaCancelada(acc.cancelada);
+    pintaCancelada(acc.cancelada, acc.regreso);
   }
   showMain();
 }
@@ -507,13 +520,24 @@ function pintaTres(tres){
    Si canceló —él con el botón o el dueño desde el panel— la caja lo
    dice con su fecha y deja de ofrecer "Cancelar": volver a apretarlo
    solo le contestaba "no encontramos una suscripción", que asusta. */
-function pintaCancelada(c){
+function pintaCancelada(c, regreso){
   if(!c) return;
   const fecha = c.hasta ? fechaMX(c.hasta) : '';
   document.getElementById('subTxt').innerHTML = '<strong>Cancelaste tu suscripción.</strong> No se te volverá a cobrar.' +
-    (fecha ? ' Tienes acceso a tus modelos hasta el <strong>' + fecha + '</strong>.' : ' Conservas tu acceso hasta el final del periodo que ya pagaste.');
+    (fecha ? ' Tienes acceso a tus modelos hasta el <strong>' + fecha + '</strong>.' : ' Conservas tu acceso hasta el final del periodo que ya pagaste.') +
+    ofertaRegresoHTML(regreso, '¿Cambiaste de opinión?');
   document.getElementById('subActs').style.display = 'none';
   document.getElementById('subConfirm').classList.remove('open');
+}
+/* La oferta de regreso (lib/retencion): su plan de antes, primer mes al
+   50% y luego su precio de siempre. El checkout la vuelve a validar. */
+function ofertaRegresoHTML(o, gancho){
+  if(!o) return '';
+  const url = '/checkout.html?plan=' + encodeURIComponent(o.plan) + '&regreso=1' +
+    (o.plan === 'tres_mensual' && window.__acc && window.__acc.tres && window.__acc.tres.products ? '&modelos=' + window.__acc.tres.products.join(',') : '');
+  return '<div class="ret-oferta" style="margin-top:12px"><b>' + gancho + ' Vuelve con tu siguiente mes a mitad de precio.</b>' +
+    precioTxt(o.precioOferta, o.moneda) + ' el primer mes en vez de ' + precioTxt(o.precio, o.moneda) + ', y después tu precio de siempre.' +
+    '<br><a class="btn" href="' + url + '">Reactivar con 50% de descuento</a></div>';
 }
 
 /* ---- gestión de suscripción ----
@@ -545,9 +569,44 @@ document.getElementById('manageBtn').addEventListener('click', async () => {
 document.getElementById('cancelBtn').addEventListener('click', async () => {
   const h = await authHeaders();
   if(!h){ showState('stateNoAuth'); return; }
+  /* Antes de dejarlo ir: si le toca, su siguiente mes al 50%
+     (api/retencion). Si la consulta falla, se cancela igual: nunca se
+     le pone una traba a quien quiere irse. */
+  const caja = document.getElementById('retOferta');
+  caja.hidden = true;
+  try{
+    const r = await fetch('/api/retencion', { method: 'POST', headers: { ...h, 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'ver' }) });
+    const d = r.ok ? await r.json() : null;
+    const o = d && d.oferta;
+    if(o){
+      caja.innerHTML = '<b>Antes de irte: tu siguiente mes a mitad de precio.</b>' +
+        'Te cobramos ' + precioTxt(o.precioOferta, o.moneda) + ' en vez de ' + precioTxt(o.precio, o.moneda) +
+        ' y después vuelve a tu precio normal. Sigues con todos tus modelos.' +
+        '<br><button type="button" id="retQuedarme">Quedarme con 50% de descuento</button>';
+      caja.hidden = false;
+      document.getElementById('retQuedarme').addEventListener('click', quedarme);
+    }
+  }catch(e){}
+  document.getElementById('confirmCancel').textContent = caja.hidden ? 'Sí, cancelar mi suscripción' : 'No, gracias — cancelar';
   document.getElementById('subConfirm').classList.add('open');
   document.getElementById('subConfirm').scrollIntoView({ block: 'center', behavior: 'smooth' });
 });
+const precioTxt = (n, m) => m === 'USD' ? '$' + Number(n).toFixed(2) + ' USD' : '$' + Number(n).toLocaleString('en-US');
+async function quedarme(){
+  const btn = document.getElementById('retQuedarme');
+  const msg = document.getElementById('subMsg');
+  btn.disabled = true; btn.textContent = 'Aplicando…';
+  try{
+    const r = await fetch('/api/retencion', { method: 'POST', headers: { ...(await authHeaders()), 'Content-Type': 'application/json' }, body: JSON.stringify({ accion: 'quedarme' }) });
+    const d = await r.json();
+    if(!r.ok || !d.ok) throw new Error(d.error || 'error');
+    msg.textContent = d.message; msg.className = 'sub-msg ok';
+    document.getElementById('subConfirm').classList.remove('open');
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Quedarme con 50% de descuento';
+    msg.textContent = 'No pudimos aplicar el descuento. Intenta de nuevo.'; msg.className = 'sub-msg bad';
+  }
+}
 document.getElementById('keepSub').addEventListener('click', () => {
   document.getElementById('subConfirm').classList.remove('open');
 });

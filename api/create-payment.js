@@ -7,6 +7,7 @@
 const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
+const { regresoPara, marcaOfertaUsada, anotaRestauracionMP } = require('../lib/retencion');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 
 function bearer(req) {
@@ -176,6 +177,16 @@ module.exports = async function handler(req, res) {
        mensual de MLB caía en mx.html salvo el fundador; ahora cada
        producto vuelve a su modelo, Europa incluida. */
     const subDest = destForPlan(planId);
+    /* Oferta de regreso (lib/retencion): quien canceló o se le venció su
+       mensualidad vuelve con el PRIMER cobro al 50% y luego su precio de
+       antes. MP no tiene "primer cobro distinto": el preapproval nace al
+       50% y api/mp-webhook lo sube a `regreso.precio` en cuanto entra
+       ese primer cobro. Solo si es el mismo plan que se le ofrece. */
+    const regreso = body && body.regreso
+      ? await regresoPara(user.id, ents, MONEDA).catch(e => { console.error('create-payment regreso:', e.message); return null; })
+      : null;
+    const conRegreso = regreso && regreso.plan === planId ? regreso : null;
+    const montoMensual = conRegreso ? conRegreso.precioOferta : finalPrice;
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',
@@ -192,7 +203,7 @@ module.exports = async function handler(req, res) {
                fundador y el de upgrade. Con plan.price se le cobraba
                a un fundador $899 en vez de $549 CADA MES —el precio
                se calculaba arriba y nunca llegaba al preapproval. */
-            transaction_amount: finalPrice,
+            transaction_amount: montoMensual,
             currency_id: MONEDA,
           },
           back_url: `${base}/${subDest}${sep(subDest)}pago=ok`,
@@ -203,6 +214,14 @@ module.exports = async function handler(req, res) {
       if (!mpRes.ok || !data.init_point) {
         console.error('Mercado Pago preapproval error:', data);
         return res.status(502).json({ error: 'No se pudo abrir la suscripción. Intenta con tarjeta.' });
+      }
+      if (conRegreso) {
+        /* Lo que el webhook necesita para regresar el precio tras el
+           primer cobro, y la marca de que la oferta ya se usó (si no paga,
+           lib/retencion se la devuelve: ver ofertaDisponible). */
+        await anotaRestauracionMP(data.id, { completo: conRegreso.precio, descuento: conRegreso.precioOferta, moneda: MONEDA });
+        await marcaOfertaUsada(user.id, { tipo: 'regreso', via: 'mp', ...conRegreso, suscripcion: data.id });
+        console.log('create-payment: regreso al 50%', user.id, planId, conRegreso.precioOferta, '→', conRegreso.precio, data.id);
       }
       return res.status(200).json({ checkout_url: data.init_point });
     } catch (e) {

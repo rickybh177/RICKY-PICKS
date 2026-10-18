@@ -10,6 +10,7 @@ const { PLANS, FULL_PASS_PLANS } = require('../lib/plans');
 const { grantEntitlement, getAdmin } = require('../lib/supabaseAdmin');
 const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
 const { choiceFromReason } = require('../lib/choices');
+const { restauraSiToca } = require('../lib/retencion');
 
 /* Correo del usuario (para poder cancelar sus suscripciones de
    Stripe cuando el pase lo compró por Mercado Pago). Best-effort. */
@@ -74,6 +75,7 @@ module.exports = async function handler(req, res) {
   if (type === 'subscription_preapproval' || type === 'subscription_authorized_payment') {
     try {
       let preapprovalId = dataId;
+      let montoCobrado = null;
       if (type === 'subscription_authorized_payment') {
         const apRes = await fetch(`https://api.mercadopago.com/authorized_payments/${dataId}`, {
           headers: { 'Authorization': `Bearer ${token}` },
@@ -81,6 +83,7 @@ module.exports = async function handler(req, res) {
         if (!apRes.ok) return res.status(apRes.status === 404 ? 404 : 502).end();
         const ap = await apRes.json();
         preapprovalId = ap.preapproval_id;
+        montoCobrado = ap.transaction_amount != null ? Number(ap.transaction_amount) : null;
         // solo cobros efectivamente procesados renuevan el acceso
         if (ap.status && !/processed|approved|accredited/i.test(String(ap.status))) {
           return res.status(200).end();
@@ -103,6 +106,14 @@ module.exports = async function handler(req, res) {
         products: choiceFromReason(planId, pre.reason) || undefined, preferRows: true,
       });
       console.log(`mp-webhook: suscripción ${type === 'subscription_preapproval' ? 'alta' : 'renovación'} — user_id=${userId} plan=${planId} preapproval=${preapprovalId}`);
+      /* Oferta de retención (lib/retencion): si este cobro fue el del 50%,
+         la mensualidad vuelve a su precio completo para el siguiente.
+         Solo en cobros procesados — y solo si lo que entró fue justo el
+         monto con descuento. Un error aquí no tumba el webhook: el acceso
+         ya se otorgó y el aviso queda para el siguiente cobro. */
+      if (type === 'subscription_authorized_payment') {
+        await restauraSiToca(preapprovalId, montoCobrado, token).catch(e => console.error('mp-webhook retencion:', e.message));
+      }
       /* Upgrade al Combo Total: apagar la suscripción anterior. */
       if (planId === 'combo_total') {
         await cancelOtherRecurring(userId, pre.payer_email || null, 'combo_total');

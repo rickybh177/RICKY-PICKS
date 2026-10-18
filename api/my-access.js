@@ -6,6 +6,7 @@
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
 const { cancelacionVigente } = require('../lib/cancelaciones');
+const { regresoPara } = require('../lib/retencion');
 const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
@@ -180,6 +181,15 @@ module.exports = async function handler(req, res) {
       /* { at, hasta, via } si canceló y todavía no se le acaba el acceso;
          Mis modelos le dice hasta cuándo y deja de ofrecerle "cancelar". */
       cancelada: await cancelacionVigente(user.id, ents).catch(() => null),
+      /* { plan, precio, precioOferta, moneda } si le toca volver con su
+         primer mes al 50% (lib/retencion). En pesos, que es como se
+         publica; el checkout recalcula en la moneda que elija. */
+      regreso: await (async () => {
+        const mx = await regresoPara(user.id, ents, 'MXN').catch(() => null);
+        if (!mx) return null;
+        const us = await regresoPara(user.id, ents, 'USD').catch(() => null);
+        return { ...mx, usd: us && us.plan === mx.plan ? { precio: us.precio, precioOferta: us.precioOferta } : null };
+      })(),
     });
   } catch (e) {
     console.error('my-access:', e);
