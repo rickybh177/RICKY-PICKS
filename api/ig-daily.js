@@ -34,6 +34,8 @@
    POST {action:'unschedule', id}
    POST {action:'config', paused, keyword}
    POST {action:'refresh-token'}
+   POST {action:'set-token', token}  → pega un token nuevo (se valida
+                                  contra la API y queda vigente ya)
    ============================================================ */
 const { armaPlan, armaPostDe } = require('../lib/ig/plan');
 const { renderSlide } = require('../lib/ig/render');
@@ -165,8 +167,11 @@ module.exports = async function handler(req, res) {
       let token = { ok: false };
       try {
         const st = await ig.tokenState();
-        token = { ok: true, refreshed_at: st.refreshed_at, expires_at: st.expires_at, source: st.refreshed_at ? 'kv' : 'env' };
-      } catch (e) { token = { ok: false, error: e.message }; }
+        /* `ok` = hay token; `valid` = Instagram lo acepta hoy (se pregunta /me). */
+        const chk = await ig.checkToken();
+        token = { ok: true, valid: chk.ok, username: chk.username || null, error: chk.ok ? null : chk.error,
+                  refreshed_at: st.refreshed_at, expires_at: st.expires_at, source: st.refreshed_at ? 'kv' : 'env' };
+      } catch (e) { token = { ok: false, valid: false, error: e.message }; }
       return res.status(200).json({ config: cfg, token, log, cron: process.env.CRON_SECRET ? 'configurado' : 'SIN CRON_SECRET', dev: IS_DEV });
     }
 
@@ -227,6 +232,11 @@ module.exports = async function handler(req, res) {
       if (typeof body.paused === 'boolean') patch.paused = body.paused;
       if (typeof body.keyword === 'string') patch.keyword = body.keyword.trim().toUpperCase().slice(0, 20);
       return res.status(200).json({ config: await pub.guardaConfig(patch) });
+    }
+    /* Token nuevo pegado en el panel: se valida y queda vigente ya. */
+    if (action === 'set-token') {
+      const out = await ig.setToken(body.token);
+      return res.status(200).json({ ok: true, ...out });
     }
     if (action === 'refresh-token') {
       const st = await ig.refreshToken();

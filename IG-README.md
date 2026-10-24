@@ -79,7 +79,12 @@ pasa a la primera.
   libremente. Pasada la ventana, Instagram rechaza el envío (el inbox lo indica).
 - **El token dura 60 días.** El post diario lo **refresca solo cada 7 días** y guarda el
   vigente en el KV (`ig-token`, bucket `odds-cache`); `IG_ACCESS_TOKEN` en Vercel es solo
-  el de arranque. Si pegas un token nuevo en Vercel, ese vuelve a mandar. Renovación a mano:
+  el de arranque. **Si Instagram invalida el token** (p.ej. al cambiar la contraseña de
+  la cuenta), genera uno nuevo en el panel de Meta y pégalo en **Admin Instagram → Post
+  diario → "Token nuevo de Instagram"**: se valida contra la API y queda vigente al
+  instante, sin tocar Vercel ni redeploy (`POST /api/ig-daily {action:'set-token', token}`).
+  El estado del panel pregunta `/me` cada vez, así que "Token OK" significa que hoy sirve.
+  Pegarlo en Vercel también funciona, pero solo entra con un deploy nuevo. Renovación a mano:
   botón "refresh-token" vía `POST /api/ig-daily {action:'refresh-token'}` o
   `GET https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=EL_TOKEN`.
 

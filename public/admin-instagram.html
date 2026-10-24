@@ -334,6 +334,11 @@
         <button class="refresh-btn" id="dailySaveCfg">Guardar</button>
         <span id="dailyCfgMsg" style="color:var(--muted)"></span>
       </div>
+      <div class="daily-cfg" id="dailyTokenRow">
+        <label>Token nuevo de Instagram <input id="dailyToken" type="password" placeholder="Pega aquí el token y dale Guardar" style="min-width:260px" autocomplete="off"></label>
+        <button class="refresh-btn" id="dailySaveToken">Guardar token</button>
+        <span id="dailyTokenMsg" style="color:var(--muted)"></span>
+      </div>
       <div class="daily-cfg">
         <b style="font-size:.84rem">Un partido específico</b>
         <select id="gameLiga" class="form-input" style="width:auto;padding:6px 10px">
@@ -647,9 +652,13 @@ async function loadDaily(){
     $('dailyPaused').checked = !!c.paused;
     $('dailyKeyword').value = c.keyword || '';
     const ultimo = (d.log||[]).find(l=>l.ok && l.media_id);
-    const tok = d.token && d.token.ok
-      ? '<span class="ok-dot">●</span> Token OK' + (d.token.expires_at ? ' (vence ' + new Date(d.token.expires_at).toLocaleDateString('es-MX') + ')' : ' (se refresca solo)')
-      : '<span class="bad-dot">●</span> Sin token de Instagram';
+    const t = d.token || {};
+    const tok = !t.ok
+      ? '<span class="bad-dot">●</span> Sin token de Instagram'
+      : t.valid === false
+        ? '<span class="bad-dot">●</span> <b style="color:#d93a3a">Token inválido</b> — pega uno nuevo abajo' + (t.error ? ' <span style="color:var(--muted)">(' + esc(t.error) + ')</span>' : '')
+        : '<span class="ok-dot">●</span> Token OK' + (t.username ? ' @' + esc(t.username) : '') + (t.expires_at ? ' (vence ' + new Date(t.expires_at).toLocaleDateString('es-MX') + ')' : ' (se refresca solo)');
+    $('dailyTokenRow').style.display = t.valid === false || !t.ok ? '' : 'none';
     const cron = d.cron === 'configurado' ? '<span class="ok-dot">●</span> Cron activo' : '<span class="bad-dot">●</span> Falta CRON_SECRET en Vercel';
     $('dailyBarText').innerHTML = tok + ' &nbsp;·&nbsp; ' + cron + ' &nbsp;·&nbsp; ' + (c.paused ? '<b style="color:#d93a3a">PAUSADO</b>' : '<b>Automático</b>') +
       (ultimo ? ' &nbsp;·&nbsp; Último post: ' + fmtTime(ultimo.at) + (ultimo.permalink ? ' <a href="'+esc(ultimo.permalink)+'" target="_blank">ver</a>' : '') : ' &nbsp;·&nbsp; Aún no se ha publicado nada');
@@ -670,6 +679,18 @@ $('dailySaveCfg').addEventListener('click', async ()=>{
     $('dailyCfgMsg').textContent = 'Guardado.'; setTimeout(()=>{ $('dailyCfgMsg').textContent=''; }, 2500);
     loadDaily();
   }catch(e){ $('dailyCfgMsg').textContent = e.message; }
+});
+$('dailySaveToken').addEventListener('click', async ()=>{
+  const token = $('dailyToken').value.trim();
+  if(!token){ $('dailyTokenMsg').textContent = 'Pega el token primero.'; return; }
+  $('dailySaveToken').disabled = true; $('dailyTokenMsg').textContent = 'Probando con Instagram…';
+  try{
+    const r = await apiDaily('set-token', { token });
+    $('dailyToken').value = '';
+    $('dailyTokenMsg').textContent = 'Listo: @' + (r.username||'') + ', vigente hasta ' + new Date(r.expires_at).toLocaleDateString('es-MX') + '. El post automático vuelve mañana a las 9:00.';
+    loadDaily();
+  }catch(e){ $('dailyTokenMsg').textContent = e.message; }
+  finally{ $('dailySaveToken').disabled = false; }
 });
 $('dailyPreview').addEventListener('click', async ()=>{
   const box = $('dailyPreviewBox');
