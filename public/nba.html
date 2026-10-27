@@ -467,14 +467,21 @@ function renderBoard(bd) {
     $('games').innerHTML = '<div class="state"><h2>' + (all.length ? 'Estos juegos ya se jugaron' : 'Sin juegos en estos días') + '</h2>Muévete de día con las flechas de arriba.</div>';
     return;
   }
-  /* orden por hora de inicio, agrupado por día; el pick gratis lleva su
-     etiqueta en lugar de saltarse al principio (dos días en la misma
-     cartelera: pinarlo arriba rompía la agrupación por día) */
-  const sorted = [...games].sort((a, b) => new Date(a.date) - new Date(b.date));
+  /* El pick gratis SIEMPRE hasta arriba (regla del dueño, 27-oct-2026):
+     quien entra sin el modelo lo ve de inmediato, sin buscarlo entre los
+     candados. Lleva su propio encabezado con el día; el resto va por hora
+     de inicio, agrupado por día. */
+  const featured = games.find(g => g.id === bd.featured_id) || null;
+  const rest = games.filter(g => g !== featured).sort((a, b) => new Date(a.date) - new Date(b.date));
   let html = '', lastDay = null, i = 0;
-  for (const g of sorted) {
+  if (featured) {
+    html += '<div class="day-h">Pick gratis · ' + dayLabel(featured.day_mx) + '</div>';
+    html += featured.locked ? lockedCard(featured, i) : gameCard(featured, i, guest);
+    i++;
+  }
+  for (const g of rest) {
     if (g.day_mx !== lastDay) { html += '<div class="day-h">' + dayLabel(g.day_mx) + '</div>'; lastDay = g.day_mx; }
-    html += g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === bd.featured_id);
+    html += g.locked ? lockedCard(g, i) : gameCard(g, i, false);
     i++;
   }
   $('games').innerHTML = html;
