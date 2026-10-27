@@ -1,12 +1,12 @@
 /* ============================================================
    AVISO DE LANZAMIENTO — "Ya está disponible el modelo de NBA".
 
-   Se muestra al entrar al sitio SOLO a quien tiene sesión iniciada, y
-   solo sus primeras 3 visitas (regla del dueño, 27-oct-2026). El
+   Se muestra al entrar al sitio a TODOS (con o sin cuenta; regla del
+   dueño, 27-oct-2026), solo las primeras 3 visitas. Con sesión, el
    contador vive en los metadatos del usuario de Supabase
-   (user_metadata.nba_aviso), así cuenta por CUENTA y no por aparato:
-   si entra desde el celular y luego desde la compu, son 2 de las 3.
-   Si Supabase no deja escribir, se respalda en localStorage.
+   (user_metadata.nba_aviso): cuenta por CUENTA y no por aparato. Sin
+   sesión, cuenta por navegador (localStorage). Dice de frente que la
+   NBA ya viene incluida en el plan de todos los modelos.
 
    Para quitar el aviso cuando ya no haga falta: borrar el <script
    src="/nba-aviso.js"> de las páginas (index, mis-modelos, nfl, mlb,
@@ -37,7 +37,7 @@
     el.setAttribute('role', 'status');
     el.innerHTML =
       '<div class="ball">🏀</div>' +
-      '<div class="tx"><b>Ya está disponible el modelo de NBA</b><small>Cada juego calculado posesión por posesión, con las bajas del día descontadas. Pick gratis todos los días.</small></div>' +
+      '<div class="tx"><b>Ya está disponible el modelo de NBA</b><small>Ya viene incluido en el plan de todos los modelos. Cada juego calculado posesión por posesión, con las bajas del día descontadas, y pick gratis todos los días.</small></div>' +
       '<a class="go" href="/nba.html">Ver NBA</a>' +
       '<button class="x" aria-label="Cerrar">×</button>';
     document.body.appendChild(el);
@@ -50,22 +50,20 @@
   async function main() {
     var test = /[?&]nba_aviso=test/.test(location.search);
     if (test) { pinta(); return; }
-    if (!window.supabase || !window.supabase.createClient) return;
-    var sb;
-    try { sb = window.supabase.createClient(URL, ANON); } catch (e) { return; }
-    var session = null;
-    try { var r = await sb.auth.getSession(); session = r && r.data && r.data.session; } catch (e) {}
-    if (!session || !session.user) return; // solo cuentas con sesión
-    var user = session.user;
+    var sb = null, session = null;
+    try { if (window.supabase && window.supabase.createClient) sb = window.supabase.createClient(URL, ANON); } catch (e) {}
+    try { if (sb) { var r = await sb.auth.getSession(); session = r && r.data && r.data.session; } } catch (e) {}
+    var user = session && session.user ? session.user : null;
+    var lk = KEY + '_' + (user ? user.id : 'anon');
     var local = 0;
-    try { local = Number(localStorage.getItem(KEY + '_' + user.id) || 0); } catch (e) {}
-    var meta = Number((user.user_metadata || {})[KEY] || 0);
+    try { local = Number(localStorage.getItem(lk) || 0); } catch (e) {}
+    var meta = user ? Number((user.user_metadata || {})[KEY] || 0) : 0;
     var n = Math.max(meta, local);
     if (n >= MAX) return;
     pinta();
     n++;
-    try { localStorage.setItem(KEY + '_' + user.id, String(n)); } catch (e) {}
-    try { var d = {}; d[KEY] = n; await sb.auth.updateUser({ data: d }); } catch (e) {}
+    try { localStorage.setItem(lk, String(n)); } catch (e) {}
+    if (user) { try { var d = {}; d[KEY] = n; await sb.auth.updateUser({ data: d }); } catch (e) {} }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', main);

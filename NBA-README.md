@@ -12,9 +12,10 @@ y `nba_temporada` $899, y es el octavo modelo de "tres a elegir" y de
 `api/nba-props.js`. Para volver a beta privada: `NBA_PUBLIC = false` en
 los tres endpoints (cualquiera que no sea `rickybh17@gmail.com` recibe
 `403 { beta: true }`). Al abrir se publicó un aviso de lanzamiento
-(`public/nba-aviso.js`): solo a cuentas con sesión, 3 veces por cuenta
-(contador en `user_metadata.nba_aviso`); se quita borrando el
-`<script>` de las páginas.
+(`public/nba-aviso.js`): a todos, con o sin cuenta, 3 veces (contador en
+`user_metadata.nba_aviso` con sesión, en localStorage sin ella); dice
+que la NBA ya viene incluida en el plan de todos los modelos. Se quita
+borrando el `<script>` de las páginas.
 
 Todo el modelo vive en el backend (`lib/nba/`); el navegador recibe
 solo probabilidades, líneas, veredictos y proyecciones.
