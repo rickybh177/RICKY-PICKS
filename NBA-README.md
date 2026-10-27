@@ -1,14 +1,20 @@
-# MODELO NBA 2026-27 (beta privada)
+# MODELO NBA 2026-27
 
 Modelo de predicción de la NBA integrado a Dattip, al nivel de los de
 NFL, Liga MX y Europa: mercados de partido (ganador, hándicap, total,
 totales por equipo, 1ª mitad, 1er cuarto), props de jugador (puntos,
 rebotes, asistencias, triples, PRA y doble-doble) y una combinada
-sugerida del día. Nació el 26-oct-2026 en **beta privada solo-admin**:
-`/nba.html` + `api/nba-picks.js` / `api/nba-free.js` / `api/nba-props.js`
-con candado server-side. Mientras `NBA_PUBLIC` sea `false` en los tres
-endpoints, cualquiera que no sea `rickybh17@gmail.com` recibe
-`403 { beta: true }` y la página muestra "Beta privada — muy pronto".
+sugerida del día. Nació el 26-oct-2026 en beta privada solo-admin y se
+**abrió al público el 27-oct-2026** (freemium: el pick gratis del día va
+completo, el resto se bloquea en el servidor; planes `nba_mensual` $349
+y `nba_temporada` $899, y es el octavo modelo de "tres a elegir" y de
+"todos"). `/nba.html` + `api/nba-picks.js` / `api/nba-free.js` /
+`api/nba-props.js`. Para volver a beta privada: `NBA_PUBLIC = false` en
+los tres endpoints (cualquiera que no sea `rickybh17@gmail.com` recibe
+`403 { beta: true }`). Al abrir se publicó un aviso de lanzamiento
+(`public/nba-aviso.js`): solo a cuentas con sesión, 3 veces por cuenta
+(contador en `user_metadata.nba_aviso`); se quita borrando el
+`<script>` de las páginas.
 
 Todo el modelo vive en el backend (`lib/nba/`); el navegador recibe
 solo probabilidades, líneas, veredictos y proyecciones.
@@ -261,24 +267,18 @@ node dev-server.js                                 # /nba.html · ?as=guest · ?
   (`lib/ig/plan.js`, con lámina de props): mientras esté en beta,
   `/api/nba-free` contesta 403 y la liga se salta sola.
 
-## Cómo abrir al público (checklist)
+## Qué se tocó al abrir al público (27-oct-2026)
 
-1. `NBA_PUBLIC = true` en `api/nba-picks.js`, `api/nba-free.js` y
-   `api/nba-props.js`.
-2. Quitar `upcoming` de `nba_mensual` y `nba_temporada` en
-   `lib/plans.js` (y revisar `anchor` de `todo_mensual`: 8 modelos).
-3. `public/checkout.html`: agregar `nba` a `ALL_MODELS`, a los nombres
-   y al mapa de productos (el verificador avisa:
-   `node scripts/verify-plans.js`). `api/stripe-create.js` ya tiene el
-   título. Confirmar que el producto exista en Stripe/Mercado Pago como
-   los demás mensuales.
-4. `public/mis-modelos.html`: quitar el `display:none` de `cardNba`;
-   `public/producto.html`: pestaña 🏀 NBA en la barra; `public/index.html`:
-   entrada en `LIGAS`; barras de modelos de las otras páginas
-   (`nfl.html`, `mlb.html`, `mx.html`, `europa.html`): enlace a `/nba.html`.
-5. `TAQUILLEROS.nba` en `lib/free-pick.js` (hoy vacío: ningún partido
-   se castiga como "partidazo").
-6. Copy de ads/landing con lenguaje de análisis (reglas de Meta).
+`NBA_PUBLIC = true` en los tres endpoints; `upcoming` fuera de
+`nba_mensual` / `nba_temporada` (USD 19.99 / 49.99; `anchor` de
+`todo_mensual` a 8 × $349 = $2,792); `checkout.html` con los dos planes,
+`nba` en `ALL_MODELS` y en el mapa de productos; tarjeta en
+mis-modelos, pestaña en producto.html e index.html, enlace en las barras
+de los otros modelos, "los ocho" en los banners; `TAQUILLEROS.nba`
+(Lakers, Celtics, Warriors, Knicks, Bulls, Heat, Thunder). El post diario
+de Instagram toma el pick de NBA solo desde ese día. Las pasarelas cobran
+con `price_data` dinámico (no hay que dar de alta nada en Stripe ni en
+Mercado Pago).
 
 ## Pendientes
 

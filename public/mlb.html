@@ -270,6 +270,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <span class="mt-opt active" role="tab" aria-selected="true">⚾ MLB</span>
       <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/nba.html">🏀 NBA</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="epl" href="/europa.html?liga=epl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="laliga" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
@@ -299,7 +300,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <button id="upsellClose" aria-label="Cerrar" style="position:absolute;top:10px;right:12px;color:var(--faint);font-size:1rem">✕</button>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--blue-deep);margin-bottom:8px">Oferta única · <span id="upsellLeft">—</span> restantes</div>
     <div style="font-weight:700;font-size:1.02rem;letter-spacing:-0.015em;margin-bottom:4px">¿Te quedas todo el mes?</div>
-    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Tu Semana termina pronto. Sigue con el modelo completo por suscripción: solo MLB, tres modelos a elegir o los siete. Cancela cuando quieras.</div>
+    <div style="font-size:0.86rem;color:var(--muted);margin-bottom:14px">Tu Semana termina pronto. Sigue con el modelo completo por suscripción: solo MLB, tres modelos a elegir o los ocho. Cancela cuando quieras.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px">
       <a href="/checkout.html?plan=mlb_mensual" style="text-decoration:none;text-align:center;background:var(--blue-deep);color:#fff;font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">⚾ Solo MLB<br><span style="font-weight:500;font-size:0.78rem">$349 al mes</span></a>
       <a href="/producto.html?m=mlb" style="text-decoration:none;text-align:center;background:var(--g0);color:var(--text);border:1px solid var(--line-2);font-weight:700;font-size:0.88rem;padding:12px 10px;border-radius:10px">Ver los planes<br><span style="font-weight:500;font-size:0.78rem;color:var(--muted)">3 modelos $599 · todos $899</span></a>
@@ -313,7 +314,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
 <div class="plans-banner" id="plansBanner">
   <div class="wrap">
-    <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>Solo MLB por $349 al mes, tres modelos a elegir por $599 o los siete por $899. Cancela cuando quieras.</small></div>
+    <div class="txt">¿Vienes por el pick gratis… o por resultados todos los días?<small>Solo MLB por $349 al mes, tres modelos a elegir por $599 o los ocho por $899. Cancela cuando quieras.</small></div>
     <div class="acts">
       <a class="day" href="/checkout.html?plan=mlb_mensual">Solo MLB $349/mes</a>
       <a class="founder" href="/producto.html?m=mlb">Ver los planes</a>
@@ -793,5 +794,7 @@ load(null);
   centra(); window.addEventListener('load', centra); setTimeout(centra, 400); /* la barra puede pintarse por JS después */
 })();
 </script>
+<!-- aviso de lanzamiento NBA (27-oct-2026): solo con sesión, 3 veces por cuenta; quitar cuando ya no haga falta -->
+<script src="/nba-aviso.js" defer></script>
 </body>
 </html>

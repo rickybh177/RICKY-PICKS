@@ -24,7 +24,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:site_name" content="Dattip">
 <meta property="og:title" content="Dattip — La data le gana al tipster">
-<meta property="og:description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, Liga MX, Champions, MLB, Premier, LaLiga y Bundesliga. Pick gratis cada jornada.">
+<meta property="og:description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, NBA, Liga MX, Champions, MLB, Premier, LaLiga y Bundesliga. Pick gratis cada jornada.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dattip.com/">
 <meta property="og:image" content="https://dattip.com/og-dattip.png">
@@ -32,7 +32,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://dattip.com/og-dattip.png">
 <title>Dattip — La data le gana al tipster</title>
-<meta name="description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, Liga MX, Champions, MLB, Premier, LaLiga y Bundesliga. Pick gratis cada jornada.">
+<meta name="description" content="Un modelo juega cada partido 10,000 veces en la computadora y te marca dónde tu casa está pagando de más. NFL, NBA, Liga MX, Champions, MLB, Premier, LaLiga y Bundesliga. Pick gratis cada jornada.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -423,6 +423,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 
     <div class="model-toggle" role="tablist" aria-label="Cambiar de liga" id="ligaTabs">
       <button type="button" role="tab" data-m="nfl" aria-selected="false">🏈 NFL</button>
+      <button type="button" role="tab" data-m="nba" aria-selected="false">🏀 NBA</button>
       <button type="button" role="tab" data-m="mx" aria-selected="false">⚽ Liga MX</button>
       <button type="button" role="tab" data-m="ucl" aria-selected="false">🏆 Champions</button>
       <button type="button" role="tab" data-m="mlb" aria-selected="false">⚾ MLB</button>
@@ -689,11 +690,12 @@ document.documentElement.classList.add('js');
 /* ============================================================
    PICK GRATIS — la misma card de producto.html, una por liga, en un
    carrusel: deslizar o las flechas cambian de liga, y las pestañas de
-   arriba van sincronizadas. Las siete se piden en paralelo; cada una
+   arriba van sincronizadas. Las ocho se piden en paralelo; cada una
    pinta su diapositiva en cuanto llega.
    ============================================================ */
 const LIGAS = [
   { m: 'nfl',        nombre: 'NFL',            api: '/api/nfl-picks?as=guest' },
+  { m: 'nba',        nombre: 'NBA',            api: '/api/nba-free' },
   { m: 'mx',         nombre: 'Liga MX',        api: '/api/mx-free' },
   { m: 'ucl',        nombre: 'Champions',      api: '/api/euro-free?liga=ucl', euro: true },
   { m: 'mlb',        nombre: 'MLB',            api: '/api/mlb-free' },
@@ -761,7 +763,7 @@ let ligaActual = 'nfl';
         verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
         odds: v ? pct(v.prob) : '', venue: g.venue || '' };
       sub = 'HOY';
-    } else if ((m === 'mx' || cfg.euro) && d.game) {
+    } else if ((m === 'mx' || m === 'nba' || cfg.euro) && d.game) {
       /* /api/euro-free trae la MISMA forma que /api/mx-free (más
          league_id / league_name): card idéntica. */
       const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
@@ -774,6 +776,7 @@ let ligaActual = 'nfl';
         odds: v ? pct(v.prob) : '', venue: g.venue || '' };
       sub = cfg.euro
         ? ((d.league_name || cfg.nombre) + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase()
+        : m === 'nba' ? ('NBA · ' + fecha(g.date)).toUpperCase()
         : (d.jornada ? 'JORNADA ' + d.jornada : '');
     } else if (m === 'nfl') {
       const g = (d.games || []).find(x => x.id === d.featured_id);
@@ -864,7 +867,7 @@ let ligaActual = 'nfl';
   }
   addEventListener('resize', ajustaAlto);
 
-  /* ---- carga de las siete, en paralelo ---- */
+  /* ---- carga de las ocho, en paralelo ---- */
   LIGAS.forEach(async (cfg, k) => {
     let out;
     try {
@@ -1079,8 +1082,8 @@ function refreshUI(){
    botones que llevan a los planes de ese modelo lo mandan directo a su
    modelo. Sin sesión, o sin ese modelo, todo sigue igual. Lo decide
    /api/my-access, nunca el navegador. */
-const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl' };
-const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
+const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', nba: '/nba.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl' };
+const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', nba: 'NBA', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
 let _acceso = null, _accesoDe = null;
 async function atajosDeCliente(){
   const links = [...document.querySelectorAll('a[href^="/producto.html?m="], a[data-plans-href]')];
@@ -1126,5 +1129,7 @@ authBtn.addEventListener('click', async () => {
 
 window.addEventListener('pageshow', (e) => { if(e.persisted) window.location.reload(); });
 </script>
+<!-- aviso de lanzamiento NBA (27-oct-2026): solo con sesión, 3 veces por cuenta; quitar cuando ya no haga falta -->
+<script src="/nba-aviso.js" defer></script>
 </body>
 </html>

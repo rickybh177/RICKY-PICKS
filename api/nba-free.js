@@ -15,7 +15,10 @@ const { getUserFromToken } = require('../lib/supabaseAdmin');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
-const NBA_PUBLIC = false;
+/* 27-oct-2026: ABIERTO al público (freemium: pick gratis completo, el
+   resto bloqueado en el servidor). Para volver a beta privada: false
+   en los tres endpoints. */
+const NBA_PUBLIC = true;
 
 let _cache = null; // { at, value }
 const TTL = 10 * 60 * 1000;

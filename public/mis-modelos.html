@@ -83,7 +83,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   h1 { font-weight: 800; font-size: clamp(1.9rem, 5vw, 2.6rem); letter-spacing: -0.035em; line-height: 1.05; }
   .lede { color: var(--muted); margin-top: 12px; max-width: 54ch; }
 
-  /* TARJETAS DE MODELO (siete: MLB, Liga MX, NFL, Premier, LaLiga, Bundesliga y Champions → 2 columnas) */
+  /* TARJETAS DE MODELO (ocho: MLB, Liga MX, NFL, NBA, Premier, LaLiga, Bundesliga y Champions → 2 columnas) */
   .models { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin: 32px 0 40px; }
   .model-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; background: #fff; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
   .model-card:hover { transform: translateY(-2px); box-shadow: 0 18px 46px -26px rgba(22,24,29,0.4); border-color: #d5deea; }
@@ -228,10 +228,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <a class="mc-cta" id="ctaNfl" href="/nfl.html">Abrir modelo →</a>
       </div>
 
-      <!-- NBA (beta privada, 26-oct-2026): la tarjeta solo aparece para
-           quien ya tiene el producto (hoy: el admin). Al abrir al público,
-           quitar el display:none. -->
-      <div class="model-card" id="cardNba" style="display:none">
+      <!-- NBA: abierta al público el 27-oct-2026 (nació en beta privada el 26). -->
+      <div class="model-card" id="cardNba">
         <div class="mc-top">
           <span class="mc-ico">🏀</span>
           <span class="mc-chip" id="chipNba">Sin acceso</span>
@@ -481,8 +479,7 @@ async function boot(){
     paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga', fin.laliga);
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
-    /* NBA en beta privada: la tarjeta solo se enseña a quien tiene el producto */
-    if (acc.nba) { document.getElementById('cardNba').style.display = ''; paint(true, 'chipNba', 'ctaNba', '/producto.html?m=nba', fin.nba); }
+    paint(!!acc.nba, 'chipNba', 'ctaNba', '/producto.html?m=nba', fin.nba);
     window.__acc = acc; // para la oferta de regreso del plan de tres
     pintaTres(acc.tres);
     pintaFinAviso(acc);
@@ -494,8 +491,8 @@ async function boot(){
 /* ---- Plan "Tres modelos a elegir": un cambio por periodo de cobro ----
    El servidor (api/swap-model.js) decide todo; aquí solo se ofrece
    quitar uno de los tres y meter otro. */
-const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
-const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
+const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
 const fechaMX = iso => { try { return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'long' }); } catch(e){ return ''; } };
 function pintaTres(tres){
   const box = document.getElementById('tresBox');
@@ -653,5 +650,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
 window.addEventListener('pageshow', (e) => { if(e.persisted) boot(); });
 boot();
 </script>
+<!-- aviso de lanzamiento NBA (27-oct-2026): solo con sesión, 3 veces por cuenta; quitar cuando ya no haga falta -->
+<script src="/nba-aviso.js" defer></script>
 </body>
 </html>

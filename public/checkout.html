@@ -542,11 +542,34 @@ const PLANS = {
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
+  nba_mensual: {
+    name: 'Modelo NBA — Suscripción mensual',
+    price: '$349',
+    currency: 'MXN',
+    period: 'Suscripción mensual · cancela cuando quieras',
+    features: [
+      'Todos los juegos de cada noche: ganador, hándicap, total, 1ª mitad y props de jugador',
+      'Las bajas del día descontadas y veredicto contra los momios reales',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
+  nba_temporada: {
+    name: 'Modelo NBA — Temporada 2026-27 completa',
+    price: '$899',
+    currency: 'MXN',
+    period: 'Pago único · hasta las Finales',
+    features: [
+      'NBA completa hasta el final de la temporada 2026-27, playoffs incluidos',
+      'Todos los juegos, mercados, props y análisis, sin límite',
+      'Un solo pago: sin renovaciones ni cargos mensuales',
+      'Mes a mes saldría en $2,792 MXN — ahorras $1,893 MXN',
+    ],
+  },
   tres_mensual: {
     name: 'Tres modelos a elegir — Suscripción mensual',
     price: '$599',
     currency: 'MXN',
-    period: 'Suscripción mensual · tú eliges 3 de los 7 modelos',
+    period: 'Suscripción mensual · tú eliges 3 de los 8 modelos',
     choose: 3,
     features: [
       'Los tres modelos que elijas, completos: todos los partidos y todos los mercados',
@@ -559,10 +582,10 @@ const PLANS = {
     name: 'Todos los modelos — Suscripción mensual',
     price: '$899',
     currency: 'MXN',
-    period: 'Suscripción mensual · los 7 modelos',
+    period: 'Suscripción mensual · los 8 modelos',
     features: [
       'MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions: sale a $128 MXN por modelo',
-      'Por separado serían $2,443 MXN al mes',
+      'Por separado serían $2,792 MXN al mes',
       'Beisbol a diario, fútbol cada fin de semana y entre semana, NFL cada jornada',
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
@@ -649,9 +672,9 @@ const NEXT = (() => { const n = params.get('next') || ''; return /^\/[a-z0-9\-._
    Vienen en ?modelos=a,b,c desde producto.html y se pueden ajustar
    aquí mismo (chips en la tarjeta). El servidor exige exactamente 3
    válidos; aquí solo se refleja. */
-const ALL_MODELS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
-const MODEL_NAME = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
-const MODEL_ICO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆' };
+const ALL_MODELS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
+const MODEL_NAME = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
+const MODEL_ICO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
 const CHOOSE_N = (PLANS[planId] && PLANS[planId].choose) || 0;
 let chosen = ALL_MODELS.filter(m => String(params.get('modelos') || '').split(',').includes(m));
 if(!CHOOSE_N) chosen = [];
@@ -1116,7 +1139,8 @@ function productsOf(p){
   if(p.startsWith('laliga_')) return ['laliga'];
   if(p.startsWith('bundesliga_')) return ['bundesliga'];
   if(p.startsWith('ucl_')) return ['ucl'];
-  if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO);
+  if(p.startsWith('nba_')) return ['nba'];
+  if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO, ['nba']);
   if(p.startsWith('tres_')) return chosen.slice(); // "a elegir": lo que escogió
   return ['mundial'];
 }
@@ -1294,7 +1318,7 @@ async function renderSession(session){
           : o.motivo === 'tres_modelos'
           ? '<strong>★ Tu upgrade</strong><br>' +
             'Ya pagas ' + money(o.price - o.sube, 'MXN') + ' MXN al mes por 3 modelos. Con <strong>' +
-            money(o.sube, 'MXN') + ' MXN más</strong> te llevas los 7. Tu plan actual se cancela solo al pagar.'
+            money(o.sube, 'MXN') + ' MXN más</strong> te llevas los 8. Tu plan actual se cancela solo al pagar.'
           : '<strong>★ Tu precio por ser cliente</strong><br>' +
             'Ya tienes un modelo con nosotros, así que pagas <strong>' + px('MXN') +
             ' al mes</strong> en vez de ' + lista('MXN') + '. Tu mensualidad actual se cancela sola al pagar y el precio se queda mientras no canceles.';

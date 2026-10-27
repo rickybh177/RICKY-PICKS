@@ -444,6 +444,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/producto.html?m=laliga" data-m="laliga" role="tab">🇪🇸 LaLiga</a>
       <a href="/producto.html?m=bundesliga" data-m="bundesliga" role="tab">🇩🇪 Bundesliga</a>
       <a href="/producto.html?m=ucl" data-m="ucl" role="tab">🏆 Champions</a>
+      <a href="/producto.html?m=nba" data-m="nba" role="tab">🏀 NBA</a>
     </div>
 
     <div class="cols">
@@ -549,9 +550,9 @@ const MODELOS = {
          titulo: 'La Bundesliga completa, jornada por jornada',
          lede: 'Las 34 jornadas de Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
          mensual: 'bundesliga_mensual', temporada: 'bundesliga_temporada' },
-  /* NBA (26-oct-2026): beta privada. Sin pestaña pública: se llega por
-     ?m=nba. `euro: true` reutiliza el camino "próximamente" mientras sus
-     planes lleven `upcoming`. */
+  /* NBA: abierta al público el 27-oct-2026. `euro: true` = su "todos"
+     es todo_mensual y, si sus planes volvieran a `upcoming`, pintaría
+     "próximamente" solo. */
   nba: { nombre: 'NBA', pagina: '/nba.html', api: '/api/nba-free', euro: true,
          titulo: 'La temporada 2026-27 completa, noche por noche',
          lede: 'Cada juego calculado posesión por posesión: ganador, hándicap, total, 1ª mitad y props de jugador, con las bajas del día descontadas y veredicto contra los momios reales.',
@@ -625,7 +626,7 @@ const BULLETS = {
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
   todo: () => ([
-    'Todos los modelos: MLB, Liga MX, NFL, Premier League, LaLiga, Bundesliga y Champions',
+    'Todos los modelos: MLB, Liga MX, NFL, NBA, Premier League, LaLiga, Bundesliga y Champions',
     'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
@@ -660,7 +661,7 @@ function pintaAviso() {
        (su precio es casi el de lista, tacharlo se vería ridículo). */
     box.innerHTML = '<span class="fn-ico">★</span><span>' +
       '<b>Ya tienes 3 modelos. Te faltan 4.</b>' +
-      '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas los 7 — sin elegir, sin quedarte fuera de nada. ' +
+      '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas los 8 — sin elegir, sin quedarte fuera de nada. ' +
       'Tu plan de ahora se cancela solo al pagar.</span></span>';
   } else {
     /* Copy del upgrade: corto, concreto y con los dos precios. */
@@ -695,7 +696,7 @@ async function sincronizaOfertas() {
 }
 
 /* Los 7 modelos vendibles (orden canónico, el mismo de lib/plans.js) */
-const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
+const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
 const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
 const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
 /* elección del plan "tres a elegir": arranca con el modelo de esta página */
@@ -828,7 +829,7 @@ function pintaOpciones(p) {
       .concat(nota ? [nota] : [])
       .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
     html += '<div class="sep">O bien</div>';
-    html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + Premier + LaLiga + Bundesliga + Champions',
+    html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + NBA + Premier + LaLiga + Bundesliga + Champions',
       money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
       bullets, etiqueta,
       tachado || (oTodo ? null : (todo.anchor ? money(todo.anchor) : null)),

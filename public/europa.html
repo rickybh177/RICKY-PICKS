@@ -299,6 +299,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/nba.html">🏀 NBA</a>
     </div>
     <div class="meta-band" id="metaBand"></div>
     <div class="guest-bar" id="guestBar" style="display:none">
@@ -422,7 +423,7 @@ async function loadPlans() {
     const partes = [];
     if (liga) partes.push('solo ' + L.corto + ' por ' + money(liga.price) + ' al mes');
     if (tres) partes.push('tres modelos a elegir por ' + money(tres.price));
-    if (todo) partes.push('los siete por ' + money(todo.price));
+    if (todo) partes.push('los ocho por ' + money(todo.price));
     $('plansSub').textContent = partes.length
       ? partes[0].charAt(0).toUpperCase() + partes[0].slice(1) + (partes.length > 1 ? ', ' + partes.slice(1).join(' o ') : '') + '. Cancela cuando quieras.'
       : '';
@@ -932,5 +933,7 @@ if (_params.get('pago') === 'ok') {
   centra(); window.addEventListener('load', centra); setTimeout(centra, 400); /* la barra puede pintarse por JS después */
 })();
 </script>
+<!-- aviso de lanzamiento NBA (27-oct-2026): solo con sesión, 3 veces por cuenta; quitar cuando ya no haga falta -->
+<script src="/nba-aviso.js" defer></script>
 </body>
 </html>
