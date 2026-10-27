@@ -247,6 +247,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      otro lado. */
   .logo .tip { color: var(--blue); }
 </style>
+<script src="/barras.js"></script>
 </head>
 <body>
 
@@ -466,6 +467,14 @@ function teamRows(g) {
   return row(g.away, final ? g.score.away : null, rest.away) + row(g.home, final ? g.score.home : null, rest.home);
 }
 
+/* barras de un vistazo: modelo vs. dónde está el dinero (public/barras.js) */
+function barras(g) {
+  const m = g.markets, mo = m && m.market_odds;
+  return window.barrasPartido ? barrasPartido([g.away.abbr, g.home.abbr],
+    m && m.moneyline && [m.moneyline.away, m.moneyline.home],
+    mo && [mo.ml_away, mo.ml_home]) : '';
+}
+
 function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
@@ -488,7 +497,7 @@ function gameCard(g, i, isFree) {
     : '';
   return '<div class="card" style="--i:' + i + '">' +
     (isFree ? '<span class="freeflag">Pick gratis de la ' + (currentST === 1 ? 'pretemporada' : 'semana') + (g.state === 'post' ? ' · ya se jugó' : '') + '</span>' : '') +
-    metaRow(g) + teamRows(g) +
+    metaRow(g) + teamRows(g) + barras(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
     playedNote + analysis + moreDetails(g) +
   '</div>';

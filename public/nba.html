@@ -260,6 +260,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      otro lado. */
   .logo .tip { color: var(--blue); }
 </style>
+<script src="/barras.js"></script>
 </head>
 <body>
 
@@ -517,6 +518,14 @@ function teamRows(g) {
   return row(g.away, final ? g.score.away : null, subA) + row(g.home, final ? g.score.home : null, subH);
 }
 
+/* barras de un vistazo: modelo vs. dónde está el dinero (public/barras.js) */
+function barras(g) {
+  const m = g.markets, mo = m && m.market_odds;
+  return window.barrasPartido ? barrasPartido([g.away.abbr, g.home.abbr],
+    m && m.moneyline && [m.moneyline.away, m.moneyline.home],
+    mo && [mo.ml_away, mo.ml_home]) : '';
+}
+
 function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '"><span class="vl">' + esc(v.label) +
@@ -528,7 +537,7 @@ function gameCard(g, i, isFree) {
       '<a href="/checkout.html?plan=nba_mensual">Desbloquear la cartelera — Mensual $349</a></div>' : '';
   return '<div class="card" style="--i:' + i + '">' +
     (isFree ? '<span class="freeflag">Pick gratis del día' + (g.state === 'post' ? ' · ya se jugó' : '') + '</span>' : '') +
-    metaRow(g) + teamRows(g) + '<div class="verdicts">' + verdicts + '</div>' + playedNote + analysis + moreDetails(g) + '</div>';
+    metaRow(g) + teamRows(g) + barras(g) + '<div class="verdicts">' + verdicts + '</div>' + playedNote + analysis + moreDetails(g) + '</div>';
 }
 
 const barV = (p, bet, maybe) => (p == null ? null : p >= bet ? 'bet' : p >= maybe ? 'maybe' : 'skip');

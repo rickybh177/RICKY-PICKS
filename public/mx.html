@@ -258,6 +258,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      otro lado. */
   .logo .tip { color: var(--blue); }
 </style>
+<script src="/barras.js"></script>
 </head>
 <body>
 
@@ -527,6 +528,14 @@ function teamRows(g) {
   return row(g.home, final ? g.score.home : null) + row(g.away, final ? g.score.away : null);
 }
 
+/* barras de un vistazo: modelo vs. dónde está el dinero (public/barras.js) */
+function barras(g) {
+  const m = g.markets, mo = m && m.market_odds;
+  return window.barrasPartido ? barrasPartido([g.home.abbr || g.home.name, 'Empate', g.away.abbr || g.away.name],
+    m && m.moneyline && [m.moneyline.home, m.moneyline.draw, m.moneyline.away],
+    mo && [mo.ml_home, mo.ml_draw, mo.ml_away]) : '';
+}
+
 function gameCard(g, i) {
   // invitado: partido bloqueado — equipos visibles, veredictos censurados
   // (el candado es del servidor: aquí no hay datos que esconder)
@@ -545,7 +554,7 @@ function gameCard(g, i) {
     ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>'
     : '';
   return '<div class="card" style="--i:' + (i % 12) + '">' +
-    metaRow(g) + teamRows(g) +
+    metaRow(g) + teamRows(g) + barras(g) +
     '<div class="verdicts" id="v-' + esc(g.id) + '">' + vrowsHtml(g.verdicts) + '</div>' +
     (g.state === 'pre' ? uoddsHtml(g) : '') +
     analysis + moreDetails(g) +

@@ -241,6 +241,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      otro lado. */
   .logo .tip { color: var(--blue); }
 </style>
+<script src="/barras.js"></script>
 </head>
 <body>
 
@@ -510,6 +511,14 @@ function vSub(v) {
   return '<small>' + bits.join(' · ') + '</small>';
 }
 
+/* barras de un vistazo: modelo vs. dónde está el dinero (public/barras.js) */
+function barras(g) {
+  const m = g.markets, mo = g.market;
+  return window.barrasPartido ? barrasPartido([g.away.abbr, g.home.abbr],
+    m && m.moneyline && [m.moneyline.away, m.moneyline.home],
+    mo && [mo.ml_away, mo.ml_home]) : '';
+}
+
 function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '">' +
@@ -522,7 +531,7 @@ function gameCard(g, i, isFree) {
     : '';
   return '<div class="card' + (isFree ? ' free' : '') + '" style="--i:' + i + '">' +
     (isFree ? '<span class="freeflag">Pick gratis de hoy</span>' : '') +
-    metaRow(g) + teamRows(g) +
+    metaRow(g) + teamRows(g) + barras(g) +
     '<div class="verdicts">' + verdicts + '</div>' +
     analysis +
     moreDetails(g) +
