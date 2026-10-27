@@ -5,7 +5,7 @@
    "Mis modelos" y el checkout pinten el acceso sin adivinar.
    ============================================================ */
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
-const { cancelacionVigente } = require('../lib/cancelaciones');
+const { cancelacionVigente, perdioFundador } = require('../lib/cancelaciones');
 const { regresoPara } = require('../lib/retencion');
 const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
@@ -70,18 +70,20 @@ module.exports = async function handler(req, res) {
     /* Precio de fundador de "Todos los modelos" para clientes antiguos
        (o null). El front solo lo PINTA; el cobro lo vuelve a decidir el
        servidor en stripe-create / create-payment. */
-    const founder = founderPriceFor(ents);
+    /* quien canceló alguna vez ya no tiene precio de fundador */
+    const sinFundador = await perdioFundador(user.id).catch(() => false);
+    const founder = founderPriceFor(ents, { sinFundador });
     /* Ofertas vivas para este cliente, por plan: { price, motivo,
        lista, ahorro }. El front solo las PINTA; el cobro lo vuelve a
        decidir el servidor con la misma función. */
     const ofertas = {};
     for (const pl of ['tres_mensual', 'todo_mensual']) {
-      const o = precioDe(pl, ents, 'MXN');
+      const o = precioDe(pl, ents, 'MXN', { sinFundador });
       if (!o) continue;
       /* El mismo precio en dólares, para quien elija pagar así con
          tarjeta. El principal es el de pesos: es lo que se cobra por
          default en las dos pasarelas. */
-      const us = precioDe(pl, ents, 'USD');
+      const us = precioDe(pl, ents, 'USD', { sinFundador });
       ofertas[pl] = { ...o, usd: us ? us.price : null, lista_usd: us ? us.lista : null };
     }
 

@@ -8,6 +8,7 @@ const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPerma
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { regresoPara, marcaOfertaUsada, anotaRestauracionMP } = require('../lib/retencion');
+const { perdioFundador } = require('../lib/cancelaciones');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 
 function bearer(req) {
@@ -130,7 +131,9 @@ module.exports = async function handler(req, res) {
   /* Mercado Pago cobra en MXN: una cuenta mexicana no procesa dólares.
      El sitio muestra USD, pero aquí el importe es el de pesos. */
   const MONEDA = 'MXN';
-  const oferta = precioDe(planId, ents, MONEDA);
+  /* quien canceló alguna vez ya no tiene precio de fundador */
+  const sinFundador = await perdioFundador(user.id).catch(() => false);
+  const oferta = precioDe(planId, ents, MONEDA, { sinFundador });
   const precioBase = oferta ? oferta.price : plan.price;
   const discountCode = ((body && body.discount_code) || '').toString().trim().toUpperCase();
   const discount = discountFor(discountCode, planId);
@@ -187,6 +190,8 @@ module.exports = async function handler(req, res) {
       : null;
     const conRegreso = regreso && regreso.plan === planId ? regreso : null;
     const montoMensual = conRegreso ? conRegreso.precioOferta : finalPrice;
+    /* regreso = precio de lista: sin la leyenda de fundador o cliente */
+    if (conRegreso) finalTitle = `DATTIP — ${plan.title} (primer mes al 50%)`;
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',

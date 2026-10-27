@@ -7,6 +7,7 @@ const { upgradeCreditFor } = require('../lib/pase-credit');
 const { isSubscription, normalizaMoneda, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 const { regresoPara, marcaOfertaUsada } = require('../lib/retencion');
+const { perdioFundador } = require('../lib/cancelaciones');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -167,7 +168,9 @@ module.exports = async function handler(req, res) {
       console.error('stripe-create: plan sin precio en', MONEDA, '—', plan);
       return res.status(400).json({ error: 'Ese plan no está disponible en esa moneda. Intenta de nuevo o paga con Mercado Pago.' });
     }
-    const oferta = precioDe(plan, ents, MONEDA);
+    /* quien canceló alguna vez ya no tiene precio de fundador */
+    const sinFundador = await perdioFundador(user.id).catch(() => false);
+    const oferta = precioDe(plan, ents, MONEDA, { sinFundador });
     const precioBase = oferta ? oferta.price : lista;
     const p = {
       name: PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '')
@@ -193,7 +196,11 @@ module.exports = async function handler(req, res) {
         ? await regresoPara(user.id, ents, MONEDA).catch(e => { console.error('stripe-create regreso:', e.message); return null; })
         : null;
       const conRegreso = regreso && regreso.plan === plan ? regreso : null;
-      if (conRegreso) p.price = Math.round(conRegreso.precio * 100);
+      if (conRegreso) {
+        /* regreso = precio de lista: sin la leyenda de fundador o cliente */
+        p.price = Math.round(conRegreso.precio * 100);
+        p.name = PLAN_NAMES[plan] + (models ? ` (${models.map(m => NOMBRE[m] || m).join(', ')})` : '');
+      }
       const sessionParams = {
         payment_method_types: ['card'],
         mode: 'subscription',
