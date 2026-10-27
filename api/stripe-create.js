@@ -190,7 +190,7 @@ module.exports = async function handler(req, res) {
        incluyen MLB. */
     if (isSubscription(plan)) {
       /* Oferta de regreso (lib/retencion): mismo plan que se le ofrece →
-         su precio de antes como base y un cupón de 50% `once`, que Stripe
+         su precio de lista como base y un cupón `once` por el descuento, que Stripe
          aplica a UN cobro y después cobra normal. */
       const regreso = body && body.regreso
         ? await regresoPara(user.id, ents, MONEDA).catch(e => { console.error('stripe-create regreso:', e.message); return null; })
@@ -221,7 +221,10 @@ module.exports = async function handler(req, res) {
         customer_email: user.email,
       };
       if (conRegreso) {
-        const cupon = await stripe.coupons.create({ percent_off: 50, duration: 'once', name: 'Tu regreso: primer mes al 50%' });
+        /* monto fijo (no porcentaje): así Stripe cobra EXACTO el precio
+           redondeado que se le enseñó (30% de $899 da centavos). */
+        const off = Math.round((conRegreso.precio - conRegreso.precioOferta) * 100);
+        const cupon = await stripe.coupons.create({ amount_off: off, currency: MONEDA.toLowerCase(), duration: 'once', name: `Tu regreso: primer mes con ${conRegreso.pct}% de descuento` });
         sessionParams.discounts = [{ coupon: cupon.id }];
         await marcaOfertaUsada(user.id, { tipo: 'regreso', via: 'stripe', ...conRegreso });
       } else if (discount) {

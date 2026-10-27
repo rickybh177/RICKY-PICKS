@@ -917,7 +917,7 @@ function pintaDescuento(data, code){
    fuera del catálogo público: la pantalla de "ya no está a la venta"
    corre antes que el recuadro del código, así que sin esto el cliente
    nunca llegaría a poder aplicarlo. */
-/* ?regreso=1: viene de la oferta "vuelve con tu primer mes al 50%"
+/* ?regreso=1: viene de la oferta "vuelve con tu primer mes con descuento"
    (lib/retencion). El servidor la vuelve a validar al cobrar. */
 const REGRESO = params.get('regreso') === '1';
 const codigoUrl = (params.get('codigo') || params.get('code') || '').trim().toUpperCase();
@@ -1278,7 +1278,7 @@ async function renderSession(session){
     const r = acceso.regreso;
     _oferta = { price: r.precioOferta, usd: r.usd && r.usd.precioOferta,
       lista: r.precio, listaUsd: r.usd && r.usd.precio,
-      nota: 'Tu regreso: el primer mes a mitad de precio, después tu precio de siempre' };
+      nota: 'Tu regreso: el primer mes con ' + (r.pct || 30) + '% de descuento, después el precio normal' };
     pintaPrecios();
   } else if(acceso){
     /* Precio especial de ESTE cliente, en las DOS monedas: se guarda en

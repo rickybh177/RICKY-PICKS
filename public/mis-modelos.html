@@ -415,7 +415,7 @@ function pintaFinAviso(acc){
   const titulo = grupos.length === 1 ? (TITULO[grupos[0].tipo] || 'Tu acceso se terminó')
     : 'Tu acceso se terminó';
 
-  /* Si le toca volver con 50% (y no canceló: a ese se le ofrece en la
+  /* Si le toca volver con descuento (y no canceló: a ese se le ofrece en la
      caja de su suscripción), la oferta va aquí mismo. */
   const oferta = acc && acc.regreso && !acc.cancelada ? ofertaRegresoHTML(acc.regreso, 'Te extrañamos.') : '';
   box.innerHTML = '<span class="fa-ico">!</span><span>' +
@@ -542,14 +542,15 @@ function pintaCancelada(c, regreso){
   document.getElementById('subConfirm').classList.remove('open');
 }
 /* La oferta de regreso (lib/retencion): su plan de antes, primer mes al
-   50% y luego su precio de siempre. El checkout la vuelve a validar. */
+   30% de descuento y luego el precio de lista. El checkout la vuelve a validar. */
 function ofertaRegresoHTML(o, gancho){
   if(!o) return '';
   const url = '/checkout.html?plan=' + encodeURIComponent(o.plan) + '&regreso=1' +
     (o.plan === 'tres_mensual' && window.__acc && window.__acc.tres && window.__acc.tres.products ? '&modelos=' + window.__acc.tres.products.join(',') : '');
-  return '<div class="ret-oferta" style="margin-top:12px"><b>' + gancho + ' Vuelve con tu siguiente mes a mitad de precio.</b>' +
+  const pct = o.pct || 30;
+  return '<div class="ret-oferta" style="margin-top:12px"><b>' + gancho + ' Vuelve con ' + pct + '% de descuento en tu primer mes.</b>' +
     precioTxt(o.precioOferta, o.moneda) + ' el primer mes en vez de ' + precioTxt(o.precio, o.moneda) + ', y después tu precio de siempre.' +
-    '<br><a class="btn" href="' + url + '">Reactivar con 50% de descuento</a></div>';
+    '<br><a class="btn" href="' + url + '">Reactivar con ' + pct + '% de descuento</a></div>';
 }
 
 /* ---- gestión de suscripción ----

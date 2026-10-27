@@ -191,7 +191,7 @@ module.exports = async function handler(req, res) {
     const conRegreso = regreso && regreso.plan === planId ? regreso : null;
     const montoMensual = conRegreso ? conRegreso.precioOferta : finalPrice;
     /* regreso = precio de lista: sin la leyenda de fundador o cliente */
-    if (conRegreso) finalTitle = `DATTIP — ${plan.title} (primer mes al 50%)`;
+    if (conRegreso) finalTitle = `DATTIP — ${plan.title} (primer mes con ${conRegreso.pct}% de descuento)`;
     try {
       const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
         method: 'POST',
@@ -226,7 +226,7 @@ module.exports = async function handler(req, res) {
            lib/retencion se la devuelve: ver ofertaDisponible). */
         await anotaRestauracionMP(data.id, { completo: conRegreso.precio, descuento: conRegreso.precioOferta, moneda: MONEDA });
         await marcaOfertaUsada(user.id, { tipo: 'regreso', via: 'mp', ...conRegreso, suscripcion: data.id });
-        console.log('create-payment: regreso al 50%', user.id, planId, conRegreso.precioOferta, '→', conRegreso.precio, data.id);
+        console.log('create-payment: regreso con descuento', user.id, planId, conRegreso.precioOferta, '→', conRegreso.precio, data.id);
       }
       return res.status(200).json({ checkout_url: data.init_point });
     } catch (e) {

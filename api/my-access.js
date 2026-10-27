@@ -186,8 +186,8 @@ module.exports = async function handler(req, res) {
       /* { at, hasta, via } si canceló y todavía no se le acaba el acceso;
          Mis modelos le dice hasta cuándo y deja de ofrecerle "cancelar". */
       cancelada: await cancelacionVigente(user.id, ents).catch(() => null),
-      /* { plan, precio, precioOferta, moneda } si le toca volver con su
-         primer mes al 50% (lib/retencion). En pesos, que es como se
+      /* { plan, precio, pct, precioOferta, moneda } si le toca volver con
+         su primer mes con descuento (lib/retencion). En pesos, que es como se
          publica; el checkout recalcula en la moneda que elija. */
       regreso: await (async () => {
         const mx = await regresoPara(user.id, ents, 'MXN').catch(() => null);
