@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1031713479672830');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<script src="/meta-purchase.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://dattip.com/nba.html">
+<meta property="og:site_name" content="Dattip">
+<meta property="og:title" content="Modelo NBA 2026-27 — Dattip">
+<meta property="og:description" content="Cada juego de la NBA calculado posesión por posesión: ganador, hándicap, total, 1ª mitad y props de jugador, con veredicto contra los momios reales.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dattip.com/nba.html">
+<meta property="og:image" content="https://dattip.com/og-dattip.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://dattip.com/og-dattip.png">
+<title>Modelo NBA 2026-27 — Dattip</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ED·T%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --g0: #ffffff; --g1: #f5f7fa; --g2: #eef2f7;
+    --line: #e7ebf1; --line-2: #d8dfe9;
+    --text: #14181e; --muted: #667084; --faint: #8a93a3;
+    --blue: #2f7bff; --blue-deep: #1d4ed8; --blue-tint: rgba(47,123,255,0.08);
+    --bet: #16a34a; --bet-bg: rgba(22,163,74,0.1);
+    --maybe: #2f7bff; --maybe-bg: rgba(47,123,255,0.08);
+    --skip: #dc2626; --skip-bg: rgba(220,38,38,0.08);
+    --beta: #7c3aed; --beta-bg: rgba(124,58,237,0.09);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--g0); color: var(--text); font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.55; -webkit-font-smoothing: antialiased; font-size: 16px; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 18px; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  a { color: var(--blue); }
+
+  nav { position: sticky; top: 0; z-index: 40; background: rgba(255,255,255,0.82); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 8px; }
+  .logo { display: flex; align-items: center; gap: 9px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; color: var(--text); white-space: nowrap; }
+  .logo .mark { width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid var(--blue); color: var(--blue); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; }
+  .logo .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--beta); border: 1px solid rgba(124,58,237,0.4); background: var(--beta-bg); border-radius: 6px; padding: 3px 8px; margin-left: 2px; }
+  .weeknav { display: flex; align-items: center; gap: 2px; }
+  .weeknav button { width: 34px; height: 34px; border-radius: 9px; color: var(--muted); font-size: 1rem; transition: background .15s; }
+  .weeknav button:hover { background: var(--g2); color: var(--text); }
+  .weeknav .cur { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.8rem; padding: 0 6px; min-width: 96px; text-align: center; }
+  .nav-actions { display: flex; align-items: center; gap: 6px; }
+  .refresh { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--muted); background: var(--g2); padding: 8px 13px; border-radius: 9px; transition: background .15s; white-space: nowrap; }
+  .refresh:hover { background: var(--line); color: var(--text); }
+
+  /* h1 accesible pero invisible: el dueño quitó la cabecera, pero la
+     página sigue necesitando un encabezado para lectores de pantalla y
+     para Google (mx.html y mlb.html sí se indexan). */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .head { padding: 18px 0 8px; } /* menos aire: la cabecera se quitó */
+  .head .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--beta); margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
+  .head .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--beta); box-shadow: 0 0 8px var(--beta); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .head h1 { font-weight: 800; letter-spacing: -0.035em; line-height: 1.0; font-size: clamp(1.7rem, 6vw, 2.6rem); text-wrap: balance; }
+  .head .lede { color: var(--muted); font-size: 0.96rem; font-weight: 450; margin-top: 12px; max-width: 58ch; }
+  .meta-band { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .meta-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g1); border: 1px solid var(--line); padding: 6px 11px; border-radius: 8px; }
+
+  .games { display: flex; flex-direction: column; gap: 13px; padding: 22px 0 80px; }
+  .card { background: var(--g1); border: 1px solid var(--line); border-radius: 14px; padding: 18px; animation: rise .4s ease both; animation-delay: calc(var(--i) * 30ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+  .card-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 500; color: var(--faint); margin-bottom: 13px; letter-spacing: 0.03em; }
+  .card-meta .sep { opacity: 0.5; }
+  .badge { border-radius: 6px; padding: 3px 8px; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .badge.live { background: var(--skip-bg); color: var(--skip); }
+  .badge.final { background: var(--g2); color: var(--muted); }
+  .badge.wx { background: rgba(229,185,74,0.12); color: #b8922e; }
+  .badge.neutral { background: var(--blue-tint); color: var(--blue-deep); }
+
+  .team-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px; padding: 4px 0; }
+  .team-row img { width: 34px; height: 34px; object-fit: contain; }
+  .team-name { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.015em; min-width: 0; }
+  .team-name .rec2 { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); font-weight: 500; margin-left: 7px; }
+  .team-name .sub { display: block; font-size: 0.7rem; color: var(--muted); font-weight: 450; }
+  .team-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.15rem; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .verdicts { display: flex; flex-direction: column; gap: 7px; margin: 13px 0 4px; }
+  .vrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; }
+  .vrow .vl { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .vrow .vl small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; font-weight: 500; color: var(--faint); margin-top: 2px; }
+  .vchip { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 5px 11px; border-radius: 6px; white-space: nowrap; }
+  .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
+  .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
+  .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
+  .vrow.skip .vl { color: var(--faint); font-weight: 500; }
+  .vchip.lectura { background: var(--g2); color: var(--muted); border: 1px solid var(--line-2); }
+
+  /* props de jugador */
+  details.props { margin-top: 10px; }
+  details.props summary { list-style: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-deep); background: var(--blue-tint); border: 1px solid rgba(47,123,255,0.25); border-radius: 9px; padding: 10px 12px; user-select: none; }
+  details.props summary::-webkit-details-marker { display: none; }
+  details.props summary::after { content: ' ▾'; }
+  details.props[open] summary::after { content: ' ▴'; }
+  .props-body { margin-top: 8px; }
+  .props-state, .props-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--faint); padding: 8px 4px; }
+  .player { background: var(--g0); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .player-h { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .player-h .pp { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--faint); font-weight: 600; }
+  .prow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+  .prow .pl { font-weight: 600; font-size: 0.84rem; }
+  /* pick · probabilidad · edge, separados por aire en vez de puntos:
+     se leen como tres datos y no como una frase */
+  .prow .pl small { display: flex; flex-wrap: wrap; gap: 2px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 500; color: var(--faint); margin-top: 3px; }
+  .prow .pl small span { white-space: nowrap; }
+  .prow.skip .pl, .prow.lectura .pl { color: var(--muted); font-weight: 500; }
+
+  .analysis-box { background: var(--g0); border: 1px solid var(--line); border-left: 2px solid var(--beta); border-radius: 10px; padding: 14px 16px; margin-top: 11px; font-size: 0.88rem; font-weight: 450; line-height: 1.6; color: var(--muted); }
+  .analysis-box .a-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--beta); margin-bottom: 6px; }
+
+  details.more { margin-top: 11px; }
+  details.more summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--g0); border: 1px solid var(--line); border-radius: 9px; padding: 10px; transition: color .15s; user-select: none; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary:hover { color: var(--text); }
+  details.more summary::after { content: '▾'; transition: transform .2s; }
+  details.more[open] summary::after { transform: rotate(180deg); }
+  .det-rows { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--g0); }
+  .det-h { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); padding: 10px 14px 4px; }
+  .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
+  .det-row:last-child { border-bottom: none; }
+  .det-row .dl { font-weight: 500; }
+  .det-row .dv { font-family: 'JetBrains Mono', monospace; color: var(--muted); font-weight: 500; white-space: normal; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.76rem;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  /* Veredicto en cada fila de la tabla completa (mismo chip, más chico). */
+  .det-row .vchip { font-size: 0.55rem; padding: 4px 8px; }
+  .det-note { padding: 10px 14px; font-size: 0.74rem; color: var(--faint); line-height: 1.45; border-top: 1px solid var(--line); }
+  /* En el celular cada fila se apila: etiqueta arriba, dato y veredicto abajo. */
+  @media (max-width: 600px) {
+    .det-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .det-row .dv { width: 100%; justify-content: space-between; text-align: left; }
+  }
+  .det-row .dv b { color: var(--bet); }
+  .dist { margin-top: 12px; }
+  .dist-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .dist svg { width: 100%; height: 54px; display: block; }
+
+  .state { text-align: center; padding: 80px 20px; color: var(--muted); font-weight: 450; }
+  .state h2 { font-weight: 800; color: var(--text); margin-bottom: 8px; font-size: 1.2rem; letter-spacing: -0.02em; }
+  /* ---- TOGGLE DE MODELO (NFL | MLB | Liga MX) ---- */
+  .model-toggle { display: inline-flex; flex-wrap: wrap; background: var(--g2); border: 1px solid var(--line); border-radius: 22px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
+  .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
+  .model-toggle .mt-opt:hover { color: var(--text); }
+  .model-toggle .mt-opt.active { background: var(--g0); color: var(--beta); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; width: 100%; }
+    .model-toggle .mt-opt { flex: 1 1 30%; padding: 10px 6px; font-size: 0.8rem; }
+  }
+
+  /* ---- candado por juego (invitado) ---- */
+  .locked-zone { position: relative; margin-top: 12px; }
+  .locked-rows { filter: blur(7px); opacity: 0.55; pointer-events: none; user-select: none; }
+  .lock-cta { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 10px; }
+  .lock-cta .lk { width: 34px; height: 34px; border-radius: 9px; background: var(--g2); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .lock-cta .t { font-weight: 700; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .lock-cta a { display: inline-block; background: var(--beta); color: #fff; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 10px 20px; border-radius: 9px; }
+  .freeflag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--bet); color: #fff; padding: 3px 9px; border-radius: 6px; margin-bottom: 8px; }
+
+  /* ---- BANNER DE PLANES (invitado) ---- */
+  .plans-banner { position: sticky; bottom: 0; z-index: 30; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-2); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); display: none; }
+  .plans-banner.on { display: block; }
+  .plans-banner .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .plans-banner .txt { font-size: 0.86rem; font-weight: 600; }
+  .plans-banner .txt small { display: block; font-weight: 450; color: var(--muted); font-size: 0.74rem; }
+  .plans-banner .txt small a { color: inherit; text-decoration: underline; }
+  .plans-banner .acts { display: flex; gap: 8px; white-space: nowrap; }
+  .plans-banner .acts a { display: inline-block; text-decoration: none; font-weight: 700; font-size: 0.82rem; padding: 11px 16px; border-radius: 10px; }
+  .plans-banner a.day { background: var(--g2); color: var(--text); border: 1px solid var(--line-2); }
+  .plans-banner a.founder { background: var(--beta); color: #fff; }
+  @media (max-width: 620px) {
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 9px; }
+    .plans-banner .txt { font-size: 0.82rem; text-align: center; }
+    .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .plans-banner .acts a { text-align: center; padding: 12px 8px; }
+  }
+
+  .spinner { width: 26px; height: 26px; border: 2.5px solid var(--line-2); border-top-color: var(--beta); border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .lockwrap { max-width: 380px; margin: 70px auto; padding: 0 18px; }
+  .lockbox { background: var(--g1); border: 1px solid var(--line-2); border-radius: 16px; padding: 30px 28px; text-align: center; }
+  .lockbox .ic { font-size: 2rem; margin-bottom: 10px; }
+  .lockbox h2 { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .lockbox p { color: var(--muted); font-size: 0.86rem; font-weight: 450; margin-bottom: 18px; }
+  .lockbox input { width: 100%; background: var(--g0); border: 1px solid var(--line-2); border-radius: 10px; color: var(--text); padding: 12px 14px; font: inherit; font-size: 0.9rem; margin-bottom: 10px; outline: none; }
+  .lockbox input:focus { border-color: var(--blue); }
+  .lockbox .go { width: 100%; background: var(--blue-deep); color: #fff; font-weight: 700; padding: 13px; border-radius: 10px; transition: background .15s; }
+  .lockbox .go:hover { background: var(--blue); }
+  .lockbox .err { color: var(--skip); font-size: 0.78rem; margin-top: 10px; min-height: 1.2em; }
+  .lockbox .beta-pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--beta); background: var(--beta-bg); border: 1px solid rgba(124,58,237,0.4); border-radius: 6px; padding: 4px 10px; margin-bottom: 12px; }
+  .lockbox .alt-links { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+  .lockbox .alt-links a { font-size: 0.82rem; color: var(--muted); }
+  /* combinada sugerida del día */
+  .parlay { background: var(--g1); border: 1px solid var(--line); border-left: 2px solid var(--bet); border-radius: 14px; padding: 16px 18px; margin-top: 18px; }
+  .parlay .p-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bet); margin-bottom: 8px; }
+  .parlay .leg { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 0.88rem; font-weight: 600; }
+  .parlay .leg small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--faint); font-weight: 500; }
+  .parlay .joint { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+  .parlay .note { font-size: 0.74rem; color: var(--faint); margin-top: 6px; line-height: 1.45; }
+  .day-h { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); padding: 10px 2px 0; }
+  .badge.abs { background: rgba(124,58,237,0.1); color: var(--beta); }
+
+  footer { border-top: 1px solid var(--line); padding: 26px 0 44px; color: var(--faint); font-size: 0.74rem; font-weight: 450; }
+  footer .wrap { display: flex; flex-direction: column; gap: 6px; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+
+  @media (max-width: 620px) {
+    .logo .word { display: none; }
+    .weeknav .cur { min-width: 84px; font-size: 0.74rem; }
+    .refresh span { display: none; }
+    .card { padding: 15px 13px; }
+  }
+
+  /* ---- vertical (uniforme en las 4 páginas de modelo, 8-sep-2026) ----
+     La barra de modelos se desliza de lado dentro de su recuadro (7
+     modelos ya no caben en filas) y el banner de planes ocupa lo justo:
+     una línea de texto y dos botones iguales. */
+  @media (max-width: 620px) {
+    .model-toggle { display: flex; flex-wrap: nowrap; width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; scrollbar-width: none; border-radius: 980px; }
+    .model-toggle::-webkit-scrollbar { display: none; }
+    .model-toggle .mt-opt { flex: 0 0 auto; padding: 10px 14px; font-size: 0.82rem; scroll-snap-align: center; }
+    .plans-banner { padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+    .plans-banner .wrap { flex-direction: column; align-items: stretch; gap: 8px; }
+    .plans-banner .txt { font-size: 0.84rem; text-align: center; }
+    .plans-banner .txt small { display: none; }
+    .plans-banner .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; white-space: normal; }
+    .plans-banner .acts a { display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px 8px; font-size: 0.8rem; line-height: 1.25; }
+    .plans-banner a.founder { background: var(--blue-deep); }
+  }
+  /* Logotipo partido: DAT en tinta, TIP en azul. La marca se escribe
+     así en todo el sitio — si cambia el color, cambia aquí y en ningún
+     otro lado. */
+  .logo .tip { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="/">
+      <span class="mark">D·T</span>
+      <span class="word">DAT<span class="tip">TIP</span></span><span class="tag">NBA 26-27</span>
+    </a>
+    <div class="weeknav" id="daynav" style="display:none">
+      <button id="prevDay" aria-label="Día anterior">‹</button>
+      <div class="cur" id="curDay">—</div>
+      <button id="nextDay" aria-label="Día siguiente">›</button>
+    </div>
+    <div class="nav-actions">
+      <button class="refresh" id="manageSubBtn" style="display:none" aria-label="Administrar suscripción" title="Actualiza tu método de pago, revisa tus cobros o cancela">💳 <span>Administrar suscripción</span></button>
+      <button class="refresh" id="refreshBtn" title="Recalcular con datos de ahora">⟳ <span>Actualizar</span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- candado: cuenta sin acceso / beta privada -->
+<div class="lockwrap" id="lockWrap" style="display:none">
+  <div class="lockbox">
+    <div class="beta-pill" id="lkPill" style="display:none">Beta privada</div>
+    <div class="ic" id="lkIcon">🔒</div>
+    <h2 id="lkTitle">Entra a tu cuenta</h2>
+    <p id="lkText">Inicia sesión para activar tu acceso al modelo.</p>
+    <input id="lkEmail" type="email" placeholder="Correo" autocomplete="email">
+    <input id="lkPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="go" id="lkGo">Entrar</button>
+    <div class="err" id="lkErr"></div>
+    <button id="lkGuest" style="margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.82rem;text-decoration:underline;cursor:pointer">Continuar como invitado — ver el pick gratis</button>
+    <div class="alt-links" id="lkAlt" style="display:none">
+      <a href="/nfl.html">Mientras tanto: el modelo de NFL</a>
+      <a href="/">Volver al inicio</a>
+    </div>
+  </div>
+</div>
+
+<div id="appWrap" style="display:none">
+<header class="head">
+  <div class="wrap">
+    <h1 class="sr-only">Cada juego de la NBA, calculado posesión por posesión.</h1>
+    <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
+      <span class="mt-opt active" role="tab" aria-selected="true">🏀 NBA</span>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mlb.html">⚾ MLB</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/europa.html?liga=epl">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/europa.html?liga=bundesliga">🇩🇪 Bundesliga</a>
+      <a class="mt-opt" role="tab" aria-selected="false" href="/europa.html?liga=ucl">🏆 Champions</a>
+    </div>
+    <div class="meta-band" id="metaBand"></div>
+    <div id="parlayBox"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="games" id="games">
+    <div class="state"><div class="spinner"></div>El modelo está calculando la cartelera, posesión por posesión…</div>
+  </div>
+</main>
+</div>
+
+<div class="plans-banner" id="plansBanner">
+  <div class="wrap">
+    <div class="txt">¿Vienes por el pick gratis… o por la cartelera completa?<small>Solo NBA por $349 al mes, tres modelos a elegir por $599 o todos por $899. Cancela cuando quieras.</small></div>
+    <div class="acts">
+      <a class="day" href="/checkout.html?plan=nba_mensual">Solo NBA $349/mes</a>
+      <a class="founder" href="/producto.html?m=nba">Ver los planes</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>Análisis estadístico con fines informativos. No garantiza resultados.</div>
+    <div>Juega responsable. +18.</div>
+  </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+let sb = null;
+try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const _params = new URLSearchParams(location.search);
+const MX_TZ = 'America/Mexico_City';
+/* Etiqueta visible del veredicto. La LLAVE sigue siendo 'bet' (es el
+   dato que manda el modelo); lo que lee el cliente es PICK. */
+const VCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP' };
+let currentDay = null;   // null = automático (hoy + mañana)
+let currentAccess = 'full';
+
+function pct(p) { return p == null ? '—' : Math.round(p * 100) + '%'; }
+function pct1(p) { return p == null ? '—' : (p * 100).toFixed(1) + '%'; }
+function am(v) { return v == null ? '—' : (v > 0 ? '+' + v : String(v)); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mxDate(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: MX_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(d)); }
+function dayLabel(ymd) {
+  const hoy = mxDate(Date.now()), man = mxDate(Date.now() + 86400000);
+  if (ymd === hoy) return 'HOY';
+  if (ymd === man) return 'MAÑANA';
+  const d = new Date(ymd + 'T12:00:00-06:00');
+  return d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
+}
+
+async function authHeader() {
+  if (!sb) return {};
+  try {
+    const { data } = await sb.auth.getSession();
+    const t = data && data.session && data.session.access_token;
+    return t ? { Authorization: 'Bearer ' + t } : {};
+  } catch (e) { return {}; }
+}
+
+async function load(day, refresh) {
+  $('games').innerHTML = '<div class="state"><div class="spinner"></div>El modelo está calculando la cartelera, posesión por posesión…</div>';
+  const q = new URLSearchParams();
+  if (day) q.set('day', day);
+  if (refresh) q.set('refresh', '1');
+  const as = _params.get('as');
+  if (as === 'guest' || as === 'beta') q.set('as', as);
+  const headers = await authHeader();
+  let res;
+  try { res = await fetch('/api/nba-picks?' + q.toString(), { headers }); }
+  catch (e) { return renderError('Sin conexión con el servidor.'); }
+  if (res.status === 403) {
+    let body = null;
+    try { body = await res.json(); } catch (e) {}
+    if (body && body.beta) { showBeta(!!headers.Authorization); return; }
+    showLock(headers.Authorization ? 'Esta cuenta no tiene acceso a este modelo.' : '');
+    return;
+  }
+  if (!res.ok) return renderError('El modelo no pudo calcular la cartelera. Intenta actualizar.');
+  const bd = await res.json();
+  currentDay = day || null;
+  currentAccess = bd.access || 'full';
+  $('lockWrap').style.display = 'none';
+  $('appWrap').style.display = 'block';
+  $('daynav').style.display = 'flex';
+  $('curDay').textContent = (bd.days || []).map(dayLabel).join(' · ');
+  $('plansBanner').classList.toggle('on', currentAccess === 'guest');
+  renderMeta(bd);
+  renderParlay(bd.parlay);
+  renderBoard(bd);
+}
+
+function showLock(msg) {
+  $('appWrap').style.display = 'none';
+  $('lockWrap').style.display = 'block';
+  $('lkPill').style.display = 'none'; $('lkAlt').style.display = 'none'; $('lkGuest').style.display = '';
+  $('lkIcon').textContent = '🔒';
+  $('lkTitle').textContent = 'Entra a tu cuenta';
+  $('lkText').textContent = 'Inicia sesión para activar tu acceso al modelo NBA.';
+  $('lkErr').textContent = msg || '';
+}
+/* beta privada: el modelo existe pero todavía no se abre al público. */
+function showBeta(hadSession) {
+  $('appWrap').style.display = 'none';
+  $('lockWrap').style.display = 'block';
+  $('lkPill').style.display = 'inline-block'; $('lkAlt').style.display = 'flex'; $('lkGuest').style.display = 'none';
+  $('lkIcon').textContent = '🧪';
+  $('lkTitle').textContent = 'Beta privada — muy pronto';
+  $('lkText').textContent = 'El modelo de NBA está en pruebas cerradas. Si formas parte de la beta, entra con tu cuenta; si no, muy pronto abrimos.';
+  $('lkErr').textContent = hadSession ? 'Esta cuenta todavía no está en la beta.' : '';
+}
+function renderError(msg) {
+  $('lockWrap').style.display = 'none';
+  $('appWrap').style.display = 'block';
+  $('games').innerHTML = '<div class="state"><h2>Algo salió mal</h2>' + esc(msg) + '</div>';
+}
+
+function renderMeta(bd) {
+  const chips = [
+    'Temporada 2026-27',
+    'Eficiencia × ritmo, forma cerrada',
+    bd.games_learned > 0 ? 'Ratings al día con ' + bd.games_learned + ' juegos 26-27' : 'Ratings de arranque (3 temporadas ajustadas por rival)',
+    'Momios: ' + (bd.odds_source === 'the-odds-api' ? 'consenso multi-casas' : 'aún sin publicar'),
+    'Lesiones: reporte de ESPN',
+  ];
+  $('metaBand').innerHTML = chips.map(c => '<span class="meta-chip">' + esc(c) + '</span>').join('');
+}
+
+function renderParlay(p) {
+  if (!p || !p.legs || p.legs.length < 2 || currentAccess !== 'full') { $('parlayBox').innerHTML = ''; return; }
+  $('parlayBox').innerHTML = '<div class="parlay"><div class="p-lbl">Combinada sugerida del día</div>' +
+    p.legs.map(l => '<div class="leg"><span>' + esc(l.label) + '<small>' + esc(l.match) + ' · ' + pct1(l.prob) + ' · edge ' + (l.edge >= 0 ? '+' : '') + (l.edge * 100).toFixed(1) + '%</small></span></div>').join('') +
+    '<div class="joint">Probabilidad conjunta ' + pct1(p.joint_prob) + ' · momio justo ' + am(p.fair_odds) + '</div>' +
+    '<div class="note">' + esc(p.note) + '</div></div>';
+}
+
+let lastBd = null;
+function renderBoard(bd) {
+  lastBd = bd;
+  const all = (bd.games || []).filter(g => !g.error);
+  const guest = currentAccess === 'guest';
+  const games = all.filter(g => g.state !== 'post' || (guest && g.id === bd.featured_id) || currentDay);
+  if (!games.length) {
+    $('games').innerHTML = '<div class="state"><h2>' + (all.length ? 'Estos juegos ya se jugaron' : 'Sin juegos en estos días') + '</h2>Muévete de día con las flechas de arriba.</div>';
+    return;
+  }
+  /* orden por hora de inicio, agrupado por día; el pick gratis lleva su
+     etiqueta en lugar de saltarse al principio (dos días en la misma
+     cartelera: pinarlo arriba rompía la agrupación por día) */
+  const sorted = [...games].sort((a, b) => new Date(a.date) - new Date(b.date));
+  let html = '', lastDay = null, i = 0;
+  for (const g of sorted) {
+    if (g.day_mx !== lastDay) { html += '<div class="day-h">' + dayLabel(g.day_mx) + '</div>'; lastDay = g.day_mx; }
+    html += g.locked ? lockedCard(g, i) : gameCard(g, i, guest && g.id === bd.featured_id);
+    i++;
+  }
+  $('games').innerHTML = html;
+}
+
+function lockedCard(g, i) {
+  const fake = ['Hándicap', 'Total', 'Ganador', 'Props de jugador']
+    .map(l => '<div class="vrow"><span class="vl">' + l + '</span><span class="vchip maybe">····</span></div>').join('');
+  return '<div class="card" style="--i:' + i + '">' + metaRow(g) + teamRows(g) +
+    '<div class="locked-zone"><div class="verdicts locked-rows">' + fake + '</div>' +
+      '<div class="lock-cta"><div class="lk">🔒</div><div class="t">Los veredictos de este juego están en tu plan</div>' +
+        '<a href="/checkout.html?plan=nba_mensual">Desbloquear la cartelera — Mensual $349</a></div></div></div>';
+}
+
+function metaRow(g) {
+  const d = new Date(g.date);
+  const day = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', timeZone: MX_TZ }).replace(/\./g, '').toUpperCase();
+  const time = d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: MX_TZ });
+  let badges = '';
+  if (g.state === 'in') badges += '<span class="badge live">En vivo</span>';
+  if (g.state === 'post') badges += '<span class="badge final">Terminó</span>';
+  const nAbs = g.absences ? (g.absences.home || []).length + (g.absences.away || []).length : 0;
+  if (nAbs) badges += '<span class="badge abs">' + nAbs + ' baja' + (nAbs > 1 ? 's' : '') + '</span>';
+  return '<div class="card-meta"><span>' + day + ' · ' + time.toUpperCase() + '</span><span class="sep">·</span>' +
+    '<span>' + esc((g.venue || '').toUpperCase()) + '</span><span style="flex:1"></span>' + badges + '</div>';
+}
+
+function teamRows(g) {
+  const final = g.state !== 'pre' && g.score;
+  const absTxt = list => (list && list.length) ? 'Sin ' + list.slice(0, 3).map(p => p.name).join(', ') + (list.length > 3 ? ' y ' + (list.length - 3) + ' más' : '') : null;
+  const row = (t, score, sub) =>
+    '<div class="team-row">' +
+    '<img src="' + esc(t.logo) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
+    '<div class="team-name">' + esc(t.name) + '<span class="rec2">' + esc(t.record || '') + '</span>' +
+    (sub ? '<span class="sub">' + esc(sub) + '</span>' : '') + '</div>' +
+    '<div class="team-score">' + (final && score != null ? score : '') + '</div>' +
+    '</div>';
+  const rest = g.rest || {}, abs = g.absences || {};
+  const subA = [rest.away, absTxt(abs.away)].filter(Boolean).join(' · ');
+  const subH = [rest.home, absTxt(abs.home)].filter(Boolean).join(' · ');
+  return row(g.away, final ? g.score.away : null, subA) + row(g.home, final ? g.score.home : null, subH);
+}
+
+function gameCard(g, i, isFree) {
+  const verdicts = (g.verdicts || []).map(v =>
+    '<div class="vrow ' + esc(v.verdict) + '"><span class="vl">' + esc(v.label) +
+    '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · edge ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
+    '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span></div>').join('');
+  const analysis = g.analysis ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>' : '';
+  const playedNote = (isFree && g.state === 'post')
+    ? '<div class="lock-cta" style="margin-top:12px"><div class="lk">✅</div><div class="t">El pick gratis de hoy ya se jugó. Los demás juegos siguen vivos en el modelo completo.</div>' +
+      '<a href="/checkout.html?plan=nba_mensual">Desbloquear la cartelera — Mensual $349</a></div>' : '';
+  return '<div class="card" style="--i:' + i + '">' +
+    (isFree ? '<span class="freeflag">Pick gratis del día' + (g.state === 'post' ? ' · ya se jugó' : '') + '</span>' : '') +
+    metaRow(g) + teamRows(g) + '<div class="verdicts">' + verdicts + '</div>' + playedNote + analysis + moreDetails(g) + '</div>';
+}
+
+const barV = (p, bet, maybe) => (p == null ? null : p >= bet ? 'bet' : p >= maybe ? 'maybe' : 'skip');
+const chipV = v => (v ? '<span class="vchip ' + v + '">' + VCHIP[v] + '</span>' : '');
+function det(l, v, verdict) { return '<div class="det-row"><span class="dl">' + l + '</span><span class="dv"><span>' + v + '</span>' + chipV(verdict) + '</span></div>'; }
+const DET_NOTE = '<div class="det-note">Donde no hay momio publicado, el veredicto va por la probabilidad del modelo: compáralo con lo que paga tu casa. Los mercados de 1ª mitad y 1er cuarto no llevan momio del consenso: tope MAYBE.</div>';
+
+function moreDetails(g) {
+  const m = g.markets;
+  if (!m) return '';
+  const fo = m.fair_odds || {}, mo = m.market_odds;
+  const px = v => (v != null ? ' (' + am(v) + ')' : '');
+  const sv = k => (g.verdicts || []).find(x => x.market === k) || null;
+  const vml = sv('moneyline'), vsp = sv('spread'), vto = sv('total'), vh1 = sv('h1_total');
+  const mlV = (team, p) => (vml && vml.label.indexOf(team) >= 0) ? vml.verdict : barV(p, 1.01, 0.62);
+  const ttV = tt => { const p = tt.over >= 0.5 ? tt.over : 1 - tt.over; return [barV(p, 1.01, 0.58), tt.over >= 0.5 ? 'Más' : 'Menos']; };
+  const tth = ttV(m.team_totals.home), tta = ttV(m.team_totals.away);
+  const h1p = m.first_half.home_win >= 0.5 ? m.first_half.home_win : 1 - m.first_half.home_win;
+  const h1side = m.first_half.home_win >= 0.5 ? g.home.name : g.away.name;
+  const q1p = m.first_quarter.home_win >= 0.5 ? m.first_quarter.home_win : 1 - m.first_quarter.home_win;
+  const q1side = m.first_quarter.home_win >= 0.5 ? g.home.name : g.away.name;
+  const q1t = m.first_quarter.over >= 0.5 ? ['Más', m.first_quarter.over] : ['Menos', 1 - m.first_quarter.over];
+  const marketRows = mo
+    ? '<div class="det-h">Momios del mercado (' + esc(mo.source || '') + ')</div>' +
+      (mo.spread != null ? det('Hándicap', g.home.abbr + ' ' + (mo.spread > 0 ? '+' : '') + mo.spread + px(mo.spread_home) + ' · ' + g.away.abbr + ' ' + (-mo.spread > 0 ? '+' : '') + (-mo.spread) + px(mo.spread_away)) : '') +
+      (mo.total != null ? det('Total', 'O ' + mo.total + px(mo.total_over) + ' · U ' + mo.total + px(mo.total_under)) : '') +
+      (mo.ml_home != null ? det('Ganador', g.home.abbr + ' ' + am(mo.ml_home) + ' · ' + g.away.abbr + ' ' + am(mo.ml_away)) : '')
+    : '';
+  const rows = marketRows +
+    '<div class="det-h">Mercados de equipo (modelo)</div>' +
+    det('Ganan ' + g.home.name, pct1(m.moneyline.home) + ' · justo ' + am(fo.ml_home), mlV(g.home.name, m.moneyline.home)) +
+    det('Ganan ' + g.away.name, pct1(m.moneyline.away) + ' · justo ' + am(fo.ml_away), mlV(g.away.name, m.moneyline.away)) +
+    det('Hándicap ' + g.home.abbr + ' ' + (m.spread.line > 0 ? '+' : '') + m.spread.line, pct1(m.spread.home_cover) + ' cubre · línea justa ' + (m.spread.fair_line > 0 ? '+' : '') + m.spread.fair_line + (vsp ? ' · modelo: ' + esc(vsp.label) : ''), vsp ? vsp.verdict : null) +
+    det('Total O/U ' + m.total.line, 'Over ' + pct1(m.total.over) + ' · modelo espera ' + m.total.model_total + (vto ? ' · modelo: ' + esc(vto.label) : ''), vto ? vto.verdict : null) +
+    det('Puntos de ' + g.home.name + ' (O/U ' + m.team_totals.home.line + ')', 'Over ' + pct1(m.team_totals.home.over) + ' · esperado ' + m.team_totals.home.mean + ' · modelo: ' + tth[1], tth[0]) +
+    det('Puntos de ' + g.away.name + ' (O/U ' + m.team_totals.away.line + ')', 'Over ' + pct1(m.team_totals.away.over) + ' · esperado ' + m.team_totals.away.mean + ' · modelo: ' + tta[1], tta[0]) +
+    det('1ª mitad: gana ' + esc(h1side), pct1(h1p) + ' · margen esperado ' + m.first_half.exp_margin, barV(h1p, 1.01, 0.62)) +
+    det('1ª mitad: total O/U ' + m.first_half.total_line, 'Over ' + pct1(m.first_half.over) + ' · esperado ' + m.first_half.model_total, vh1 ? vh1.verdict : null) +
+    det('1er cuarto: gana ' + esc(q1side), pct1(q1p) + ' · margen esperado ' + m.first_quarter.exp_margin, barV(q1p, 1.01, 0.6)) +
+    det('1er cuarto: total O/U ' + m.first_quarter.total_line, 'Over ' + pct1(m.first_quarter.over) + ' · esperado ' + m.first_quarter.model_total + ' · modelo: ' + q1t[0], barV(q1t[1], 1.01, 0.56));
+  return '<details class="more"><summary>Todos los mercados y props</summary>' +
+    '<div class="det-rows">' + rows + DET_NOTE + '</div>' + propsBlock(g) + distChart(m, g) + '</details>';
+}
+
+/* ---- props de jugador: bajo demanda (cuestan momios), por juego ---- */
+function propsBlock(g) {
+  if (!g.env || g.state === 'post') return '';
+  return '<details class="props" data-game="' + esc(g.id) + '">' +
+    '<summary>Props de jugador — puntos, rebotes, asistencias, triples</summary>' +
+    '<div class="props-body"><div class="props-state">Cargando proyecciones y momios de props…</div></div></details>';
+}
+const PCHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP', lectura: 'LECTURA' };
+async function loadProps(det) {
+  if (det.dataset.loaded) return;
+  det.dataset.loaded = '1';
+  const body = det.querySelector('.props-body');
+  const q = new URLSearchParams({ game: det.dataset.game });
+  const as = _params.get('as'); if (as) q.set('as', as);
+  const headers = await authHeader();
+  let res;
+  try { res = await fetch('/api/nba-props?' + q.toString(), { headers }); }
+  catch (e) { body.innerHTML = '<div class="props-state">Sin conexión.</div>'; det.dataset.loaded = ''; return; }
+  if (res.status === 403) { body.innerHTML = '<div class="props-state">🔒 Los props de este juego están en tu plan.</div>'; return; }
+  if (!res.ok) { body.innerHTML = '<div class="props-state">No se pudieron calcular los props.</div>'; det.dataset.loaded = ''; return; }
+  const d = await res.json();
+  if (!d.players || !d.players.length) { body.innerHTML = '<div class="props-state">' + esc(d.note || 'Sin jugadores con historial suficiente.') + '</div>'; return; }
+  /* orden: los props "interesantes" primero — jugadores con PICK/MAYBE,
+     luego por minutos */
+  const rank = { bet: 2, maybe: 1 };
+  const score = p => p.markets.reduce((s, mk) => s + (rank[mk.verdict] || 0) * (1 + Math.max(0, mk.ev || 0)), 0);
+  const list = d.players.slice().sort((a, b) => score(b) - score(a) || b.minutes - a.minutes);
+  let html = '<div class="props-meta">Historial real por jugador · momios de props de ' + (d.odds_books || 0) + ' casas · ' + d.with_lines + ' mercados con línea</div>';
+  for (const p of list) {
+    html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos || '') + ' · ' + esc(p.team) + ' · ' + p.minutes + ' min</span>' +
+      (p.status ? ' <span class="badge wx">' + esc(p.status) + '</span>' : '') +
+      (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
+    const rows = p.markets.slice().sort((a, b) => (rank[b.verdict] || 0) - (rank[a.verdict] || 0) || (b.ev || -9) - (a.ev || -9));
+    for (const mk of rows) {
+      const v = mk.verdict || 'lectura';
+      const partes = [];
+      if (mk.line) {
+        if (mk.key === 'dd') partes.push(mk.side === 'no' ? 'No hace doble-doble' : 'Sí hace doble-doble');
+        else partes.push((mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
+        if (mk.p != null) partes.push(pct1(mk.p));
+        if (mk.ev != null) partes.push('edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+      } else {
+        partes.push(mk.key === 'dd' ? 'Modelo: ' + pct1(mk.p) : 'Proyección ' + (mk.model && mk.model.mu != null ? mk.model.mu : '—') + ' · aún sin línea');
+      }
+      if (mk.note) partes.push(mk.note);
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+        '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
+        '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
+    }
+    html += '</div>';
+  }
+  body.innerHTML = html;
+}
+document.addEventListener('toggle', e => {
+  const t = e.target;
+  if (t && t.matches && t.matches('details.props') && t.open) loadProps(t);
+}, true);
+
+function distChart(m, g) {
+  const d = m.margin_dist || [];
+  if (!d.length) return '';
+  const W = 720, H = 54, n = d.length, gap = 2, half = (n - 1) / 2;
+  const bw = (W - gap * (n - 1)) / n;
+  const max = Math.max(...d, 0.001);
+  let bars = '';
+  for (let i = 0; i < n; i++) {
+    const margin = i - half;
+    const h = Math.max(1.5, (d[i] / max) * (H - 16));
+    const x = i * (bw + gap);
+    bars += '<rect x="' + x + '" y="' + (H - 14 - h) + '" width="' + bw + '" height="' + h + '" rx="1.5" fill="' + (margin > 0 ? '#2f7bff' : margin < 0 ? '#d8dfe9' : '#b8922e') + '"></rect>';
+    if (margin % 10 === 0) bars += '<text x="' + (x + bw / 2) + '" y="' + H + '" text-anchor="middle" font-size="8" fill="#8a93a3" font-family="JetBrains Mono,monospace">' + margin + '</text>';
+  }
+  return '<div class="dist"><div class="dist-lbl"><span>Cómo cae el margen (' + esc(g.home.abbr) + ' positivo), según el modelo</span></div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="Distribución del margen">' + bars + '</svg></div>';
+}
+
+/* ---- login (candado) ---- */
+$('lkGo').addEventListener('click', async () => {
+  $('lkErr').textContent = '';
+  if (!sb) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; return; }
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email: $('lkEmail').value.trim(), password: $('lkPass').value });
+    if (error) { $('lkErr').textContent = 'Correo o contraseña incorrectos.'; return; }
+    load(currentDay);
+  } catch (e) { $('lkErr').textContent = 'No se pudo iniciar sesión.'; }
+});
+$('lkPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('lkGo').click(); });
+$('lkGuest').addEventListener('click', () => { $('lockWrap').style.display = 'none'; $('appWrap').style.display = 'block'; });
+
+/* ---- administrar / cancelar suscripción ---- */
+(async () => {
+  if (!sb) return;
+  try { const { data } = await sb.auth.getSession(); if (data && data.session) $('manageSubBtn').style.display = ''; } catch (e) {}
+})();
+$('manageSubBtn').addEventListener('click', async () => {
+  const headers = await authHeader();
+  if (!headers.Authorization) return;
+  const btn = $('manageSubBtn'); const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '💳 <span>Abriendo…</span>';
+  try {
+    const res = await fetch('/api/billing-portal', { method: 'POST', headers });
+    const out = await res.json();
+    if (out.url) { window.location.href = out.url; return; }
+  } catch (e) {}
+  btn.disabled = false; btn.innerHTML = orig;
+  if (!confirm('¿Cancelar tu suscripción? Conservas el acceso hasta el final del periodo que ya pagaste.')) return;
+  try {
+    const res = await fetch('/api/cancel-subscription', { method: 'POST', headers });
+    const out = await res.json();
+    alert(out.message || 'Listo.');
+  } catch (e) { alert('No se pudo procesar. Escríbenos y lo resolvemos.'); }
+});
+
+/* navegación por día (CDMX) */
+function shiftDay(n) {
+  const base = currentDay ? new Date(currentDay + 'T12:00:00-06:00') : new Date();
+  const d = mxDate(base.getTime() + n * 86400000);
+  const hoy = mxDate(Date.now());
+  load(d === hoy && !currentDay ? null : d);
+}
+$('prevDay').addEventListener('click', () => shiftDay(-1));
+$('nextDay').addEventListener('click', () => shiftDay(currentDay ? 1 : 2));
+$('refreshBtn').addEventListener('click', () => load(currentDay, true));
+
+load(_params.get('day') && /^\d{4}-\d{2}-\d{2}$/.test(_params.get('day')) ? _params.get('day') : null);
+</script>
+
+<script>
+/* barra de modelos deslizable (celular): el modelo activo queda a la vista */
+(function () {
+  function centra() {
+    var bar = document.querySelector('.model-toggle');
+    var act = bar && (bar.querySelector('.active') || bar.querySelector('[aria-selected="true"]'));
+    if (!bar || !act || bar.scrollWidth <= bar.clientWidth) return;
+    bar.scrollLeft = Math.max(0, act.offsetLeft - (bar.clientWidth - act.offsetWidth) / 2);
+  }
+  centra(); window.addEventListener('load', centra); setTimeout(centra, 400);
+})();
+</script>
+</body>
+</html>
