@@ -549,6 +549,13 @@ const MODELOS = {
          titulo: 'La Bundesliga completa, jornada por jornada',
          lede: 'Las 34 jornadas de Bundesliga, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
          mensual: 'bundesliga_mensual', temporada: 'bundesliga_temporada' },
+  /* NBA (26-oct-2026): beta privada. Sin pestaña pública: se llega por
+     ?m=nba. `euro: true` reutiliza el camino "próximamente" mientras sus
+     planes lleven `upcoming`. */
+  nba: { nombre: 'NBA', pagina: '/nba.html', api: '/api/nba-free', euro: true,
+         titulo: 'La temporada 2026-27 completa, noche por noche',
+         lede: 'Cada juego calculado posesión por posesión: ganador, hándicap, total, 1ª mitad y props de jugador, con las bajas del día descontadas y veredicto contra los momios reales.',
+         mensual: 'nba_mensual', temporada: 'nba_temporada' },
   ucl: { nombre: 'Champions League', pagina: '/europa.html?liga=ucl', api: '/api/euro-free?liga=ucl', euro: true,
          titulo: 'La Champions completa, de la fase de liga a la final',
          lede: 'Cada partido de la Champions League resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
@@ -689,8 +696,8 @@ async function sincronizaOfertas() {
 
 /* Los 7 modelos vendibles (orden canónico, el mismo de lib/plans.js) */
 const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl'];
-const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League' };
-const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆' };
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
+const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
 /* elección del plan "tres a elegir": arranca con el modelo de esta página */
 let elegidos = [M];
 

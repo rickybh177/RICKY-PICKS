@@ -228,6 +228,19 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <a class="mc-cta" id="ctaNfl" href="/nfl.html">Abrir modelo →</a>
       </div>
 
+      <!-- NBA (beta privada, 26-oct-2026): la tarjeta solo aparece para
+           quien ya tiene el producto (hoy: el admin). Al abrir al público,
+           quitar el display:none. -->
+      <div class="model-card" id="cardNba" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🏀</span>
+          <span class="mc-chip" id="chipNba">Sin acceso</span>
+        </div>
+        <h2>Modelo NBA</h2>
+        <p>Cada juego calculado posesión por posesión: ganador, hándicap, total, 1ª mitad y props de jugador, con las bajas del día descontadas. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaNba" href="/nba.html">Abrir modelo →</a>
+      </div>
+
       <!-- Ligas europeas: cuatro modelos, cuatro tarjetas (cada liga
            tiene su propio acceso: epl / laliga / bundesliga / ucl). -->
       <div class="model-card">
@@ -318,7 +331,7 @@ function showMain(){
 }
 
 const NOMBRE_MODELO = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL',
-  epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
+  epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA' };
 
 /* Fecha legible, o null si el dato no es de fiar. Blindaje: la vigencia
    se calcula como updated_at + días, así que una fila sin updated_at
@@ -468,6 +481,8 @@ async function boot(){
     paint(!!acc.laliga, 'chipLaliga', 'ctaLaliga', '/producto.html?m=laliga', fin.laliga);
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
+    /* NBA en beta privada: la tarjeta solo se enseña a quien tiene el producto */
+    if (acc.nba) { document.getElementById('cardNba').style.display = ''; paint(true, 'chipNba', 'ctaNba', '/producto.html?m=nba', fin.nba); }
     window.__acc = acc; // para la oferta de regreso del plan de tres
     pintaTres(acc.tres);
     pintaFinAviso(acc);

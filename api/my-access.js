@@ -50,6 +50,7 @@ module.exports = async function handler(req, res) {
     const mlb = vigente('mlb');
     const mx = vigente('mx');
     const nfl = vigente('nfl');
+    const nba = vigente('nba');
     /* Europa: una liga por producto (epl / laliga / bundesliga). Un
        combo europeo o "todo" ya viene expandido en una fila por liga. */
     const euro = {};
@@ -60,7 +61,7 @@ module.exports = async function handler(req, res) {
        ni forma de reactivarse, y aparecía en el aviso diciéndole a 170
        clientes que "se les acabó el acceso" a algo que terminó solo. */
     const expirados = {};
-    for (const p of ['mlb', 'nfl', 'mx', ...EURO_PRODUCTS]) {
+    for (const p of ['mlb', 'nfl', 'mx', ...EURO_PRODUCTS, 'nba']) {
       const v = vencido(p);
       if (v) expirados[p] = v;
     }
@@ -141,6 +142,8 @@ module.exports = async function handler(req, res) {
       mx_plan: mx ? mx.plan : null,
       nfl: !!nfl,
       nfl_plan: nfl ? nfl.plan : null,
+      nba: !!nba,
+      nba_plan: nba ? nba.plan : null,
       epl: !!euro.epl,
       epl_plan: euro.epl ? euro.epl.plan : null,
       laliga: !!euro.laliga,

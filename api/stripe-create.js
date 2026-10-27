@@ -44,6 +44,7 @@ const PLAN_NAMES = {
   laliga_mensual: 'Modelo LaLiga — Suscripción mensual',
   bundesliga_mensual: 'Modelo Bundesliga — Suscripción mensual',
   ucl_mensual: 'Modelo Champions League — Suscripción mensual',
+  nba_mensual: 'Modelo NBA — Suscripción mensual',
   tres_mensual: 'Tres modelos a elegir — Suscripción mensual',
   todo_mensual: 'Todos los modelos (7) — Suscripción mensual',
   epl_temporada: 'Modelo Premier League — Temporada 2026-27 completa',

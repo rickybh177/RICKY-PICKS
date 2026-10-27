@@ -65,7 +65,7 @@ const expectedProducts = id => (isChoosePlan(id) ? TEST_CHOICE.slice() : product
 
 const STATIC_ONLY = process.argv.includes('--static');
 const TEST_EMAIL = 'test-entitlements@rickypicks.internal';
-const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx', 'nfl', 'epl', 'laliga', 'bundesliga', 'ucl'];
+const KNOWN_PRODUCTS = ['mundial', 'mlb', 'mx', 'nfl', 'epl', 'laliga', 'bundesliga', 'ucl', 'nba'];
 
 /* ¿El validador de acceso del modelo acepta este plan?
    Usa planCoversProduct de lib/plans.js — la MISMA regla que usan
