@@ -854,9 +854,30 @@ function pintaPrecios(){
 
 /* Selector de moneda. Solo aparece si el plan tiene precio en dólares;
    el peso siempre está y es el que viene marcado. */
+/* 28-oct-2026: quien paga desde México NO ve el botón de dólares (3
+   cobros se rechazaron por cargar dólares a tarjeta mexicana). Se decide
+   por la zona horaria del navegador; fuera de México el selector sale
+   como siempre, y en México queda una liga discreta para quien de verdad
+   paga con tarjeta extranjera. ?moneda=USD en la URL sigue funcionando. */
+const TZ_MX = /^America\/(Mexico_City|Cancun|Merida|Monterrey|Matamoros|Chihuahua|Ciudad_Juarez|Ojinaga|Hermosillo|Mazatlan|Bahia_Banderas|Tijuana)$/;
+let _usdVisible = false;
+function enMexico(){ try{ return TZ_MX.test(Intl.DateTimeFormat().resolvedOptions().timeZone || ''); }catch(e){ return true; } }
 function pintaMoneda(){
   const btn = document.getElementById('stripeBtn');
   if(!btn || listaDe('USD') == null) return;
+  if(MONEDA !== 'USD' && !_usdVisible && enMexico()){
+    let link = document.getElementById('curLink');
+    if(!link){
+      link = document.createElement('div');
+      link.id = 'curLink';
+      link.style.cssText = 'margin:10px 0 8px;font-size:0.76rem;color:var(--muted)';
+      link.innerHTML = 'Pagas en pesos (MXN). <a href="#" id="curLinkA" style="color:inherit">¿Pagas con tarjeta de fuera de México?</a>';
+      btn.insertAdjacentElement('beforebegin', link);
+      link.querySelector('#curLinkA').addEventListener('click', e => { e.preventDefault(); _usdVisible = true; link.remove(); pintaMoneda(); });
+    }
+    return;
+  }
+  const old = document.getElementById('curLink'); if(old) old.remove();
   let box = document.getElementById('curPick');
   if(!box){
     box = document.createElement('div');
