@@ -5,9 +5,9 @@
    antes no lo tienen; el dueño pidió pedírselo "cuando entren". Este
    script corre en todas las páginas con sesión: si el usuario entró y
    su cuenta no trae `user_metadata.telefono`, abre un modal que lo
-   pide y lo guarda con `auth.updateUser`. Se puede posponer con
-   "Después" (vuelve a salir en la siguiente visita; se recuerda solo
-   por pestaña), para no dejar a nadie fuera de lo que ya pagó.
+   pide y lo guarda con `auth.updateUser`. Es OBLIGATORIO (decisión
+   del dueño, 28-oct-2026): no hay opción de posponer ni forma de
+   cerrarlo sin dar el número.
 
    También escucha el inicio de sesión en la misma página (el modal
    del landing) para pedirlo justo después de entrar.
@@ -18,7 +18,6 @@
 (function () {
   var URL = 'https://juzfncioexyerhwweaui.supabase.co';
   var ANON = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
-  var POSPUESTO = 'telefono_despues';
   var abierto = false;
 
   /* La regla y la lista de países viven en /telefono.js (compartidas
@@ -39,8 +38,7 @@
       '#telAviso input,#telAviso select{box-sizing:border-box;font:inherit;font-size:1rem;padding:13px 14px;border:1.5px solid #d8dfe9;border-radius:12px;outline:none;background:#f6f8fb;color:#14181e}' +
       '#telAviso input{flex:1;min-width:0}#telAviso select{flex:none;width:auto;padding-right:8px}#telAviso input:focus,#telAviso select:focus{border-color:#2f7bff;background:#fff}' +
       '#telAviso button.ok{width:100%;margin-top:12px;font:inherit;font-weight:700;font-size:.95rem;padding:13px;border:none;border-radius:12px;background:#1d4ed8;color:#fff;cursor:pointer}#telAviso button.ok:disabled{opacity:.6}' +
-      '#telAviso .msg{min-height:18px;font-size:.82rem;color:#d93a3a;margin-top:8px}' +
-      '#telAviso button.later{display:block;margin:10px auto 0;background:none;border:none;color:#8a93a3;font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline}';
+      '#telAviso .msg{min-height:18px;font-size:.82rem;color:#d93a3a;margin-top:8px}';
     document.head.appendChild(css);
     var el = document.createElement('div');
     el.id = 'telAviso';
@@ -54,7 +52,6 @@
       '<input id="telAvisoInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos"></div>' +
       '<div class="msg" id="telAvisoMsg"></div>' +
       '<button class="ok" id="telAvisoOk">Guardar</button>' +
-      '<button class="later" id="telAvisoLater">Después</button>' +
       '</div>';
     document.body.appendChild(el);
     requestAnimationFrame(function () { el.classList.add('on'); });
@@ -72,16 +69,11 @@
     };
     ok.addEventListener('click', guarda);
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') guarda(); });
-    el.querySelector('#telAvisoLater').addEventListener('click', function () {
-      try { sessionStorage.setItem(POSPUESTO, '1'); } catch (e) {}
-      cierra();
-    });
   }
 
   function revisa(sb, user) {
     if (!user) return;
     if (user.user_metadata && user.user_metadata.telefono) return;
-    try { if (sessionStorage.getItem(POSPUESTO)) return; } catch (e) {}
     pinta(async function (tel) {
       var r = await sb.auth.updateUser({ data: { telefono: tel } });
       if (r && r.error) throw r.error;

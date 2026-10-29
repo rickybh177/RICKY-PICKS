@@ -7,7 +7,8 @@
 
    Bajo demanda a propósito: cada juego cuesta 7 créditos de momios
    y se comparte 4h; el historial jugador-juego se indexa una vez
-   por semana y se reutiliza.
+   por semana y se reutiliza. La respuesta final se guarda 15 min en
+   memoria y en el KV compartido (nfl-props-resp-<id>).
 
    Acceso: mismo candado que /api/nfl-picks. Invitado: solo el
    juego del pick gratis de la semana (el guardado en el KV).
@@ -15,7 +16,7 @@
 const { buildWeek, SEASON } = require('../lib/nfl/model');
 const { getUserFromToken, getEntitlement } = require('../lib/supabaseAdmin');
 const { entitlementGrants } = require('../lib/plans');
-const { kvGet } = require('../lib/odds/theoddsapi');
+const { kvGet, kvPut } = require('../lib/odds/theoddsapi');
 const { getDepthChart, getRoster, getSeasonPlayerRows } = require('../lib/nfl/players');
 const { loadHistory, buildIndex, projectPlayer, probOver, probAtLeastOne } = require('../lib/nfl/props');
 const { getEventProps, normName, devigPair, probToAm } = require('../lib/nfl/odds');
@@ -104,6 +105,17 @@ module.exports = async function handler(req, res) {
 
     const rc = _respCache.get(gameId);
     if (rc && Date.now() - rc.at < RESP_TTL) return res.status(200).json(rc.value);
+    /* Segunda capa: la respuesta ya calculada en el KV compartido. La
+       memoria de arriba se pierde en cada instancia nueva de Vercel y
+       el cálculo en frío tarda varios segundos; el pick gratis de la
+       página de compra lo pide cada visitante, así que con esto solo
+       uno cada RESP_TTL espera el cálculo. */
+    const kvKey = `nfl-props-resp-${gameId}`;
+    const kr = await kvGet(kvKey);
+    if (kr && kr.value && Date.now() - kr.at < RESP_TTL) {
+      _respCache.set(gameId, { at: kr.at, value: kr.value });
+      return res.status(200).json(kr.value);
+    }
 
     // semana (para el entorno del juego)
     const wkKey = `${st}:${week}`;
@@ -198,6 +210,7 @@ module.exports = async function handler(req, res) {
       players,
     };
     _respCache.set(gameId, { at: Date.now(), value });
+    await kvPut(kvKey, { at: Date.now(), value });
     return res.status(200).json(value);
   } catch (e) {
     console.error('nfl-props:', e);
