@@ -15,12 +15,13 @@
 
    Configurar en Stripe → Developers → Webhooks:
      URL:     https://dattip.com/api/stripe-webhook
-     Eventos: invoice.paid, checkout.session.completed
+     Eventos: invoice.paid, checkout.session.completed, invoice.payment_failed
    ============================================================ */
 const Stripe = require('stripe');
 const { grantEntitlement } = require('../lib/supabaseAdmin');
 const { cancelOtherRecurring, cancelCoveredRecurring } = require('../lib/cancel-recurring');
 const { FULL_PASS_PLANS, isSubscription } = require('../lib/plans');
+const { avisa } = require('../lib/cobros');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -70,6 +71,12 @@ module.exports = async function handler(req, res) {
           await cancelCoveredRecurring(meta.user_id, email, meta.plan, { stripeSubId: nueva, products: granted && granted.products });
         }
       }
+    } else if (event.type === 'invoice.payment_failed') {
+      /* Cobro rechazado: la liga de pago le llega al cliente el mismo
+         día (lib/cobros). Nunca tumba la respuesta a Stripe. */
+      const inv = event.data.object;
+      const r = await avisa(inv).catch(e => ({ ok: false, motivo: e.message }));
+      console.log('stripe-webhook: pago fallido', inv.id, inv.customer_email, JSON.stringify(r));
     } else if (event.type === 'invoice.paid') {
       // Renovación mensual: la metadata vive en la suscripción.
       const inv = event.data.object;

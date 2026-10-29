@@ -13,6 +13,18 @@
     {
       "path": "/api/ig-queue",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/email-cobros",
+      "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/email-jueves",
+      "schedule": "0 22 * * 4"
+    },
+    {
+      "path": "/api/email-lunes",
+      "schedule": "0 15 * * 1"
     }
   ],
   "redirects": [
