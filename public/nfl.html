@@ -582,22 +582,22 @@ async function loadProps(det) {
     html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos) + ' · ' + esc(p.team) + '</span>' +
       (p.questionable ? ' <span class="badge wx">Questionable</span>' : '') +
       (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
-    /* Bajo el nombre del jugador: el mercado con su nombre exacto (como
-       sale en la casa) y debajo la línea, la probabilidad y si vale la
-       pena por lo que paga la casa (props-valor.js, 28-oct-2026). La
+    /* Bajo el nombre del jugador: el mercado con su nombre exacto y su
+       línea (como sale en la casa) y debajo la probabilidad y si vale
+       la pena por lo que paga la casa (props-valor.js, 28-oct-2026). La
        proyección (mu ± sd) y el momio se quitaron a propósito — eran
        cuatro números por renglón y la gente no sabía cuál era el pick. */
     for (const mk of p.markets) {
       const v = mk.verdict || 'lectura';
       const partes = [];
       if (mk.line) {
-        [propLado(mk), propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
+        [propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
       } else {
         if (mk.key === 'anytime_td') { if (mk.p != null) partes.push(propProb(mk.p)); }
         else if (mk.model && mk.model.mu != null) partes.push('El modelo espera ' + mk.model.mu);
         partes.push('Las casas aún no ponen línea');
       }
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(propTitulo(mk)) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }

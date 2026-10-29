@@ -625,12 +625,12 @@ async function loadProps(det) {
     const rows = p.markets.slice().sort((a, b) => (rank[b.verdict] || 0) - (rank[a.verdict] || 0) || (b.ev || -9) - (a.ev || -9));
     for (const mk of rows) {
       const v = mk.verdict || 'lectura';
-      /* Título: el mercado con su nombre exacto (como sale en la casa).
-         Debajo: la línea, la probabilidad y si vale la pena por lo que
+      /* Título: el mercado con su nombre exacto y su línea (como sale en
+         la casa). Debajo: la probabilidad y si vale la pena por lo que
          paga la casa (props-valor.js, 28-oct-2026). */
       const partes = [];
       if (mk.line) {
-        [propLado(mk), propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
+        [propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
       } else {
         const pdd = mk.p != null ? mk.p : mk.model && mk.model.p;
         if (mk.key === 'dd') { if (pdd != null) partes.push(propProb(pdd)); }
@@ -638,7 +638,7 @@ async function loadProps(det) {
         partes.push('Las casas aún no ponen línea');
       }
       if (mk.note) partes.push(mk.note);
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(propTitulo(mk)) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }

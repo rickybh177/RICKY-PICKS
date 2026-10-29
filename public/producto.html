@@ -1044,8 +1044,8 @@ async function cargaProps(ctx, respaldo) {
   /* Se leen en orden de convicción: primero los PICK, al final el SKIP. */
   muestra.sort((a, b) => (b.r - a.r) || porEv(a, b));
 
-  /* Título: el nombre exacto del mercado, como lo busca el cliente en
-     su casa. Debajo, en palabras: la línea, la probabilidad y si vale
+  /* Título: el nombre exacto del mercado con su línea, como lo busca el
+     cliente en su casa. Debajo, en palabras: la probabilidad y si vale
      la pena por lo que paga la casa (props-valor.js, 28-oct-2026). La
      proyección ± y la ventaja en número se quitaron: el cliente no
      sabía leerlas. */
@@ -1054,7 +1054,7 @@ async function cargaProps(ctx, respaldo) {
     const v = mk.verdict || 'lectura';
     const desc = propDescripcion(mk);
     return '<div class="vrow ' + esc(v) + '">' +
-      '<span class="vl">' + esc(corto(p.name)) + ' · ' + esc(mk.label) +
+      '<span class="vl">' + esc(corto(p.name)) + ' · ' + esc(propTitulo(mk)) +
         (desc ? '<small>' + esc(desc) + '</small>' : '') + '</span>' +
       '<span class="vchip ' + esc(v) + '">' + esc(chipTxt(v)) + '</span></div>';
   }).join('');

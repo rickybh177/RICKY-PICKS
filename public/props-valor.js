@@ -1,15 +1,17 @@
 /* ============================================================
    Descripción de un prop en palabras de cliente (28-oct-2026).
 
-   El TÍTULO del renglón se queda con el nombre exacto del mercado
-   ("Recepciones", "Anota TD (anytime)"): es lo que el cliente busca en
-   su casa de apuestas. Lo que cambia es la línea de abajo, que antes
-   era "modelo 3 ± 1.3 · Más de 2.5 · 62% · ventaja +35.8%" y ahora
-   dice tres cosas que se entienden de un jalón:
+   El TÍTULO del renglón es el nombre exacto del mercado con su línea,
+   tal como aparece en la casa de apuestas, para que se vea de un
+   vistazo a qué meterle (igual que "Hándicap: Steelers -3.5"):
 
-     Más de 2.5 · 62% de que pase · Vale la pena: la casa paga de más
+     Recepciones: Más de 2.5
 
-   - el lado y la línea, tal como aparecen en la casa;
+   La línea de abajo, que antes era "modelo 3 ± 1.3 · Más de 2.5 · 62%
+   · ventaja +35.8%", ahora dice dos cosas que se entienden de un jalón:
+
+     62% de que pase · Vale la pena: la casa paga de más
+
    - la probabilidad del modelo;
    - si conviene por lo que paga la casa (ventaja = ev del endpoint).
 
@@ -17,13 +19,18 @@
    Instagram (lib/ig/plan.js lo carga con require).
    ============================================================ */
 (function (root) {
-  /* "Más de 2.5" / "Menos de 24.5" / "Sí anota" / "No" */
+  /* "Más de 2.5" / "Menos de 24.5" / "Sí" / "No" */
   function propLado(mk) {
     if (!mk || !mk.line) return null;
-    if (mk.key === 'anytime_td') return mk.side === 'no' ? 'No anota' : 'Sí anota';
-    if (mk.key === 'dd') return mk.side === 'no' ? 'No hace doble-doble' : 'Sí hace doble-doble';
+    if (mk.key === 'anytime_td' || mk.key === 'dd') return mk.side === 'no' ? 'No' : 'Sí';
     if (mk.line.point == null) return null;
     return (mk.side === 'under' ? 'Menos de ' : 'Más de ') + mk.line.point;
+  }
+
+  /* "Recepciones: Más de 2.5" — sin línea, solo el mercado. */
+  function propTitulo(mk) {
+    const lado = propLado(mk);
+    return (mk && mk.label || '') + (lado ? ': ' + lado : '');
   }
 
   /* 0.624 → "62% de que pase" */
@@ -51,10 +58,10 @@
   function propDescripcion(mk, corta) {
     let valor = propValor(mk);
     if (valor && corta) valor = valor.split(':')[0];
-    return [propLado(mk), propProb(mk && mk.p), valor].filter(Boolean).join(' · ');
+    return [propProb(mk && mk.p), valor].filter(Boolean).join(' · ');
   }
 
-  const api = { propLado, propProb, propValor, propDescripcion };
+  const api = { propLado, propTitulo, propProb, propValor, propDescripcion };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else Object.assign(root, api);
 })(typeof window !== 'undefined' ? window : this);
