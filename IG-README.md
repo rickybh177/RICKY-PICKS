@@ -113,7 +113,9 @@ con el formato del post manual del 27-sep-2026 (Eagles @ Bears):
 2. **PICK PRINCIPAL**: la card oscura del landing (fecha, equipos, probabilidades, barra,
    chip PICK/MAYBE/SKIP, estadio).
 3. **PICKS ALTERNATIVOS**: todos los mercados con su veredicto, probabilidad y edge.
-4. **PROPS JUGADOR** (solo NFL): los dos jugadores con más que decir.
+4. **PROPS JUGADOR** (NFL y NBA): los dos jugadores con más que decir, uno por equipo cuando
+   se puede. Si la casa aún no publica líneas (NBA a las 9:00 del día anterior nunca las tiene),
+   el renglón enseña la proyección del modelo con el chip MODELO en vez de PICK/SKIP.
 5. **COMENTA MODELO** para analizar todos los partidos (siempre `MODELO`; se puede
    cambiar desde el panel). La regla de respuesta en ig_rules debe reaccionar a esa palabra.
 
