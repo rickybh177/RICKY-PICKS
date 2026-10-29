@@ -200,6 +200,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
             <label class="form-label" for="pass">Contraseña</label>
             <input class="form-input" type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
           </div>
+          <!-- Teléfono: obligatorio al crear cuenta (pedido del dueño,
+               28-oct-2026); se guarda en los metadatos del usuario. -->
+          <div class="form-group" id="telGroup" style="display:none">
+            <label class="form-label" for="tel">Teléfono (WhatsApp)</label>
+            <input class="form-input" type="tel" id="tel" placeholder="10 dígitos" autocomplete="tel" inputmode="tel">
+          </div>
           <button class="btn-pay" id="authSubmit" style="background:var(--ink)">
             <span id="authBtnText">Entrar</span>
           </button>
@@ -1088,7 +1094,19 @@ function setAuthMode(mode){
   document.getElementById('stepTitle').textContent = isSignup ? 'Crea tu cuenta' : 'Inicia sesión';
   document.getElementById('authBtnText').textContent = isSignup ? 'Crear cuenta' : 'Entrar';
   document.getElementById('authToggle').textContent = isSignup ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Crea una';
+  document.getElementById('telGroup').style.display = isSignup ? '' : 'none';
   clearMsg(authMsg);
+}
+
+/* Teléfono a formato internacional. 10 dígitos = México (+52); si
+   ya trae lada de país, se respeta. null = no sirve. */
+function normTel(raw){
+  const d = String(raw||'').replace(/\D/g,'');
+  if(d.length === 10) return '+52' + d;
+  if(d.length === 12 && d.startsWith('52')) return '+' + d;
+  if(d.length === 11 && d.startsWith('1')) return '+' + d;
+  if(d.length >= 11 && d.length <= 15 && String(raw).trim().startsWith('+')) return '+' + d;
+  return null;
 }
 
 /* Errores de Supabase (en inglés) traducidos a algo accionable. */
@@ -1117,7 +1135,9 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
   try{
     if(authMode === 'signup'){
       if(pass.length < 6) throw new Error('Tu contraseña debe tener al menos 6 caracteres.');
-      const {data,error} = await sb.auth.signUp({email,password:pass});
+      const telefono = normTel(document.getElementById('tel').value);
+      if(!telefono) throw new Error('Escribe tu teléfono a 10 dígitos (con lada, sin espacios).');
+      const {data,error} = await sb.auth.signUp({email,password:pass,options:{data:{telefono}}});
       if(error) throw error;
       /* Correo ya registrado: Supabase no da error (no filtra qué
          correos existen) pero manda identities vacío. */
@@ -1143,6 +1163,7 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
 });
 
 document.getElementById('pass').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
+document.getElementById('tel').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('authSubmit').click(); });
 
 /* Productos que cubre un plan: mlb_* -> mlb, mx_* -> mx, nfl_* -> nfl,
    combo_* -> mlb+mx(+nfl), epl_/laliga_/bundesliga_ -> su liga,

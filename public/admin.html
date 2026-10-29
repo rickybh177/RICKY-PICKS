@@ -211,7 +211,7 @@
     <!-- TABLA -->
     <div class="toolbar">
       <h2>Clientes</h2>
-      <input class="search-input" type="text" id="searchInput" placeholder="Buscar por correo…">
+      <input class="search-input" type="text" id="searchInput" placeholder="Buscar por correo o teléfono…">
       <div class="filter-tabs" id="filterTabs">
         <div class="filter-tab active" data-filter="all">Todos</div>
         <!-- un tab por modelo, también desde PRODUCT_ORDER -->
@@ -226,13 +226,14 @@
         <thead>
           <tr>
             <th>Correo electrónico</th>
+            <th>Teléfono</th>
             <th>Modelos activos</th>
             <th>Última compra</th>
             <th>Registro</th>
           </tr>
         </thead>
         <tbody id="tableBody">
-          <tr><td colspan="4" class="empty-state">Cargando…</td></tr>
+          <tr><td colspan="5" class="empty-state">Cargando…</td></tr>
         </tbody>
       </table>
     </div>
@@ -328,7 +329,7 @@ function hasProduct(u, p){ return !!prodOf(u)[p]; }
 function renderTable(users){
   const body = document.getElementById('tableBody');
   if(!users.length){
-    body.innerHTML = '<tr><td colspan="4" class="empty-state">No se encontraron clientes con ese filtro.</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" class="empty-state">No se encontraron clientes con ese filtro.</td></tr>';
     document.getElementById('tableFooter').textContent = '';
     return;
   }
@@ -348,6 +349,7 @@ function renderTable(users){
       : u.plan_updated;
     return `<tr>
       <td class="email-cell">${u.email || '—'}</td>
+      <td class="date-cell">${u.telefono ? `<a href="https://wa.me/${String(u.telefono).replace(/\D/g,'')}" target="_blank" style="color:inherit">${u.telefono}</a>` : '—'}</td>
       <td>${badges}</td>
       <td class="date-cell">${fmtDate(lastBuy)}</td>
       <td class="date-cell">${fmtDate(u.created_at)}</td>
@@ -363,7 +365,7 @@ function applyFilters(){
     if(activeFilter === 'none') list = list.filter(u => PRODUCT_ORDER.every(p => !hasProduct(u, p)));
     else list = list.filter(u => hasProduct(u, activeFilter));
   }
-  if(q) list = list.filter(u => u.email && u.email.toLowerCase().includes(q));
+  if(q) list = list.filter(u => (u.email && u.email.toLowerCase().includes(q)) || (u.telefono && String(u.telefono).includes(q.replace(/\D/g,'') || q)));
   renderTable(list);
 }
 
@@ -388,7 +390,7 @@ async function loadUsers(tok){
     updateStats(allUsers);
     applyFilters();
   }catch(e){
-    document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="empty-state">${e.message}</td></tr>`;
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" class="empty-state">${e.message}</td></tr>`;
   }
   document.getElementById('tableLoader').style.display='none';
 }
