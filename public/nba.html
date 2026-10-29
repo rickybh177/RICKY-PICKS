@@ -261,7 +261,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .logo .tip { color: var(--blue); }
 </style>
 <script src="/barras.js"></script>
-<script src="/props-frase.js"></script>
+<script src="/props-valor.js"></script>
 </head>
 <body>
 
@@ -625,22 +625,20 @@ async function loadProps(det) {
     const rows = p.markets.slice().sort((a, b) => (rank[b.verdict] || 0) - (rank[a.verdict] || 0) || (b.ev || -9) - (a.ev || -9));
     for (const mk of rows) {
       const v = mk.verdict || 'lectura';
-      /* El renglón ES la apuesta en palabras ("Mete 25 puntos o más") y
-         debajo qué tan seguido pasa (props-frase.js, 28-oct-2026). */
+      /* Título: el mercado con su nombre exacto (como sale en la casa).
+         Debajo: la línea, la probabilidad y si vale la pena por lo que
+         paga la casa (props-valor.js, 28-oct-2026). */
       const partes = [];
-      let frase;
       if (mk.line) {
-        frase = propFrase(mk);
-        if (mk.p != null) partes.push(propVeces(mk.p));
-        if (mk.ev != null) partes.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + Math.round(mk.ev * 100) + '%');
+        [propLado(mk), propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
       } else {
-        frase = propProyeccion(mk);
         const pdd = mk.p != null ? mk.p : mk.model && mk.model.p;
-        if (mk.key === 'dd' && pdd != null) partes.push(propVeces(pdd));
+        if (mk.key === 'dd') { if (pdd != null) partes.push(propProb(pdd)); }
+        else if (mk.model && mk.model.mu != null) partes.push('El modelo espera ' + mk.model.mu);
         partes.push('Las casas aún no ponen línea');
       }
       if (mk.note) partes.push(mk.note);
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(frase || mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }

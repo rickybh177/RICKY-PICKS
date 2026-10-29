@@ -248,7 +248,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .logo .tip { color: var(--blue); }
 </style>
 <script src="/barras.js"></script>
-<script src="/props-frase.js"></script>
+<script src="/props-valor.js"></script>
 </head>
 <body>
 
@@ -582,25 +582,22 @@ async function loadProps(det) {
     html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos) + ' · ' + esc(p.team) + '</span>' +
       (p.questionable ? ' <span class="badge wx">Questionable</span>' : '') +
       (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
-    /* Bajo el nombre del jugador, cada renglón ES la apuesta dicha
-       como la diría quien la juega ("Agarra 3 pases o más") y debajo
-       qué tan seguido pasa (props-frase.js, 28-oct-2026). La
+    /* Bajo el nombre del jugador: el mercado con su nombre exacto (como
+       sale en la casa) y debajo la línea, la probabilidad y si vale la
+       pena por lo que paga la casa (props-valor.js, 28-oct-2026). La
        proyección (mu ± sd) y el momio se quitaron a propósito — eran
        cuatro números por renglón y la gente no sabía cuál era el pick. */
     for (const mk of p.markets) {
       const v = mk.verdict || 'lectura';
       const partes = [];
-      let frase;
       if (mk.line) {
-        frase = propFrase(mk);
-        if (mk.p != null) partes.push(propVeces(mk.p));
-        if (mk.ev != null) partes.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + Math.round(mk.ev * 100) + '%');
+        [propLado(mk), propProb(mk.p), propValor(mk)].forEach(t => { if (t) partes.push(t); });
       } else {
-        frase = propProyeccion(mk);
-        if (mk.key === 'anytime_td' && mk.p != null) partes.push(propVeces(mk.p));
+        if (mk.key === 'anytime_td') { if (mk.p != null) partes.push(propProb(mk.p)); }
+        else if (mk.model && mk.model.mu != null) partes.push('El modelo espera ' + mk.model.mu);
         partes.push('Las casas aún no ponen línea');
       }
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(frase || mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }

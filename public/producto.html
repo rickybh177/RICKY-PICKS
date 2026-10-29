@@ -501,7 +501,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </div>
 
-<script src="/props-frase.js"></script>
+<script src="/props-valor.js"></script>
 <script>
 const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
@@ -1044,16 +1044,18 @@ async function cargaProps(ctx, respaldo) {
   /* Se leen en orden de convicción: primero los PICK, al final el SKIP. */
   muestra.sort((a, b) => (b.r - a.r) || porEv(a, b));
 
-  /* Cada renglón es la apuesta dicha como la diría quien la juega
-     ("Jeudy agarra 3 pases o más") y debajo qué tan seguido pasa
-     (props-frase.js, 28-oct-2026). La proyección ± y la ventaja se
-     quitaron del escaparate: eran números que el cliente no sabía leer. */
+  /* Título: el nombre exacto del mercado, como lo busca el cliente en
+     su casa. Debajo, en palabras: la línea, la probabilidad y si vale
+     la pena por lo que paga la casa (props-valor.js, 28-oct-2026). La
+     proyección ± y la ventaja en número se quitaron: el cliente no
+     sabía leerlas. */
+  const corto = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[0][0] + '. ' + t.slice(1).join(' ') : String(n || ''); };
   const html = muestra.map(({ p, mk }) => {
     const v = mk.verdict || 'lectura';
-    const frase = propFrase(mk, p.name) || (apellido(p.name) + ' · ' + mk.label);
+    const desc = propDescripcion(mk);
     return '<div class="vrow ' + esc(v) + '">' +
-      '<span class="vl">' + esc(frase) +
-        (mk.p != null ? '<small>' + esc(propVeces(mk.p)) + '</small>' : '') + '</span>' +
+      '<span class="vl">' + esc(corto(p.name)) + ' · ' + esc(mk.label) +
+        (desc ? '<small>' + esc(desc) + '</small>' : '') + '</span>' +
       '<span class="vchip ' + esc(v) + '">' + esc(chipTxt(v)) + '</span></div>';
   }).join('');
 
