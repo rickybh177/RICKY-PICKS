@@ -12,7 +12,8 @@
    También escucha el inicio de sesión en la misma página (el modal
    del landing) para pedirlo justo después de entrar.
 
-   Probar sin sesión en local: ?telefono=test.
+   Necesita /telefono.js cargado antes (lista de países y regla del
+   número). Probar sin sesión en local: ?telefono=test.
    ============================================================ */
 (function () {
   var URL = 'https://juzfncioexyerhwweaui.supabase.co';
@@ -20,15 +21,9 @@
   var POSPUESTO = 'telefono_despues';
   var abierto = false;
 
-  /* Misma regla que los formularios de alta: 10 dígitos = México. */
-  function normTel(raw) {
-    var d = String(raw || '').replace(/\D/g, '');
-    if (d.length === 10) return '+52' + d;
-    if (d.length === 12 && d.indexOf('52') === 0) return '+' + d;
-    if (d.length === 11 && d.indexOf('1') === 0) return '+' + d;
-    if (d.length >= 11 && d.length <= 15 && String(raw).trim().charAt(0) === '+') return '+' + d;
-    return null;
-  }
+  /* La regla y la lista de países viven en /telefono.js (compartidas
+     con los formularios de alta). */
+  var T = window.DattipTel;
 
   function pinta(onSave) {
     if (abierto || document.getElementById('telAviso')) return;
@@ -40,7 +35,9 @@
       "#telAviso .box{background:#fff;color:#14181e;border-radius:18px;width:min(420px,100%);padding:26px 24px 20px;box-shadow:0 24px 60px -24px rgba(0,0,0,.5);font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}" +
       '#telAviso h3{margin:0 0 6px;font-size:1.2rem;letter-spacing:-.02em}#telAviso p{margin:0 0 16px;color:#667084;font-size:.9rem;line-height:1.45}' +
       '#telAviso label{display:block;font-family:"JetBrains Mono",monospace;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a93a3;margin-bottom:6px}' +
-      '#telAviso input{width:100%;box-sizing:border-box;font:inherit;font-size:1rem;padding:13px 14px;border:1.5px solid #d8dfe9;border-radius:12px;outline:none;background:#f6f8fb}#telAviso input:focus{border-color:#2f7bff;background:#fff}' +
+      '#telAviso .row{display:flex;gap:8px}' +
+      '#telAviso input,#telAviso select{box-sizing:border-box;font:inherit;font-size:1rem;padding:13px 14px;border:1.5px solid #d8dfe9;border-radius:12px;outline:none;background:#f6f8fb;color:#14181e}' +
+      '#telAviso input{flex:1;min-width:0}#telAviso select{flex:none;width:auto;padding-right:8px}#telAviso input:focus,#telAviso select:focus{border-color:#2f7bff;background:#fff}' +
       '#telAviso button.ok{width:100%;margin-top:12px;font:inherit;font-weight:700;font-size:.95rem;padding:13px;border:none;border-radius:12px;background:#1d4ed8;color:#fff;cursor:pointer}#telAviso button.ok:disabled{opacity:.6}' +
       '#telAviso .msg{min-height:18px;font-size:.82rem;color:#d93a3a;margin-top:8px}' +
       '#telAviso button.later{display:block;margin:10px auto 0;background:none;border:none;color:#8a93a3;font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline}';
@@ -50,10 +47,11 @@
     el.setAttribute('role', 'dialog');
     el.innerHTML =
       '<div class="box">' +
-      '<h3>Un dato más: tu teléfono</h3>' +
-      '<p>Lo usamos solo para avisarte de tu cuenta por WhatsApp. No lo compartimos con nadie.</p>' +
+      '<h3>Verifica tu cuenta</h3>' +
+      '<p>Por seguridad te pedimos tu número de teléfono. Lo usamos solo para avisos de tu cuenta por WhatsApp y no lo compartimos con nadie.</p>' +
       '<label for="telAvisoInput">Teléfono (WhatsApp)</label>' +
-      '<input id="telAvisoInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos">' +
+      '<div class="row"><select id="telAvisoPais" aria-label="País">' + T.options('MX') + '</select>' +
+      '<input id="telAvisoInput" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos"></div>' +
       '<div class="msg" id="telAvisoMsg"></div>' +
       '<button class="ok" id="telAvisoOk">Guardar</button>' +
       '<button class="later" id="telAvisoLater">Después</button>' +
@@ -62,10 +60,12 @@
     requestAnimationFrame(function () { el.classList.add('on'); });
     var cierra = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); abierto = false; }, 250); };
     var input = el.querySelector('#telAvisoInput'), msg = el.querySelector('#telAvisoMsg'), ok = el.querySelector('#telAvisoOk');
+    var paisSel = el.querySelector('#telAvisoPais');
+    paisSel.addEventListener('change', function () { input.placeholder = T.placeholder(paisSel.value); });
     setTimeout(function () { try { input.focus(); } catch (e) {} }, 300);
     var guarda = async function () {
-      var tel = normTel(input.value);
-      if (!tel) { msg.textContent = 'Escribe tu teléfono a 10 dígitos (con lada, sin espacios).'; return; }
+      var tel = T.norm(paisSel.value, input.value);
+      if (!tel) { msg.textContent = T.mensaje(paisSel.value); return; }
       ok.disabled = true; ok.textContent = 'Guardando…'; msg.textContent = '';
       try { await onSave(tel); cierra(); }
       catch (e) { msg.textContent = 'No se pudo guardar. Intenta de nuevo.'; ok.disabled = false; ok.textContent = 'Guardar'; }
@@ -89,6 +89,7 @@
   }
 
   async function main() {
+    if (!T) return;
     if (/[?&]telefono=test/.test(location.search)) { pinta(async function () {}); return; }
     var sb = null;
     try { if (window.supabase && window.supabase.createClient) sb = window.supabase.createClient(URL, ANON); } catch (e) {}

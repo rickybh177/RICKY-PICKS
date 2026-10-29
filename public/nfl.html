@@ -248,6 +248,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .logo .tip { color: var(--blue); }
 </style>
 <script src="/barras.js"></script>
+<script src="/props-frase.js"></script>
 </head>
 <body>
 
@@ -581,22 +582,25 @@ async function loadProps(det) {
     html += '<div class="player"><div class="player-h">' + esc(p.name) + ' <span class="pp">' + esc(p.pos) + ' · ' + esc(p.team) + '</span>' +
       (p.questionable ? ' <span class="badge wx">Questionable</span>' : '') +
       (p.team_changed ? ' <span class="badge neutral">Nuevo equipo</span>' : '') + '</div>';
-    /* Bajo el nombre del jugador va SOLO: qué pick es, su
-       probabilidad y su edge. La proyección del modelo (mu ± sd) y el
-       momio se quitaron a propósito — eran cuatro números por renglón
-       y la gente no sabía cuál era el pick. */
+    /* Bajo el nombre del jugador, cada renglón ES la apuesta dicha
+       como la diría quien la juega ("Agarra 3 pases o más") y debajo
+       qué tan seguido pasa (props-frase.js, 28-oct-2026). La
+       proyección (mu ± sd) y el momio se quitaron a propósito — eran
+       cuatro números por renglón y la gente no sabía cuál era el pick. */
     for (const mk of p.markets) {
       const v = mk.verdict || 'lectura';
       const partes = [];
+      let frase;
       if (mk.line) {
-        partes.push(mk.key === 'anytime_td' ? 'Sí anota TD'
-          : (mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
-        if (mk.p != null) partes.push(pct1(mk.p));
-        if (mk.ev != null) partes.push('edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+        frase = propFrase(mk);
+        if (mk.p != null) partes.push(propVeces(mk.p));
+        if (mk.ev != null) partes.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + Math.round(mk.ev * 100) + '%');
       } else {
-        partes.push('Aún sin línea publicada');
+        frase = propProyeccion(mk);
+        if (mk.key === 'anytime_td' && mk.p != null) partes.push(propVeces(mk.p));
+        partes.push('Las casas aún no ponen línea');
       }
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(frase || mk.label) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }
@@ -694,6 +698,7 @@ load(null);
 </script>
 <!-- aviso de lanzamiento NBA (27-oct-2026): a todos, 3 veces por cuenta (o por navegador sin sesión); quitar cuando ya no haga falta -->
 <script src="/nba-aviso.js" defer></script>
+<script src="/telefono.js"></script>
 <script src="/telefono-aviso.js" defer></script>
 </body>
 </html>

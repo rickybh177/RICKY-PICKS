@@ -261,6 +261,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .logo .tip { color: var(--blue); }
 </style>
 <script src="/barras.js"></script>
+<script src="/props-frase.js"></script>
 </head>
 <body>
 
@@ -624,17 +625,22 @@ async function loadProps(det) {
     const rows = p.markets.slice().sort((a, b) => (rank[b.verdict] || 0) - (rank[a.verdict] || 0) || (b.ev || -9) - (a.ev || -9));
     for (const mk of rows) {
       const v = mk.verdict || 'lectura';
+      /* El renglón ES la apuesta en palabras ("Mete 25 puntos o más") y
+         debajo qué tan seguido pasa (props-frase.js, 28-oct-2026). */
       const partes = [];
+      let frase;
       if (mk.line) {
-        if (mk.key === 'dd') partes.push(mk.side === 'no' ? 'No hace doble-doble' : 'Sí hace doble-doble');
-        else partes.push((mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
-        if (mk.p != null) partes.push(pct1(mk.p));
-        if (mk.ev != null) partes.push('edge ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+        frase = propFrase(mk);
+        if (mk.p != null) partes.push(propVeces(mk.p));
+        if (mk.ev != null) partes.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + Math.round(mk.ev * 100) + '%');
       } else {
-        partes.push(mk.key === 'dd' ? 'Modelo: ' + pct1(mk.p) : 'Proyección ' + (mk.model && mk.model.mu != null ? mk.model.mu : '—') + ' · aún sin línea');
+        frase = propProyeccion(mk);
+        const pdd = mk.p != null ? mk.p : mk.model && mk.model.p;
+        if (mk.key === 'dd' && pdd != null) partes.push(propVeces(pdd));
+        partes.push('Las casas aún no ponen línea');
       }
       if (mk.note) partes.push(mk.note);
-      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(mk.label) +
+      html += '<div class="prow ' + esc(v) + '"><span class="pl">' + esc(frase || mk.label) +
         '<small>' + partes.map(t => '<span>' + esc(t) + '</span>').join('') + '</small></span>' +
         '<span class="vchip ' + esc(v) + '">' + PCHIP[v] + '</span></div>';
     }
@@ -728,6 +734,7 @@ load(_params.get('day') && /^\d{4}-\d{2}-\d{2}$/.test(_params.get('day')) ? _par
   centra(); window.addEventListener('load', centra); setTimeout(centra, 400);
 })();
 </script>
+<script src="/telefono.js"></script>
 <script src="/telefono-aviso.js" defer></script>
 </body>
 </html>

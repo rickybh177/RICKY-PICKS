@@ -501,6 +501,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   </div>
 </div>
 
+<script src="/props-frase.js"></script>
 <script>
 const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
@@ -968,7 +969,7 @@ function detalleHTML(vs, extra, dist) {
    su historial y lo mide contra los momios de props del consenso. */
 function propsSlideHTML() {
   return '<div class="slide" id="propsSlide">' +
-    '<div class="slide-lbl">Props de jugador · historial real contra la línea de las casas</div>' +
+    '<div class="slide-lbl">Apuestas por jugador en este partido</div>' +
     '<div class="det-rows" id="propsBody"><div class="props-load">Proyectando a cada titular…</div></div>' +
   '</div>';
 }
@@ -1043,35 +1044,26 @@ async function cargaProps(ctx, respaldo) {
   /* Se leen en orden de convicción: primero los PICK, al final el SKIP. */
   muestra.sort((a, b) => (b.r - a.r) || porEv(a, b));
 
-  const corto = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[0][0] + '. ' + t.slice(1).join(' ') : String(n || ''); };
+  /* Cada renglón es la apuesta dicha como la diría quien la juega
+     ("Jeudy agarra 3 pases o más") y debajo qué tan seguido pasa
+     (props-frase.js, 28-oct-2026). La proyección ± y la ventaja se
+     quitaron del escaparate: eran números que el cliente no sabía leer. */
   const html = muestra.map(({ p, mk }) => {
     const v = mk.verdict || 'lectura';
-    const bits = [];
-    if (mk.key === 'anytime_td') {
-      bits.push('modelo ' + pct(mk.p));
-      if (mk.line) bits.push('paga ' + amFmt(mk.line.price));
-    } else {
-      const m = mk.model || {};
-      if (m.mu != null) bits.push('modelo ' + m.mu + (m.sd ? ' ± ' + m.sd : ''));
-      if (mk.line) bits.push((mk.side === 'over' ? 'Más' : 'Menos') + ' de ' + mk.line.point);
-      if (mk.p != null) bits.push(pct(mk.p));
-    }
-    if (mk.ev != null) bits.push('ventaja ' + (mk.ev >= 0 ? '+' : '') + (mk.ev * 100).toFixed(1) + '%');
+    const frase = propFrase(mk, p.name) || (apellido(p.name) + ' · ' + mk.label);
     return '<div class="vrow ' + esc(v) + '">' +
-      '<span class="vl">' + esc(corto(p.name)) + ' · ' + esc(mk.label) +
-        '<small>' + esc(bits.join(' · ')) + '</small></span>' +
+      '<span class="vl">' + esc(frase) +
+        (mk.p != null ? '<small>' + esc(propVeces(mk.p)) + '</small>' : '') + '</span>' +
       '<span class="vchip ' + esc(v) + '">' + esc(chipTxt(v)) + '</span></div>';
   }).join('');
 
   const restantes = filas.length - muestra.length;
   const pie = '<div class="props-mas">' +
-    (restantes > 0 ? restantes + ' mercados más de ' + jug.length + ' jugadores, dentro del modelo' : jug.length + ' jugadores proyectados') +
+    (restantes > 0 ? restantes + ' apuestas más de ' + jug.length + ' jugadores, dentro del modelo' : jug.length + ' jugadores proyectados') +
     (d.odds_books ? ' · momios de ' + d.odds_books + ' casas' : '') + '</div>';
   fin(html + pie);
 }
 
-/* Momio americano ya formateado (los props traen el precio del libro). */
-const amFmt = n => n == null ? '—' : (n > 0 ? '+' + n : String(n));
 
 /* Histograma de 10,000 simulaciones. Dos formas: 'conteo' (carreras,
    con la línea del total marcada) y 'margen' (centrado en el empate). */
@@ -1333,6 +1325,7 @@ if (sb) {
   });
 }
 </script>
+<script src="/telefono.js"></script>
 <script src="/telefono-aviso.js" defer></script>
 </body>
 </html>

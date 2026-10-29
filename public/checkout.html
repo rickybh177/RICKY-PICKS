@@ -19,6 +19,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 <meta charset="UTF-8">
+<script src="/telefono.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://dattip.com/checkout.html">
 <meta name="robots" content="noindex, nofollow">
@@ -204,7 +205,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
                28-oct-2026); se guarda en los metadatos del usuario. -->
           <div class="form-group" id="telGroup" style="display:none">
             <label class="form-label" for="tel">Teléfono (WhatsApp)</label>
-            <input class="form-input" type="tel" id="tel" placeholder="10 dígitos" autocomplete="tel" inputmode="tel">
+            <div style="display:flex;gap:8px">
+              <select class="form-input" id="telPais" aria-label="País" style="width:auto;flex:none;padding-right:8px"></select>
+              <input class="form-input" type="tel" id="tel" placeholder="10 dígitos" autocomplete="tel" inputmode="tel" style="flex:1;min-width:0">
+            </div>
           </div>
           <button class="btn-pay" id="authSubmit" style="background:var(--ink)">
             <span id="authBtnText">Entrar</span>
@@ -1098,29 +1102,9 @@ function setAuthMode(mode){
   clearMsg(authMsg);
 }
 
-/* Teléfono a formato internacional. 10 dígitos = México (+52); si
-   ya trae lada de país, se respeta. null = no sirve. */
-function normTel(raw){
-  const d = String(raw||'').replace(/\D/g,'');
-  if(d.length === 10) return '+52' + d;
-  if(d.length === 12 && d.startsWith('52')) return '+' + d;
-  if(d.length === 11 && d.startsWith('1')) return '+' + d;
-  if(d.length >= 11 && d.length <= 15 && String(raw).trim().startsWith('+')) return '+' + d;
-  return null;
-}
-
-/* Errores de Supabase (en inglés) traducidos a algo accionable. */
-function authErrMsg(e){
-  const m = (e && e.message) || '';
-  const t = m.toLowerCase();
-  if(t.includes('already registered') || t.includes('already been registered')) return 'Ese correo ya tiene cuenta. Inicia sesión.';
-  if(t.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.';
-  if(t.includes('email not confirmed')) return 'Falta confirmar tu correo. Revisa tu bandeja y abre el enlace que te mandamos.';
-  if(t.includes('password should be at least') || t.includes('at least 6')) return 'Tu contraseña debe tener al menos 6 caracteres.';
-  if(t.includes('unable to validate email') || t.includes('invalid email')) return 'Ese correo no parece válido. Revísalo.';
-  if(t.includes('rate limit') || t.includes('too many')) return 'Demasiados intentos seguidos. Espera un minuto y vuelve a intentar.';
-  return m || 'No se pudo completar. Intenta de nuevo.';
-}
+/* Banderitas + lada (lista y regla en /telefono.js). México por defecto. */
+document.getElementById('telPais').innerHTML = DattipTel.options('MX');
+document.getElementById('telPais').addEventListener('change', e => { document.getElementById('tel').placeholder = DattipTel.placeholder(e.target.value); });
 
 document.getElementById('authToggle').addEventListener('click', () => { setAuthMode(authMode==='signup'?'login':'signup'); });
 
@@ -1135,8 +1119,9 @@ document.getElementById('authSubmit').addEventListener('click', async () => {
   try{
     if(authMode === 'signup'){
       if(pass.length < 6) throw new Error('Tu contraseña debe tener al menos 6 caracteres.');
-      const telefono = normTel(document.getElementById('tel').value);
-      if(!telefono) throw new Error('Escribe tu teléfono a 10 dígitos (con lada, sin espacios).');
+      const pais = document.getElementById('telPais').value;
+      const telefono = DattipTel.norm(pais, document.getElementById('tel').value);
+      if(!telefono) throw new Error(DattipTel.mensaje(pais));
       const {data,error} = await sb.auth.signUp({email,password:pass,options:{data:{telefono}}});
       if(error) throw error;
       /* Correo ya registrado: Supabase no da error (no filtra qué

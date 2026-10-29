@@ -19,6 +19,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 <meta charset="UTF-8">
+<script src="/telefono.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://dattip.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -668,7 +669,10 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <input id="authPass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password">
       <!-- Teléfono: obligatorio al crear cuenta (pedido del dueño, 28-oct-2026). -->
       <label class="tlab" for="authTel" id="authTelLab" style="margin-top:12px;display:none">Teléfono (WhatsApp)</label>
-      <input id="authTel" type="tel" class="auth-input" placeholder="10 dígitos" autocomplete="tel" inputmode="tel" style="display:none">
+      <div id="authTelRow" style="display:none;gap:8px">
+        <select id="authTelPais" class="auth-input" aria-label="País" style="width:auto;flex:none;padding-right:8px"></select>
+        <input id="authTel" type="tel" class="auth-input" placeholder="10 dígitos" autocomplete="tel" inputmode="tel" style="flex:1;min-width:0">
+      </div>
       <button class="tool-run" id="authSubmit">Entrar</button>
       <div class="auth-toggle" id="authToggle">¿No tienes cuenta? Crea una</div>
       <div id="forgotWrap" style="text-align:center;margin-top:8px;display:none"><a href="#" id="forgotLink" style="font-size:13px;color:var(--faint);text-decoration:underline">¿Olvidaste tu contraseña?</a></div>
@@ -1013,16 +1017,9 @@ function authErrMsg(e){
   return m || 'No se pudo completar. Intenta de nuevo.';
 }
 
-/* Teléfono a formato internacional. 10 dígitos = México (+52); si ya
-   trae lada de país, se respeta. null = no sirve. (Espejo de checkout.) */
-function normTel(raw){
-  const d = String(raw||'').replace(/\D/g,'');
-  if(d.length === 10) return '+52' + d;
-  if(d.length === 12 && d.startsWith('52')) return '+' + d;
-  if(d.length === 11 && d.startsWith('1')) return '+' + d;
-  if(d.length >= 11 && d.length <= 15 && String(raw).trim().startsWith('+')) return '+' + d;
-  return null;
-}
+/* Banderitas + lada (lista y regla en /telefono.js). México por defecto. */
+document.getElementById('authTelPais').innerHTML = DattipTel.options('MX');
+document.getElementById('authTelPais').addEventListener('change', e => { document.getElementById('authTel').placeholder = DattipTel.placeholder(e.target.value); });
 
 function renderAuthMode(){
   const signup = authMode==='signup';
@@ -1040,7 +1037,7 @@ function renderAuthMode(){
   if(fw) fw.style.display = signup ? 'none' : 'block';
   /* El teléfono SOLO al crear cuenta. */
   document.getElementById('authTelLab').style.display = signup ? 'block' : 'none';
-  document.getElementById('authTel').style.display = signup ? 'block' : 'none';
+  document.getElementById('authTelRow').style.display = signup ? 'flex' : 'none';
   authPass.setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
 }
 authToggle.addEventListener('click', () => { authMode = authMode==='signup'?'login':'signup'; renderAuthMode(); authMsg.className='redeem-msg'; authMsg.textContent=''; });
@@ -1063,8 +1060,9 @@ authSubmit.addEventListener('click', async () => {
   try{
     if(authMode==='signup'){
       if(pass.length < 6) throw new Error('Tu contraseña debe tener al menos 6 caracteres.');
-      const telefono = normTel(document.getElementById('authTel').value);
-      if(!telefono) throw new Error('Escribe tu teléfono a 10 dígitos (con lada, sin espacios).');
+      const pais = document.getElementById('authTelPais').value;
+      const telefono = DattipTel.norm(pais, document.getElementById('authTel').value);
+      if(!telefono) throw new Error(DattipTel.mensaje(pais));
       const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{telefono}}});
       if(error) throw error;
       /* Correo ya registrado: Supabase no devuelve error (para no
