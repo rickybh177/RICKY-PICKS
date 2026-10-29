@@ -186,6 +186,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .vchip.bet { background: var(--bet-bg); color: var(--bet); border: 1px solid rgba(22,163,74,0.3); }
   .vchip.maybe { background: var(--maybe-bg); color: var(--maybe); border: 1px solid rgba(47,123,255,0.3); }
   .vchip.skip { background: var(--skip-bg); color: var(--skip); border: 1px solid rgba(220,38,38,0.25); }
+  .vchip.lectura { background: var(--g2); color: var(--muted); border: 1px solid var(--line); }
 
   .det-rows { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--g0); }
   .det-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -957,10 +958,11 @@ function detalleHTML(vs, extra, dist) {
   return dentro ? '<div class="slide">' + dentro + '</div>' : '';
 }
 
-/* ---- Diapositiva 3 de NFL: PROPS DE JUGADOR ----
+/* ---- Diapositiva 3 de NFL y NBA: PROPS DE JUGADOR ----
    En NFL la tercera vista no es el detalle de mercados sino los props
    (decisión del dueño, 24-sep-2026): es lo que de verdad distingue al
-   modelo y lo que nadie más enseña gratis.
+   modelo y lo que nadie más enseña gratis. Desde el 28-oct-2026 la NBA
+   hace lo mismo, con /api/nba-props y el mismo formato.
 
    El endpoint deja pasar a INVITADOS, pero solo para el juego del pick
    gratis de la semana, así que la página de compra puede pedirlo sin
@@ -981,8 +983,7 @@ async function cargaProps(ctx, respaldo) {
   const fin = html => { caja.innerHTML = html; if (window.__midePick) window.__midePick(); };
   let d = null;
   try {
-    const q = new URLSearchParams({ game: ctx.game, st: ctx.st, week: ctx.week });
-    const r = await fetch('/api/nfl-props?' + q.toString());
+    const r = await fetch(ctx.url);
     if (r.ok) d = await r.json();
   } catch (e) { /* sin conexión: abajo cae al respaldo */ }
 
@@ -1013,6 +1014,29 @@ async function cargaProps(ctx, respaldo) {
     }
   }
   const TOPE = 4;
+  /* Sin líneas todavía (en NBA las casas abren los props el mismo día
+     del juego): en vez de una caja vacía, lo que espera el modelo de
+     los cuatro jugadores con más proyección, uno por renglón. */
+  if (!filas.length) {
+    const PRINCIPAL = { QB: 'pass_yds', RB: 'rush_yds', WR: 'reception_yds', TE: 'reception_yds' };
+    const proy = jug.map(p => {
+      const mk = (p.markets || []).find(m => m.key === (PRINCIPAL[p.pos] || 'pts')) ||
+        (p.markets || []).find(m => m.model && m.model.mu != null);
+      return mk && mk.model && mk.model.mu != null ? { p, mk } : null;
+    }).filter(Boolean).sort((a, b) => b.mk.model.mu - a.mk.model.mu).slice(0, TOPE);
+    if (!proy.length) {
+      const s = document.getElementById('propsSlide');
+      if (s && respaldo) { s.innerHTML = respaldo; if (window.__midePick) window.__midePick(); }
+      return;
+    }
+    const corto = n => { const t = String(n || '').split(' '); return t.length > 1 ? t[0][0] + '. ' + t.slice(1).join(' ') : String(n || ''); };
+    fin(proy.map(({ p, mk }) =>
+      '<div class="vrow lectura"><span class="vl">' + esc(corto(p.name)) + ' · ' + esc(mk.label) +
+        '<small>' + esc('El modelo espera ' + (Math.round(mk.model.mu * 10) / 10) + ' · las casas aún no ponen línea') + '</small></span>' +
+        '<span class="vchip lectura">' + esc(chipTxt('lectura')) + '</span></div>').join('') +
+      '<div class="props-mas">' + jug.length + ' jugadores proyectados · las líneas abren el día del juego</div>');
+    return;
+  }
   const MEZCLA = [['bet', 2], ['maybe', 1], ['skip', 1]];
   const porEv = (a, b) => b.ev - a.ev;
   /* Y cada fila de un JUGADOR DISTINTO (pedido del dueño): cuatro filas
@@ -1259,6 +1283,10 @@ async function cargaPick() {
       };
       $('liveSub').textContent = ((d.league_name || cfg.nombre) + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase();
       vs = g.verdicts || [];
+      /* La NBA usa la forma de euro-free, pero su tercera vista son los
+         props de jugador, como en NFL. El endpoint deja pasar a invitados
+         solo para el juego del pick gratis, que es este. */
+      if (M === 'nba') propsCtx = { url: '/api/nba-props?game=' + encodeURIComponent(g.id) };
       dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
         etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
     } else if (M === 'nfl') {
@@ -1286,7 +1314,7 @@ async function cargaPick() {
         /* Con qué pedirle los props a /api/nfl-props. El endpoint solo
            se los da a un invitado si es EXACTAMENTE el juego del pick
            gratis de la semana, que es justo este. */
-        propsCtx = { game: g.id, st: d.seasontype || (g.preseason ? 1 : 2), week: d.week };
+        propsCtx = { url: '/api/nfl-props?' + new URLSearchParams({ game: g.id, st: d.seasontype || (g.preseason ? 1 : 2), week: d.week }) };
       }
     }
 
@@ -1296,8 +1324,8 @@ async function cargaPick() {
       return;
     }
     /* Tres vistas del MISMO pick gratis, las mismas que vería dentro del
-       modelo: la card, sus mercados con veredicto y —en NFL— los props
-       de jugador; en el resto, el detalle con momios justos y la
+       modelo: la card, sus mercados con veredicto y —en NFL y NBA— los
+       props de jugador; en el resto, el detalle con momios justos y la
        distribución. */
     const tercera = propsCtx ? propsSlideHTML() : detalleHTML(vs, extra, dist);
     montaCarrusel(cardHTML(o) + veredictosHTML(vs) + tercera);
