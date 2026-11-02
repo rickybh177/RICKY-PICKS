@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Seguimiento — Dattip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ============================================================
+     SEGUIMIENTO SEMANAL (1-nov-2026). Solo admin.
+     Cada semana, a cada cliente con plan vivo: su ficha interna y su
+     mensaje de WhatsApp ya escrito (balance de sus ligas + lo que
+     viene + liga a su página "Tu semana"). Se revisa, se abre
+     WhatsApp con el texto y se marca enviado. Datos: /api/seguimiento.
+     ============================================================ -->
+<style>
+  :root {
+    --ink: #08172e; --ink-2: #0d2444; --blue: #1d4ed8; --blue-bright: #2f7bff;
+    --white: #ffffff; --paper: #f5f8fd; --line: #dce6f5; --muted: #5e6f86;
+    --win: #15a34a; --loss: #d83a3a; --warn: #b7791f;
+    --win-bg: #e8f7ee; --loss-bg: #fdecec; --warn-bg: #fdf3e1; --blue-bg: #eaf1ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  nav { background: var(--ink); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; color: var(--white); display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo svg { width: 24px; height: 24px; } .logo .tip { color: var(--blue-bright); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .btn-sm { font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 7px 14px; border-radius: 7px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; color: #9db4d6; cursor: pointer; text-decoration: none; }
+  .btn-sm:hover { border-color: rgba(255,255,255,0.35); color: var(--white); }
+  .btn-sm.on { color: var(--white); border-color: var(--blue-bright); }
+
+  .page-state { display: none; padding: 80px 20px; text-align: center; }
+  .page-state.active { display: block; }
+  .auth-card { max-width: 380px; margin: 0 auto; background: var(--white); border-radius: 18px; padding: 32px; border: 1px solid var(--line); text-align: left; }
+  .auth-card h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; margin-bottom: 16px; }
+  .form-input { width: 100%; background: var(--paper); border: 1.5px solid var(--line); font: inherit; padding: 11px 13px; border-radius: 9px; outline: none; margin-bottom: 12px; }
+  .btn { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; padding: 11px 16px; border-radius: 10px; border: 1.5px solid var(--blue-bright); background: var(--blue-bright); color: var(--white); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--blue); border-color: var(--blue); }
+  .btn.sec { background: var(--white); color: var(--blue); }
+  .btn.sec:hover { background: var(--blue-bg); }
+  .btn.wa { background: #1fa855; border-color: #1fa855; }
+  .btn.wa:hover { background: #178a45; }
+  .btn:disabled, .btn.off { opacity: .45; pointer-events: none; }
+  .err { margin-top: 10px; color: var(--loss); font-size: .85rem; }
+  .spinner { width: 34px; height: 34px; border: 3px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .8s linear infinite; margin: 40px auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #main { display: none; padding: 28px 0 80px; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .head h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; letter-spacing: -0.02em; }
+  .head .sub { color: var(--muted); font-size: .9rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .stat { background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .stat .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.6rem; line-height: 1.1; }
+  .stat .l { font-family: 'JetBrains Mono', monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 4px; }
+  .note { background: var(--blue-bg); border: 1px solid #cddcff; color: var(--ink-2); border-radius: 12px; padding: 11px 14px; font-size: .85rem; margin-bottom: 16px; }
+
+  .layout { display: grid; grid-template-columns: 380px 1fr; gap: 18px; align-items: start; }
+  .toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .07em; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--white); color: var(--muted); cursor: pointer; }
+  .tab.on { border-color: var(--blue-bright); color: var(--blue); background: var(--blue-bg); }
+  .search { width: 100%; font: inherit; font-size: .88rem; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; outline: none; margin-bottom: 10px; background: var(--white); }
+  .list { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 150px); overflow: auto; padding-bottom: 8px; }
+  .row { background: var(--white); border: 1.5px solid var(--line); border-radius: 12px; padding: 11px 13px; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+  .row:hover { border-color: #b9cdf0; }
+  .row.sel { border-color: var(--blue-bright); box-shadow: 0 0 0 3px rgba(47,123,255,.12); }
+  .row .rk { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--muted); width: 32px; }
+  .row .em { font-weight: 600; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .meta { font-size: .76rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.ok { background: var(--win); } .dot.pend { background: var(--line); border: 1.5px solid #b9c6da; } .dot.alto { background: var(--loss); }
+
+  .chip { display: inline-block; font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--paper); color: var(--ink-2); border: 1px solid var(--line); margin: 0 4px 4px 0; white-space: nowrap; }
+  .chip.g { background: var(--win-bg); color: #11753a; border-color: #c6ead4; }
+  .chip.r { background: var(--loss-bg); color: #a42727; border-color: #f4c9c9; }
+  .chip.y { background: var(--warn-bg); color: #8a5a10; border-color: #f2ddb4; }
+  .chip.b { background: var(--blue-bg); color: var(--blue); border-color: #cddcff; }
+
+  .ficha { background: var(--white); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .ficha .top { background: var(--ink); color: var(--white); padding: 20px 22px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .ficha .top h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; letter-spacing: -0.02em; word-break: break-all; }
+  .ficha .top .who { color: #9db4d6; font-size: .84rem; margin-top: 2px; }
+  .ficha .top a { color: #9db4d6; }
+  .ficha .rank { text-align: right; }
+  .ficha .rank .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.8rem; color: var(--blue-bright); line-height: 1; }
+  .ficha .rank .l { font-family: 'JetBrains Mono', monospace; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: #9db4d6; }
+  .sec { padding: 18px 22px; border-top: 1px solid var(--line); }
+  .sec:first-of-type { border-top: none; }
+  .sec h3 { font-family: 'JetBrains Mono', monospace; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; font-weight: 500; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .kpi { background: var(--paper); border-radius: 12px; padding: 12px 14px; }
+  .kpi .l { font-family: 'JetBrains Mono', monospace; font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .kpi .n { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.15rem; margin-top: 2px; }
+  .kpi .s { font-size: .74rem; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--paper); vertical-align: top; }
+  td.num { text-align: right; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+  .aviso { border-left: 3px solid var(--line); background: var(--paper); border-radius: 0 10px 10px 0; padding: 9px 12px; font-size: .86rem; margin-bottom: 7px; }
+  .aviso.alto { border-color: var(--loss); background: var(--loss-bg); }
+  .aviso.medio { border-color: var(--warn); background: var(--warn-bg); }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 70px; padding-top: 6px; }
+  .bars .b { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-family: 'JetBrains Mono', monospace; font-size: .64rem; color: var(--muted); }
+  .bars .b i { display: block; width: 100%; border-radius: 5px 5px 0 0; background: var(--blue-bright); min-height: 2px; }
+  .bars .b i.neg { background: #e98a8a; }
+  textarea.msg { width: 100%; min-height: 260px; font: inherit; font-size: .88rem; line-height: 1.5; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; outline: none; resize: vertical; background: #f3fbf5; }
+  textarea.msg:focus { border-color: #1fa855; }
+  .acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .empty { color: var(--muted); font-size: .86rem; }
+  .back { display: none; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .list { max-height: none; }
+    body.ver-ficha .col-list { display: none; }
+    body:not(.ver-ficha) .col-ficha { display: none; }
+    .back { display: inline-flex; margin-bottom: 10px; }
+    .head h1 { font-size: 1.3rem; }
+    .logo > span { display: none; }
+    .nav-right { gap: 6px; }
+    .btn-sm { padding: 6px 9px; font-size: .76rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    body.ver-ficha .stats, body.ver-ficha .note, body.ver-ficha .head { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="logo">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#08172e"/><polyline points="10,34 19,28 27,31 38,13" fill="none" stroke="#2f7bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="13" r="4" fill="#fff"/></svg>
+      <span>DAT<span class="tip">TIP</span></span>
+    </a>
+    <div class="nav-right">
+      <a class="btn-sm" href="/admin.html">Clientes</a>
+      <a class="btn-sm on" href="/seguimiento.html">Seguimiento</a>
+      <a class="btn-sm" href="/admin-instagram.html">Instagram</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-state active" id="stLogin">
+  <div class="auth-card">
+    <h2>Seguimiento semanal</h2>
+    <input class="form-input" type="email" id="lgEmail" placeholder="Correo" autocomplete="email">
+    <input class="form-input" type="password" id="lgPass" placeholder="Contraseña">
+    <button class="btn" id="lgBtn" style="width:100%;justify-content:center">Entrar</button>
+    <div class="err" id="lgErr"></div>
+  </div>
+</div>
+<div class="page-state" id="stUnauth"><b>Acceso no autorizado.</b><p class="empty">Esta página es solo para el administrador.</p></div>
+<div class="page-state" id="stLoading"><div class="spinner"></div><p class="empty">Juntando pagos, accesos, uso y la libreta…</p></div>
+
+<div id="main">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>Seguimiento semanal</h1>
+        <div class="sub" id="subHead"></div>
+      </div>
+      <button class="btn sec" id="btnFresco" title="Vuelve a leer los pagos de Stripe y Mercado Pago">↻ Actualizar pagos</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="note" id="nota"></div>
+
+    <div class="layout">
+      <div class="col-list">
+        <div class="toolbar" id="tabs">
+          <div class="tab on" data-f="pend">Por mandar</div>
+          <div class="tab" data-f="env">Enviados</div>
+          <div class="tab" data-f="riesgo">En riesgo</div>
+          <div class="tab" data-f="sintel">Sin teléfono</div>
+          <div class="tab" data-f="all">Todos</div>
+        </div>
+        <input class="search" id="q" placeholder="Buscar correo, teléfono o liga…">
+        <div class="list" id="list"></div>
+      </div>
+      <div class="col-ficha">
+        <button class="btn sec back" id="back">← Lista</button>
+        <div id="ficha"><div class="ficha"><div class="sec empty">Elige un cliente de la lista.</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://juzfncioexyerhwweaui.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
+const ADMIN_EMAIL = 'rickybh17@gmail.com';
+const IS_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let DATA = null, filtro = 'pend', selId = null, token = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = n => '$' + Math.round(n || 0).toLocaleString('es-MX');
+const fCorta = iso => iso ? new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace(/\./g, '') : '—';
+const fHora = iso => iso ? new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).replace(/\./g, '') : '—';
+const u2 = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n || 0).toFixed(1);
+const LIGA = { nfl: 'NFL', mx: 'Liga MX', ucl: 'Champions', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', nba: 'NBA', mlb: 'MLB', mundial: 'Mundial' };
+
+function estado(id) {
+  ['stLogin', 'stUnauth', 'stLoading'].forEach(s => $(s).classList.toggle('active', s === id));
+  $('main').style.display = id ? 'none' : 'block';
+}
+
+async function api(path, opts) {
+  const r = await fetch(path, Object.assign({ headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}) }, opts || {}));
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+  return j;
+}
+
+async function carga(fresco) {
+  estado('stLoading');
+  try {
+    DATA = await api('/api/seguimiento' + (fresco ? '?fresco=1' : ''));
+    estado(null);
+    pintaTodo();
+  } catch (e) {
+    estado(null);
+    $('list').innerHTML = '<div class="err">No se pudo cargar: ' + esc(e.message) + '</div>';
+  }
+}
+
+function enRiesgo(c) { return c.avisos.some(a => a.nivel === 'alto' && !/Sin teléfono/.test(a.txt)); }
+
+function pintaTodo() {
+  const r = DATA.resumen, lb = DATA.libreta;
+  $('subHead').textContent = 'Semana del ' + fCorta(DATA.semana + 'T12:00:00') + (DATA.rango ? ' · balance del ' + DATA.rango : '') + ' · pagos al ' + fHora(DATA.pagos_al);
+  $('stats').innerHTML = [
+    [r.vivos, 'Clientes vivos'],
+    [r.enviados + ' / ' + r.vivos, 'Mensajes mandados'],
+    [r.entraron_7d + ' / ' + r.vivos, 'Entraron en 7 días'],
+    [r.sin_telefono, 'Sin teléfono'],
+    [lb && lb.picks ? u2(lb.unidades) + ' u' : '—', lb && lb.picks ? 'Libreta: ' + lb.gano + ' de ' + lb.picks : 'Libreta: sin semana cerrada'],
+  ].map(([n, l]) => '<div class="stat"><div class="n">' + esc(n) + '</div><div class="l">' + esc(l) + '</div></div>').join('');
+  const notas = [];
+  if (!DATA.uso_desde) notas.push('El registro de uso arranca con el deploy: todavía no hay datos de quién entra.');
+  else if (Date.now() - Date.parse(DATA.uso_desde) < 14 * 86400e3) notas.push('El registro de uso empezó el ' + fCorta(DATA.uso_desde) + '. "Días sin entrar" se vuelve confiable a partir de dos semanas.');
+  if (!lb || !lb.picks) notas.push('La libreta de picks empezó el 1 de noviembre: el primer balance real sale el lunes 9. Mientras tanto el mensaje da la bienvenida y enseña los picks que vienen.');
+  notas.push('Regla: el mensaje nunca menciona renovaciones ni cobros. La ficha es interna.');
+  $('nota').innerHTML = notas.map(esc).join('<br>');
+  pintaLista();
+  if (selId) pintaFicha(DATA.clientes.find(c => c.id === selId));
+}
+
+function pintaLista() {
+  const q = $('q').value.trim().toLowerCase();
+  let l = DATA.clientes;
+  if (filtro === 'pend') l = l.filter(c => !c.enviado && c.wa);
+  if (filtro === 'env') l = l.filter(c => c.enviado);
+  if (filtro === 'riesgo') l = l.filter(enRiesgo);
+  if (filtro === 'sintel') l = l.filter(c => !c.wa);
+  if (q) l = l.filter(c => (c.email + ' ' + (c.telefono || '') + ' ' + c.ligas.map(x => LIGA[x]).join(' ')).toLowerCase().includes(q));
+  if (!l.length) { $('list').innerHTML = '<div class="empty" style="padding:14px">Nadie en esta vista.</div>'; return; }
+  $('list').innerHTML = l.map(c => {
+    const dot = c.enviado ? 'ok' : enRiesgo(c) ? 'alto' : 'pend';
+    const uso = c.uso.ultima ? 'entró ' + fCorta(c.uso.ultima) : 'sin uso registrado';
+    return '<div class="row' + (c.id === selId ? ' sel' : '') + '" data-id="' + c.id + '">' +
+      '<span class="rk">#' + (c.ranking || '—') + '</span>' +
+      '<div style="min-width:0"><div class="em">' + esc(c.nombre ? c.nombre + ' · ' + c.email : c.email) + '</div>' +
+      '<div class="meta">' + money(c.pagado) + ' · ' + esc(c.ligas.map(x => LIGA[x]).join(', ')) + ' · ' + esc(uso) + '</div></div>' +
+      '<span class="dot ' + dot + '" title="' + (c.enviado ? 'Mandado ' + fHora(c.enviado) : dot === 'alto' ? 'En riesgo' : 'Por mandar') + '"></span></div>';
+  }).join('');
+}
+
+function chipTipo(a) {
+  if (!a.vigente) return '<span class="chip">' + (a.tipo === 'suscripción' ? 'terminó' : 'vencido') + '</span>';
+  if (a.tipo === 'suscripción') return a.renueva ? '<span class="chip g">suscripción</span>' : '<span class="chip y">suscripción sin renovar</span>';
+  if (a.tipo === 'cortesía') return '<span class="chip b">cortesía</span>';
+  return a.permanente ? '<span class="chip g">permanente</span>' : '<span class="chip g">pase</span>';
+}
+
+function pintaFicha(c) {
+  if (!c) { $('ficha').innerHTML = '<div class="ficha"><div class="sec empty">Elige un cliente de la lista.</div></div>'; return; }
+  const sub = c.sub;
+  const chips = [];
+  if (sub && sub.vivo && !sub.cancela_al_final && sub.status === 'active') chips.push('<span class="chip g">Activa</span>');
+  if (sub && sub.status === 'past_due') chips.push('<span class="chip r">Cobro fallido</span>');
+  if (sub && sub.cancela_al_final) chips.push('<span class="chip r">Canceló</span>');
+  if (!sub || !sub.vivo) chips.push('<span class="chip b">Solo pases</span>');
+  if (c.uso.dias_sin_entrar != null) chips.push('<span class="chip ' + (c.uso.dias_sin_entrar >= 14 ? 'r' : c.uso.dias_sin_entrar >= 7 ? 'y' : 'g') + '">' + (c.uso.dias_sin_entrar === 0 ? 'Entró hoy' : c.uso.dias_sin_entrar + ' días sin entrar') + '</span>');
+  if (!c.wa) chips.push('<span class="chip r">Sin teléfono</span>');
+  if (c.enviado) chips.push('<span class="chip g">Mandado ' + fHora(c.enviado) + '</span>');
+
+  const planTxt = sub && sub.vivo ? (sub.plan === 'tres_mensual' ? 'Tres ligas' : sub.plan === 'todo_mensual' ? 'Todas' : (LIGA[(sub.plan || '').split('_')[0]] || sub.plan)) : 'Sin suscripción';
+  const vigentes = c.accesos.filter(a => a.vigente && a.product !== 'mundial');
+  const s7 = c.uso.semana;
+  const ligasVistas = Object.entries(s7.ligas || {}).sort((a, b) => b[1] - a[1]).map(([l, n]) => LIGA[l] + ' ' + n).join(' · ');
+  const maxU = Math.max(1, ...c.historial.map(h => Math.abs(h.unidades)));
+
+  $('ficha').innerHTML = '<div class="ficha">' +
+    '<div class="top"><div style="min-width:0"><h2>' + esc(c.nombre || c.email.split('@')[0]) + '</h2>' +
+      '<div class="who">' + esc(c.email) + ' · ' + (c.telefono ? '<a href="https://wa.me/' + esc(c.wa || '') + '" target="_blank" rel="noopener">' + esc(c.telefono) + '</a>' : 'sin teléfono') + ' · cliente desde ' + fCorta(c.cliente_desde) + '</div>' +
+      '<div style="margin-top:10px">' + chips.join('') + '</div></div>' +
+      '<div class="rank"><div class="l">Ranking</div><div class="n">#' + (c.ranking || '—') + '</div><div class="l">de ' + c.de + ' por lo pagado</div></div></div>' +
+
+    '<div class="sec"><div class="grid">' +
+      kpi('Pagado', money(c.pagado), c.compras.length + ' compra' + (c.compras.length === 1 ? '' : 's')) +
+      kpi('Plan', sub && sub.vivo && sub.monto ? money(sub.monto) + (sub.moneda === 'USD' ? ' USD' : '') : '—', planTxt) +
+      kpi('Cobro (interno)', sub && sub.vivo ? fCorta(sub.fin_periodo) : '—', sub ? sub.status : 'sin suscripción') +
+      kpi('Último uso', c.uso.ultima ? fCorta(c.uso.ultima) : '—', c.uso.ultima ? 'registro de uso' : 'login ' + fCorta(c.ultimo_login)) +
+      kpi('Accesos', String(vigentes.length), vigentes.filter(a => a.tipo !== 'cortesía').length + ' pagados') +
+    '</div></div>' +
+
+    '<div class="sec"><h3>Qué hacer</h3>' + (c.avisos.length ? c.avisos.map(a => '<div class="aviso ' + a.nivel + '">' + esc(a.txt) + '</div>').join('') : '<div class="empty">Nada urgente. Mandar el mensaje de la semana.</div>') + '</div>' +
+
+    '<div class="sec"><h3>Mensaje de la semana (WhatsApp)</h3>' +
+      '<textarea class="msg" id="msg">' + esc(c.mensaje) + '</textarea>' +
+      '<div class="acciones">' +
+        '<button class="btn wa' + (c.wa ? '' : ' off') + '" id="bWa">Abrir WhatsApp</button>' +
+        '<button class="btn sec" id="bCopia">Copiar texto</button>' +
+        '<a class="btn sec" href="' + esc(c.url_semana) + '" target="_blank" rel="noopener">Ver su página</a>' +
+        '<button class="btn ' + (c.enviado ? 'sec' : '') + '" id="bEnv">' + (c.enviado ? 'Desmarcar enviado' : 'Marcar enviado') + '</button>' +
+      '</div>' + (c.wa ? '' : '<div class="empty" style="margin-top:8px">Sin teléfono no hay WhatsApp. El sitio se lo pide en cuanto entre.</div>') + '</div>' +
+
+    '<div class="sec"><h3>Su semana en la libreta' + (c.semana && c.semana.desde ? ' · ' + esc(DATA.rango || '') : '') + '</h3>' +
+      (c.semana && c.semana.total.picks ? '<table><tr><th>Liga</th><th>Aciertos</th><th style="text-align:right">Unidades</th></tr>' +
+        Object.entries(c.semana.porLiga).filter(([, b]) => b.picks).map(([l, b]) => '<tr><td>' + esc(LIGA[l]) + '</td><td>' + b.gano + ' de ' + b.picks + '</td><td class="num" style="color:' + (b.unidades >= 0 ? 'var(--win)' : 'var(--loss)') + '">' + u2(b.unidades) + '</td></tr>').join('') +
+        '<tr><td><b>Total</b></td><td><b>' + c.semana.total.gano + ' de ' + c.semana.total.picks + '</b></td><td class="num"><b>' + u2(c.semana.total.unidades) + '</b></td></tr></table>'
+        : '<div class="empty">Todavía no hay picks calificados de sus ligas en la semana cerrada.</div>') +
+      '<div class="bars">' + c.historial.map(h => '<div class="b"><span>' + (h.picks ? u2(h.unidades) : '·') + '</span><i class="' + (h.unidades < 0 ? 'neg' : '') + '" style="height:' + (h.picks ? Math.max(4, Math.abs(h.unidades) / maxU * 48) : 2) + 'px"></i><span>' + fCorta(h.desde) + '</span></div>').join('') + '</div>' +
+    '</div>' +
+
+    '<div class="sec"><h3>Uso · últimos 7 días</h3>' +
+      (s7.visitas ? '<div class="grid">' + kpi('Días que entró', s7.dias_activo + ' / 7', '') + kpi('Visitas', String(s7.visitas), s7.minutos + ' min') + kpi('Aparato', s7.movil >= s7.escritorio ? 'Móvil' : 'Escritorio', s7.movil + ' móvil · ' + s7.escritorio + ' escritorio') + '</div>' +
+        (ligasVistas ? '<div style="margin-top:10px;font-size:.85rem">Ligas que lee: <b>' + esc(ligasVistas) + '</b></div>' : '')
+        : '<div class="empty">' + (DATA.uso_desde ? 'No entró en los últimos 7 días.' : 'El registro de uso todavía no tiene datos.') + ' Último login con contraseña: ' + fHora(c.ultimo_login) + '.</div>') +
+    '</div>' +
+
+    '<div class="sec"><h3>Accesos</h3><table><tr><th>Liga</th><th>Plan</th><th>Tipo</th><th style="text-align:right">Hasta</th></tr>' +
+      c.accesos.map(a => '<tr><td>' + esc(a.liga) + '</td><td>' + esc(a.titulo) + '</td><td>' + chipTipo(a) + '</td><td class="num">' + (a.permanente ? 'siempre' : fCorta(a.vence)) + '</td></tr>').join('') + '</table></div>' +
+
+    '<div class="sec"><h3>Compras</h3>' + (c.compras.length ? '<table><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Vía</th><th style="text-align:right">Pagó</th></tr>' +
+      c.compras.map(p => '<tr><td>' + fCorta(p.fecha) + '</td><td>' + esc(p.titulo) + '</td><td>' + esc(p.tipo) + '</td><td>' + esc(p.via) + '</td><td class="num">' + money(p.monto) + (p.moneda === 'USD' ? '*' : '') + '</td></tr>').join('') + '</table>' +
+      (c.compras.some(p => p.moneda === 'USD') ? '<div class="empty" style="margin-top:6px">* cobrado en dólares, convertido a $18.5.</div>' : '') : '<div class="empty">Sin compras registradas.</div>') + '</div>' +
+  '</div>';
+
+  $('bWa').onclick = () => { if (!c.wa) return; window.open('https://wa.me/' + c.wa + '?text=' + encodeURIComponent($('msg').value), '_blank', 'noopener'); };
+  $('bCopia').onclick = async () => { try { await navigator.clipboard.writeText($('msg').value); $('bCopia').textContent = 'Copiado ✓'; setTimeout(() => { const b = $('bCopia'); if (b) b.textContent = 'Copiar texto'; }, 1500); } catch (e) {} };
+  $('bEnv').onclick = async () => {
+    $('bEnv').disabled = true;
+    try {
+      const r = await api('/api/seguimiento', { method: 'POST', body: JSON.stringify({ u: c.id, enviado: !c.enviado }) });
+      c.enviado = r.enviado;
+      DATA.resumen.enviados = DATA.clientes.filter(x => x.enviado).length;
+      pintaTodo();
+    } catch (e) { alert('No se pudo guardar: ' + e.message); $('bEnv').disabled = false; }
+  };
+}
+function kpi(l, n, s) { return '<div class="kpi"><div class="l">' + esc(l) + '</div><div class="n">' + esc(n) + '</div>' + (s ? '<div class="s">' + esc(s) + '</div>' : '') + '</div>'; }
+
+$('list').addEventListener('click', e => {
+  const row = e.target.closest('.row'); if (!row) return;
+  selId = row.dataset.id;
+  pintaLista();
+  pintaFicha(DATA.clientes.find(c => c.id === selId));
+  document.body.classList.add('ver-ficha');
+  window.scrollTo(0, 0);
+});
+$('back').onclick = () => { document.body.classList.remove('ver-ficha'); };
+$('tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  filtro = t.dataset.f;
+  document.querySelectorAll('#tabs .tab').forEach(x => x.classList.toggle('on', x === t));
+  pintaLista();
+});
+$('q').addEventListener('input', pintaLista);
+$('btnFresco').onclick = () => carga(true);
+
+async function arranca() {
+  const { data } = await sb.auth.getSession();
+  const s = data && data.session;
+  if (!s && !IS_LOCAL) return estado('stLogin');
+  if (s && s.user.email !== ADMIN_EMAIL && !IS_LOCAL) return estado('stUnauth');
+  token = s ? s.access_token : null;
+  carga(false);
+}
+$('lgBtn').onclick = async () => {
+  $('lgErr').textContent = '';
+  const { error } = await sb.auth.signInWithPassword({ email: $('lgEmail').value.trim(), password: $('lgPass').value });
+  if (error) { $('lgErr').textContent = error.message; return; }
+  arranca();
+};
+arranca();
+</script>
+</body>
+</html>

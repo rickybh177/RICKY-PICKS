@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Tu semana — Dattip</title>
+<meta name="theme-color" content="#08172e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
+<!-- ============================================================
+     "TU SEMANA" (1-nov-2026): la página personal que va en el
+     WhatsApp del seguimiento semanal. Liga firmada (?u=&t=), sin
+     login. Solo sus ligas: cómo le fue al modelo la semana pasada,
+     el acumulado y lo que viene. Nunca habla de cobros ni
+     renovaciones (regla del dueño). Datos: /api/semana.
+     ============================================================ -->
+<style>
+  :root {
+    --ink: #08172e; --ink-2: #0d2444; --blue: #1d4ed8; --blue-bright: #2f7bff; --sky: #9db9ff;
+    --white: #fff; --paper: #f5f8fd; --line: #e3eaf5; --muted: #5e6f86;
+    --win: #16a34a; --loss: #dc2626; --win-bg: #e8f7ee; --loss-bg: #fdecec; --blue-bg: #eaf1ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.45; }
+  .card { max-width: 560px; margin: 0 auto; background: var(--white); min-height: 100vh; }
+  @media (min-width: 600px) { body { padding: 24px 16px; } .card { min-height: 0; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 60px -30px rgba(8,23,46,.35); } }
+  header { background: var(--ink); color: var(--white); padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; color: var(--white); text-decoration: none; }
+  .logo span { color: var(--blue-bright); }
+  header .r { text-align: right; }
+  header .r b { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 1.02rem; font-weight: 600; }
+  header .r small { color: var(--sky); font-size: .84rem; }
+  section { padding: 22px 24px; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: none; }
+  .big { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 3.4rem; letter-spacing: -0.04em; line-height: 1; }
+  .big.pos { color: var(--win); } .big.neg { color: var(--loss); }
+  .lead { color: var(--muted); font-size: 1rem; margin-top: 8px; }
+  .liga { display: grid; grid-template-columns: 1fr auto 96px 64px; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .liga:last-child { border-bottom: none; }
+  .liga .n { font-weight: 600; font-size: 1.02rem; }
+  .liga .a { color: var(--muted); font-size: .9rem; white-space: nowrap; }
+  .liga .bar { height: 6px; border-radius: 4px; background: var(--loss); overflow: hidden; }
+  .liga .bar i { display: block; height: 100%; background: var(--win); }
+  .liga .u { font-family: 'JetBrains Mono', monospace; font-weight: 700; text-align: right; font-size: 1.05rem; }
+  .pos { color: var(--win); } .neg { color: var(--loss); }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .bars { display: flex; gap: 10px; align-items: stretch; height: 120px; margin-top: 10px; position: relative; }
+  .bars::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--line); }
+  .bars .b { flex: 1; display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--muted); text-align: center; }
+  .bars .up, .bars .dn { flex: 1; display: flex; flex-direction: column; align-items: center; }
+  .bars .up { justify-content: flex-end; } .bars .dn { justify-content: flex-start; }
+  .bars i { display: block; width: 70%; border-radius: 6px; background: #8fb2ff; }
+  .bars .ult i { background: var(--blue-bright); }
+  .bars .dn i { background: #ec8b8b; }
+  .bars .lbl { margin-top: 4px; }
+  .nota { margin-top: 18px; background: var(--loss-bg); color: #7f1d1d; border-radius: 14px; padding: 14px 16px; font-size: .95rem; }
+  .nota.ok { background: var(--win-bg); color: #14532d; }
+  .nota b { font-weight: 700; }
+  .partido { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .partido:last-child { border-bottom: none; }
+  .partido .t { font-weight: 600; font-size: 1rem; }
+  .partido .s { color: var(--muted); font-size: .88rem; margin-top: 1px; }
+  .chip { flex: none; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: .8rem; letter-spacing: .06em; padding: 7px 12px; border-radius: 9px; }
+  .chip.bet { background: var(--win-bg); color: #15803d; }
+  .chip.maybe { background: var(--blue-bg); color: var(--blue); }
+  .chip.skip { background: var(--loss-bg); color: #b91c1c; }
+  .chip.gano { background: var(--win-bg); color: #15803d; }
+  .chip.perdio { background: var(--loss-bg); color: #b91c1c; }
+  .chip.empate { background: var(--paper); color: var(--muted); }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: var(--blue); font-weight: 600; font-size: .92rem; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .cta { display: block; text-align: center; background: var(--blue-bright); color: var(--white); text-decoration: none; font-weight: 700; padding: 15px; border-radius: 14px; font-size: 1rem; }
+  .cta:hover { background: var(--blue); }
+  .pregunta { background: var(--blue-bg); border-radius: 14px; padding: 16px 18px; font-size: 1rem; }
+  footer { padding: 18px 24px 26px; color: #8a97ab; font-size: .8rem; line-height: 1.5; border-top: 1px solid var(--line); }
+  .estado { padding: 70px 24px; text-align: center; color: var(--muted); }
+  .estado h2 { color: var(--ink); font-family: 'Space Grotesk', sans-serif; margin-bottom: 8px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--line); border-top-color: var(--blue-bright); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 420px) {
+    header, section, footer { padding-left: 18px; padding-right: 18px; }
+    .big { font-size: 2.8rem; }
+    .liga { grid-template-columns: 1fr auto 56px; }
+    .liga .bar { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="card" id="app">
+  <header>
+    <a class="logo" href="/">Dat<span>tip</span></a>
+    <div class="r"><b id="hRango">Tu semana</b><small id="hLigas"></small></div>
+  </header>
+  <div class="estado" id="cargando"><div class="spinner"></div>Cargando tu semana…</div>
+  <div id="contenido" hidden></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const u2 = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n || 0).toFixed(1);
+const cls = n => (n > 0 ? 'pos' : n < 0 ? 'neg' : '');
+const CHIP = { bet: 'PICK', maybe: 'MAYBE', skip: 'SKIP', gano: 'GANÓ', perdio: 'FALLÓ', empate: 'EMPATE' };
+
+function estado(titulo, texto) {
+  $('cargando').innerHTML = '<h2>' + esc(titulo) + '</h2><p>' + esc(texto) + '</p><p style="margin-top:22px"><a class="cta" href="/">Ir a Dattip</a></p>';
+}
+
+async function arranca() {
+  const p = new URLSearchParams(location.search);
+  let d;
+  try {
+    const r = await fetch('/api/semana?u=' + encodeURIComponent(p.get('u') || '') + '&t=' + encodeURIComponent(p.get('t') || ''), { cache: 'no-store' });
+    d = await r.json();
+    if (!r.ok) return estado('Esta liga no es válida', 'Revisa que la hayas abierto completa desde el mensaje.');
+  } catch (e) { return estado('No pudimos cargar tu semana', 'Intenta de nuevo en un rato.'); }
+  if (!d.activo) return estado('Tu acceso ya terminó', 'Cuando quieras volver, tus ligas te esperan en Dattip.');
+  pinta(d);
+}
+
+function pinta(d) {
+  const ligas = d.ligas.map(l => l.nombre);
+  const t = d.semana && d.semana.total;
+  $('hRango').textContent = t && t.picks && d.rango ? 'Tu semana · ' + d.rango : 'Tu semana';
+  $('hLigas').textContent = ligas.join(' · ');
+  const html = [];
+
+  if (t && t.picks) {
+    const filas = d.ligas.map(l => [l, d.semana.porLiga[l.id]]).filter(([, b]) => b && b.picks);
+    html.push('<section><div class="big ' + cls(t.unidades) + '">' + u2(t.unidades) + ' u</div>' +
+      '<div class="lead">' + t.gano + ' acierto' + (t.gano === 1 ? '' : 's') + ' de ' + t.picks + ' picks, a una unidad cada uno</div>' +
+      '<div style="margin-top:14px">' + filas.map(([l, b]) =>
+        '<div class="liga"><span class="n">' + esc(l.nombre) + '</span><span class="a">' + b.gano + ' de ' + b.picks + '</span>' +
+        '<span class="bar"><i style="width:' + Math.round(b.gano / b.picks * 100) + '%"></i></span>' +
+        '<span class="u ' + cls(b.unidades) + '">' + u2(b.unidades) + '</span></div>').join('') + '</div>');
+
+    /* acumulado: las 4 semanas, positivas arriba y negativas abajo */
+    const h = d.historial.filter(x => x.picks);
+    if (h.length > 1) {
+      const max = Math.max(...h.map(x => Math.abs(x.unidades)), 0.5);
+      html.push('<div class="tag" style="margin-top:18px">Últimas ' + d.historial.length + ' semanas</div><div class="bars">' +
+        d.historial.map((x, i) => {
+          const alto = x.picks ? Math.max(6, Math.abs(x.unidades) / max * 80) : 0;
+          const ult = i === d.historial.length - 1 ? ' ult' : '';
+          const v = x.picks ? u2(x.unidades) : '—';
+          return '<div class="b' + ult + '"><div class="up">' + (x.unidades >= 0 ? '<span>' + v + '</span><i style="height:' + alto + '%"></i>' : '') + '</div>' +
+            '<div class="dn">' + (x.unidades < 0 ? '<i style="height:' + alto + '%"></i><span>' + v + '</span>' : '') + '</div><div class="lbl">' + esc(x.etiqueta) + '</div></div>';
+        }).join('') + '</div>');
+    }
+
+    /* la nota: la liga peor si quedó en negativo, o la mejor si todo salió bien */
+    const peor = filas.slice().sort((a, b) => a[1].unidades - b[1].unidades)[0];
+    if (peor && peor[1].unidades < 0) html.push('<div class="nota"><b>' + esc(peor[0].nombre) + ': ' + peor[1].gano + ' de ' + peor[1].picks + '.</b> Semana floja en esta liga. El modelo no cambia de opinión por una semana: se mide en muchas.</div>');
+    else if (t.unidades > 0) html.push('<div class="nota ok"><b>Semana en verde.</b> Igual que en las malas, lo que cuenta es la suma de muchas semanas.</div>');
+
+    if (d.picks_semana.length) html.push('<details><summary>Ver los ' + d.picks_semana.length + ' picks de la semana →</summary><div style="margin-top:8px">' +
+      d.picks_semana.map(x => '<div class="partido"><div><div class="t">' + esc(x.partido) + '</div><div class="s">' + esc(x.liga + ' · ' + x.dia + ' · ' + x.label) + (x.marcador ? ' · ' + esc(x.marcador) : '') + '</div></div>' +
+        '<span class="chip ' + x.resultado + '">' + CHIP[x.resultado] + '</span></div>').join('') + '</div></details>');
+    html.push('</section>');
+  } else {
+    html.push('<section><div class="tag">Bienvenido</div><h2 style="font-family:Space Grotesk,sans-serif;font-size:1.6rem;letter-spacing:-.02em;margin:6px 0 8px">' + (d.nombre ? esc(d.nombre) + ', a' : 'A') + ' partir de ahora te acompañamos cada semana</h2>' +
+      '<div class="lead">Cada lunes te contamos cómo le fue al modelo en tus ligas (' + esc(ligas.join(', ')) + '): aciertos, unidades y qué viene. Tu primer balance llega el próximo lunes.</div></section>');
+  }
+
+  if (d.vienen.length) {
+    html.push('<section><div class="tag">Esta semana' + (d.total_picks_vienen ? ' · ' + d.total_picks_vienen + ' picks en tus ligas' : '') + '</div><div style="margin-top:6px">' +
+      d.vienen.map(g => '<div class="partido"><div><div class="t">' + esc(g.partido) + ' · ' + esc(g.liga) + '</div><div class="s">' + esc(g.dia + ' · ' + g.label) + (g.verdict !== 'skip' && g.prob ? ' · ' + Math.round(g.prob * 100) + '%' : '') + '</div></div>' +
+        '<span class="chip ' + g.verdict + '">' + CHIP[g.verdict] + '</span></div>').join('') + '</div>' +
+      '<p style="margin-top:16px"><a class="cta" href="/mis-modelos.html">Ver todos mis picks</a></p></section>');
+  }
+
+  html.push('<section><div class="pregunta"><b>¿Qué jugaste?</b> Respóndenos el mensaje con el pick, aunque sea uno.</div></section>');
+  html.push('<footer>Las unidades son un ejemplo a una unidad por pick con el momio de las casas cuando lo hay (si no, el momio justo del modelo). Dattip analiza datos; no garantiza ganancias. Si vas a jugar, juega con cabeza y solo lo que puedas perder. Mayores de 18 años. <a href="/" style="color:inherit">dattip.com</a></footer>');
+
+  $('contenido').innerHTML = html.join('');
+  $('cargando').hidden = true;
+  $('contenido').hidden = false;
+}
+arranca();
+</script>
+</body>
+</html>

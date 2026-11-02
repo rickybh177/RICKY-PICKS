@@ -25,6 +25,10 @@
     {
       "path": "/api/email-lunes",
       "schedule": "0 15 * * 1"
+    },
+    {
+      "path": "/api/libreta",
+      "schedule": "40 * * * *"
     }
   ],
   "redirects": [
