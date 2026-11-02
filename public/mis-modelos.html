@@ -86,6 +86,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   /* TARJETAS DE MODELO (ocho: MLB, Liga MX, NFL, NBA, Premier, LaLiga, Bundesliga y Champions → 2 columnas) */
   .models { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin: 32px 0 40px; }
   .model-card { border: 1px solid var(--line); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; background: #fff; transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
+  .model-card[hidden] { display: none; }
   .model-card:hover { transform: translateY(-2px); box-shadow: 0 18px 46px -26px rgba(22,24,29,0.4); border-color: #d5deea; }
   .mc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
   .mc-ico { font-size: 1.9rem; line-height: 1; }
@@ -198,7 +199,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="fin-aviso" id="finAviso" hidden></div>
 
     <div class="models">
-      <div class="model-card">
+      <!-- MLB fuera de temporada (2-nov-2026): escondida hasta marzo -->
+      <div class="model-card" hidden>
         <div class="mc-top">
           <span class="mc-ico">⚾</span>
           <span class="mc-chip" id="chipMlb">Sin acceso</span>
@@ -492,7 +494,7 @@ async function boot(){
    El servidor (api/swap-model.js) decide todo; aquí solo se ofrece
    quitar uno de los tres y meter otro. */
 const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
-const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
+const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba'];   // sin MLB: fuera de temporada
 const fechaMX = iso => { try { return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'long' }); } catch(e){ return ''; } };
 function pintaTres(tres){
   const box = document.getElementById('tresBox');

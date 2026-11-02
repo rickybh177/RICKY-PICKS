@@ -59,7 +59,7 @@ const { getAdmin, grantEntitlement, productsForPlan, chosenProducts } = require(
 const { coveredBy } = require('../lib/cancel-recurring');
 const { saveChoice, loadChoice, clearChoice, choiceFromReason, reasonWith } = require('../lib/choices');
 /* elección de prueba para los planes "a elegir" (tres_mensual) */
-const TEST_CHOICE = ['mlb', 'mx', 'epl'];
+const TEST_CHOICE = ['mx', 'epl', 'nba'];
 const grantOpts = id => (isChoosePlan(id) ? { products: TEST_CHOICE } : undefined);
 const expectedProducts = id => (isChoosePlan(id) ? TEST_CHOICE.slice() : productsForPlan(id));
 
@@ -147,12 +147,13 @@ const ok = msg => console.log('  ✓ ' + msg);
   console.log('\n=== 1c. Plan "a elegir" (tres_mensual): elección, cobertura y cancelaciones ===');
   {
     const t = (cond, msg) => (cond ? ok(msg) : fail(msg));
-    t(JSON.stringify(validChoice('tres_mensual', 'ucl,mlb,nfl')) === JSON.stringify(['mlb', 'nfl', 'ucl']), 'validChoice ordena canónico: ucl,mlb,nfl → mlb,nfl,ucl');
+    t(JSON.stringify(validChoice('tres_mensual', 'nba,ucl,nfl')) === JSON.stringify(['nfl', 'ucl', 'nba']), 'validChoice ordena canónico: nba,ucl,nfl → nfl,ucl,nba');
+    t(validChoice('tres_mensual', 'mlb,mx,nfl') === null, 'validChoice rechaza MLB mientras sus planes estén en `upcoming` (fuera de temporada)');
     t(validChoice('tres_mensual', ['mlb', 'mlb', 'nfl']) === null, 'validChoice rechaza repetidos');
     t(validChoice('tres_mensual', 'mlb,mx,nfl,epl') === null, 'validChoice rechaza 4');
     t(validChoice('tres_mensual', 'mlb,mx,foo') === null, 'validChoice rechaza un modelo inexistente');
     t(validChoice('todo_mensual', 'mlb,mx,nfl') === null, 'validChoice solo aplica a planes a elegir');
-    t(choiceFromReason('tres_mensual', reasonWith('Tres modelos a elegir — Suscripción mensual', ['mlb', 'mx', 'epl'])).join(',') === 'mlb,mx,epl', 'el concepto de Mercado Pago lleva y devuelve la elección');
+    t(choiceFromReason('tres_mensual', reasonWith('Tres modelos a elegir — Suscripción mensual', ['mx', 'epl', 'nba'])).join(',') === 'mx,epl,nba', 'el concepto de Mercado Pago lleva y devuelve la elección');
     t(choiceFromReason('tres_mensual', 'DATTIP — Tres modelos') === null, 'sin corchetes no se adivina nada');
     const ahora = Date.now(), reciente = new Date(ahora - 5 * 86400e3).toISOString();
     const ents = [{ plan: 'mlb_temporada', product: 'mlb', active: true, updated_at: reciente }];
@@ -165,7 +166,8 @@ const ok = msg => console.log('  ✓ ' + msg);
     t(coveredBy('todo_mensual', 'tres_mensual') === true, 'comprar todo cancela un tres anterior');
     t(coveredBy('mlb_mensual', 'tres_mensual') === false, 'comprar mlb_mensual NO cancela un tres');
     t(coveredBy('tres_mensual', 'tres_mensual', ['mlb', 'mx', 'nfl']) === true, 'un tres nuevo cancela el tres anterior (re-suscripción; el recién creado se conserva por keep)');
-    const enVenta = Object.keys(PLANS).filter(k => PLANS[k].price > 0 && !PLANS[k].retired && !PLANS[k].upcoming);
+    /* MLB fuera de temporada (2-nov-2026): sus planes están en `upcoming` hasta marzo y cuentan como a la venta para esta revisión */
+    const enVenta = Object.keys(PLANS).filter(k => PLANS[k].price > 0 && !PLANS[k].retired && (!PLANS[k].upcoming || k.startsWith('mlb_')));
     const TEMPORADAS = ['mlb_temporada', 'mx_apertura', 'nfl_temporada', 'epl_temporada', 'laliga_temporada', 'bundesliga_temporada', 'ucl_temporada', 'nba_temporada'];
     const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'nba_mensual', 'tres_mensual', 'todo_mensual'].concat(TEMPORADAS);
     const faltan = esperados.filter(k => !enVenta.includes(k));
@@ -277,26 +279,26 @@ const ok = msg => console.log('  ✓ ' + msg);
       try { await grantEntitlement(userId, 'tres_mensual'); } catch (e) { boom = e; }
       t(!!boom && !(await lista()), 'alta sin modelos elegidos → grantEntitlement falla y no escribe nada');
       /* alta con la elección (metadata de Stripe / concepto de MP) */
-      const r1 = await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'mlb', 'mx'] });
-      t((await lista()) === 'epl,mlb,mx' && r1.products.join(',') === 'mlb,mx,epl', 'alta con [epl,mlb,mx] → 3 filas tres_mensual (mlb, mx, epl)');
+      const r1 = await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'nba', 'mx'] });
+      t((await lista()) === 'epl,mx,nba' && r1.products.join(',') === 'mx,epl,nba', 'alta con [epl,nba,mx] → 3 filas tres_mensual (mx, epl, nba)');
       /* renovación con metadata vieja: mandan las filas */
       await new Promise(res => setTimeout(res, 25));
-      const antes = (await filas()).mlb.updated_at;
-      await grantEntitlement(userId, 'tres_mensual', { products: ['mlb', 'mx', 'nfl'], preferRows: true });
+      const antes = (await filas()).nba.updated_at;
+      await grantEntitlement(userId, 'tres_mensual', { products: ['nba', 'mx', 'nfl'], preferRows: true });
       const f2 = await filas();
-      t((await lista()) === 'epl,mlb,mx' && !f2.nfl && new Date(f2.mlb.updated_at) > new Date(antes), 'renovación con metadata vieja [mlb,mx,nfl] → siguen mlb, mx, epl y se refresca updated_at');
+      t((await lista()) === 'epl,mx,nba' && !f2.nfl && new Date(f2.nba.updated_at) > new Date(antes), 'renovación con metadata vieja [nba,mx,nfl] → siguen nba, mx, epl y se refresca updated_at');
       /* cambio de modelo (lo que hace api/swap-model): epl → ucl con el mismo updated_at */
-      const same = f2.mlb.updated_at;
+      const same = f2.nba.updated_at;
       await admin.from('entitlements').delete().eq('user_id', userId).eq('plan', 'tres_mensual').eq('product', 'epl');
       await admin.from('entitlements').upsert({ user_id: userId, plan: 'tres_mensual', product: 'ucl', active: true, updated_at: same }, { onConflict: 'user_id,product' });
-      t((await lista()) === 'mlb,mx,ucl', 'cambio epl → ucl: filas mlb, mx, ucl');
-      /* renovación después del cambio: la metadata de Stripe sigue diciendo [epl,mlb,mx] */
-      await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'mlb', 'mx'], preferRows: true });
-      t((await lista()) === 'mlb,mx,ucl', 'renovación tras el cambio → respeta las filas (mlb, mx, ucl), no la metadata vieja');
-      t((await chosenProducts(admin, userId, 'tres_mensual')).join(',') === 'mlb,mx,ucl', 'chosenProducts lee la elección de las filas');
+      t((await lista()) === 'mx,nba,ucl', 'cambio epl → ucl: filas mx, nba, ucl');
+      /* renovación después del cambio: la metadata de Stripe sigue diciendo [epl,nba,mx] */
+      await grantEntitlement(userId, 'tres_mensual', { products: ['epl', 'nba', 'mx'], preferRows: true });
+      t((await lista()) === 'mx,nba,ucl', 'renovación tras el cambio → respeta las filas (mx, nba, ucl), no la metadata vieja');
+      t((await chosenProducts(admin, userId, 'tres_mensual')).join(',') === 'mx,nba,ucl', 'chosenProducts lee la elección de las filas');
       /* renovación de Mercado Pago sin concepto legible: sale de las filas */
       await grantEntitlement(userId, 'tres_mensual', { preferRows: true });
-      t((await lista()) === 'mlb,mx,ucl', 'renovación sin elección (MP) → se resuelve de las filas');
+      t((await lista()) === 'mx,nba,ucl', 'renovación sin elección (MP) → se resuelve de las filas');
       /* alta por MP: sin filas, con la elección guardada en el checkout (KV) */
       await admin.from('entitlements').delete().eq('user_id', userId);
       await saveChoice(userId, 'tres_mensual', ['nfl', 'laliga', 'bundesliga']);
@@ -305,14 +307,14 @@ const ok = msg => console.log('  ✓ ' + msg);
       t((await lista()) === 'bundesliga,laliga,nfl', 'alta sin metadata (MP) → toma la elección guardada en el checkout');
       /* cobertura: un pase pagado sobrevive a un tres que lo incluya */
       await admin.from('entitlements').delete().eq('user_id', userId);
-      await grantEntitlement(userId, 'mlb_temporada');
-      const r3 = await grantEntitlement(userId, 'tres_mensual', { products: ['mlb', 'mx', 'nfl'] });
+      await grantEntitlement(userId, 'nba_temporada');
+      const r3 = await grantEntitlement(userId, 'tres_mensual', { products: ['nba', 'mx', 'nfl'] });
       const f3 = await filas();
-      t(f3.mlb.plan === 'mlb_temporada' && f3.mx.plan === 'tres_mensual' && f3.nfl.plan === 'tres_mensual' && (r3.kept || []).map(k => k.product).join(',') === 'mlb', 'mlb_temporada + tres [mlb,mx,nfl] → mlb se conserva como temporada; mx y nfl como tres');
+      t(f3.nba.plan === 'nba_temporada' && f3.mx.plan === 'tres_mensual' && f3.nfl.plan === 'tres_mensual' && (r3.kept || []).map(k => k.product).join(',') === 'nba', 'nba_temporada + tres [nba,mx,nfl] → nba se conserva como temporada; mx y nfl como tres');
       /* upgrade: todo pisa al tres */
       await grantEntitlement(userId, 'todo_mensual');
       const f4 = await filas();
-      t(f4.mx.plan === 'todo_mensual' && f4.nfl.plan === 'todo_mensual' && f4.ucl.plan === 'todo_mensual' && f4.mlb.plan === 'mlb_temporada', 'tres, luego todo_mensual → todo pisa al tres y conserva la temporada');
+      t(f4.mx.plan === 'todo_mensual' && f4.nfl.plan === 'todo_mensual' && f4.ucl.plan === 'todo_mensual' && f4.nba.plan === 'nba_temporada', 'tres, luego todo_mensual → todo pisa al tres y conserva la temporada');
     } catch (e) {
       fail('sección 4: ' + e.message);
     }

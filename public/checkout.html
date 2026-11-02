@@ -682,7 +682,8 @@ const NEXT = (() => { const n = params.get('next') || ''; return /^\/[a-z0-9\-._
    Vienen en ?modelos=a,b,c desde producto.html y se pueden ajustar
    aquí mismo (chips en la tarjeta). El servidor exige exactamente 3
    válidos; aquí solo se refleja. */
-const ALL_MODELS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
+/* MLB fuera de temporada (2-nov-2026): no se puede elegir en el plan de tres hasta marzo */
+const ALL_MODELS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba'];
 const MODEL_NAME = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
 const MODEL_ICO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
 const CHOOSE_N = (PLANS[planId] && PLANS[planId].choose) || 0;

@@ -440,7 +440,6 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
     <div class="model-toggle" role="tablist" aria-label="Cambiar de modelo">
       <a href="/producto.html?m=mx"  data-m="mx"  role="tab">⚽ Liga MX</a>
       <a href="/producto.html?m=nfl" data-m="nfl" role="tab">🏈 NFL</a>
-      <a href="/producto.html?m=mlb" data-m="mlb" role="tab">⚾ MLB</a>
       <a href="/producto.html?m=epl" data-m="epl" role="tab">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</a>
       <a href="/producto.html?m=laliga" data-m="laliga" role="tab">🇪🇸 LaLiga</a>
       <a href="/producto.html?m=bundesliga" data-m="bundesliga" role="tab">🇩🇪 Bundesliga</a>
@@ -532,10 +531,9 @@ const MODELOS = {
          titulo: 'La temporada 26-27 completa',
          lede: 'Los 16 juegos de cada jornada: spread, total, moneyline, 1ª mitad y props del QB. Hasta el Super Bowl.',
          mensual: 'nfl_mensual', temporada: 'nfl_temporada' },
-  mlb: { nombre: 'MLB', pagina: '/mlb.html', api: '/api/mlb-free',
-         titulo: 'La recta final, al día',
-         lede: 'Todos los juegos del día, cada día: moneyline, hándicap, totales y más — hasta el último out de la Serie Mundial.',
-         mensual: 'mlb_mensual', temporada: 'mlb_temporada' },
+  /* MLB fuera de temporada desde el 2-nov-2026 (vuelve en marzo): sin
+     pestaña ni planes. Para regresarla: su entrada aquí, su pestaña,
+     'mlb' en TODOS y quitar `upcoming` de sus planes en lib/plans.js. */
   /* Ligas europeas: cuatro modelos independientes (una pestaña, un
      pick gratis y unos planes cada uno), en la página /europa.html?liga=…
      `euro: true` = mientras sus planes lleven `upcoming` se pinta
@@ -565,7 +563,7 @@ const MODELOS = {
          mensual: 'ucl_mensual', temporada: 'ucl_temporada' },
 };
 const param = new URLSearchParams(location.search).get('m');
-const M = MODELOS[param] ? param : 'mlb';
+const M = MODELOS[param] ? param : 'nfl';
 const cfg = MODELOS[M];
 
 /* nav + toggle + enlaces al modelo */
@@ -628,8 +626,8 @@ const BULLETS = {
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
   todo: () => ([
-    'Todos los modelos: MLB, Liga MX, NFL, NBA, Premier League, LaLiga, Bundesliga y Champions',
-    'Beisbol a diario, fútbol cada fin de semana, NFL cada jornada',
+    'Todos los modelos: Liga MX, NFL, NBA, Premier League, LaLiga, Bundesliga y Champions',
+    'NBA cada noche, fútbol cada fin de semana, NFL cada jornada',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
 };
@@ -697,8 +695,8 @@ async function sincronizaOfertas() {
   } catch (e) { /* si falla, se queda el precio de lista */ }
 }
 
-/* Los 7 modelos vendibles (orden canónico, el mismo de lib/plans.js) */
-const TODOS = ['mlb','mx','nfl','epl','laliga','bundesliga','ucl','nba'];
+/* Los modelos que se pueden elegir (orden canónico de lib/plans.js; MLB fuera de temporada) */
+const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba'];
 const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
 const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
 /* elección del plan "tres a elegir": arranca con el modelo de esta página */
@@ -809,7 +807,7 @@ function pintaOpciones(p) {
       '<div id="picker"></div>', oTres ? oTres.usd : tres.price_usd);
   }
   if (todo) {
-    const n = (todo.products || []).length || 7;
+    const n = (todo.products || []).filter(p => TODOS.includes(p)).length || 7;
     /* Precio especial (fundador o "ya tienes un modelo"): sustituye al de
        lista y tacha los $899, no el ancla de "por separado". */
     const oTodo = ofertaDe(todo.id);
@@ -831,7 +829,7 @@ function pintaOpciones(p) {
       .concat(nota ? [nota] : [])
       .concat(ahorro > 0 ? ['Por separado saldrían en ' + money(todo.anchor) + ' — ahorras ' + money(ahorro) + ' al mes'] : []);
     html += '<div class="sep">O bien</div>';
-    html += tarjeta(todo.id, 'Todos los modelos', 'MLB + Liga MX + NFL + NBA + Premier + LaLiga + Bundesliga + Champions',
+    html += tarjeta(todo.id, 'Todos los modelos', 'Liga MX + NFL + NBA + Premier + LaLiga + Bundesliga + Champions',
       money(precio), 'al mes · ' + money(Math.round(precio / n)) + ' por modelo',
       bullets, etiqueta,
       tachado || (oTodo ? null : (todo.anchor ? money(todo.anchor) : null)),
