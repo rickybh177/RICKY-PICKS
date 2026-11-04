@@ -45,6 +45,13 @@ const { getUserFromToken } = require('../lib/supabaseAdmin');
 
 const ADMIN_EMAILS = ['rickybh17@gmail.com'];
 const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
+/* PAUSA DESDE EL CÓDIGO (3-nov-2026): el dueño pidió dejar de subir
+   los free picks a Instagram "de momento". Con true, el cron de las
+   9:00 no publica nada (queda en la bitácora como pausado). Los
+   botones del panel ("Publicar ahora", "Un partido específico" y los
+   programados) siguen funcionando para publicar a mano. Para
+   reanudar: false aquí y git push. */
+const PAUSA_FORZADA = true;
 const REFRESH_DAYS = 7;
 const { hoyMx } = require('../lib/ig/plan');
 const hoy = () => hoyMx(Date.now());
@@ -88,9 +95,10 @@ async function refrescaSiToca() {
    falla, los demás salen igual; cada uno queda en la bitácora. */
 async function corre({ modo, force = false }) {
   const cfg = await pub.config();
-  if (cfg.paused && modo === 'cron') {
-    await pub.anota({ ok: true, skipped: 'pausado', modo });
-    return { ok: true, skipped: 'pausado' };
+  if ((cfg.paused || PAUSA_FORZADA) && modo === 'cron') {
+    const motivo = PAUSA_FORZADA ? 'pausado desde el código' : 'pausado';
+    await pub.anota({ ok: true, skipped: motivo, modo });
+    return { ok: true, skipped: motivo };
   }
   if (!(await pub.tomaCandado())) return { ok: false, error: 'Ya hay una corrida en curso.' };
   try {
@@ -172,7 +180,7 @@ module.exports = async function handler(req, res) {
         token = { ok: true, valid: chk.ok, username: chk.username || null, error: chk.ok ? null : chk.error,
                   refreshed_at: st.refreshed_at, expires_at: st.expires_at, source: st.refreshed_at ? 'kv' : 'env' };
       } catch (e) { token = { ok: false, valid: false, error: e.message }; }
-      return res.status(200).json({ config: cfg, token, log, cron: process.env.CRON_SECRET ? 'configurado' : 'SIN CRON_SECRET', dev: IS_DEV });
+      return res.status(200).json({ config: { ...cfg, paused: cfg.paused || PAUSA_FORZADA, forzada: PAUSA_FORZADA }, token, log, cron: process.env.CRON_SECRET ? 'configurado' : 'SIN CRON_SECRET', dev: IS_DEV });
     }
 
     if (action === 'preview') {

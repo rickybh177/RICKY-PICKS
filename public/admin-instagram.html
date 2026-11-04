@@ -660,7 +660,7 @@ async function loadDaily(){
         : '<span class="ok-dot">●</span> Token OK' + (t.username ? ' @' + esc(t.username) : '') + (t.expires_at ? ' (vence ' + new Date(t.expires_at).toLocaleDateString('es-MX') + ')' : ' (se refresca solo)');
     $('dailyTokenRow').style.display = t.valid === false || !t.ok ? '' : 'none';
     const cron = d.cron === 'configurado' ? '<span class="ok-dot">●</span> Cron activo' : '<span class="bad-dot">●</span> Falta CRON_SECRET en Vercel';
-    $('dailyBarText').innerHTML = tok + ' &nbsp;·&nbsp; ' + cron + ' &nbsp;·&nbsp; ' + (c.paused ? '<b style="color:#d93a3a">PAUSADO</b>' : '<b>Automático</b>') +
+    $('dailyBarText').innerHTML = tok + ' &nbsp;·&nbsp; ' + cron + ' &nbsp;·&nbsp; ' + (c.forzada ? '<b style="color:#d93a3a">PAUSADO desde el código</b> (pídele a Claude reanudar)' : c.paused ? '<b style="color:#d93a3a">PAUSADO</b>' : '<b>Automático</b>') +
       (ultimo ? ' &nbsp;·&nbsp; Último post: ' + fmtTime(ultimo.at) + (ultimo.permalink ? ' <a href="'+esc(ultimo.permalink)+'" target="_blank">ver</a>' : '') : ' &nbsp;·&nbsp; Aún no se ha publicado nada');
     const log = d.log || [];
     $('dailyLog').innerHTML = log.length ? log.map(l=>`<tr>
