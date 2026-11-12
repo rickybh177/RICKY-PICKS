@@ -35,8 +35,6 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="/img/favicon.png">
-<link rel="apple-touch-icon" href="/img/avatar.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -156,14 +154,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
      otro lado. */
   .logo .tip { color: var(--blue); }
 </style>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="apple-touch-icon" href="/img/icono-180.png">
+<link rel="stylesheet" href="/marca.css">
 </head>
 <body>
 
 <nav>
   <div class="wrap">
     <a href="/" class="logo">
-      <img src="/img/avatar.png" alt="" width="32" height="32">
-      <span class="brand-word">DAT<span class="tip">TIP</span></span>
+      <i class="dt-mark"><i class="dt-dot"></i></i>
+      <span class="brand-word">DAT<i class="dt-dot"></i><span class="tip">TIP</span></span>
     </a>
     <div class="nav-right">
       <button class="nav-btn" id="signOutBtn">Cerrar sesión</button>
@@ -278,6 +279,61 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <h2>Modelo Champions League</h2>
         <p>De la fase de liga a la final: cada partido resuelto marcador por marcador, con los 36 clubes puestos en la misma escala y veredicto claro contra los momios reales. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaUcl" href="/europa.html?liga=ucl">Abrir modelo →</a>
+      </div>
+      <!-- modelos en beta privada (11-nov-2026): la tarjeta solo se enseña a quien ya tiene acceso (admin o código); al publicar uno, quitarle el display:none -->
+      <div class="model-card" id="cardSeriea" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🇮🇹</span>
+          <span class="mc-chip" id="chipSeriea">Sin acceso</span>
+        </div>
+        <h2>Modelo Serie A</h2>
+        <p>Las 38 jornadas de la Serie A, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaSeriea" href="/europa.html?liga=seriea">Abrir modelo →</a>
+      </div>
+      <div class="model-card" id="cardLigue1" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🇫🇷</span>
+          <span class="mc-chip" id="chipLigue1">Sin acceso</span>
+        </div>
+        <h2>Modelo Ligue 1</h2>
+        <p>Las 34 jornadas de la Ligue 1, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaLigue1" href="/europa.html?liga=ligue1">Abrir modelo →</a>
+      </div>
+      <div class="model-card" id="cardUel" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🏆</span>
+          <span class="mc-chip" id="chipUel">Sin acceso</span>
+        </div>
+        <h2>Modelo Europa League</h2>
+        <p>De la fase de liga a la final: los 36 clubes puestos en la misma escala, cada partido resuelto marcador por marcador. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaUel" href="/europa.html?liga=uel">Abrir modelo →</a>
+      </div>
+      <div class="model-card" id="cardUecl" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🏆</span>
+          <span class="mc-chip" id="chipUecl">Sin acceso</span>
+        </div>
+        <h2>Modelo Conference League</h2>
+        <p>De la fase de liga a la final: los 36 clubes puestos en la misma escala, cada partido resuelto marcador por marcador. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaUecl" href="/europa.html?liga=uecl">Abrir modelo →</a>
+      </div>
+      <div class="model-card" id="cardMls" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🇺🇸</span>
+          <span class="mc-chip" id="chipMls">Sin acceso</span>
+        </div>
+        <h2>Modelo MLS</h2>
+        <p>Temporada regular y playoffs de la MLS, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales.</p>
+        <a class="mc-cta" id="ctaMls" href="/europa.html?liga=mls">Abrir modelo →</a>
+      </div>
+      <div class="model-card" id="cardNhl" style="display:none">
+        <div class="mc-top">
+          <span class="mc-ico">🏒</span>
+          <span class="mc-chip" id="chipNhl">Sin acceso</span>
+        </div>
+        <h2>Modelo NHL</h2>
+        <p>Cada juego de la NHL: ganador, línea de gol y total, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
+        <a class="mc-cta" id="ctaNhl" href="/nhl.html">Abrir modelo →</a>
       </div>
     </div>
 
@@ -482,6 +538,14 @@ async function boot(){
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
     paint(!!acc.nba, 'chipNba', 'ctaNba', '/producto.html?m=nba', fin.nba);
+    /* modelos en beta privada: su tarjeta aparece solo con acceso vigente */
+    ['seriea', 'ligue1', 'uel', 'uecl', 'mls', 'nhl'].forEach(function (p) {
+      if (!acc[p]) return;
+      var cap = p.charAt(0).toUpperCase() + p.slice(1);
+      var card = document.getElementById('card' + cap);
+      if (card) card.style.display = '';
+      paint(true, 'chip' + cap, 'cta' + cap, '/producto.html?m=' + p, fin[p]);
+    });
     window.__acc = acc; // para la oferta de regreso del plan de tres
     pintaTres(acc.tres);
     pintaFinAviso(acc);

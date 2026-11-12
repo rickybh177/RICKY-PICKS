@@ -1,0 +1,20 @@
+/* ============================================================
+   Marca Dattip — la misma de la app de iOS (3-nov-2026): el cuadro
+   con la bolita bicolor (mitad azul, mitad tinta) y DAT●TIP con la
+   bolita en medio. Un solo lugar para todas las páginas.
+     <span class="mark"><i class="dt-dot"></i></span>   cuadro (páginas con .logo .mark)
+     <i class="dt-mark"><i class="dt-dot"></i></i>      cuadro (las demás)
+     DAT<i class="dt-dot"></i><span class="tip">TIP</span>
+   Sobre fondo oscuro la mitad tinta va en blanco: .dt-dot.claro
+   ============================================================ */
+.dt-dot { display: inline-block; flex: none; width: .42em; height: .42em; border-radius: 50%;
+  background: linear-gradient(90deg, #2F7BFF 50%, #0B1E3F 50%); margin: 0 .2em; vertical-align: .1em; font-style: normal; }
+.dt-dot.claro { background: linear-gradient(90deg, #2F7BFF 50%, #fff 50%); }
+.dt-mark { display: inline-flex; flex: none; align-items: center; justify-content: center; box-sizing: border-box;
+  width: 27px; height: 27px; border-radius: 8px; border: 1.5px solid #2F7BFF; background: #fff; font-style: normal; }
+.logo .mark { background: #fff; }
+.dt-mark .dt-dot, .logo .mark .dt-dot { width: 56%; height: 56%; margin: 0; vertical-align: 0; }
+.dt-mark .dt-dot.claro { background: linear-gradient(90deg, #2F7BFF 50%, #0B1E3F 50%); }
+/* "DAT" en el color del texto de la barra, "TIP" en azul (algunas páginas pintaban todo el span de azul) */
+.logo .brand-word { color: inherit; }
+.logo .brand-word .tip { color: #2F7BFF; }

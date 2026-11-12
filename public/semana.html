@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%2308172e'/%3E%3Cpolyline points='10,34 19,28 27,31 38,13' fill='none' stroke='%232f7bff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='38' cy='13' r='4' fill='white'/%3E%3C/svg%3E">
 <!-- ============================================================
      "TU SEMANA" (1-nov-2026): la página personal que va en el
      WhatsApp del seguimiento semanal. Liga firmada (?u=&t=), sin
@@ -88,11 +87,14 @@
     .liga .bar { display: none; }
   }
 </style>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="apple-touch-icon" href="/img/icono-180.png">
+<link rel="stylesheet" href="/marca.css">
 </head>
 <body>
 <div class="card" id="app">
   <header>
-    <a class="logo" href="/">Dat<span>tip</span></a>
+    <a class="logo" href="/" style="display:flex;align-items:center;gap:9px"><i class="dt-mark"><i class="dt-dot"></i></i><b style="font-weight:inherit">DAT<i class="dt-dot claro"></i><span>TIP</span></b></a>
     <div class="r"><b id="hRango">Tu semana</b><small id="hLigas"></small></div>
   </header>
   <div class="estado" id="cargando"><div class="spinner"></div>Cargando tu semana…</div>

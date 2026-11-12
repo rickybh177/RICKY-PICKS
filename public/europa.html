@@ -38,7 +38,6 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%230a0d13'/%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='9' fill='none' stroke='%234c7df0' stroke-width='2'/%3E%3Ctext x='24' y='31' text-anchor='middle' font-family='Menlo,monospace' font-weight='700' font-size='17' fill='%234c7df0'%3ED·T%3C/text%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -181,6 +180,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .model-toggle { display: inline-flex; flex-wrap: wrap; background: var(--g2); border: 1px solid var(--line); border-radius: 22px; padding: 4px; gap: 2px; margin: 14px 0 4px; }
   .model-toggle .mt-opt { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 0.86rem; font-weight: 600; color: var(--muted); padding: 9px 20px; border-radius: 980px; text-decoration: none; cursor: pointer; transition: color .15s, background .15s; white-space: nowrap; }
   .model-toggle .mt-opt:hover { color: var(--text); }
+  .model-toggle .mt-opt[hidden] { display: none !important; } /* pestañas de modelos en beta */
   .model-toggle .mt-opt.active { background: var(--g0); color: var(--blue-deep); box-shadow: 0 2px 10px -4px rgba(20,24,30,0.18); }
   @media (max-width: 620px) {
     .model-toggle { display: flex; width: 100%; }
@@ -252,14 +252,17 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .logo .tip { color: var(--blue); }
 </style>
 <script src="/barras.js"></script>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="apple-touch-icon" href="/img/icono-180.png">
+<link rel="stylesheet" href="/marca.css">
 </head>
 <body>
 
 <nav>
   <div class="wrap">
     <a class="logo" href="/">
-      <span class="mark">D·T</span>
-      <span class="word">DAT<span class="tip">TIP</span></span><span class="tag">EUROPA</span>
+      <span class="mark"><i class="dt-dot"></i></span>
+      <span class="word">DAT<i class="dt-dot"></i><span class="tip">TIP</span></span><span class="tag">EUROPA</span>
     </a>
     <div class="jorn" id="jornChip" style="display:none">—</div>
     <div class="nav-actions">
@@ -296,6 +299,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="laliga" href="/europa.html?liga=laliga">🇪🇸 LaLiga</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="bundesliga" href="/europa.html?liga=bundesliga">🇩🇪 Bundesliga</a>
       <a class="mt-opt" role="tab" aria-selected="false" data-liga="ucl" href="/europa.html?liga=ucl">🏆 Champions</a>
+      <!-- modelos en beta privada (11-nov-2026): la pestaña solo aparece si llegas por enlace directo o ya entraste a la beta en este navegador; al publicar uno, quitarle data-beta y hidden -->
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="seriea" data-beta hidden href="/europa.html?liga=seriea">🇮🇹 Serie A</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="ligue1" data-beta hidden href="/europa.html?liga=ligue1">🇫🇷 Ligue 1</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="uel" data-beta hidden href="/europa.html?liga=uel">🏆 Europa League</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="uecl" data-beta hidden href="/europa.html?liga=uecl">🏆 Conference</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-liga="mls" data-beta hidden href="/europa.html?liga=mls">🇺🇸 MLS</a>
+      <a class="mt-opt" role="tab" aria-selected="false" data-beta hidden href="/nhl.html">🏒 NHL</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/mx.html">⚽ Liga MX</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/nfl.html">🏈 NFL</a>
       <a class="mt-opt" role="tab" aria-selected="false" href="/nba.html">🏀 NBA</a>
@@ -352,6 +362,12 @@ const LIGAS = {
   laliga: { nombre: 'LaLiga', corto: 'LaLiga', pais: 'España', bandera: '🇪🇸' },
   bundesliga: { nombre: 'Bundesliga', corto: 'Bundesliga', pais: 'Alemania', bandera: '🇩🇪' },
   ucl: { nombre: 'Champions League', corto: 'Champions', pais: 'Europa', bandera: '🏆' },
+  /* 11-nov-2026, beta privada (`beta: true` solo decide si su pestaña se enseña; el candado real es del servidor) */
+  seriea: { nombre: 'Serie A', corto: 'Serie A', pais: 'Italia', bandera: '🇮🇹', beta: true },
+  ligue1: { nombre: 'Ligue 1', corto: 'Ligue 1', pais: 'Francia', bandera: '🇫🇷', beta: true },
+  uel: { nombre: 'Europa League', corto: 'Europa League', pais: 'Europa', bandera: '🏆', beta: true },
+  uecl: { nombre: 'Conference League', corto: 'Conference', pais: 'Europa', bandera: '🏆', beta: true },
+  mls: { nombre: 'MLS', corto: 'MLS', pais: 'Estados Unidos', bandera: '🇺🇸', beta: true, temp: '2026' },
 };
 const _params = new URLSearchParams(location.search);
 const LIGA = LIGAS[_params.get('liga')] ? _params.get('liga') : 'epl';
@@ -362,12 +378,17 @@ if (_params.get('liga') !== LIGA) {
   _params.set('liga', LIGA);
   history.replaceState(null, '', '/europa.html?' + _params.toString());
 }
-document.title = 'Modelo ' + L.nombre + ' — Dattip · La temporada 2026-27, marcador por marcador';
+document.title = 'Modelo ' + L.nombre + ' — Dattip · La temporada ' + (L.temp || '2026-27') + ', marcador por marcador';
 $('ogTitle').setAttribute('content', 'Modelo ' + L.nombre + ' — Dattip');
 $('ogDesc').setAttribute('content', L.nombre + ' partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners, con veredicto contra los momios reales.');
 $('pageH1').textContent = L.nombre + ', resuelta marcador por marcador.';
 $('guestCta').href = '/producto.html?m=' + LIGA; // los planes de ESTA liga
 // cada liga es una pestaña de la barra de modelos (decisión del dueño, 8-sep): la activa se marca aquí
+/* pestañas de los modelos en beta: a la vista solo si esta liga es una de ellas
+   o si este navegador ya cargó alguna con acceso (se marca al pintar el tablero) */
+let _betaVisto = false;
+try { _betaVisto = localStorage.getItem('dattip_beta') === '1'; } catch (e) {}
+if (L.beta || _betaVisto) document.querySelectorAll('.model-toggle a[data-beta]').forEach(a => { a.hidden = false; });
 document.querySelectorAll('.model-toggle a[data-liga]').forEach(a => {
   const on = a.dataset.liga === LIGA;
   a.classList.toggle('active', on);
@@ -463,6 +484,7 @@ async function load(refresh) {
   $('jornChip').style.display = 'block';
   // copas: el servidor manda la fase ("Jornada 3 de 8", "Octavos de final"…)
   $('jornChip').textContent = bd.phase_label ? bd.phase_label.toUpperCase() : 'JORNADA ' + bd.jornada;
+  if (L.beta && bd.access === 'full') { try { localStorage.setItem('dattip_beta', '1'); } catch (e) {} }
   $('guestBar').style.display = currentAccess === 'guest' ? 'flex' : 'none';
   $('plansBanner').classList.toggle('on', currentAccess === 'guest' && plansReady);
   renderMeta(bd);
