@@ -22,7 +22,7 @@ const { PLANS, ALL_MODELS, coverageBeats, entitlementExpiry } = require('../lib/
 const { saveSwap, loadSwap, saveChoice } = require('../lib/choices');
 
 const PLAN = 'tres_mensual';
-const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA' };
+const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA', seriea: 'Serie A', ligue1: 'Ligue 1', mls: 'MLS', uel: 'Europa League', uecl: 'Conference League', nhl: 'NHL' };
 
 function bearer(req) {
   const h = req.headers.authorization || '';

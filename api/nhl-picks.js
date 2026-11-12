@@ -26,7 +26,7 @@ const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 /* 11-nov-2026: NACE EN BETA PRIVADA (solo admin). Para abrirla al
    público (freemium: pick gratis completo, el resto bloqueado en el
    servidor): true aquí y en api/nhl-free.js. */
-const NHL_PUBLIC = false;
+const NHL_PUBLIC = true;   // 11-nov-2026: abierto al público (freemium)
 
 const _cache = new Map(); // day|auto -> { at, value }
 const TTL = 5 * 60 * 1000;

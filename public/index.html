@@ -432,6 +432,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <button type="button" role="tab" data-m="epl" aria-selected="false">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</button>
       <button type="button" role="tab" data-m="laliga" aria-selected="false">🇪🇸 LaLiga</button>
       <button type="button" role="tab" data-m="bundesliga" aria-selected="false">🇩🇪 Bundesliga</button>
+      <button type="button" role="tab" data-m="nhl" aria-selected="false">🏒 NHL</button>
+      <button type="button" role="tab" data-m="seriea" aria-selected="false">🇮🇹 Serie A</button>
+      <button type="button" role="tab" data-m="ligue1" aria-selected="false">🇫🇷 Ligue 1</button>
+      <button type="button" role="tab" data-m="uel" aria-selected="false">🏆 Europa League</button>
+      <button type="button" role="tab" data-m="uecl" aria-selected="false">🏆 Conference</button>
+      <button type="button" role="tab" data-m="mls" aria-selected="false">🇺🇸 MLS</button>
     </div>
 
     <div class="live-head">
@@ -536,6 +542,13 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
           <a class="liga" href="/producto.html?m=epl">Premier</a>
           <a class="liga" href="/producto.html?m=laliga">LaLiga</a>
           <a class="liga" href="/producto.html?m=bundesliga">Bundesliga</a>
+          <a class="liga" href="/producto.html?m=nba">NBA</a>
+          <a class="liga" href="/producto.html?m=nhl">NHL</a>
+          <a class="liga" href="/producto.html?m=seriea">Serie A</a>
+          <a class="liga" href="/producto.html?m=ligue1">Ligue 1</a>
+          <a class="liga" href="/producto.html?m=uel">Europa League</a>
+          <a class="liga" href="/producto.html?m=uecl">Conference</a>
+          <a class="liga" href="/producto.html?m=mls">MLS</a>
         </div>
       </div></div>
       <div class="li"><span class="n">02</span><div><b>La computadora juega cada partido 10,000 veces</b><span>Con la forma de cada equipo, sus lesiones y su calendario. No con lo que dijo alguien en redes.</span></div></div>
@@ -708,6 +721,13 @@ const LIGAS = [
   { m: 'epl',        nombre: 'Premier League', api: '/api/euro-free?liga=epl', euro: true },
   { m: 'laliga',     nombre: 'LaLiga',         api: '/api/euro-free?liga=laliga', euro: true },
   { m: 'bundesliga', nombre: 'Bundesliga',     api: '/api/euro-free?liga=bundesliga', euro: true },
+  /* 11-nov-2026 */
+  { m: 'nhl',        nombre: 'NHL',            api: '/api/nhl-free' },
+  { m: 'seriea',     nombre: 'Serie A',        api: '/api/euro-free?liga=seriea', euro: true },
+  { m: 'ligue1',     nombre: 'Ligue 1',        api: '/api/euro-free?liga=ligue1', euro: true },
+  { m: 'uel',        nombre: 'Europa League',  api: '/api/euro-free?liga=uel', euro: true },
+  { m: 'uecl',       nombre: 'Conference',     api: '/api/euro-free?liga=uecl', euro: true },
+  { m: 'mls',        nombre: 'MLS',            api: '/api/euro-free?liga=mls', euro: true },
 ];
 let ligaActual = 'nfl';
 
@@ -769,7 +789,7 @@ let ligaActual = 'nfl';
         verdict: v ? v.verdict : 'bet', label: v ? v.label : 'Pick del modelo',
         odds: v ? pct(v.prob) : '', venue: g.venue || '' };
       sub = 'HOY';
-    } else if ((m === 'mx' || m === 'nba' || cfg.euro) && d.game) {
+    } else if ((m === 'mx' || m === 'nba' || m === 'nhl' || cfg.euro) && d.game) {
       /* /api/euro-free trae la MISMA forma que /api/mx-free (más
          league_id / league_name): card idéntica. */
       const g = d.game, ml = g.moneyline || {}, v = g.pick || null;
@@ -782,7 +802,7 @@ let ligaActual = 'nfl';
         odds: v ? pct(v.prob) : '', venue: g.venue || '' };
       sub = cfg.euro
         ? ((d.league_name || cfg.nombre) + (d.jornada ? ' · J' + d.jornada : '')).toUpperCase()
-        : m === 'nba' ? ('NBA · ' + fecha(g.date)).toUpperCase()
+        : (m === 'nba' || m === 'nhl') ? (cfg.nombre + ' · ' + fecha(g.date)).toUpperCase()
         : (d.jornada ? 'JORNADA ' + d.jornada : '');
     } else if (m === 'nfl') {
       const g = (d.games || []).find(x => x.id === d.featured_id);
@@ -1098,8 +1118,8 @@ function refreshUI(){
    botones que llevan a los planes de ese modelo lo mandan directo a su
    modelo. Sin sesión, o sin ese modelo, todo sigue igual. Lo decide
    /api/my-access, nunca el navegador. */
-const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', nba: '/nba.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl' };
-const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', nba: 'NBA', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions' };
+const MODEL_PAGE = { mlb: '/mlb.html', mx: '/mx.html', nfl: '/nfl.html', nba: '/nba.html', epl: '/europa.html?liga=epl', laliga: '/europa.html?liga=laliga', bundesliga: '/europa.html?liga=bundesliga', ucl: '/europa.html?liga=ucl', nhl: '/nhl.html', seriea: '/europa.html?liga=seriea', ligue1: '/europa.html?liga=ligue1', uel: '/europa.html?liga=uel', uecl: '/europa.html?liga=uecl', mls: '/europa.html?liga=mls' };
+const MODEL_NAME = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', nba: 'NBA', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions', nhl: 'NHL', seriea: 'Serie A', ligue1: 'Ligue 1', uel: 'Europa League', uecl: 'Conference', mls: 'MLS' };
 let _acceso = null, _accesoDe = null;
 async function atajosDeCliente(){
   const links = [...document.querySelectorAll('a[href^="/producto.html?m="], a[data-plans-href]')];

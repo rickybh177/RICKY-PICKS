@@ -57,6 +57,10 @@
     laliga_temporada: 899,
     bundesliga_temporada: 899,
     ucl_temporada: 899,
+    /* 11-nov-2026 */
+    nba_mensual: 349, nba_temporada: 899,
+    seriea_mensual: 349, ligue1_mensual: 349, mls_mensual: 349, uel_mensual: 349, uecl_mensual: 349, nhl_mensual: 349,
+    seriea_temporada: 899, ligue1_temporada: 899, uel_temporada: 899, uecl_temporada: 899, nhl_temporada: 899,
     /* Pase de las 4 ligas europeas: solo por código, así que el valor
        real lo manda el capture de la pasarela cuando existe. */
     europa_temporada: 3596,

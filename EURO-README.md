@@ -911,7 +911,20 @@ $199 legado) — todo en verde el 8-sep-2026.
 
 ---
 
-# Modelos del 11-nov-2026: Serie A, Ligue 1, MLS, Europa League y Conference League (beta privada)
+# Modelos del 11-nov-2026: Serie A, Ligue 1, MLS, Europa League y Conference League
+
+> **PUBLICADOS el mismo 11-nov-2026** (decisión del dueño): los cinco
+> están en `PUBLIC_LEAGUES` (freemium: pick gratis abierto, el resto con
+> candado del servidor), sus planes se venden ($349 mensual, $899
+> temporada; la MLS solo mensual), entran a "tres a elegir" y a
+> "todos" (14 modelos, ancla $4,886; el precio de $899 no subió) y
+> tienen pestaña en todas las páginas, en `producto.html`, en el
+> checkout, en Mis modelos y en el landing. La libreta ya anota sus
+> picks. Pendiente: Instagram (`lib/ig/plan.js`, el post diario sigue
+> pausado). Lo que sigue describe cómo nacieron (beta privada) y sirve
+> para volver a cerrarlos: sacar la liga de `PUBLIC_LEAGUES` en los dos
+> endpoints y devolver `upcoming` a sus planes.
+
 
 Cinco modelos más sobre el mismo núcleo (`lib/euro/core.js`, matriz
 Dixon-Coles, mismos endpoints y misma página). **Nacen en beta

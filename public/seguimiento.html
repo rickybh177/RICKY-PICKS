@@ -208,7 +208,7 @@ const money = n => '$' + Math.round(n || 0).toLocaleString('es-MX');
 const fCorta = iso => iso ? new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace(/\./g, '') : '—';
 const fHora = iso => iso ? new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).replace(/\./g, '') : '—';
 const u2 = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n || 0).toFixed(1);
-const LIGA = { nfl: 'NFL', mx: 'Liga MX', ucl: 'Champions', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', nba: 'NBA', mlb: 'MLB', mundial: 'Mundial' };
+const LIGA = { nfl: 'NFL', mx: 'Liga MX', ucl: 'Champions', epl: 'Premier', laliga: 'LaLiga', bundesliga: 'Bundesliga', nba: 'NBA', mlb: 'MLB', mundial: 'Mundial', seriea: 'Serie A', ligue1: 'Ligue 1', uel: 'Europa League', uecl: 'Conference', mls: 'MLS', nhl: 'NHL' };
 
 function estado(id) {
   ['stLogin', 'stUnauth', 'stLoading'].forEach(s => $(s).classList.toggle('active', s === id));

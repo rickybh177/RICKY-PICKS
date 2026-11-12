@@ -149,7 +149,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
     }
 
-    const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League' };
+    const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', seriea: 'Serie A', ligue1: 'Ligue 1', mls: 'MLS', uel: 'Europa League', uecl: 'Conference League', nhl: 'NHL' };
     /* Precio de fundador: quien ya era cliente de los modelos previos
        paga menos por "Todos los modelos". Va en el precio BASE de la
        suscripción —no como cupón— para que valga en CADA renovación:

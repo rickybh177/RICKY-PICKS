@@ -281,8 +281,8 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>De la fase de liga a la final: cada partido resuelto marcador por marcador, con los 36 clubes puestos en la misma escala y veredicto claro contra los momios reales. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaUcl" href="/europa.html?liga=ucl">Abrir modelo →</a>
       </div>
-      <!-- modelos en beta privada (11-nov-2026): la tarjeta solo se enseña a quien ya tiene acceso (admin o código); al publicar uno, quitarle el display:none -->
-      <div class="model-card" id="cardSeriea" style="display:none">
+      <!-- 11-nov-2026: seis modelos más -->
+      <div class="model-card" id="cardSeriea">
         <div class="mc-top">
           <span class="mc-ico">🇮🇹</span>
           <span class="mc-chip" id="chipSeriea">Sin acceso</span>
@@ -291,7 +291,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>Las 38 jornadas de la Serie A, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaSeriea" href="/europa.html?liga=seriea">Abrir modelo →</a>
       </div>
-      <div class="model-card" id="cardLigue1" style="display:none">
+      <div class="model-card" id="cardLigue1">
         <div class="mc-top">
           <span class="mc-ico">🇫🇷</span>
           <span class="mc-chip" id="chipLigue1">Sin acceso</span>
@@ -300,7 +300,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>Las 34 jornadas de la Ligue 1, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaLigue1" href="/europa.html?liga=ligue1">Abrir modelo →</a>
       </div>
-      <div class="model-card" id="cardUel" style="display:none">
+      <div class="model-card" id="cardUel">
         <div class="mc-top">
           <span class="mc-ico">🏆</span>
           <span class="mc-chip" id="chipUel">Sin acceso</span>
@@ -309,7 +309,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>De la fase de liga a la final: los 36 clubes puestos en la misma escala, cada partido resuelto marcador por marcador. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaUel" href="/europa.html?liga=uel">Abrir modelo →</a>
       </div>
-      <div class="model-card" id="cardUecl" style="display:none">
+      <div class="model-card" id="cardUecl">
         <div class="mc-top">
           <span class="mc-ico">🏆</span>
           <span class="mc-chip" id="chipUecl">Sin acceso</span>
@@ -318,7 +318,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>De la fase de liga a la final: los 36 clubes puestos en la misma escala, cada partido resuelto marcador por marcador. Temporada 2026-27.</p>
         <a class="mc-cta" id="ctaUecl" href="/europa.html?liga=uecl">Abrir modelo →</a>
       </div>
-      <div class="model-card" id="cardMls" style="display:none">
+      <div class="model-card" id="cardMls">
         <div class="mc-top">
           <span class="mc-ico">🇺🇸</span>
           <span class="mc-chip" id="chipMls">Sin acceso</span>
@@ -327,7 +327,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
         <p>Temporada regular y playoffs de la MLS, cada partido resuelto marcador por marcador, con veredicto claro contra los momios reales.</p>
         <a class="mc-cta" id="ctaMls" href="/europa.html?liga=mls">Abrir modelo →</a>
       </div>
-      <div class="model-card" id="cardNhl" style="display:none">
+      <div class="model-card" id="cardNhl">
         <div class="mc-top">
           <span class="mc-ico">🏒</span>
           <span class="mc-chip" id="chipNhl">Sin acceso</span>
@@ -388,7 +388,7 @@ function showMain(){
 }
 
 const NOMBRE_MODELO = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL',
-  epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA' };
+  epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA', seriea: 'Serie A', ligue1: 'Ligue 1', uel: 'Europa League', uecl: 'Conference League', mls: 'MLS', nhl: 'NHL' };
 
 /* Fecha legible, o null si el dato no es de fiar. Blindaje: la vigencia
    se calcula como updated_at + días, así que una fila sin updated_at
@@ -539,13 +539,9 @@ async function boot(){
     paint(!!acc.bundesliga, 'chipBundesliga', 'ctaBundesliga', '/producto.html?m=bundesliga', fin.bundesliga);
     paint(!!acc.ucl, 'chipUcl', 'ctaUcl', '/producto.html?m=ucl', fin.ucl);
     paint(!!acc.nba, 'chipNba', 'ctaNba', '/producto.html?m=nba', fin.nba);
-    /* modelos en beta privada: su tarjeta aparece solo con acceso vigente */
     ['seriea', 'ligue1', 'uel', 'uecl', 'mls', 'nhl'].forEach(function (p) {
-      if (!acc[p]) return;
       var cap = p.charAt(0).toUpperCase() + p.slice(1);
-      var card = document.getElementById('card' + cap);
-      if (card) card.style.display = '';
-      paint(true, 'chip' + cap, 'cta' + cap, '/producto.html?m=' + p, fin[p]);
+      paint(!!acc[p], 'chip' + cap, 'cta' + cap, '/producto.html?m=' + p, fin[p]);
     });
     window.__acc = acc; // para la oferta de regreso del plan de tres
     pintaTres(acc.tres);
@@ -558,8 +554,8 @@ async function boot(){
 /* ---- Plan "Tres modelos a elegir": un cambio por periodo de cobro ----
    El servidor (api/swap-model.js) decide todo; aquí solo se ofrece
    quitar uno de los tres y meter otro. */
-const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
-const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba'];   // sin MLB: fuera de temporada
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA', seriea:'Serie A', ligue1:'Ligue 1', uel:'Europa League', uecl:'Conference League', mls:'MLS', nhl:'NHL' };
+const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba','nhl','seriea','ligue1','uel','uecl','mls'];   // sin MLB: fuera de temporada
 const fechaMX = iso => { try { return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'long' }); } catch(e){ return ''; } };
 function pintaTres(tres){
   const box = document.getElementById('tresBox');

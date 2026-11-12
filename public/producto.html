@@ -447,6 +447,12 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <a href="/producto.html?m=bundesliga" data-m="bundesliga" role="tab">🇩🇪 Bundesliga</a>
       <a href="/producto.html?m=ucl" data-m="ucl" role="tab">🏆 Champions</a>
       <a href="/producto.html?m=nba" data-m="nba" role="tab">🏀 NBA</a>
+      <a href="/producto.html?m=nhl" data-m="nhl" role="tab">🏒 NHL</a>
+      <a href="/producto.html?m=seriea" data-m="seriea" role="tab">🇮🇹 Serie A</a>
+      <a href="/producto.html?m=ligue1" data-m="ligue1" role="tab">🇫🇷 Ligue 1</a>
+      <a href="/producto.html?m=uel" data-m="uel" role="tab">🏆 Europa League</a>
+      <a href="/producto.html?m=uecl" data-m="uecl" role="tab">🏆 Conference</a>
+      <a href="/producto.html?m=mls" data-m="mls" role="tab">🇺🇸 MLS</a>
     </div>
 
     <div class="cols">
@@ -563,6 +569,31 @@ const MODELOS = {
          titulo: 'La Champions completa, de la fase de liga a la final',
          lede: 'Cada partido de la Champions League resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
          mensual: 'ucl_mensual', temporada: 'ucl_temporada' },
+  /* 11-nov-2026: seis modelos más. `copa` cambia el texto de la temporada. */
+  seriea: { nombre: 'Serie A', pagina: '/europa.html?liga=seriea', api: '/api/euro-free?liga=seriea', euro: true,
+         titulo: 'La Serie A completa, jornada por jornada',
+         lede: 'Las 38 jornadas de la Serie A, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'seriea_mensual', temporada: 'seriea_temporada' },
+  ligue1: { nombre: 'Ligue 1', pagina: '/europa.html?liga=ligue1', api: '/api/euro-free?liga=ligue1', euro: true,
+         titulo: 'La Ligue 1 completa, jornada por jornada',
+         lede: 'Las 34 jornadas de la Ligue 1, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'ligue1_mensual', temporada: 'ligue1_temporada' },
+  uel: { nombre: 'Europa League', pagina: '/europa.html?liga=uel', api: '/api/euro-free?liga=uel', euro: true, copa: true,
+         titulo: 'La Europa League completa, de la fase de liga a la final',
+         lede: 'Cada partido de la Europa League resuelto marcador por marcador: 1X2, doble oportunidad y goles — con veredicto claro y medido contra los momios reales.',
+         mensual: 'uel_mensual', temporada: 'uel_temporada' },
+  uecl: { nombre: 'Conference League', pagina: '/europa.html?liga=uecl', api: '/api/euro-free?liga=uecl', euro: true, copa: true,
+         titulo: 'La Conference League completa, de la fase de liga a la final',
+         lede: 'Cada partido de la Conference League resuelto marcador por marcador: 1X2, doble oportunidad, goles y ambos anotan — con veredicto claro y medido contra los momios reales.',
+         mensual: 'uecl_mensual', temporada: 'uecl_temporada' },
+  mls: { nombre: 'MLS', pagina: '/europa.html?liga=mls', api: '/api/euro-free?liga=mls', euro: true,
+         titulo: 'La MLS, de la temporada regular a la MLS Cup',
+         lede: 'Temporada regular y playoffs de la MLS, partido por partido: 1X2, doble oportunidad, goles, ambos anotan y córners — con veredicto claro y medido contra los momios reales.',
+         mensual: 'mls_mensual' },
+  nhl: { nombre: 'NHL', pagina: '/nhl.html', api: '/api/nhl-free', euro: true, copa: true,
+         titulo: 'La temporada 2026-27 completa, noche por noche',
+         lede: 'Cada juego calculado con goles, tiros a puerta, portero y descanso: ganador, línea de gol, total y resultado a 60 minutos, con veredicto contra los momios reales.',
+         mensual: 'nhl_mensual', temporada: 'nhl_temporada' },
 };
 const param = new URLSearchParams(location.search).get('m');
 const M = MODELOS[param] ? param : 'nfl';
@@ -592,6 +623,7 @@ document.querySelectorAll('.model-toggle a').forEach(a => {
    plan retirado de $599 MXN). */
 const BULLETS = {
   mensual: m => {
+    if (m === 'nhl') return ['Todos los juegos de cada noche', 'Ganador, línea de gol, total y 60 minutos con veredicto', 'Se renueva solo cada mes · cancela cuando quieras'];
     if (MODELOS[m].euro) return BULLETS.liga(MODELOS[m].nombre);
     const base = [
       'Todos los partidos y todos los mercados del modelo',
@@ -613,7 +645,7 @@ const BULLETS = {
     ];
     if (m === 'nfl') base.splice(1, 0, 'Playoffs y Super Bowl incluidos, más la pretemporada de regalo');
     if (m === 'mx')  base.splice(1, 0, 'Las 17 jornadas más la liguilla completa');
-    if (MODELOS[m].euro) base.splice(1, 0, m === 'ucl' ? 'De la fase de liga a la final, partido por partido' : 'De agosto a la última jornada de la 2026-27');
+    if (MODELOS[m].euro) base.splice(1, 0, m === 'nhl' ? 'Playoffs y final de la Stanley Cup incluidos' : (m === 'ucl' || MODELOS[m].copa) ? 'De la fase de liga a la final, partido por partido' : 'De agosto a la última jornada de la 2026-27');
     return base;
   },
   /* ---- ligas europeas ---- */
@@ -663,7 +695,7 @@ function pintaAviso() {
        (su precio es casi el de lista, tacharlo se vería ridículo). */
     box.innerHTML = '<span class="fn-ico">★</span><span>' +
       '<b>Ya tienes 3 modelos. Te faltan 4.</b>' +
-      '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas los 8 — sin elegir, sin quedarte fuera de nada. ' +
+      '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas todos — sin elegir, sin quedarte fuera de nada. ' +
       'Tu plan de ahora se cancela solo al pagar.</span></span>';
   } else {
     /* Copy del upgrade: corto, concreto y con los dos precios. */
@@ -698,9 +730,9 @@ async function sincronizaOfertas() {
 }
 
 /* Los modelos que se pueden elegir (orden canónico de lib/plans.js; MLB fuera de temporada) */
-const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba'];
-const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA' };
-const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀' };
+const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba','nhl','seriea','ligue1','uel','uecl','mls'];
+const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA', seriea:'Serie A', ligue1:'Ligue 1', uel:'Europa League', uecl:'Conference League', mls:'MLS', nhl:'NHL' };
+const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀', seriea:'🇮🇹', ligue1:'🇫🇷', uel:'🏆', uecl:'🏆', mls:'🇺🇸', nhl:'🏒' };
 /* elección del plan "tres a elegir": arranca con el modelo de esta página */
 let elegidos = [M];
 
@@ -1287,7 +1319,7 @@ async function cargaPick() {
          props de jugador, como en NFL. El endpoint deja pasar a invitados
          solo para el juego del pick gratis, que es este. */
       if (M === 'nba') propsCtx = { url: '/api/nba-props?game=' + encodeURIComponent(g.id) };
-      dist = { tipo: 'margen', valores: g.margin_dist || [], centro: 4, empate: 'E',
+      dist = { tipo: 'margen', valores: g.margin_dist || [], centro: M === 'nhl' ? 5 : 4, empate: 'E',
         etiqueta: 'Cómo cae el marcador: margen de ' + g.home.name + ' (E = empate)' };
     } else if (M === 'nfl') {
       const g = (d.games || []).find(x => x.id === d.featured_id);

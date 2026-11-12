@@ -1,5 +1,15 @@
 # MODELO NHL 2026-27
 
+> **PUBLICADO el 11-nov-2026** (decisión del dueño, el mismo día en que
+> nació): `NHL_PUBLIC = true` en `api/nhl-picks.js` y `api/nhl-free.js`,
+> `nhl_mensual` $349 y `nhl_temporada` $899 a la venta, dentro de "tres
+> a elegir" y de "todos", con pestaña en todas las páginas, en
+> `producto.html`, checkout, Mis modelos y landing. Pendiente: la
+> libreta no anota todavía sus picks (falta calificador para línea de
+> gol y 60 minutos) e Instagram. Para volver a beta: `NHL_PUBLIC =
+> false` en los dos endpoints y `upcoming` en sus planes. Donde este
+> documento diga "beta privada", describe cómo nació.
+
 Modelo de predicción de la NHL integrado a Dattip, con el mismo formato
 que el de NBA: ganador (con tiempo extra y penales), línea de gol ±1.5,
 total de goles, resultado a 60 minutos (3 vías), totales por equipo y

@@ -168,13 +168,13 @@ const ok = msg => console.log('  ✓ ' + msg);
     t(coveredBy('tres_mensual', 'tres_mensual', ['mlb', 'mx', 'nfl']) === true, 'un tres nuevo cancela el tres anterior (re-suscripción; el recién creado se conserva por keep)');
     /* MLB fuera de temporada (2-nov-2026): sus planes están en `upcoming` hasta marzo y cuentan como a la venta para esta revisión */
     const enVenta = Object.keys(PLANS).filter(k => PLANS[k].price > 0 && !PLANS[k].retired && (!PLANS[k].upcoming || k.startsWith('mlb_')));
-    const TEMPORADAS = ['mlb_temporada', 'mx_apertura', 'nfl_temporada', 'epl_temporada', 'laliga_temporada', 'bundesliga_temporada', 'ucl_temporada', 'nba_temporada'];
-    const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'nba_mensual', 'tres_mensual', 'todo_mensual'].concat(TEMPORADAS);
+    const TEMPORADAS = ['mlb_temporada', 'mx_apertura', 'nfl_temporada', 'epl_temporada', 'laliga_temporada', 'bundesliga_temporada', 'ucl_temporada', 'nba_temporada', 'seriea_temporada', 'ligue1_temporada', 'uel_temporada', 'uecl_temporada', 'nhl_temporada'];
+    const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'nba_mensual', 'seriea_mensual', 'ligue1_mensual', 'mls_mensual', 'uel_mensual', 'uecl_mensual', 'nhl_mensual', 'tres_mensual', 'todo_mensual'].concat(TEMPORADAS);
     const faltan = esperados.filter(k => !enVenta.includes(k));
     const sobran = enVenta.filter(k => !esperados.includes(k) && !['mexico', 'torneo', 'final'].includes(k));
-    t(!faltan.length && !sobran.length, `a la venta exactamente los 3 tiers (8 × un modelo, tres, todos) + 8 temporadas${faltan.length ? ' — faltan ' + faltan : ''}${sobran.length ? ' — sobran ' + sobran : ''}`);
+    t(!faltan.length && !sobran.length, `a la venta exactamente los 3 tiers (14 × un modelo, tres, todos) + 13 temporadas${faltan.length ? ' — faltan ' + faltan : ''}${sobran.length ? ' — sobran ' + sobran : ''}`);
     t(enVenta.every(k => isSubscription(k) || TEMPORADAS.includes(k) || ['mexico', 'torneo', 'final'].includes(k)), 'lo único de pago único a la venta son las temporadas');
-    t(TEMPORADAS.every(k => PLANS[k].price === 899 && !isSubscription(k) && FULL_PASS_PLANS.includes(k)), 'las 8 temporadas: $899, pago único y pase completo (cancelan la mensualidad que cubren)');
+    t(TEMPORADAS.every(k => PLANS[k].price === 899 && !isSubscription(k) && FULL_PASS_PLANS.includes(k)), 'las 13 temporadas: $899, pago único y pase completo (cancelan la mensualidad que cubren)');
     t(TEMPORADAS.every(k => !PLANS[k].anchor || PLANS[k].anchor > PLANS[k].price), 'ninguna temporada tacha un valor menor que su precio');
     t(PLANS.tres_mensual.price === 599 && PLANS.todo_mensual.price === 899 && PLANS.mlb_mensual.price === 349, 'precios: $349 / $599 / $899');
   }

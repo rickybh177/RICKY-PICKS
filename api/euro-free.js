@@ -31,7 +31,8 @@ const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
    bloqueado en el servidor). Sus planes siguen con `upcoming` en
    lib/plans.js, así que el candado manda a "próximamente". Para volver
    a beta privada: vaciar el Set (en los DOS endpoints). */
-const PUBLIC_LEAGUES = new Set(['epl', 'laliga', 'bundesliga', 'ucl']);
+/* 11-nov-2026: se abren Serie A, Ligue 1, MLS, Europa League y Conference. */
+const PUBLIC_LEAGUES = new Set(['epl', 'laliga', 'bundesliga', 'ucl', 'seriea', 'ligue1', 'mls', 'uel', 'uecl']);
 
 const _cache = new Map(); // leagueId -> { at, value }
 const TTL = 10 * 60 * 1000;
