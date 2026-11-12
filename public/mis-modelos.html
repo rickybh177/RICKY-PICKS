@@ -93,6 +93,7 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   /* Suscripción que se acabó: ni verde (no está activa) ni gris
      (no es "nunca compró"). Ámbar = se te terminó, vuelve. */
   .mc-chip.fin { background: rgba(217,138,10,0.12); color: #a56a06; }
+  .fin-aviso[hidden] { display: none; }   /* sin esto el display:flex le ganaba a hidden y quedaba una franja vacía */
   .fin-aviso { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 26px;
     background: rgba(217,138,10,0.08); border: 1px solid rgba(217,138,10,0.3);
     border-radius: 14px; padding: 15px 17px; }
