@@ -1,0 +1,77 @@
+/* ============================================================
+   GET /api/nhl-free
+   Devuelve UN solo juego de NHL — el pick gratis del día (el mismo
+   destacado que /api/nhl-picks, overrides y clavado incluidos) — con
+   la forma de /api/nba-free, para la card del landing y producto.html.
+
+   BETA PRIVADA: mientras NHL_PUBLIC sea false (mismo valor que en
+   api/nhl-picks.js), contesta 403 { error, beta: true } a quien no sea
+   admin. Al abrirse es PÚBLICO sin sesión, como /api/mx-free.
+   ============================================================ */
+const { buildBoard } = require('../lib/nhl/model');
+const { featuredId, pickDeCard } = require('../lib/nhl/featured');
+const { getUserFromToken } = require('../lib/supabaseAdmin');
+
+const ADMIN_EMAILS = ['rickybh17@gmail.com'];
+const IS_DEV = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
+/* 11-nov-2026: NACE EN BETA PRIVADA (solo admin). Para abrirla al
+   público (freemium: pick gratis completo, el resto bloqueado en el
+   servidor): true aquí y en api/nhl-picks.js. */
+const NHL_PUBLIC = false;
+
+let _cache = null; // { at, value }
+const TTL = 10 * 60 * 1000;
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Método no permitido.' }); }
+
+  const simulate = IS_DEV && req.query && (req.query.as === 'guest' || req.query.as === 'beta') ? req.query.as : null;
+  let isAdmin = (IS_DEV && !simulate) || (process.env.CRON_SECRET && req.headers['x-internal-auth'] === process.env.CRON_SECRET);
+  const h = req.headers.authorization || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7) : null;
+  if (token && !isAdmin && !simulate) {
+    const user = await getUserFromToken(token);
+    if (user && ADMIN_EMAILS.includes(user.email)) isAdmin = true;
+  }
+  if (!(NHL_PUBLIC || simulate === 'guest') && !isAdmin) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(403).json({ error: 'Modelo en beta privada.', beta: true, league_id: 'nhl', league_name: 'NHL' });
+  }
+
+  try {
+    let value;
+    if (_cache && Date.now() - _cache.at < TTL) value = _cache.value;
+    else {
+      const board = await buildBoard();
+      const id = await featuredId(board);
+      const best = (board.games || []).find(g => g.id === id) || null;
+      if (!best) value = { days: board.days, game: null };
+      else {
+        const pick = pickDeCard(best);
+        value = {
+          days: board.days, league_id: 'nhl', league_name: 'NHL',
+          game: {
+            id: best.id, date: best.date, day_mx: best.day_mx, venue: best.venue, state: best.state,
+            home: { abbr: best.home.abbr, name: best.home.name, logo: best.home.logo, record: best.home.record, city: best.home.city },
+            away: { abbr: best.away.abbr, name: best.away.name, logo: best.away.logo, record: best.away.record, city: best.away.city },
+            moneyline: best.markets ? best.markets.moneyline : null,
+            regulation: best.markets ? best.markets.regulation : null,
+            pick,
+            main_pick: best.main_pick || null,
+            conclusion: best.conclusion || null,
+            verdicts: best.verdicts || [],
+            margin_dist: (best.markets && best.markets.margin_dist) || [],
+            goalies: best.goalies || null,
+          },
+        };
+      }
+      _cache = { at: Date.now(), value };
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json(value);
+  } catch (e) {
+    console.error('nhl-free:', e);
+    return res.status(500).json({ error: 'Sin datos por ahora.' });
+  }
+};

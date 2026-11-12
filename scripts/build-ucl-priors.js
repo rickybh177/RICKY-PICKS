@@ -30,7 +30,7 @@
       semana tras la liga del fin de semana; el "descanso corto" ya
       vive en el nivel ajustado de la competencia).
 
-   Uso:  node scripts/build-ucl-priors.js [--halfLife 365] [--sgdK 0.025]
+   Uso:  node scripts/build-ucl-priors.js [--cup ucl|uel|uecl] [--scale 1] [--rho 0.12] [--halfLife 365] [--sgdK 0.025]
            [--muShiftN 80] [--muShiftCap 0.08] [--dcBet 0.76] [--dcMaybe 0.70]
            [--bttsBet 0.555] [--bttsMaybe 0.535] [--mktBlend 0.45] [--x2Floor 0.35]
          Los valores por defecto viven en lib/euro/core.js (DEFAULT_CAL);
@@ -42,7 +42,7 @@ const path = require('path');
 const { LEAGUES, TEAMS } = require('../lib/euro/leagues');
 const { fitDixonColes } = require('../lib/euro/fit');
 const { DEFAULT_CAL } = require('../lib/euro/core');
-const { loadAll, debutAnchor, leagueParams, uclLevel } = require('./ucl-common');
+const { loadAll, debutAnchor, leagueParams, uclLevel, cupOf } = require('./ucl-common');
 
 const CORNER_SHRINK_N = 10;                     // n/(n+10) hacia el factor 1
 const CORNER_MIN_GAMES = 3;                     // en Champions se juegan 8-17 partidos por temporada
@@ -66,15 +66,30 @@ function parseArgs(argv) {
 }
 function usage(msg) {
   if (msg) console.error(msg);
-  console.error('Uso: node scripts/build-ucl-priors.js [--halfLife N] [--sgdK x] [--dcBet x] …');
+  console.error('Uso: node scripts/build-ucl-priors.js [--cup ucl|uel|uecl] [--halfLife N] [--sgdK x] [--dcBet x] …');
   process.exit(1);
 }
 
 (async () => {
   const { flags } = parseArgs(process.argv.slice(2));
-  const cfg = LEAGUES.ucl;
-  const roster = TEAMS.ucl || {};
-  if (!Object.keys(roster).length) usage('Sin plantilla TEAMS.ucl en lib/euro/leagues.js');
+  let cfg;
+  try { cfg = cupOf(flags); } catch (e) { usage(e.message); }
+  delete flags.cup;
+  /* --scale / --rho: escala europea y rho de Dixon-Coles FIJOS para esta
+     copa (se hornean en LEAGUE, no en CAL). Sin bandera salen del ajuste
+     conjunto, como siempre en la Champions. Los eligen scripts/ucl-backtest.js
+     --scale … --rho … con la regla de siempre (mejora ≥0.002 de log-loss en
+     las dos temporadas de prueba). */
+  const fixed = {};
+  for (const k of ['scale', 'rho']) {
+    if (flags[k] == null) continue;
+    const v = Number(flags[k]);
+    if (!isFinite(v)) usage(`--${k} necesita un número`);
+    fixed[k] = v; delete flags[k];
+  }
+  const CUP = cfg.id;                       // ucl | uel | uecl
+  const roster = TEAMS[CUP] || {};
+  if (!Object.keys(roster).length) usage(`Sin plantilla TEAMS.${CUP} en lib/euro/leagues.js`);
 
   const CAL = { ...DEFAULT_CAL, restMult: 1 }; // ver encabezado: sin ajuste de descanso en Champions
   for (const k of Object.keys(flags)) {
@@ -86,7 +101,7 @@ function usage(msg) {
 
   console.log(`== ${cfg.name} (${cfg.espn}) — priors ${cfg.seasonLabel} ==`);
   console.log(`Leyendo histórico conjunto de ${cfg.fitWith.length + 1} competencias hasta ${cfg.histEnd}…`);
-  const all = await loadAll(cfg, m => console.log(m), { statsFor: ['ucl'] });
+  const all = await loadAll(cfg, m => console.log(m), { statsFor: [CUP] });
   const fitSet = all.filter(g => g.date < cfg.histEnd && g.home.score != null && g.away.score != null);
   const perLeague = {};
   for (const g of fitSet) perLeague[g.league] = (perLeague[g.league] || 0) + 1;
@@ -98,14 +113,16 @@ function usage(msg) {
   const fit = fitDixonColes(fitSet, { asOf, halfLife: CAL.halfLife, shotsW: 0 });
   const { anchor, n: nAnchor } = debutAnchor(fit, fitSet);
   const LG = leagueParams(fit);
+  if (fixed.scale != null) LG.scale = fixed.scale;
+  if (fixed.rho != null) LG.rho = fixed.rho;
   /* nivel propio de la Champions dentro de los partidos europeos
      (ucl-common.uclLevel); en el backtest 24-25/25-26 salió ≈ 0 —
      la deriva de la fase de liga la corrige muShift en temporada —
      pero se aplica por si el histórico se separa algún día. */
-  const lvl = uclLevel(fit, LG, fitSet, { asOf, halfLife: CAL.halfLife });
+  const lvl = uclLevel(fit, LG, fitSet, { asOf, halfLife: CAL.halfLife, league: CUP });
   LG.mu = +(LG.mu + lvl.level).toFixed(4);
   console.log(`  ${fit.diag.games} juegos (${fit.diag.uefa_games} europeos) · ${fit.diag.teams} equipos · ${fit.diag.iters} iteraciones`);
-  console.log(`  doméstico: mu=${fit.mu} hfa=${fit.hfa} · europeo: mu=${LG.mu} (muUefa ${fit.muUefa}, nivel Champions ${lvl.level}) hfa=${fit.hfaUefa} escala=${LG.scale} · rho=${fit.rho}`);
+  console.log(`  doméstico: mu=${fit.mu} hfa=${fit.hfa} · europeo: mu=${LG.mu} (muUefa ${fit.muUefa}, nivel propio de la copa ${lvl.level}) hfa=${fit.hfaUefa} escala=${LG.scale} · rho=${fit.rho}`);
   console.log(`  ancla del debutante europeo: att ${anchor.att} / def ${anchor.def} (${nAnchor} clubes solo con partidos europeos)`);
 
   /* ---- PRIORS: los 36 + rivales domésticos activos ---- */
@@ -126,14 +143,14 @@ function usage(msg) {
   const table = Object.keys(roster)
     .map(id => ({ id, name: roster[id].name, ...PRIORS[id], anchored: debut.includes(id) }))
     .sort((a, b) => (b.att - b.def) - (a.att - a.def));
-  console.log('  los 36 (att − def, de mejor a peor):');
+  console.log(`  los ${Object.keys(roster).length} (att − def, de mejor a peor):`);
   for (const r of table) {
     console.log(`    ${r.id.padStart(5)} ${r.name.padEnd(18)} att=${String(r.att.toFixed(3)).padStart(7)} def=${String(r.def.toFixed(3)).padStart(7)}${r.anchored ? '  ← debutante sin historia (ancla)' : ''}`);
   }
   console.log(`  + ${rivals} rivales domésticos activos (ligas: ${cfg.learnFrom.join(', ')}) → ${Object.keys(PRIORS).length} equipos en PRIORS`);
 
   /* ---- Champions sola: promedios para el payload ---- */
-  const uclFit = fitSet.filter(g => g.league === 'ucl');
+  const uclFit = fitSet.filter(g => g.league === CUP);
   let sumH = 0, sumA = 0, draws = 0;
   for (const g of uclFit) { sumH += g.home.score; sumA += g.away.score; if (g.home.score === g.away.score) draws++; }
 
@@ -152,7 +169,7 @@ function usage(msg) {
   }
   const nC = cornerGames.length;
   const cMuHome = nC ? cHome / nC : 5.2, cMuAway = nC ? cAway / nC : 4.3, cMu = (cMuHome + cMuAway) / 2;
-  console.log(`  córneres Champions ${lastYear}-${String(lastYear + 1).slice(2)}: ${nC} juegos · local ${cMuHome.toFixed(2)}, visita ${cMuAway.toFixed(2)}`);
+  console.log(`  córneres ${cfg.short} ${lastYear}-${String(lastYear + 1).slice(2)}: ${nC} juegos · local ${cMuHome.toFixed(2)}, visita ${cMuAway.toFixed(2)}`);
   const CORNERS = {};
   for (const id of Object.keys(roster)) {
     const c = corn[id];
@@ -166,6 +183,7 @@ function usage(msg) {
   const LEAGUE = {
     mu: LG.mu, hfa: LG.hfa, rho: LG.rho, conversion: fit.conversion,
     scale: LG.scale,                 // escala europea de las diferencias de rating
+    fixed,                           // escala / rho fijados por bandera ({} = del ajuste)
     ucl_level: lvl.level,            // nivel propio de la Champions ya sumado a mu
     comps: LG.comps, muShiftComp: LG.muShiftComp,
     avg_home_goals: +(sumH / uclFit.length).toFixed(3),
@@ -179,8 +197,8 @@ function usage(msg) {
   };
   const today = new Date().toISOString().slice(0, 10);
   const out = `/* ============================================================
-   PRIORS CHAMPIONS LEAGUE — ${cfg.seasonLabel}
-   ARCHIVO GENERADO por scripts/build-ucl-priors.js el ${today}
+   PRIORS ${cfg.name.toUpperCase()} — ${cfg.seasonLabel}
+   ARCHIVO GENERADO por scripts/build-ucl-priors.js${CUP === 'ucl' ? '' : ' --cup ' + CUP} el ${today}
    con un ajuste CONJUNTO de ${fit.diag.games} partidos (${fit.diag.uefa_games} europeos) de
    ${cfg.fitWith.length + 1} competencias (${cfg.histStart} → ${cfg.histEnd}, decaimiento de
    ${CAL.halfLife} días). NO editar a mano: regenerar con el script (las
@@ -190,7 +208,7 @@ function usage(msg) {
    aprende en temporada). Llaves = id de equipo de ESPN (string);
    att = fuerza ofensiva, def = debilidad defensiva (escala log). Los
    debutantes sin historia traen promoted_anchor (el debutante europeo).
-   PRIORS incluye a los 36 de la Champions y a sus rivales domésticos
+   PRIORS incluye a los 36 de la copa y a sus rivales domésticos
    activos.
    ============================================================ */
 const LEAGUE = ${JSON.stringify(LEAGUE, null, 2)};
@@ -198,7 +216,7 @@ const LEAGUE = ${JSON.stringify(LEAGUE, null, 2)};
 /* ratings iniciales: los 36 de la fase de liga + rivales domésticos (${Object.keys(PRIORS).length} equipos) */
 const PRIORS = ${JSON.stringify(PRIORS, null, 2)};
 
-/* factores de córneres a favor (f) y en contra (a), relativos a la Champions */
+/* factores de córneres a favor (f) y en contra (a), relativos a la copa */
 const CORNERS = ${JSON.stringify(CORNERS, null, 2)};
 
 /* calibración del runtime (misma que usa scripts/ucl-backtest.js) */
@@ -206,7 +224,7 @@ const CAL = ${JSON.stringify(CAL, null, 2)};
 
 module.exports = { LEAGUE, PRIORS, CORNERS, CAL };
 `;
-  const dest = path.join(__dirname, '..', 'lib', 'euro', 'priors', 'ucl.js');
+  const dest = path.join(__dirname, '..', 'lib', 'euro', 'priors', `${CUP}.js`);
   fs.writeFileSync(dest, out);
   delete require.cache[require.resolve(dest)];
   const chk = require(dest);

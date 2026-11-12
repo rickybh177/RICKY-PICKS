@@ -52,6 +52,13 @@ const PLAN_NAMES = {
   laliga_temporada: 'Modelo LaLiga — Temporada 2026-27 completa',
   bundesliga_temporada: 'Modelo Bundesliga — Temporada 2026-27 completa',
   ucl_temporada: 'Modelo Champions League — Temporada 2026-27 completa',
+  /* beta privada (11-nov-2026): cableados, aún sin venta */
+  seriea_mensual: 'Modelo Serie A — Suscripción mensual', seriea_temporada: 'Modelo Serie A — Temporada 2026-27 completa',
+  ligue1_mensual: 'Modelo Ligue 1 — Suscripción mensual', ligue1_temporada: 'Modelo Ligue 1 — Temporada 2026-27 completa',
+  mls_mensual: 'Modelo MLS — Suscripción mensual',
+  uel_mensual: 'Modelo Europa League — Suscripción mensual', uel_temporada: 'Modelo Europa League — Temporada 2026-27 completa',
+  uecl_mensual: 'Modelo Conference League — Suscripción mensual', uecl_temporada: 'Modelo Conference League — Temporada 2026-27 completa',
+  nhl_mensual: 'Modelo NHL — Suscripción mensual', nhl_temporada: 'Modelo NHL — Temporada 2026-27 completa',
   /* Paquete de las 4 ligas europeas (solo con código, p. ej. DAYOG).
      Sin nombre aquí el checkout con TARJETA lo rechazaba por "Plan
      inválido" y el cliente solo podía pagar con Mercado Pago. */

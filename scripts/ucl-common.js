@@ -1,6 +1,8 @@
 /* ============================================================
-   CHAMPIONS — piezas compartidas por scripts/ucl-backtest.js y
-   scripts/build-ucl-priors.js (solo scripts, nunca runtime):
+   COPAS EUROPEAS (Champions, Europa League, Conference) — piezas
+   compartidas por scripts/ucl-backtest.js y
+   scripts/build-ucl-priors.js (solo scripts, nunca runtime). Los dos
+   scripts reciben la copa con --cup ucl|uel|uecl (default ucl):
    carga etiquetada del histórico conjunto, ancla del debutante
    europeo y parámetros de liga del runtime a partir del ajuste.
    ============================================================ */
@@ -20,7 +22,7 @@ const mean = xs => xs.reduce((s, x) => s + x, 0) / xs.length;
    statsFor: ligas cuyo histórico se pide con summaries (córneres). */
 async function loadAll(cfg, log, { statsFor = [] } = {}) {
   const out = [];
-  for (const id of ['ucl', ...cfg.fitWith]) {
+  for (const id of [cfg.id, ...cfg.fitWith]) {
     const lc = LEAGUES[id];
     if (!lc) throw new Error(`Liga desconocida en fitWith: ${id}`);
     const games = await getHistory(id, { withStats: statsFor.includes(id), log });
@@ -73,10 +75,10 @@ function leagueParams(fit) {
    Champions del set de ajuste, ponderados por la misma recencia del
    fit y encogidos con n/(n+shrinkN) (n = peso acumulado). Se suma a
    LEAGUE.mu; en temporada muShift sigue corrigiendo encima. */
-function uclLevel(fit, LG, fitSet, { asOf, halfLife, shrinkN = 80 } = {}) {
+function uclLevel(fit, LG, fitSet, { asOf, halfLife, shrinkN = 80, league = 'ucl' } = {}) {
   let obs = 0, pred = 0, n = 0;
   for (const g of fitSet) {
-    if (g.league !== 'ucl' || !fit.ratings[g.home.id] || !fit.ratings[g.away.id]) continue;
+    if (g.league !== league || !fit.ratings[g.home.id] || !fit.ratings[g.away.id]) continue;
     const w = gameWeight(g, asOf, halfLife);
     const L = lambdas(fit.ratings, g, LG);
     obs += w * (g.home.score + g.away.score);
@@ -88,4 +90,12 @@ function uclLevel(fit, LG, fitSet, { asOf, halfLife, shrinkN = 80 } = {}) {
   return { level: +(raw * (n / (n + shrinkN))).toFixed(4), n: +n.toFixed(1), obsPerGame: +(obs / n).toFixed(3), predPerGame: +(pred / n).toFixed(3) };
 }
 
-module.exports = { loadAll, debutAnchor, leagueParams, uclLevel, byDate, mean };
+/* Copa elegida con --cup (default ucl). Solo copas con ajuste conjunto. */
+function cupOf(flags) {
+  const id = flags && flags.cup && flags.cup !== true ? String(flags.cup) : 'ucl';
+  const cfg = LEAGUES[id];
+  if (!cfg || cfg.type !== 'cup' || !cfg.fitWith) throw new Error(`--cup debe ser una copa con ajuste conjunto (ucl | uel | uecl): ${id}`);
+  return cfg;
+}
+
+module.exports = { loadAll, debutAnchor, leagueParams, uclLevel, cupOf, byDate, mean };

@@ -13,8 +13,8 @@
 (function () {
   var URL = 'https://juzfncioexyerhwweaui.supabase.co';
   var ANON = 'sb_publishable_9l3PIKomRJ5nQF3nXPXkgQ_0Osam0vj';
-  var LIGA_PAGINA = { '/nfl.html': 'nfl', '/mlb.html': 'mlb', '/mx.html': 'mx', '/nba.html': 'nba' };
-  var EURO = ['epl', 'laliga', 'bundesliga', 'ucl'];
+  var LIGA_PAGINA = { '/nfl.html': 'nfl', '/mlb.html': 'mlb', '/mx.html': 'mx', '/nba.html': 'nba', '/nhl.html': 'nhl' };
+  var EURO = ['epl', 'laliga', 'bundesliga', 'ucl', 'seriea', 'ligue1', 'uel', 'uecl', 'mls'];
 
   function liga() {
     var p = location.pathname;

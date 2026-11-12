@@ -126,6 +126,7 @@ module.exports = async function handler(req, res) {
       season_label: value.season_label,
       rounds: value.rounds,
       jornada: value.jornada,
+      phase_label: value.phase_label,   // copas y playoffs (antes el invitado veía "Jornada N" en eliminatorias)
       method: value.method,
       games_learned: value.games_learned,
       odds_source: value.odds_source,

@@ -908,3 +908,167 @@ Pruebas: `node scripts/verify-plans.js` (estático + vivo: secciones 1c y
 4 cubren el tres) y la simulación de pasarelas con stubs (alta,
 captura, webhooks, renovación tras un cambio, MP sin metadata, upgrade
 $199 legado) — todo en verde el 8-sep-2026.
+
+---
+
+# Modelos del 11-nov-2026: Serie A, Ligue 1, MLS, Europa League y Conference League (beta privada)
+
+Cinco modelos más sobre el mismo núcleo (`lib/euro/core.js`, matriz
+Dixon-Coles, mismos endpoints y misma página). **Nacen en beta
+privada**: no están en `PUBLIC_LEAGUES`, sus planes llevan `upcoming`
+y nadie fuera del admin los ve. La NHL nació el mismo día y vive
+aparte (`lib/nhl/`, `NHL-README.md`).
+
+| Modelo | id | ESPN | Momios (The Odds API) | Página |
+|---|---|---|---|---|
+| Serie A | `seriea` | `ita.1` | `soccer_italy_serie_a` | `/europa.html?liga=seriea` |
+| Ligue 1 | `ligue1` | `fra.1` | `soccer_france_ligue_one` | `/europa.html?liga=ligue1` |
+| MLS | `mls` | `usa.1` | `soccer_usa_mls` | `/europa.html?liga=mls` |
+| Europa League | `uel` | `uefa.europa` | `soccer_uefa_europa_league` | `/europa.html?liga=uel` |
+| Conference League | `uecl` | `uefa.europa.conf` | `soccer_uefa_europa_conference_league` | `/europa.html?liga=uecl` |
+
+## Resumen honesto: qué tan bueno es cada uno
+
+Walk-forward sin fuga sobre las dos últimas temporadas completas
+(ajuste solo con lo anterior; predecir → registrar → aprender con el
+mismo `replayResults` del runtime). "Base" = frecuencias históricas de
+la competencia.
+
+| Modelo · temporada | Brier 1X2 (base) | log-loss (base) | Skill | Favorito acierta | "Seguro" DC a su barra | Lo demás |
+|---|---|---|---|---|---|---|
+| Serie A 24-25 | 0.5809 (0.6609) | 0.9733 (1.0900) | 12.1% | 52.9% | ≥0.76: 171/197 = 86.8% | exacto 13.7% |
+| Serie A 25-26 | 0.5957 (0.6608) | 0.9979 (1.0896) | 9.9% | 52.4% | ≥0.76: 168/203 = 82.8% | exacto 12.9% |
+| Ligue 1 24-25 | 0.5761 (0.6371) | 0.9716 (1.0536) | 9.6% | 55.6% | ≥0.80: 86/99 = 86.9% | BTTS≥0.555: 59.6% |
+| Ligue 1 25-26 | 0.5977 (0.6429) | 0.9991 (1.0641) | 7.0% | 51.5% | ≥0.80: 74/84 = 88.1% | BTTS≥0.555: 53.1% |
+| MLS 2024 | 0.6361 (0.6485) | 1.0567 (1.0731) | 1.9% | 46.8% | ≥0.80: 142/178 = 79.8% | BTTS≥0.555: 202/322 = 62.7% |
+| MLS 2025 | 0.6225 (0.6501) | 1.0375 (1.0747) | 4.3% | 47.5% | ≥0.80: 95/119 = 79.8% | BTTS≥0.555: 206/335 = 61.5% |
+| Europa League 24-25 | 0.6280 (0.6234) | 1.0446 (1.0374) | **−0.7%** | 52.4% | ≥0.84: 17/19 | BTTS no calibra (46-53%) |
+| Europa League 25-26 | 0.5846 (0.6156) | 0.9800 (1.0215) | 5.0% | 50.8% | ≥0.84: 12/12 | BTTS no calibra (33-46%) |
+| Conference 24-25 | 0.5857 (0.6227) | 0.9841 (1.0328) | 5.9% | 54.2% | ≥0.76: 43/51 = 84% | BTTS≥0.58: 15/23 |
+| Conference 25-26 | 0.6004 (0.6232) | 1.0028 (1.0342) | 3.7% | 51.6% | ≥0.76: 36/42 = 86% | BTTS≥0.58: 24/38 = 63% |
+
+Lectura, de mejor a peor:
+
+- **Serie A y Ligue 1** quedan al nivel de Premier / LaLiga /
+  Bundesliga (skill 7-12%). Contra cierres reales de football-data
+  pasa lo mismo que en las otras tres: el mercado tiene mejor Brier
+  (Serie A 0.5672 / 0.5830; Ligue 1 0.5647 / 0.5814) y los BET del 1X2
+  por EV dan +9% y +11% en 2024-25 y **−21% y −26%** en 2025-26; el O/U
+  2.5 con EV es negativo en las cuatro (−10% a −17%). Mismo aviso que
+  arriba: probabilidad del 1X2, "seguros" DC y marcador exacto
+  validados; el EV contra el mercado NO.
+- **Conference League**: skill modesto (4-6%) pero estable; los
+  seguros DC calibran.
+- **MLS**: la liga más pareja de todas (tope salarial, playoffs): el
+  modelo apenas le gana a la base (2-4%) y **sus "seguros" no llegan
+  al 82% a ninguna barra** (≈80% con probabilidad ≥0.80, 75-79% con
+  ≥0.84: sobreconfiado arriba). Por eso `dcBet 0.90`: la doble
+  oportunidad casi nunca sale PICK, se queda en MAYBE. Lo que sí
+  calibra en MLS es **ambos anotan** (61-63% a la barra default, dos
+  temporadas, n > 320) y el total medio. Sin cierres históricos
+  (football-data no trae MLS en ese formato): EV sin validar.
+- **Europa League**: la más floja. En 2024-25 NO le ganó a la base
+  (−0.7%); en 2025-26 sí (+5%). Sus seguros solo calibran arriba
+  (`dcBet 0.84`, pocos picks) y ambos anotan no calibra (`bttsBet 0.70`
+  = apagado en la práctica). Venderla exige decirlo así.
+
+## Calibración horneada (y por qué)
+
+| | Serie A | Ligue 1 | MLS | Europa League | Conference |
+|---|---|---|---|---|---|
+| halfLife · sgdK · shotsW | 365 · 0.025 · 0 | 365 · 0.025 · 0 | 365 · 0.025 · 0 | 500 · 0.025 · 0 | 500 · 0.025 · 0 |
+| dcBet / dcMaybe | 0.76 / 0.70 | 0.80 / 0.74 | 0.90 / 0.80 | 0.84 / 0.78 | 0.76 / 0.70 |
+| bttsBet / bttsMaybe | 0.66 / 0.62 (apagado) | 0.555 / 0.535 | 0.555 / 0.535 | 0.70 / 0.64 (apagado) | 0.58 / 0.555 |
+| escala · rho | 1 · del ajuste | 1 · del ajuste | 1 · del ajuste | **1 · 0.12 fijos** | **1 · 0.12 fijos** |
+
+- Serie A: halfLife 500 y K 0.035 empatan con el default (Δ < 0.001);
+  los tiros a puerta no ayudan. BTTS acierta 50% / 54% a cualquier
+  barra: no se da PICK de ambos anotan.
+- Ligue 1: `shotsW 0.25` mejora 2025-26 (0.0026) y nada 2024-25: no
+  cumple "en ambas". `dcBet 0.76` se queda en 81.4% en 2024-25.
+- MLS: `shotsW` solo en el ajuste (`--fitShots`, bandera nueva del
+  backtest) ayuda en 2024 (0.008) y no en 2025; una escala < 1
+  (`--scale`, también nueva) mueve 0.001. Nada pasa la regla: defaults.
+- **Copas — dos hallazgos nuevos** (medidos con `--scale` y `--rho`
+  en `scripts/ucl-backtest.js`):
+  1. La **escala europea** del ajuste conjunto (1.30-1.35) la domina
+     la Champions; en las dos copas chicas el favorito no es tan
+     favorito. Escala 1 mejora el log-loss en las cuatro
+     copa-temporadas (Europa League 1.0652 → 1.0473 y 0.9949 → 0.9922;
+     Conference 0.9941 → 0.9921 y 1.0122 → 1.0097).
+  2. **En Europa se empata menos** de lo que da el rho doméstico: 25%
+     predicho contra 17-23% real, en las TRES copas y las dos
+     temporadas. Con rho +0.12 el log-loss mejora en las seis
+     (Europa League → 1.0446 / 0.9800; Conference → 0.9841 / 1.0028;
+     Champions 0.8904 → 0.8780 y 0.9086 → 0.9057).
+  Se hornearon en Europa League y Conference (`LEAGUE.fixed`).
+  **La Champions NO se tocó** (es un modelo a la venta): aplicarle
+  `--rho 0.12` es una mejora medida y pendiente de decisión.
+- Probado y descartado (no está en el código): re-estimar escala,
+  nivel, localía y rho solo con los partidos de cada copa — el óptimo
+  dentro de muestra no generaliza (peor en 4 de 4) — y una localía
+  propia por copa (±0.001, ruido).
+- Chipre no entra al ajuste de Europa League / Conference: ESPN solo
+  tiene su 2025-26 y Omonia salía 2º de la Europa League.
+
+## Lo que cambió en el código
+
+- `lib/euro/leagues.js`: `seriea` / `ligue1` con `enabled: true`;
+  `uel` / `uecl` dejaron de ser `fitOnly` (copas con `learnFrom` y
+  `fitWith` propios); `mls` nueva con `calendarYear` (temporada =
+  año), `playoffs` (rotula la ronda) y `closedRoster` (fuera el Juego
+  de Estrellas); plantillas `TEAMS.uel`, `TEAMS.uecl`, `TEAMS.mls`.
+- `lib/euro/priors/{seriea,ligue1,mls,uel,uecl}.js` (GENERADOS) y sus
+  `require` en `PRIORS_FILES`; `playoffLabel` en `lib/euro/model.js`.
+- `scripts/ucl-common.js` / `build-ucl-priors.js` / `ucl-backtest.js`:
+  `--cup ucl|uel|uecl` (default `ucl`: la Champions da exactamente los
+  mismos números, verificado), `--scale`, `--rho`.
+- `scripts/euro-backtest.js`: `--season 2025` para ligas de año
+  calendario, `--scale`, `--fitShots`. `scripts/euro-history.js`:
+  `FD_NAMES` de Serie A y Ligue 1 (100% de cierres emparejados).
+- `lib/euro/oddsnames.js`: alias de las cinco. `SPORT_TTL_MIN`: 60 min
+  para las tres sport keys nuevas.
+- Planes (`lib/plans.js`, todos `upcoming`): `<id>_mensual` $349,
+  `<id>_temporada` $899 (la MLS no tiene: su 2026 acaba en diciembre),
+  `<id>_permanente`. Lista `BETA_PRODUCTS` aparte de `EURO_PRODUCTS`
+  **a propósito** (esa alimenta `todo_*`).
+- Página: pestañas con `data-beta hidden` en `europa.html` (aparecen
+  por enlace directo o si ese navegador ya entró a la beta); tarjetas
+  ocultas en `mis-modelos.html` (se enseñan con acceso vigente).
+
+## Regenerar
+
+```
+node scripts/euro-history.js seriea,ligue1,mls --stats
+node scripts/euro-history.js uel,uecl,ucl --stats && node scripts/euro-history.js fit
+node scripts/build-euro-priors.js seriea --dcBet 0.76 --dcMaybe 0.70 --bttsBet 0.66 --bttsMaybe 0.62
+node scripts/build-euro-priors.js ligue1 --dcBet 0.80 --dcMaybe 0.74
+node scripts/build-euro-priors.js mls --dcBet 0.90 --dcMaybe 0.80
+node scripts/build-ucl-priors.js --cup uel  --halfLife 500 --scale 1 --rho 0.12 --dcBet 0.84 --dcMaybe 0.78 --bttsBet 0.70 --bttsMaybe 0.64
+node scripts/build-ucl-priors.js --cup uecl --halfLife 500 --scale 1 --rho 0.12 --dcBet 0.76 --dcMaybe 0.70 --bttsBet 0.58 --bttsMaybe 0.555
+node scripts/euro-backtest.js seriea --season 2025-26        # o ligue1; mls --season 2025 --noOdds
+node scripts/ucl-backtest.js --cup uel --season 2025-26 --halfLife 500 --scale 1 --rho 0.12
+```
+
+**MLS, cada enero**: `seasonLabel`, `seasonStart` (`2027-02-01`) e
+`histEnd` (`2027-01-31`) en `leagues.js`, y regenerar priors. La MLS
+cambia a calendario europeo en el verano de 2027.
+
+## Cómo publicar uno de estos modelos
+
+1. `lib/plans.js`: quitar `upcoming` a sus planes; agregarlo a
+   `ALL_MODELS` (tres a elegir) y a `todo_mensual.products`, y subir
+   el ancla de "todos" (N × $349). Esto último es decisión de precio.
+2. `PUBLIC_LEAGUES` en `api/euro-picks.js` Y `api/euro-free.js`.
+3. `public/europa.html`: quitar `data-beta hidden` de su pestaña y
+   `beta: true` de `LIGAS`; agregar la pestaña al toggle de `mx`,
+   `nfl`, `nba`, `mlb` y `nhl`. `mis-modelos.html`: quitar el
+   `display:none` de su tarjeta.
+4. Lo que hoy NO conoce a estos modelos y hay que tocar al abrir:
+   `producto.html` (`EURO_LIGAS`), `checkout.html` (`PLANS`,
+   `modelUrl`, `productsOf`, `ALL_MODELS`), `index.html` (pick gratis
+   y liga), `meta-purchase.js`, `lib/free-pick.js` (equipos grandes),
+   `lib/libreta.js`, `lib/ig/plan.js`, `lib/seguimiento.js`,
+   `admin.html` (`PRODUCT_ORDER`).
+5. `node scripts/verify-plans.js` y probar como invitado
+   (`?as=guest`).

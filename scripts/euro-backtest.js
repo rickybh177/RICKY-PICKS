@@ -183,12 +183,19 @@ const pad = (s, w) => String(s == null ? '—' : s).padStart(w);
   const cfg = LEAGUES[leagueId];
   if (!cfg) usage(`Liga desconocida: ${leagueId || '(vacía)'}`);
   const season = flags.season;
-  if (!season || !/^\d{4}-\d{2}$/.test(String(season))) usage('Falta --season 2025-26 (o 2024-25, 2023-24)');
+  /* liga de año calendario (MLS): la temporada es el año (--season 2025) */
+  const seasonRe = cfg.calendarYear ? /^\d{4}$/ : /^\d{4}-\d{2}$/;
+  if (!season || !seasonRe.test(String(season))) usage(cfg.calendarYear ? 'Falta --season 2025 (liga de año calendario)' : 'Falta --season 2025-26 (o 2024-25, 2023-24)');
   const testYear = Number(String(season).slice(0, 4));
   const Ks = numList(flags.K, [DEFAULT_CAL.sgdK]);
   const halfLives = numList(flags.halfLife, [DEFAULT_CAL.halfLife]);
   const shotsWs = numList(flags.shotsW, [DEFAULT_CAL.shotsW]);
   const noMuShift = !!flags.noMuShift;
+  /* --scale a,b: escala de las diferencias de rating (LEAGUE.scale, default 1).
+     <1 encoge a todos hacia la media: para ligas parejas donde el ajuste
+     sale sobreconfiado (MLS). Es la misma perilla que la escala europea
+     de las copas (core.levelOf). */
+  const scales = numList(flags.scale, [1]);
   const blends = numList(flags.mktBlend, [DEFAULT_CAL.mktBlend]);
   const floors = numList(flags.x2Floor, [DEFAULT_CAL.x2Floor]);
   const book = flags.book && flags.book !== true ? String(flags.book) : 'avg';
@@ -258,9 +265,12 @@ const pad = (s, w) => String(s == null ? '—' : s).padStart(w);
       promotedAnchor: fit.promotedAnchor, games: fit.diag.games, anchored,
     };
     console.log(`\n  fit halfLife=${hl} shotsW=${sw}: mu=${fit.mu} hfa=${fit.hfa} rho=${fit.rho} conv=${fit.conversion} · ancla ${fit.promotedAnchor.att}/${fit.promotedAnchor.def} · ${anchored.length} ascendido(s) sin historia`);
-    const LG = { mu: fit.mu, hfa: fit.hfa, rho: fit.rho, conversion: fit.conversion };
-    for (const K of Ks) {
-      const cal = { ...DEFAULT_CAL, halfLife: hl, shotsW: sw, sgdK: K, muShiftCap: noMuShift ? 0 : DEFAULT_CAL.muShiftCap };
+    for (const sc of scales) for (const K of Ks) {
+      const LG = { mu: fit.mu, hfa: fit.hfa, rho: fit.rho, conversion: fit.conversion, scale: sc };
+      /* --fitShots: los tiros a puerta entran SOLO al ajuste de priors y en
+         temporada se aprende de goles (que es lo único que el runtime tiene
+         sin bajar cientos de summaries). */
+      const cal = { ...DEFAULT_CAL, halfLife: hl, shotsW: flags.fitShots ? 0 : sw, sgdK: K, muShiftCap: noMuShift ? 0 : DEFAULT_CAL.muShiftCap };
       const rows = walkForward(testSet, priors, LG, cal);
       const m = evaluate(rows, base, cal);
       /* contra el mercado: mismas filas, barrido blend × floor sin re-ajustar */
@@ -270,9 +280,9 @@ const pad = (s, w) => String(s == null ? '—' : s).padStart(w);
         market = { link, grid: [] };
         for (const b of blends) for (const f of floors) market.grid.push(evaluateMarket(rows, { ...cal, mktBlend: b, x2Floor: f }));
       }
-      sweeps.push({ key, halfLife: hl, shotsW: sw, K, muShift: !noMuShift, metrics: m, market });
+      sweeps.push({ key, halfLife: hl, shotsW: sw, K, scale: sc, muShift: !noMuShift, metrics: m, market });
       const mk0 = market && market.grid[0];
-      console.log(`    K=${K}: Brier ${m.brier} · log-loss ${m.logloss} · RPS ${m.rps} · O2.5 ${m.ou25.brier} · BTTS ${m.btts.brier} · DC≥${cal.dcBet} ${m.dc_bars[cal.dcBet].hits}/${m.dc_bars[cal.dcBet].n} · muShift ${m.mu_shift_final}`
+      console.log(`    K=${K}${scales.length > 1 || sc !== 1 ? ' escala=' + sc : ''}: Brier ${m.brier} · log-loss ${m.logloss} · RPS ${m.rps} · O2.5 ${m.ou25.brier} · BTTS ${m.btts.brier} · DC≥${cal.dcBet} ${m.dc_bars[cal.dcBet].hits}/${m.dc_bars[cal.dcBet].n} · muShift ${m.mu_shift_final}`
         + (mk0 ? ` · BET 1X2 (blend ${mk0.mktBlend}, piso ${mk0.x2Floor}) ${mk0.x2.bet.n} · ROI ${pct(mk0.x2.bet.roi)}` : ''));
     }
   }

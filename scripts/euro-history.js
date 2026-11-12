@@ -29,7 +29,7 @@
    backtest mida los veredictos con EV contra precios reales; ver
    getClosingOdds más abajo.
 
-   Uso:  node scripts/euro-history.js <epl|laliga|bundesliga|ucl|all|fit|a,b,c> [--stats]
+   Uso:  node scripts/euro-history.js <epl|laliga|seriea|ligue1|mls|ucl|uel|uecl|all|fit|a,b,c> [--stats]
    API:  const { getHistory, getClosingOdds, CACHE_DIR } = require('./euro-history');
          const games = await getHistory('epl', { withStats: true });
          const { rows } = await getClosingOdds('epl', 2025, { book: 'avg' });
@@ -214,6 +214,12 @@ async function getHistory(leagueId, { withStats = false, log = () => {} } = {}) 
     all.push(...games.map(g => JSON.parse(JSON.stringify(g)))); // copia: el caché no se muta
   }
   all.sort((a, b) => new Date(a.date) - new Date(b.date));
+  /* Liga cerrada (MLS): fuera lo que no sea entre equipos de la
+     plantilla — ESPN mete el Juego de Estrellas en el mismo código. */
+  if (cfg.closedRoster && TEAMS[leagueId]) {
+    const roster = TEAMS[leagueId];
+    for (let i = all.length - 1; i >= 0; i--) if (!roster[all[i].home.id] || !roster[all[i].away.id]) all.splice(i, 1);
+  }
 
   let coverage = null;
   if (withStats) {
@@ -288,6 +294,21 @@ const FD_NAMES = {
     'Leverkusen': '131', "M'gladbach": '268', 'Mainz': '2950', 'Paderborn': '3307', 'RB Leipzig': '11420',
     'Schalke 04': '133', 'St Pauli': '270', 'Stuttgart': '134', 'Union Berlin': '598',
     'Werder Bremen': '137', 'Wolfsburg': '138',
+  },
+  seriea: {
+    'Atalanta': '105', 'Bologna': '107', 'Cagliari': '2925', 'Como': '2572', 'Cremonese': '4050',
+    'Empoli': '2574', 'Fiorentina': '109', 'Frosinone': '4057', 'Genoa': '3263', 'Inter': '110',
+    'Juventus': '111', 'Lazio': '112', 'Lecce': '113', 'Milan': '103', 'Monza': '4007', 'Napoli': '114',
+    'Parma': '115', 'Pisa': '3956', 'Roma': '104', 'Salernitana': '3240', 'Sampdoria': '2734',
+    'Sassuolo': '3997', 'Spezia': '4056', 'Torino': '239', 'Udinese': '118', 'Venezia': '17530',
+    'Verona': '119',
+  },
+  ligue1: {
+    'Ajaccio': '2503', 'Angers': '7868', 'Auxerre': '172', 'Brest': '6997', 'Clermont': '3171',
+    'Le Havre': '3236', 'Le Mans': '2697', 'Lens': '175', 'Lille': '166', 'Lorient': '273', 'Lyon': '167',
+    'Marseille': '176', 'Metz': '177', 'Monaco': '174', 'Montpellier': '274', 'Nantes': '165',
+    'Nice': '2502', 'Paris FC': '6851', 'Paris SG': '160', 'Reims': '3243', 'Rennes': '169',
+    'St Etienne': '178', 'Strasbourg': '180', 'Toulouse': '179', 'Troyes': '170',
   },
 };
 

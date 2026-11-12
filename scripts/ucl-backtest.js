@@ -59,14 +59,16 @@ function parseArgs(argv) {
 const numList = (s, dflt) => s == null || s === true ? dflt : String(s).split(',').map(Number).filter(n => isFinite(n));
 function usage(msg) {
   if (msg) console.error(msg);
-  console.error('Uso: node scripts/ucl-backtest.js --season 2025-26 [--K a,b] [--halfLife a,b] [--noDomestic] [--noMuShift] [--json out.json]');
+  console.error('Uso: node scripts/ucl-backtest.js [--cup ucl|uel|uecl] --season 2025-26 [--K a,b] [--halfLife a,b] [--scale a,b] [--rho x] [--noDomestic] [--noMuShift] [--json out.json]');
   process.exit(1);
 }
-const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-common');
+const { loadAll, debutAnchor, leagueParams, uclLevel, cupOf, byDate } = require('./ucl-common');
 
 (async () => {
   const { flags } = parseArgs(process.argv.slice(2));
-  const cfg = LEAGUES.ucl;
+  let cfg;
+  try { cfg = cupOf(flags); } catch (e) { usage(e.message); }
+  const CUP = cfg.id;                                     // ucl | uel | uecl
   const season = flags.season;
   if (!season || !/^\d{4}-\d{2}$/.test(String(season))) usage('Falta --season 2025-26 (o 2024-25)');
   const testYear = Number(String(season).slice(0, 4));
@@ -78,10 +80,10 @@ const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-
   const muShiftN = flags.muShiftN != null && flags.muShiftN !== true ? Number(flags.muShiftN) : DEFAULT_CAL.muShiftN;
   if (!Ks.length || !halfLives.length) usage('Listas vacías en --K / --halfLife');
 
-  console.log(`== ${cfg.name} (${cfg.espn}) — backtest ${season}${noDomestic ? ' · solo Champions' : ' · aprende también de ' + cfg.learnFrom.length + ' ligas'} ==`);
+  console.log(`== ${cfg.name} (${cfg.espn}) — backtest ${season}${noDomestic ? ' · solo la copa' : ' · aprende también de ' + cfg.learnFrom.length + ' ligas'} ==`);
   const all = await loadAll(cfg, m => console.log(m));
-  const testSet = all.filter(g => g.league === 'ucl' && g.seasonYear === testYear).sort(byDate);
-  if (!testSet.length) usage(`Sin juegos de Champions ${season} en el histórico`);
+  const testSet = all.filter(g => g.league === CUP && g.seasonYear === testYear).sort(byDate);
+  if (!testSet.length) usage(`Sin juegos de ${cfg.name} ${season} en el histórico`);
   const firstDate = testSet[0].date, lastDate = testSet[testSet.length - 1].date;
   const asOf = new Date(firstDate).getTime() - 86400000;
   const fitSet = all.filter(g => g.date < firstDate);
@@ -91,15 +93,15 @@ const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-
   for (const g of fitSet) perLeague[g.league] = (perLeague[g.league] || 0) + 1;
   console.log(`  ajuste: ${fitSet.length} juegos de ${Object.keys(perLeague).length} competencias (hasta ${fitSet[fitSet.length - 1].date.slice(0, 10)}, asOf ${new Date(asOf).toISOString().slice(0, 10)})`);
   console.log(`    ${Object.entries(perLeague).map(([k, v]) => `${k} ${v}`).join(' · ')}`);
-  console.log(`  prueba: ${testSet.length} juegos de Champions (${firstDate.slice(0, 10)} → ${lastDate.slice(0, 10)})` + (domesticLearn.length ? ` + ${domesticLearn.length} de liga para aprender` : ''));
+  console.log(`  prueba: ${testSet.length} juegos de ${cfg.short} (${firstDate.slice(0, 10)} → ${lastDate.slice(0, 10)})` + (domesticLearn.length ? ` + ${domesticLearn.length} de liga para aprender` : ''));
 
-  const base = baseRates(fitSet.filter(g => g.league === 'ucl'));
-  console.log(`  base Champions: local ${pct(base.p[0])} · empate ${pct(base.p[1])} · visita ${pct(base.p[2])} · O2.5 ${pct(base.over25)} · BTTS ${pct(base.btts)} · ${base.meanTotal} goles/juego`);
+  const base = baseRates(fitSet.filter(g => g.league === CUP));
+  console.log(`  base ${cfg.short}: local ${pct(base.p[0])} · empate ${pct(base.p[1])} · visita ${pct(base.p[2])} · O2.5 ${pct(base.over25)} · BTTS ${pct(base.btts)} · ${base.meanTotal} goles/juego`);
 
   const fits = {}, sweeps = [];
   const learnTeams = new Set(learnSet.flatMap(g => [g.home.id, g.away.id]));
   const uclTeams = new Set(testSet.flatMap(g => [g.home.id, g.away.id]));
-  const nameOf = id => (TEAMS.ucl[id] && TEAMS.ucl[id].name) || (testSet.find(g => g.home.id === id) || {}).home?.name || (testSet.find(g => g.away.id === id) || {}).away?.name || id;
+  const nameOf = id => (TEAMS[CUP][id] && TEAMS[CUP][id].name) || (testSet.find(g => g.home.id === id) || {}).home?.name || (testSet.find(g => g.away.id === id) || {}).away?.name || id;
   for (const hl of halfLives) {
     const fit = fitDixonColes(fitSet, { asOf, halfLife: hl });
     const { anchor, n: nAnchor } = debutAnchor(fit, fitSet);
@@ -111,7 +113,10 @@ const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-
     }
     const LG = leagueParams(fit);
     if (flags.noScale) LG.scale = 1;
-    const lvl = withLevel ? uclLevel(fit, LG, fitSet, { asOf, halfLife: hl }) : { level: 0, n: 0 };
+    /* --scale a,b: prueba escalas europeas fijas en vez de la del ajuste */
+    const fitScale = LG.scale;
+    const scales = flags.scale && flags.scale !== true ? numList(flags.scale, [fitScale]) : [fitScale];
+    const lvl = withLevel ? uclLevel(fit, LG, fitSet, { asOf, halfLife: hl, league: CUP }) : { level: 0, n: 0 };
     LG.mu = +(LG.mu + lvl.level).toFixed(4);
     fits[`hl${hl}`] = {
       level: lvl, halfLife: hl, mu: fit.mu, hfa: fit.hfa, muUefa: fit.muUefa, hfaUefa: fit.hfaUefa, rho: fit.rho, games: fit.diag.games, uefa_games: fit.diag.uefa_games, teams: fit.diag.teams, anchor, anchorTeams: nAnchor, anchoredUcl: anchored };
@@ -121,12 +126,17 @@ const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-
     // los 10 mejores del ajuste, para leer si la escala cruzada tiene sentido
     const top = [...uclTeams].map(t => ({ t, s: priors[t].att - priors[t].def })).sort((a, b) => b.s - a.s);
     console.log(`    top-5 de la Champions al arrancar: ${top.slice(0, 5).map(x => `${nameOf(x.t)} ${x.s.toFixed(2)}`).join(' · ')} · colas: ${top.slice(-3).map(x => `${nameOf(x.t)} ${x.s.toFixed(2)}`).join(' · ')}`);
-    for (const K of Ks) {
+    /* --rho x: fija el rho de Dixon-Coles de la copa. En Europa hay menos
+       empates de los que da el rho doméstico del ajuste conjunto (25%
+       predicho contra 17-23% real en las tres copas, dos temporadas). */
+    if (flags.rho != null && flags.rho !== true) LG.rho = Number(flags.rho);
+    for (const sc of scales) for (const K of Ks) {
+      LG.scale = sc;
       const cal = { ...DEFAULT_CAL, halfLife: hl, sgdK: K, restMult: 1, muShiftN, muShiftCap: noMuShift ? 0 : DEFAULT_CAL.muShiftCap };
-      const rows = walkForward(learnSet, priors, LG, cal, g => g.league === 'ucl');
+      const rows = walkForward(learnSet, priors, LG, cal, g => g.league === CUP);
       const m = evaluate(rows, base, cal);
-      sweeps.push({ halfLife: hl, K, domestic: !noDomestic, muShift: !noMuShift, level: withLevel ? lvl.level : 0, muShiftN, metrics: m });
-      console.log(`    K=${K}: Brier ${m.brier} · log-loss ${m.logloss} · RPS ${m.rps} · skill ${pct(m.brier_skill)} · O2.5 ${m.ou25.brier} · BTTS ${m.btts.brier} · DC≥${cal.dcBet} ${m.dc_bars[cal.dcBet].hits}/${m.dc_bars[cal.dcBet].n} · muShift ${m.mu_shift_final}`);
+      sweeps.push({ halfLife: hl, K, scale: sc, domestic: !noDomestic, muShift: !noMuShift, level: withLevel ? lvl.level : 0, muShiftN, metrics: m });
+      console.log(`    K=${K} escala=${sc}: Brier ${m.brier} · log-loss ${m.logloss} · RPS ${m.rps} · skill ${pct(m.brier_skill)} · O2.5 ${m.ou25.brier} · BTTS ${m.btts.brier} · DC≥${cal.dcBet} ${m.dc_bars[cal.dcBet].hits}/${m.dc_bars[cal.dcBet].n} · muShift ${m.mu_shift_final}`);
     }
   }
 
@@ -143,7 +153,7 @@ const { loadAll, debutAnchor, leagueParams, uclLevel, byDate } = require('./ucl-
   if (flags.json && flags.json !== true) {
     const dest = path.resolve(String(flags.json));
     fs.writeFileSync(dest, JSON.stringify({
-      league: 'ucl', season, generated: new Date().toISOString(),
+      league: CUP, season, generated: new Date().toISOString(),
       fit_games: fitSet.length, test_games: testSet.length, domestic_learn_games: domesticLearn.length,
       asOf: new Date(asOf).toISOString(), base, fits, sweeps, primary,
     }, null, 2));

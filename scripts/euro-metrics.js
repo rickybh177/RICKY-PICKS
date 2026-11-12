@@ -79,6 +79,7 @@ function evaluate(rows, base, cal) {
   for (const b of bbars) bt[b] = { n: 0, hits: 0 };
   let exactHits = 0;
   let predTotal = 0, realTotal = 0, predH = 0, predD = 0, predA = 0, realH = 0, realD = 0, realA = 0;
+  let predHG = 0, realHG = 0, predAG = 0, realAG = 0;   // goles por lado (sesgo de localía)
   let lastMuShift = 0;
 
   for (const { g, lh, la, mk, muShift } of rows) {
@@ -119,6 +120,7 @@ function evaluate(rows, base, cal) {
 
     // cordura sin mercado
     predTotal += lh + la; realTotal += gh + ga;
+    predHG += lh; realHG += gh; predAG += la; realAG += ga;
     predH += p[0]; predD += p[1]; predA += p[2];
     realH += o[0]; realD += o[1]; realA += o[2];
     lastMuShift = muShift;
@@ -148,6 +150,7 @@ function evaluate(rows, base, cal) {
     exact_top1: r3(exactHits / n),
     sanity: {
       pred_mean_total: r3(predTotal / n), real_mean_total: r3(realTotal / n), base_mean_total: base.meanTotal,
+      pred_home_goals: r3(predHG / n), real_home_goals: r3(realHG / n), pred_away_goals: r3(predAG / n), real_away_goals: r3(realAG / n),
       pred_home: r3(predH / n), real_home: r3(realH / n),
       pred_draw: r3(predD / n), real_draw: r3(realD / n),
       pred_away: r3(predA / n), real_away: r3(realA / n),

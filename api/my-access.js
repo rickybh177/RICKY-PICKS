@@ -7,7 +7,7 @@
 const { getUserFromToken, getEntitlements } = require('../lib/supabaseAdmin');
 const { cancelacionVigente, perdioFundador } = require('../lib/cancelaciones');
 const { regresoPara } = require('../lib/retencion');
-const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
+const { PLANS, montoDe, comboPermanentDiscount, monthlyUpgradeFor, founderPriceFor, precioDe, EURO_PRODUCTS, BETA_PRODUCTS, entitlementExpiry, entitlementGrants, isUpcoming } = require('../lib/plans');
 const { loadSwap } = require('../lib/choices');
 
 function bearer(req) {
@@ -55,13 +55,16 @@ module.exports = async function handler(req, res) {
        combo europeo o "todo" ya viene expandido en una fila por liga. */
     const euro = {};
     for (const p of EURO_PRODUCTS) euro[p] = vigente(p);
+    /* modelos del 11-nov-2026 (beta privada): { seriea: true, seriea_plan: '…', … } */
+    const nuevos = {};
+    for (const p of BETA_PRODUCTS) { const e = vigente(p); nuevos[p] = !!e; nuevos[p + '_plan'] = e ? e.plan : null; }
 
     /* { producto: {plan, title, expired_at} } — solo los vencidos.
        El Mundial NO entra: fue un torneo que ya acabó, no tiene página
        ni forma de reactivarse, y aparecía en el aviso diciéndole a 170
        clientes que "se les acabó el acceso" a algo que terminó solo. */
     const expirados = {};
-    for (const p of ['mlb', 'nfl', 'mx', ...EURO_PRODUCTS, 'nba']) {
+    for (const p of ['mlb', 'nfl', 'mx', ...EURO_PRODUCTS, 'nba', ...BETA_PRODUCTS]) {
       const v = vencido(p);
       if (v) expirados[p] = v;
     }
@@ -154,6 +157,7 @@ module.exports = async function handler(req, res) {
       bundesliga_plan: euro.bundesliga ? euro.bundesliga.plan : null,
       ucl: !!euro.ucl,
       ucl_plan: euro.ucl ? euro.ucl.plan : null,
+      ...nuevos,
       /* Plan "Tres modelos a elegir": qué eligió y si ya puede hacer su
          cambio del periodo (uno por renovación). null si no lo tiene. */
       tres,

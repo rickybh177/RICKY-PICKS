@@ -34,6 +34,8 @@ function destForPlan(planId) {
   if (p.startsWith('laliga_')) return 'europa.html?liga=laliga';
   if (p.startsWith('bundesliga_')) return 'europa.html?liga=bundesliga';
   if (p.startsWith('ucl_')) return 'europa.html?liga=ucl';
+  for (const l of ['seriea', 'ligue1', 'mls', 'uel', 'uecl']) if (p.startsWith(l + '_')) return 'europa.html?liga=' + l;
+  if (p.startsWith('nhl_')) return 'nhl.html';
   if (p.startsWith('europa_')) return 'europa.html';
   return 'mis-modelos.html';
 }
