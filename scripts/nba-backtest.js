@@ -344,5 +344,78 @@ const sg = x => (x >= 0 ? '+' : '') + x.toFixed(2);
     }
     console.log(`  |Δ| ≥ ${t}: ${w}-${l} · ${(100 * w / Math.max(1, w + l)).toFixed(1)}% (n=${w + l})`);
   }
+  /* ---- 7. PICK PRINCIPAL POR PARTIDO (lib/nba/verdicts.js) ----
+     La misma regla del sitio, a precios de CIERRE y de APERTURA:
+     cuántos partidos terminan con un pick, de qué tipo, y cómo le va. */
+  console.log('\n=== PICK PRINCIPAL POR PARTIDO (regla del sitio) ===');
+  const { decide, RULES } = require('../lib/nba/verdicts');
+  const runMain = (which, R) => {
+    const acc = { n: 0, withPick: 0, kinds: {} };
+    for (const { g, expH, expA } of rows) {
+      const L = which === 'close' ? g.close : g.open;
+      if (!L || L.spread == null || L.total == null || L.ml_home == null || L.ml_away == null) continue;
+      acc.n++;
+      const em = expH - expA, et = expH + expA;
+      const fair = -Math.round(em * 2) / 2;
+      const gSpread = Math.abs(fair - L.spread) >= 7, gTotal = Math.abs(et - L.total) >= 12;
+      // lados del modelo
+      const pH = coverProb(L.spread, em, disp.SD_MARGIN), sHome = pH >= 0.5;
+      const iH = (which === 'close' && amToProb(L.spread_home_odds)) || IMP110, iA = (which === 'close' && amToProb(L.spread_away_odds)) || IMP110;
+      const [dH, dA] = devig(iH, iA);
+      const pO = overProb(L.total, et, disp.SD_TOTAL), sOver = pO >= 0.5;
+      const iO = (which === 'close' && amToProb(L.over_odds)) || IMP110, iU = (which === 'close' && amToProb(L.under_odds)) || IMP110;
+      const [dO, dU] = devig(iO, iU);
+      const pW = 1 - normCdf((0.5 - em) / 12.5), wHome = pW >= 0.5;
+      const mH = amToProb(L.ml_home), mA = amToProb(L.ml_away);
+      const [dmH, dmA] = devig(mH, mA);
+      const cands = [
+        { market: 'spread', p: sHome ? pH : 1 - pH, imp: sHome ? iH : iA, pMkt: sHome ? dH : dA, guarded: gSpread },
+        { market: 'total', p: sOver ? pO : 1 - pO, imp: sOver ? iO : iU, pMkt: sOver ? dO : dU, guarded: gTotal },
+        { market: 'moneyline', p: wHome ? pW : 1 - pW, imp: wHome ? mH : mA, pMkt: wHome ? dmH : dmA, guarded: gSpread },
+      ];
+      const d = decide(cands, R);
+      if (d.main == null) { const k = 'sin pick: ' + d.reason; acc.kinds[k] = acc.kinds[k] || { n: 0, w: 0, pnl: 0, push: 0 }; acc.kinds[k].n++; continue; }
+      acc.withPick++;
+      const c = cands[d.main], r = d.rows[d.main];
+      const key = r.kind + ' · ' + c.market;
+      const A = (acc.kinds[key] = acc.kinds[key] || { n: 0, w: 0, pnl: 0, push: 0 });
+      A.n++;
+      const margin = g.home.score - g.away.score, total = g.home.score + g.away.score;
+      let won, push = false;
+      if (c.market === 'spread') { const res = margin + L.spread; push = res === 0; won = sHome ? res > 0 : res < 0; }
+      else if (c.market === 'total') { const res = total - L.total; push = res === 0; won = sOver ? res > 0 : res < 0; }
+      else won = wHome ? margin > 0 : margin < 0;
+      if (push) { A.push++; continue; }
+      if (won) { A.w++; A.pnl += (1 - c.imp) / c.imp; } else A.pnl -= 1;
+    }
+    return acc;
+  };
+  const showMain = (label, acc) => {
+    console.log(`  ${label}: ${acc.withPick} de ${acc.n} partidos con pick (${(100 * acc.withPick / acc.n).toFixed(0)}%)`);
+    let W = 0, N = 0, P = 0;
+    for (const k of Object.keys(acc.kinds).sort()) {
+      const A = acc.kinds[k];
+      if (k.startsWith('sin pick')) { console.log(`      ${k}: ${A.n}`); continue; }
+      const dec = A.n - A.push; W += A.w; N += dec; P += A.pnl;
+      console.log(`      ${k.padEnd(22)} n=${A.n} · acierto ${(100 * A.w / Math.max(1, dec)).toFixed(1)}% · ROI ${sg(100 * A.pnl / Math.max(1, dec))}%`);
+    }
+    console.log(`      TODOS LOS PICKS        n=${N} · acierto ${(100 * W / Math.max(1, N)).toFixed(1)}% · ROI ${sg(100 * P / Math.max(1, N))}%`);
+  };
+  showMain('CIERRE   (regla de producción)', runMain('close', RULES));
+  showMain('APERTURA (regla de producción)', runMain('open', RULES));
+  console.log('  Ganador por valor — variantes (cierre · apertura):');
+  for (const [mlEv, inPromo] of [[0.04, true], [0.06, false], [0.08, false], [9, false]]) {
+    const tot = a => { let W = 0, N = 0, P = 0; for (const k in a.kinds) { if (k.startsWith('sin pick')) continue; const A = a.kinds[k]; W += A.w; N += A.n - A.push; P += A.pnl; } return `con pick ${(100 * a.withPick / a.n).toFixed(0)}% · acierto ${(100 * W / N).toFixed(1)}% · ROI ${sg(100 * P / N)}%`; };
+    const R2 = { ...RULES, ML_BET_EV: mlEv, ML_IN_PROMO: inPromo };
+    console.log(`    ML_BET_EV=${mlEv} promo=${inPromo}: CIERRE ${tot(runMain('close', R2))}  |  APERTURA ${tot(runMain('open', R2))}`);
+  }
+  console.log('  Sensibilidad a precios de cierre:');
+  for (const [promo, win] of [[0, 0.62], [0.01, 0.6], [0.01, 0.65], [0.02, 0.62], [0.04, 0.62]]) {
+    const a = runMain('close', { ...RULES, PROMO_EV: promo, WIN_BAR: win });
+    let W = 0, N = 0, P = 0;
+    for (const k in a.kinds) { if (k.startsWith('sin pick')) continue; const A = a.kinds[k]; W += A.w; N += A.n - A.push; P += A.pnl; }
+    console.log(`    PROMO_EV=${promo} WIN_BAR=${win}: con pick ${(100 * a.withPick / a.n).toFixed(0)}% · acierto ${(100 * W / N).toFixed(1)}% · ROI ${sg(100 * P / N)}%`);
+  }
+
   console.log('\nListo. Parámetros sugeridos para lib/nba/priors.js:', JSON.stringify({ CARRY, K: 0.06, KP: 0.06, ABS_C, REST, DISP: disp }));
 })().catch(e => { console.error(e); process.exit(1); });

@@ -138,11 +138,43 @@ en el del rival: mueve el margen, casi no el total.
    1er cuarto = 25.5% y 36% (sd 8.3 / 8.2). Líneas enteras devuelven el
    push como la casa. Determinista: no hay simulación, los picks no
    bailan entre recargas.
-6. **Veredictos**: con momios, EV sobre la prob encogida 40% hacia el
-   devig del consenso; PICK ≥ 4%, MAYBE ≥ 1.5%, piso 30%. Sin momios,
-   tope MAYBE por barra. Guardián de divergencia: línea del mercado a
-   ≥7 pts (hándicap) o ≥12 (total) del modelo → tope MAYBE con aviso.
-   1ª mitad y 1er cuarto no tienen momio del consenso: tope MAYBE.
+6. **Veredictos y PICK PRINCIPAL por partido** (`lib/nba/verdicts.js`,
+   regla pura que comparten el sitio y el backtest; 11-nov-2026). Cada
+   partido termina en UNA conclusión: un pick con su porqué en una
+   frase, o "este se deja pasar" con la razón y hacia dónde se inclina
+   el modelo. Antes (PICK solo con EV ≥ 4% y nunca sin momios) la
+   mayoría de los partidos salía sin pick y la página no decía nada.
+   - Cada mercado: EV sobre la prob encogida 40% hacia el devig del
+     consenso; PICK ≥ 4% (ganador ≥ 6%), MAYBE ≥ 1.5%, piso 25%.
+   - Si ningún mercado llegó a PICK, se **promueve** el de mejor EV
+     entre hándicap y total si es ≥ 1% (nunca con EV negativo): tipo
+     `valor`.
+   - Si no hay valor, el **ganador** cuando el modelo lo ve ≥ 62% y el
+     mercado no lo contradice (EV ≥ −3%): tipo `probable` — "es lo más
+     probable; el precio es justo". Sin momios (partidos de mañana) el
+     ganador ≥ 62% también es PICK y se recalcula cuando hay línea.
+   - Sin pick: partido parejo, o mercado a ≥7 pts (hándicap) / ≥12
+     (total) del modelo (sabe algo que el reporte de lesiones no).
+   - Los juegos que ya empezaron conservan lo último que dijo el
+     modelo antes del salto (foto por día en el KV `nba-snap-<día>`).
+   - 1ª mitad y 1er cuarto no tienen momio del consenso: lectura.
+
+   Backtest de la regla (`nba-backtest.js`, sección 7):
+
+   | | Partidos con pick | Acierto | ROI |
+   |---|---|---|---|
+   | 2025-26 contra el CIERRE | 84% | 53.7% | +0.3% |
+   | 2024-25 contra el CIERRE | 83% | 52.0% | −1.8% |
+   | 2025-26 contra la APERTURA | 83% | 56.7% | +6.5% |
+   | 2024-25 contra la APERTURA | 81% | 59.2% | +11.5% |
+
+   Por tipo (2025-26, cierre): valor·hándicap 51.2% (n=441),
+   valor·total 52.6% (n=418), valor·ganador 53.1% (n=96),
+   probable·ganador 73.2% (n=82). Lectura honesta: contra el cierre los
+   picks salen tablas (como todo el modelo); la ventaja existe contra
+   la línea temprana y depende de las bajas. Subir la promoción a
+   EV ≥ 4% deja 68% de partidos con pick y +1.4% al cierre: es la
+   perilla (`PROMO_EV`) si algún día se prefiere menos picks.
 7. **Combinada sugerida**: hasta 3 PICKs de juegos distintos; la
    probabilidad conjunta es el producto de las probabilidades
    ENCOGIDAS hacia el mercado (no del modelo puro). El texto lo dice:

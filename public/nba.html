@@ -226,6 +226,16 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
   .parlay .note { font-size: 0.74rem; color: var(--faint); margin-top: 6px; line-height: 1.45; }
   .day-h { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); padding: 10px 2px 0; }
   .badge.abs { background: rgba(124,58,237,0.1); color: var(--beta); }
+  /* la conclusión del partido: el pick principal, o por qué no hay */
+  .mainpick { border-radius: 12px; padding: 13px 15px; margin: 13px 0 2px; border: 1px solid var(--line); background: var(--g0); }
+  .mainpick.bet { border-color: rgba(22,163,74,0.35); background: var(--bet-bg); }
+  .mainpick .mp-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
+  .mainpick.bet .mp-lbl { color: var(--bet); }
+  .mainpick .mp-sel { font-weight: 800; font-size: 1.08rem; letter-spacing: -0.02em; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .mainpick .mp-sel .mp-p { font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; font-weight: 700; color: var(--bet); white-space: nowrap; }
+  .mainpick .mp-why { font-size: 0.84rem; color: var(--muted); font-weight: 450; line-height: 1.5; margin-top: 4px; }
+  .mainpick.none .mp-why { margin-top: 0; }
+  .vhead { font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); margin: 12px 2px -4px; }
 
   footer { border-top: 1px solid var(--line); padding: 26px 0 44px; color: var(--faint); font-size: 0.74rem; font-weight: 450; }
   footer .wrap { display: flex; flex-direction: column; gap: 6px; }
@@ -537,14 +547,37 @@ function gameCard(g, i, isFree) {
   const verdicts = (g.verdicts || []).map(v =>
     '<div class="vrow ' + esc(v.verdict) + '"><span class="vl">' + esc(v.label) +
     '<small>' + esc(v.line_txt || '') + ' · ' + pct1(v.prob) + (v.edge != null ? ' · edge ' + (v.edge >= 0 ? '+' : '') + (v.edge * 100).toFixed(1) + '%' : '') + '</small></span>' +
-    '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span></div>').join('');
+    chipDe(v) + '</div>').join('');
   const analysis = g.analysis ? '<div class="analysis-box"><div class="a-lbl">Qué ve el modelo</div>' + esc(g.analysis) + '</div>' : '';
   const playedNote = (isFree && g.state === 'post')
     ? '<div class="lock-cta" style="margin-top:12px"><div class="lk">✅</div><div class="t">El pick gratis de hoy ya se jugó. Los demás juegos siguen vivos en el modelo completo.</div>' +
       '<a href="/checkout.html?plan=nba_mensual">Desbloquear la cartelera — Mensual $349</a></div>' : '';
   return '<div class="card" style="--i:' + i + '">' +
     (isFree ? '<span class="freeflag">Pick gratis del día' + (g.state === 'post' ? ' · ya se jugó' : '') + '</span>' : '') +
-    metaRow(g) + teamRows(g) + barras(g) + '<div class="verdicts">' + verdicts + '</div>' + playedNote + analysis + moreDetails(g) + '</div>';
+    metaRow(g) + teamRows(g) + barras(g) + mainPick(g) + '<div class="vhead">Mercado por mercado</div><div class="verdicts">' + verdicts + '</div>' + playedNote + analysis + moreDetails(g) + '</div>';
+}
+
+/* Chip de un renglón. Un mercado SIN momio y sin inclinación no es un
+   "no lo juegues": es solo la línea que calcula el modelo. Se pinta
+   como LECTURA (gris) en vez de SKIP (rojo), que confundía. */
+function chipDe(v) {
+  if (v.verdict === 'skip' && v.edge == null) return '<span class="vchip lectura">LECTURA</span>';
+  return '<span class="vchip ' + esc(v.verdict) + '">' + VCHIP[v.verdict] + '</span>';
+}
+
+/* La conclusión del partido, antes que cualquier tabla: el PICK
+   principal con su porqué en una frase, o por qué no hay pick. */
+function mainPick(g) {
+  if (!g.conclusion && !g.main_pick) return '';
+  const started = g.state !== 'pre';
+  if (g.main_pick) {
+    const mp = g.main_pick;
+    return '<div class="mainpick bet"><div class="mp-lbl">Pick del partido' + (started ? ' · se cerró al inicio' : '') + '</div>' +
+      '<div class="mp-sel"><span>' + esc(mp.label) + '</span><span class="mp-p">' + pct(mp.prob) + '</span></div>' +
+      '<div class="mp-why">' + esc(g.conclusion || '') + '</div></div>';
+  }
+  return '<div class="mainpick none"><div class="mp-lbl">' + (started ? 'Sin pick' : 'Este partido se deja pasar') + '</div>' +
+    '<div class="mp-why">' + esc(g.conclusion || '') + '</div></div>';
 }
 
 const barV = (p, bet, maybe) => (p == null ? null : p >= bet ? 'bet' : p >= maybe ? 'maybe' : 'skip');
