@@ -343,6 +343,11 @@ src="https://www.facebook.com/tr?id=1031713479672830&ev=PageView&noscript=1"
       <div class="sb-txt" id="tresTxt"></div>
       <div class="sb-acts" id="tresActs"></div>
     </div>
+    <!-- De tres a cinco (20-nov-2026): conserva sus tres y agrega dos -->
+    <div class="sub-box" id="cincoBox" style="display:none">
+      <div class="sb-txt" id="cincoTxt"></div>
+      <div class="sb-acts" id="cincoActs"></div>
+    </div>
 
     <div class="sub-box">
       <div class="sb-txt" id="subTxt"><strong>Tu suscripción.</strong> Actualiza tu método de pago, revisa tus cobros o cancela cuando quieras — sin llamadas ni correos.</div>
@@ -557,16 +562,20 @@ async function boot(){
 const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA', seriea:'Serie A', ligue1:'Ligue 1', uel:'Europa League', uecl:'Conference League', mls:'MLS', nhl:'NHL' };
 const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba','nhl','seriea','ligue1','uel','uecl','mls'];   // sin MLB: fuera de temporada
 const fechaMX = iso => { try { return new Date(iso).toLocaleDateString('es-MX', { day:'numeric', month:'long' }); } catch(e){ return ''; } };
+const selModelo = (id, opts) => '<select id="' + id + '" style="font:inherit;font-size:0.85rem;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)">' +
+  opts.map(p => '<option value="' + p + '">' + NOMBRE[p] + '</option>').join('') + '</select>';
 function pintaTres(tres){
   const box = document.getElementById('tresBox');
   if(!tres || !Array.isArray(tres.products) || !tres.products.length){ box.style.display = 'none'; return; }
   const txt = document.getElementById('tresTxt');
   const acts = document.getElementById('tresActs');
   const lista = tres.products.map(p => NOMBRE[p] || p).join(', ');
+  const cuantos = tres.choose === 5 ? 'cinco' : 'tres';
+  if(tres.sube_a_cinco) pintaCinco(tres);
   const sel = (id, opts) => '<select id="' + id + '" style="font:inherit;font-size:0.85rem;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)">' +
     opts.map(p => '<option value="' + p + '">' + NOMBRE[p] + '</option>').join('') + '</select>';
   if(tres.swap_available){
-    txt.innerHTML = '<strong>Tu plan de tres modelos:</strong> ' + lista + '. Este mes puedes cambiar uno de ellos por otro; el cobro no cambia.';
+    txt.innerHTML = '<strong>Tu plan de ' + cuantos + ' modelos:</strong> ' + lista + '. Este mes puedes cambiar uno de ellos por otro; el cobro no cambia.';
     acts.innerHTML = sel('swapDrop', tres.products) + '<span style="align-self:center;color:var(--muted)">→</span>' +
       sel('swapAdd', TODOS.filter(p => !tres.products.includes(p))) +
       '<button id="swapBtn">Cambiar</button>';
@@ -585,9 +594,56 @@ function pintaTres(tres){
       }catch(e){ alert('No se pudo hacer el cambio. Intenta de nuevo.'); btn.disabled = false; btn.textContent = 'Cambiar'; }
     });
   } else {
-    txt.innerHTML = '<strong>Tu plan de tres modelos:</strong> ' + lista + '. Ya hiciste tu cambio de este periodo; el siguiente se abre con tu renovación' + (tres.renews_at ? ' el ' + fechaMX(tres.renews_at) : '') + '.';
+    txt.innerHTML = '<strong>Tu plan de ' + cuantos + ' modelos:</strong> ' + lista + '. Ya hiciste tu cambio de este periodo; el siguiente se abre con tu renovación' + (tres.renews_at ? ' el ' + fechaMX(tres.renews_at) : '') + '.';
     acts.innerHTML = '';
   }
+  box.style.display = 'flex';
+}
+
+/* ---- De tres a cinco: el servidor (api/upgrade-cinco) cobra en Stripe
+   la diferencia prorrateada y da los dos modelos desde hoy; si paga con
+   Mercado Pago, lo manda al checkout del de cinco. */
+async function pintaCinco(tres){
+  const box = document.getElementById('cincoBox');
+  const txt = document.getElementById('cincoTxt');
+  const acts = document.getElementById('cincoActs');
+  /* los que ya ve por otro lado (un pase de temporada) no se ofrecen: no tiene caso pagarlos dos veces */
+  const libres = TODOS.filter(p => !tres.products.includes(p) && !(window.__acc && window.__acc[p]));
+  if(libres.length < 2) return;
+  let precio = '$' + Number(tres.sube_a_cinco.precio).toLocaleString('en-US') + ' MXN';
+  try{
+    const h = await authHeaders();
+    const r = await fetch('/api/upgrade-cinco', { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify({ accion: 'ver' }) });
+    const v = await r.json();
+    if(!r.ok) return;                                   // sin suscripción viva de tres: no se ofrece
+    if(v.via === 'stripe' && v.moneda === 'USD') precio = '$' + Number(v.nuevo).toFixed(2) + ' USD';
+    if(v.via === 'mp'){
+      txt.innerHTML = '<strong>¿Quieres cinco modelos?</strong> Conservas tus tres y agregas dos por ' + precio + ' al mes. Tu plan de tres se cancela solo al pagar.';
+      acts.innerHTML = '<button id="cincoBtn">Subir a cinco</button>';
+      document.getElementById('cincoBtn').addEventListener('click', () => { location.href = v.checkout; });
+      box.style.display = 'flex';
+      return;
+    }
+  }catch(e){ return; }
+  txt.innerHTML = '<strong>¿Quieres cinco modelos?</strong> Conservas tus tres y agregas dos. Pasas a ' + precio + ' al mes; hoy solo se cobra la diferencia de los días que le quedan a tu mes.';
+  acts.innerHTML = selModelo('cincoA', libres) + selModelo('cincoB', libres.slice(1).concat(libres[0])) + '<button id="cincoBtn">Subir a cinco</button>';
+  document.getElementById('cincoBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('cincoBtn');
+    const a = document.getElementById('cincoA').value, b = document.getElementById('cincoB').value;
+    if(a === b){ alert('Elige dos modelos distintos.'); return; }
+    if(!confirm('¿Agregar ' + NOMBRE[a] + ' y ' + NOMBRE[b] + '? Tu plan pasa a ' + precio + ' al mes y hoy se cobra la diferencia de los días que faltan.')) return;
+    const h = await authHeaders();
+    if(!h){ showState('stateNoAuth'); return; }
+    btn.disabled = true; btn.textContent = 'Subiendo…';
+    try{
+      const r = await fetch('/api/upgrade-cinco', { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify({ accion: 'subir', add: [a, b] }) });
+      const out = await r.json();
+      if(!r.ok){ alert(out.error || 'No se pudo subir tu plan.'); btn.disabled = false; btn.textContent = 'Subir a cinco'; return; }
+      if(out.checkout){ location.href = out.checkout; return; }
+      alert(out.message || 'Listo: ya tienes cinco modelos.');
+      location.reload();
+    }catch(e){ alert('No se pudo subir tu plan. Intenta de nuevo.'); btn.disabled = false; btn.textContent = 'Subir a cinco'; }
+  });
   box.style.display = 'flex';
 }
 
@@ -609,7 +665,7 @@ function pintaCancelada(c, regreso){
 function ofertaRegresoHTML(o, gancho){
   if(!o) return '';
   const url = '/checkout.html?plan=' + encodeURIComponent(o.plan) + '&regreso=1' +
-    (o.plan === 'tres_mensual' && window.__acc && window.__acc.tres && window.__acc.tres.products ? '&modelos=' + window.__acc.tres.products.join(',') : '');
+    ((o.plan === 'tres_mensual' || o.plan === 'cinco_mensual') && window.__acc && window.__acc.tres && window.__acc.tres.products ? '&modelos=' + window.__acc.tres.products.join(',') : '');
   const pct = o.pct || 30;
   return '<div class="ret-oferta" style="margin-top:12px"><b>' + gancho + ' Vuelve con ' + pct + '% de descuento en tu primer mes.</b>' +
     precioTxt(o.precioOferta, o.moneda) + ' el primer mes en vez de ' + precioTxt(o.precio, o.moneda) + ', y después tu precio de siempre.' +

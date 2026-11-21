@@ -1,11 +1,11 @@
 /* ============================================================
    POST /api/swap-model  { drop, add }   (requiere sesión)
-   Cambia UN modelo del plan "Tres modelos a elegir": quita `drop`
+   Cambia UN modelo de un plan "a elegir" (tres o cinco): quita `drop`
    y mete `add`, sin tocar el cobro (la suscripción sigue igual en
    la pasarela; solo cambian las filas de acceso).
 
    Reglas:
-   - Solo con tres_mensual vigente (filas activas con ese plan).
+   - Solo con tres_mensual o cinco_mensual vigente (filas activas con ese plan).
    - `drop` debe ser uno de sus tres; `add` un modelo válido que no
      tenga ya.
    - UN cambio por periodo de cobro: se permite si el último cambio
@@ -21,7 +21,8 @@ const { getUserFromToken, getAdmin } = require('../lib/supabaseAdmin');
 const { PLANS, ALL_MODELS, coverageBeats, entitlementExpiry } = require('../lib/plans');
 const { saveSwap, loadSwap, saveChoice } = require('../lib/choices');
 
-const PLAN = 'tres_mensual';
+/* el plan "a elegir" que tenga: tres_mensual o cinco_mensual (20-nov-2026) */
+const esElegir = plan => !!(PLANS[plan] && PLANS[plan].choose);
 const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA', seriea: 'Serie A', ligue1: 'Ligue 1', mls: 'MLS', uel: 'Europa League', uecl: 'Conference League', nhl: 'NHL' };
 
 function bearer(req) {
@@ -55,13 +56,14 @@ module.exports = async function handler(req, res) {
       .eq('active', true);
     if (error) throw error;
     const rows = data || [];
-    const mine = rows.filter(r => r.plan === PLAN);
+    const PLAN = (rows.find(r => esElegir(r.plan)) || {}).plan;
+    const mine = PLAN ? rows.filter(r => r.plan === PLAN) : [];
     const now = Date.now();
     if (!mine.length || entitlementExpiry(PLAN, mine[0].updated_at) < now) {
-      return res.status(400).json({ error: 'Este cambio es para el plan de tres modelos, y no tienes uno vigente.' });
+      return res.status(400).json({ error: 'Este cambio es para los planes de modelos a elegir, y no tienes uno vigente.' });
     }
     if (!mine.some(r => r.product === drop)) {
-      return res.status(400).json({ error: `${NOMBRE[drop]} no está en tu plan de tres modelos.` });
+      return res.status(400).json({ error: `${NOMBRE[drop]} no está en tu plan.` });
     }
     if (mine.some(r => r.product === add)) {
       return res.status(400).json({ error: `${NOMBRE[add]} ya está en tu plan.` });

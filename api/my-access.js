@@ -80,7 +80,7 @@ module.exports = async function handler(req, res) {
        lista, ahorro }. El front solo las PINTA; el cobro lo vuelve a
        decidir el servidor con la misma función. */
     const ofertas = {};
-    for (const pl of ['tres_mensual', 'todo_mensual']) {
+    for (const pl of ['tres_mensual', 'cinco_mensual', 'todo_mensual']) {
       const o = precioDe(pl, ents, 'MXN', { sinFundador });
       if (!o) continue;
       /* El mismo precio en dólares, para quien elija pagar así con
@@ -125,14 +125,23 @@ module.exports = async function handler(req, res) {
         return { ...g, tipo, precio, precio_lista: lista, es_fundador: precio != null && lista != null && precio < lista, reactivar };
       });
     })();
+    /* Plan "a elegir" que tenga: tres_mensual o cinco_mensual (el campo
+       se sigue llamando `tres` por compatibilidad con el front). */
     let tres = null;
-    const tresRows = ents.filter(e => e.plan === 'tres_mensual' && e.active);
+    const elegirRow = ents.find(e => e.active && PLANS[e.plan] && PLANS[e.plan].choose);
+    const planElegir = elegirRow ? elegirRow.plan : null;
+    const tresRows = planElegir ? ents.filter(e => e.plan === planElegir && e.active) : [];
     if (tresRows.length) {
       const renewedAt = Math.max(...tresRows.map(r => Date.parse(r.updated_at) || 0));
-      const swappedAt = await loadSwap(user.id, 'tres_mensual');
+      const swappedAt = await loadSwap(user.id, planElegir);
       tres = {
+        plan: planElegir,
+        choose: PLANS[planElegir].choose,
+        /* de tres puede subir a cinco desde Mis modelos (api/upgrade-cinco) */
+        sube_a_cinco: planElegir === 'tres_mensual' && entitlementExpiry(planElegir, tresRows[0].updated_at) > Date.now()
+          ? { precio: montoDe('cinco_mensual', 'MXN'), usd: montoDe('cinco_mensual', 'USD') } : null,
         products: tresRows.map(r => r.product).sort(),
-        renews_at: new Date(entitlementExpiry('tres_mensual', tresRows[0].updated_at)).toISOString(),
+        renews_at: new Date(entitlementExpiry(planElegir, tresRows[0].updated_at)).toISOString(),
         swap_available: !swappedAt || Date.parse(swappedAt) < renewedAt,
         swapped_at: swappedAt,
       };

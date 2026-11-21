@@ -54,14 +54,16 @@ try {
   });
 } catch (e) {}
 
-const { PLANS, isSubscription, isUpcoming, planCoversProduct, coverageBeats, EURO_PRODUCTS, ALL_MODELS, isChoosePlan, validChoice, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, planCoversProduct, coverageBeats, EURO_PRODUCTS, ALL_MODELS, isChoosePlan, validChoice, productsAlreadyCovered, FULL_PASS_PLANS, montoDe, precioDe } = require('../lib/plans');
 const { getAdmin, grantEntitlement, productsForPlan, chosenProducts } = require('../lib/supabaseAdmin');
 const { coveredBy } = require('../lib/cancel-recurring');
 const { saveChoice, loadChoice, clearChoice, choiceFromReason, reasonWith } = require('../lib/choices');
 /* elección de prueba para los planes "a elegir" (tres_mensual) */
 const TEST_CHOICE = ['mx', 'epl', 'nba'];
-const grantOpts = id => (isChoosePlan(id) ? { products: TEST_CHOICE } : undefined);
-const expectedProducts = id => (isChoosePlan(id) ? TEST_CHOICE.slice() : productsForPlan(id));
+const TEST_CHOICE_5 = ['mx', 'nfl', 'epl', 'ucl', 'nba'];   // cinco_mensual (20-nov-2026)
+const eleccionDe = id => (PLANS[id].choose === 5 ? TEST_CHOICE_5 : TEST_CHOICE);
+const grantOpts = id => (isChoosePlan(id) ? { products: eleccionDe(id) } : undefined);
+const expectedProducts = id => (isChoosePlan(id) ? eleccionDe(id).slice() : productsForPlan(id));
 
 const STATIC_ONLY = process.argv.includes('--static');
 const TEST_EMAIL = 'test-entitlements@rickypicks.internal';
@@ -95,7 +97,7 @@ const ok = msg => console.log('  ✓ ' + msg);
     for (const p of products) {
       if (isChoosePlan(id)) {
         /* "a elegir": el gate acepta el plan solo con la FILA del producto */
-        if (planCoversProduct(id, p, { product: p }) && !planCoversProduct(id, p, { product: 'nfl' }) && !planCoversProduct(id, p))
+        if (planCoversProduct(id, p, { product: p }) && !planCoversProduct(id, p, { product: 'mundial' }) && !planCoversProduct(id, p))
           ok(`el modelo "${p}" acepta este plan solo con su fila`);
         else fail(`el modelo "${p}" con plan a elegir: la cobertura debe salir de la fila, no del plan`);
         continue;
@@ -166,10 +168,19 @@ const ok = msg => console.log('  ✓ ' + msg);
     t(coveredBy('todo_mensual', 'tres_mensual') === true, 'comprar todo cancela un tres anterior');
     t(coveredBy('mlb_mensual', 'tres_mensual') === false, 'comprar mlb_mensual NO cancela un tres');
     t(coveredBy('tres_mensual', 'tres_mensual', ['mlb', 'mx', 'nfl']) === true, 'un tres nuevo cancela el tres anterior (re-suscripción; el recién creado se conserva por keep)');
+    /* cinco a elegir (20-nov-2026) */
+    t(JSON.stringify(validChoice('cinco_mensual', 'nba,ucl,nfl,mx,epl')) === JSON.stringify(['mx', 'nfl', 'epl', 'ucl', 'nba']), 'cinco: validChoice acepta 5 y ordena canónico');
+    t(validChoice('cinco_mensual', 'nba,ucl,nfl') === null, 'cinco: validChoice rechaza 3');
+    t(PLANS.cinco_mensual.price === 699 && montoDe('cinco_mensual', 'USD') === 39.99, 'cinco: $699 MXN / $39.99 USD');
+    t(coveredBy('cinco_mensual', 'tres_mensual', ['mx', 'nfl', 'epl', 'ucl', 'nba']) === true, 'comprar cinco cancela el tres (subida por Mercado Pago)');
+    t(coveredBy('tres_mensual', 'cinco_mensual', ['mx', 'nfl', 'epl']) === false, 'comprar tres NO cancela un cinco');
+    t(coveredBy('todo_mensual', 'cinco_mensual') === true, 'comprar todos cancela el cinco');
+    t(!precioDe('cinco_mensual', [{ plan: 'tres_mensual', product: 'nfl', active: true, updated_at: new Date().toISOString() }], 'MXN'), 'con tres, el cinco va a precio de lista (la subida es en su lugar, no con descuento)');
+    t(!precioDe('todo_mensual', [{ plan: 'cinco_mensual', product: 'nfl', active: true, updated_at: new Date().toISOString() }], 'MXN'), 'con cinco, todos va a lista (el $898 es solo para el de tres)');
     /* MLB fuera de temporada (2-nov-2026): sus planes están en `upcoming` hasta marzo y cuentan como a la venta para esta revisión */
     const enVenta = Object.keys(PLANS).filter(k => PLANS[k].price > 0 && !PLANS[k].retired && (!PLANS[k].upcoming || k.startsWith('mlb_')));
     const TEMPORADAS = ['mlb_temporada', 'mx_apertura', 'nfl_temporada', 'epl_temporada', 'laliga_temporada', 'bundesliga_temporada', 'ucl_temporada', 'nba_temporada', 'seriea_temporada', 'ligue1_temporada', 'uel_temporada', 'uecl_temporada', 'nhl_temporada'];
-    const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'nba_mensual', 'seriea_mensual', 'ligue1_mensual', 'mls_mensual', 'uel_mensual', 'uecl_mensual', 'nhl_mensual', 'tres_mensual', 'todo_mensual'].concat(TEMPORADAS);
+    const esperados = ['mlb_mensual', 'mx_mensual', 'nfl_mensual', 'epl_mensual', 'laliga_mensual', 'bundesliga_mensual', 'ucl_mensual', 'nba_mensual', 'cinco_mensual', 'seriea_mensual', 'ligue1_mensual', 'mls_mensual', 'uel_mensual', 'uecl_mensual', 'nhl_mensual', 'tres_mensual', 'todo_mensual'].concat(TEMPORADAS);
     const faltan = esperados.filter(k => !enVenta.includes(k));
     const sobran = enVenta.filter(k => !esperados.includes(k) && !['mexico', 'torneo', 'final'].includes(k));
     t(!faltan.length && !sobran.length, `a la venta exactamente los 3 tiers (14 × un modelo, tres, todos) + 13 temporadas${faltan.length ? ' — faltan ' + faltan : ''}${sobran.length ? ' — sobran ' + sobran : ''}`);

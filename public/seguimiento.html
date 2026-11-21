@@ -295,7 +295,7 @@ function pintaFicha(c) {
   if (!c.wa) chips.push('<span class="chip r">Sin teléfono</span>');
   if (c.enviado) chips.push('<span class="chip g">Mandado ' + fHora(c.enviado) + '</span>');
 
-  const planTxt = sub && sub.vivo ? (sub.plan === 'tres_mensual' ? 'Tres ligas' : sub.plan === 'todo_mensual' ? 'Todas' : (LIGA[(sub.plan || '').split('_')[0]] || sub.plan)) : 'Sin suscripción';
+  const planTxt = sub && sub.vivo ? (sub.plan === 'tres_mensual' ? 'Tres ligas' : sub.plan === 'cinco_mensual' ? 'Cinco ligas' : sub.plan === 'todo_mensual' ? 'Todas' : (LIGA[(sub.plan || '').split('_')[0]] || sub.plan)) : 'Sin suscripción';
   const vigentes = c.accesos.filter(a => a.vigente && a.product !== 'mundial');
   const s7 = c.uso.semana;
   const ligasVistas = Object.entries(s7.ligas || {}).sort((a, b) => b[1] - a[1]).map(([l, n]) => LIGA[l] + ' ' + n).join(' · ');

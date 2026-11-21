@@ -52,6 +52,7 @@
     bundesliga_mensual: 349,
     ucl_mensual: 349,
     tres_mensual: 599,
+    cinco_mensual: 699,
     todo_mensual: 899,
     epl_temporada: 899,
     laliga_temporada: 899,

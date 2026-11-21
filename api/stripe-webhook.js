@@ -106,7 +106,13 @@ module.exports = async function handler(req, res) {
       if (subId) {
         const sub = await stripe.subscriptions.retrieve(subId);
         const meta = sub.metadata || {};
-        if (meta.user_id && meta.plan) {
+        /* La factura de un CAMBIO de plan (subir de tres a cinco en
+           api/upgrade-cinco) no es una renovación: ese endpoint ya dio
+           el acceso con el periodo que corre. Otorgar aquí reiniciaría
+           el reloj y regalaría días. */
+        if (inv.billing_reason === 'subscription_update') {
+          console.log('stripe-webhook: cambio de plan, sin otorgar', meta.user_id, meta.plan, inv.id);
+        } else if (meta.user_id && meta.plan) {
           /* "a elegir": en renovación mandan sus filas (un cambio de
              modelo las movió y la metadata de la suscripción quedó
              vieja); la metadata es el respaldo si no hay filas. */

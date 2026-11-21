@@ -721,6 +721,19 @@ const PLANS = {
       'Se renueva solo cada mes · cancela cuando quieras',
     ],
   },
+  cinco_mensual: {
+    name: 'Cinco modelos a elegir — Suscripción mensual',
+    price: '$699',
+    currency: 'MXN',
+    period: 'Suscripción mensual · tú eliges 5 de los 14 modelos',
+    choose: 5,
+    features: [
+      'Los cinco modelos que elijas, completos: todos los partidos y todos los mercados',
+      'Sale a $140 MXN por modelo (por separado serían $1,745 MXN)',
+      'Puedes cambiar uno de tus cinco modelos cada mes desde Mis modelos',
+      'Se renueva solo cada mes · cancela cuando quieras',
+    ],
+  },
   todo_mensual: {
     name: 'Todos los modelos — Suscripción mensual',
     price: '$899',
@@ -1311,7 +1324,7 @@ function productsOf(p){
   if(p.startsWith('nba_')) return ['nba'];
   for(const m of NUEVOS) if(p.startsWith(m + '_')) return [m];
   if(p.startsWith('todo_')) return ['mlb','mx','nfl'].concat(EURO, ['nba'], NUEVOS);
-  if(p.startsWith('tres_')) return chosen.slice(); // "a elegir": lo que escogió
+  if(p.startsWith('tres_') || p.startsWith('cinco_')) return chosen.slice(); // "a elegir": lo que escogió
   return ['mundial'];
 }
 /* Productos de UNA fila: su columna product (la única verdad para un
@@ -1371,7 +1384,7 @@ async function renderSession(session){
   /* todo_mensual entra a la lista por el PRECIO DE FUNDADOR: sin
      consultar my-access, un cliente antiguo vería los $899 de lista y
      solo descubriría su precio en la pantalla de pago. */
-  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026','todo_mensual','tres_mensual'].includes(planId)){
+  if(['mlb_temporada','mx_apertura','nfl_temporada','combo_2026','todo_mensual','tres_mensual','cinco_mensual'].includes(planId)){
     try{
       const r = await fetch('/api/my-access', { headers: { Authorization: 'Bearer ' + session.access_token } });
       if(r.ok) acceso = await r.json();

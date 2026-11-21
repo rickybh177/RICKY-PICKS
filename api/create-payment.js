@@ -4,7 +4,7 @@
    del checkout. El precio se toma del servidor, nunca del cliente.
    El acceso se concede en /api/mp-webhook cuando el pago se aprueba.
    ============================================================ */
-const { PLANS, isSubscription, isUpcoming, isChoosePlan, validChoice, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { PLANS, isSubscription, isUpcoming, isChoosePlan, chooseCount, validChoice, comboPermanentDiscount, monthlyUpgradeFor, precioDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice, reasonWith } = require('../lib/choices');
 const { getUserFromToken, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { regresoPara, marcaOfertaUsada, anotaRestauracionMP } = require('../lib/retencion');
@@ -99,7 +99,7 @@ module.exports = async function handler(req, res) {
   let models = null;
   if (isChoosePlan(planId)) {
     models = validChoice(planId, body && body.models);
-    if (!models) return res.status(400).json({ error: 'Elige exactamente 3 modelos.' });
+    if (!models) return res.status(400).json({ error: `Elige exactamente ${chooseCount(planId)} modelos.` });
     try { await saveChoice(user.id, planId, models); }
     catch (e) { console.error('create-payment: elección no guardada', e.message); return res.status(500).json({ error: e.message }); }
   }

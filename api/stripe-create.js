@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 const { getUserFromToken, getEntitlement, getEntitlements, productsForPlan } = require('../lib/supabaseAdmin');
 const { discountFor, priceWith, labelWith } = require('../lib/discounts');
 const { upgradeCreditFor } = require('../lib/pase-credit');
-const { isSubscription, normalizaMoneda, isUpcoming, isChoosePlan, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
+const { isSubscription, normalizaMoneda, isUpcoming, isChoosePlan, chooseCount, validChoice, PLANS: SERVER_PLANS, comboPermanentDiscount, monthlyUpgradeFor, precioDe, montoDe, productsAlreadyCovered, FULL_PASS_PLANS } = require('../lib/plans');
 const { saveChoice } = require('../lib/choices');
 const { regresoPara, marcaOfertaUsada } = require('../lib/retencion');
 const { perdioFundador } = require('../lib/cancelaciones');
@@ -47,6 +47,7 @@ const PLAN_NAMES = {
   ucl_mensual: 'Modelo Champions League — Suscripción mensual',
   nba_mensual: 'Modelo NBA — Suscripción mensual',
   tres_mensual: 'Tres modelos a elegir — Suscripción mensual',
+  cinco_mensual: 'Cinco modelos a elegir — Suscripción mensual',
   todo_mensual: 'Todos los modelos (7) — Suscripción mensual',
   epl_temporada: 'Modelo Premier League — Temporada 2026-27 completa',
   laliga_temporada: 'Modelo LaLiga — Temporada 2026-27 completa',
@@ -114,7 +115,7 @@ module.exports = async function handler(req, res) {
     let models = null;
     if (isChoosePlan(plan)) {
       models = validChoice(plan, body && body.models);
-      if (!models) return res.status(400).json({ error: 'Elige exactamente 3 modelos.' });
+      if (!models) return res.status(400).json({ error: `Elige exactamente ${chooseCount(plan)} modelos.` });
       try { await saveChoice(user.id, plan, models); } catch (e) { console.error('stripe-create: elección no respaldada', e.message); }
     }
     /* Accesos actuales de ESTE usuario (filas expandidas por producto):
@@ -149,7 +150,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Ya tienes todo lo que incluye ese plan con un acceso vigente que dura más. No hace falta comprarlo.', covered: true });
     }
 
-    const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', seriea: 'Serie A', ligue1: 'Ligue 1', mls: 'MLS', uel: 'Europa League', uecl: 'Conference League', nhl: 'NHL' };
+    const NOMBRE = { mlb: 'MLB', mx: 'Liga MX', nfl: 'NFL', epl: 'Premier League', laliga: 'LaLiga', bundesliga: 'Bundesliga', ucl: 'Champions League', nba: 'NBA', seriea: 'Serie A', ligue1: 'Ligue 1', mls: 'MLS', uel: 'Europa League', uecl: 'Conference League', nhl: 'NHL' };
     /* Precio de fundador: quien ya era cliente de los modelos previos
        paga menos por "Todos los modelos". Va en el precio BASE de la
        suscripción —no como cupón— para que valga en CADA renovación:

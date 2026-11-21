@@ -659,6 +659,12 @@ const BULLETS = {
     'Cambia uno de tus tres modelos cada mes desde Mis modelos',
     'Se renueva solo cada mes · cancela cuando quieras',
   ]),
+  cinco: () => ([
+    'Cinco modelos completos, los que tú elijas — sale a $140 por modelo',
+    'Cambia uno de tus cinco modelos cada mes desde Mis modelos',
+    '¿Ya tienes el de tres? Súbete desde Mis modelos sin perder tus modelos',
+    'Se renueva solo cada mes · cancela cuando quieras',
+  ]),
   todo: () => ([
     'Todos los modelos: Liga MX, NFL, NBA, Premier League, LaLiga, Bundesliga y Champions',
     'NBA cada noche, fútbol cada fin de semana, NFL cada jornada',
@@ -694,12 +700,12 @@ function pintaAviso() {
     /* Ya trae tres: el mensaje va por lo que SUBE, no por el descuento
        (su precio es casi el de lista, tacharlo se vería ridículo). */
     box.innerHTML = '<span class="fn-ico">★</span><span>' +
-      '<b>Ya tienes 3 modelos. Te faltan 4.</b>' +
+      '<b>Ya tienes 3 modelos. Te faltan ' + (TODOS.length - 3) + '.</b>' +
       '<span>Por <b>' + esc(money(o.sube)) + ' más al mes</b> te llevas todos — sin elegir, sin quedarte fuera de nada. ' +
       'Tu plan de ahora se cancela solo al pagar.</span></span>';
   } else {
     /* Copy del upgrade: corto, concreto y con los dos precios. */
-    const faltan = 7 - 1;
+    const faltan = TODOS.length - 1;
     const partes = [];
     if (tres) partes.push('los 3 que elijas a <b>' + esc(money(tres.price)) + '</b> (antes ' + esc(money(tres.lista)) + ')');
     if (todo) partes.push('todos a <b>' + esc(money(todo.price)) + '</b> (antes ' + esc(money(todo.lista)) + ')');
@@ -733,8 +739,10 @@ async function sincronizaOfertas() {
 const TODOS = ['mx','nfl','epl','laliga','bundesliga','ucl','nba','nhl','seriea','ligue1','uel','uecl','mls'];
 const NOMBRE = { mlb:'MLB', mx:'Liga MX', nfl:'NFL', epl:'Premier League', laliga:'LaLiga', bundesliga:'Bundesliga', ucl:'Champions League', nba:'NBA', seriea:'Serie A', ligue1:'Ligue 1', uel:'Europa League', uecl:'Conference League', mls:'MLS', nhl:'NHL' };
 const ICONO = { mlb:'⚾', mx:'⚽', nfl:'🏈', epl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', laliga:'🇪🇸', bundesliga:'🇩🇪', ucl:'🏆', nba:'🏀', seriea:'🇮🇹', ligue1:'🇫🇷', uel:'🏆', uecl:'🏆', mls:'🇺🇸', nhl:'🏒' };
-/* elección del plan "tres a elegir": arranca con el modelo de esta página */
+/* elección de los planes "a elegir" (tres y cinco la comparten; el tope
+   es el del plan elegido): arranca con el modelo de esta página */
 let elegidos = [M];
+const topeDe = id => (planes && planes[id] && planes[id].choose) || 0;
 
 /* div (no button): adentro va el selector de modelos, y un botón no
    puede contener otros botones. */
@@ -752,27 +760,28 @@ function tarjeta(id, nombre, sub, precio, nota, bullets, flag, ancla, extra, usd
   '</div>';
 }
 
-/* Chips del plan "tres a elegir": exactamente 3 encendidos. */
-function chipsHTML() {
-  const faltan = 3 - elegidos.length;
-  return '<div class="pick-lbl">Tus 3 modelos' + (faltan > 0 ? ' · elige ' + faltan + ' más' : ' ✓') + '</div>' +
+/* Chips de un plan "a elegir": exactamente n encendidos. */
+function chipsHTML(n) {
+  const faltan = n - elegidos.length;
+  return '<div class="pick-lbl">Tus ' + n + ' modelos' + (faltan > 0 ? ' · elige ' + faltan + ' más' : ' ✓') + '</div>' +
     '<div class="picks">' + TODOS.map(m =>
       '<button type="button" class="pick' + (elegidos.includes(m) ? ' on' : '') + '" data-m="' + m + '" aria-pressed="' + elegidos.includes(m) + '">' +
         ICONO[m] + ' ' + esc(NOMBRE[m]) + '</button>').join('') + '</div>';
 }
 function pintaChips() {
-  const box = document.getElementById('picker');
-  if (!box) return;
-  box.innerHTML = chipsHTML();
-  box.querySelectorAll('.pick').forEach(b => b.addEventListener('click', e => {
-    e.stopPropagation();
-    const m = b.dataset.m;
-    if (elegidos.includes(m)) elegidos = elegidos.filter(x => x !== m);
-    else if (elegidos.length >= 3) return;
-    else elegidos = TODOS.filter(x => elegidos.includes(x) || x === m);
-    pintaChips();
-    elegir('tres_mensual');
-  }));
+  document.querySelectorAll('.picker').forEach(box => {
+    const plan = box.dataset.plan, n = topeDe(plan);
+    if (!n) return;
+    box.innerHTML = chipsHTML(n);
+    box.querySelectorAll('.pick').forEach(b => b.addEventListener('click', e => {
+      e.stopPropagation();
+      const m = b.dataset.m;
+      if (elegidos.includes(m)) elegidos = elegidos.filter(x => x !== m);
+      else if (elegidos.length >= n) return;
+      else elegidos = TODOS.filter(x => elegidos.includes(x) || x === m);
+      elegir(plan);
+    }));
+  });
 }
 
 /* Liga europea todavía sin planes a la venta (beta privada): en vez del
@@ -800,6 +809,7 @@ function pintaOpciones(p) {
      → no vienen en el catálogo). */
   const men = p[cfg.mensual];
   const tres = p.tres_mensual || null;
+  const cinco = p.cinco_mensual || null;
   const todo = p.todo_mensual || null;
   if (!men && cfg.euro) { pintaProximamente(); return; }
   if (!men) { $('opts').innerHTML = '<p class="lede">No pudimos cargar los planes. Recarga la página.</p>'; return; }
@@ -838,7 +848,18 @@ function pintaOpciones(p) {
       BULLETS.tres().concat(oTres ? ['Tu precio por ser cliente — se queda mientras no canceles'] : []),
       oTres ? 'Tu precio' : 'El más elegido',
       oTres ? money(tres.price) : null,
-      '<div id="picker"></div>', oTres ? oTres.usd : tres.price_usd);
+      '<div class="picker" data-plan="' + esc(tres.id) + '"></div>', oTres ? oTres.usd : tres.price_usd);
+  }
+  if (cinco) {
+    const oCinco = ofertaDe(cinco.id);
+    const pCinco = oCinco ? oCinco.price : cinco.price;
+    html += '<div class="sep">O bien</div>';
+    html += tarjeta(cinco.id, 'Cinco modelos a elegir', 'Los 5 que tú escojas · cambia uno cada mes',
+      money(pCinco), 'al mes · ' + money(Math.round(pCinco / 5)) + ' por modelo',
+      BULLETS.cinco().concat(oCinco ? ['Tu precio por ser cliente — se queda mientras no canceles'] : []),
+      oCinco ? 'Tu precio' : 'Nuevo',
+      oCinco ? money(cinco.price) : null,
+      '<div class="picker" data-plan="' + esc(cinco.id) + '"></div>', oCinco ? oCinco.usd : cinco.price_usd);
   }
   if (todo) {
     const n = (todo.products || []).filter(p => TODOS.includes(p)).length || 7;
@@ -870,7 +891,6 @@ function pintaOpciones(p) {
       null, oTodo ? oTodo.usd : todo.price_usd);
   }
   $('opts').innerHTML = html;
-  pintaChips();
   const side = document.getElementById('side');
   if (side) {
     side.addEventListener('click', () => elegir(side.dataset.plan));
@@ -905,6 +925,9 @@ function elegir(id) {
   }
   const p = planes && planes[id];
   const esTres = !!(p && p.choose);
+  /* de cinco a tres: se quedan los primeros tres que eligió */
+  if (esTres && elegidos.length > p.choose) elegidos = elegidos.slice(0, p.choose);
+  pintaChips();
   const listo = !esTres || elegidos.length === (p.choose || 3);
   const url = '/checkout.html?plan=' + encodeURIComponent(id) + (esTres ? '&modelos=' + elegidos.join(',') : '');
   [$('goBtn'), $('sGo')].forEach(a => {
@@ -912,13 +935,13 @@ function elegir(id) {
     a.classList.toggle('off', !listo);
     a.textContent = listo ? 'Continuar' : 'Elige ' + ((p && p.choose) || 3) + ' modelos';
   });
-  if (p) $('sTxt').innerHTML = esc(esTres ? 'Tres modelos a elegir' : (!p.recurring ? 'Temporada completa · ' + cfg.nombre : p.title.split('—').pop().trim())) +
+  if (p) $('sTxt').innerHTML = esc(esTres ? (p.choose === 5 ? 'Cinco' : 'Tres') + ' modelos a elegir' : (!p.recurring ? 'Temporada completa · ' + cfg.nombre : p.title.split('—').pop().trim())) +
     '<small>' + money(p.price) + ' ' + esc(p.currency) + (p.recurring ? ' al mes' : ' · pago único') + '</small>' +
     (esTres && elegidos.length ? '<small>' + esc(elegidos.map(m => NOMBRE[m]).join(' + ')) + '</small>' : '');
 }
 document.addEventListener('click', e => {
   const a = e.target.closest('#goBtn, #sGo');
-  if (a && a.classList.contains('off')) { e.preventDefault(); const pk = document.getElementById('picker'); if (pk) pk.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  if (a && a.classList.contains('off')) { e.preventDefault(); const pk = document.querySelector('.opt.on .picker'); if (pk) pk.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 });
 
 /* no-store: tras un cambio de precios, un catálogo cacheado 5 min
